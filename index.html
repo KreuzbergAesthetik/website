@@ -208,7 +208,6 @@ body.akte-open main { display:none; }
   <button type="button" class="nav-btn active" id="btn-start" onclick="switchTab('start')">Start</button>
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
-  <button type="button" class="nav-btn" id="btn-medien" onclick="switchTab('medien')">Medien</button>
   <button type="button" class="nav-btn" id="btn-rechnungen" onclick="switchTab('rechnungen')">Rechnungen</button>
   <button type="button" class="nav-btn" id="btn-leistungen" onclick="switchTab('leistungen')">Leistungen</button>
   <button type="button" class="nav-btn" id="btn-lager" onclick="switchTab('lager')">Lager</button>
@@ -289,23 +288,6 @@ body.akte-open main { display:none; }
           <tbody id="patient-table"></tbody>
         </table>
       </div>
-    </div>
-  </div>
-
-  <!-- TAB: MEDIEN -->
-  <div id="tab-medien" class="tab-content">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Medien und Dokumente</span></div>
-      <div class="cal-bar">
-        <input type="text" id="md-filter" class="form-control" placeholder="Patient oder Dateiname suchen..." autocomplete="off" oninput="medLimit = 30; renderMedien()" style="flex:1 1 220px;">
-        <div class="seg">
-          <button type="button" id="md-alle" onclick="setMedFilter('alle')">Alle</button>
-          <button type="button" id="md-bild" onclick="setMedFilter('bild')">Bilder</button>
-          <button type="button" id="md-dok" onclick="setMedFilter('dok')">Dokumente</button>
-        </div>
-      </div>
-      <div id="md-sum" style="font-size:13px; color:#64748b; margin:4px 0 12px;"></div>
-      <div id="md-list"></div>
     </div>
   </div>
 
@@ -480,6 +462,26 @@ body.akte-open main { display:none; }
   <div id="a-fin-block" class="card">
     <div class="card-header" style="margin-bottom:6px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Finanzen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="openInvoice(curP)">+ Rechnung</button></div>
     <div id="a-fin"></div>
+  </div>
+
+  <div id="a-medien-block" class="card">
+    <div class="card-header" style="margin-bottom:6px;">
+      <div class="ak-h" style="margin:0; border:none; padding:0;">Medien und Dokumente</div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="zuNext = null; document.getElementById('a-img-in').click()">+ Foto</button>
+        <button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="zuNext = null; document.getElementById('a-doc-in').click()">+ Dokument</button>
+      </div>
+    </div>
+    <div class="cal-bar">
+      <input type="text" id="md-filter" class="form-control" placeholder="Dateiname suchen..." autocomplete="off" oninput="medLimit = 30; renderMedien()" style="flex:1 1 200px;">
+      <div class="seg">
+        <button type="button" id="md-alle" onclick="setMedFilter('alle')">Alle</button>
+        <button type="button" id="md-bild" onclick="setMedFilter('bild')">Bilder</button>
+        <button type="button" id="md-dok" onclick="setMedFilter('dok')">Dokumente</button>
+      </div>
+    </div>
+    <div id="md-sum" style="font-size:13px; color:#64748b; margin:4px 0 10px;"></div>
+    <div id="md-list"></div>
   </div>
 
   <div class="card">
@@ -728,7 +730,6 @@ function switchTab(tabId) {
   if (tabId === 'start' && typeof renderHome === 'function') renderHome();
   if (tabId === 'lager' && typeof renderLager === 'function') renderLager();
   if (tabId === 'leistungen' && typeof renderLeist === 'function') renderLeist();
-  if (tabId === 'medien' && typeof renderMedien === 'function') renderMedien();
   var c = document.querySelectorAll('.tab-content');
   for (var i = 0; i < c.length; i++) c[i].classList.remove('active');
   var b = document.querySelectorAll('.nav-btn');
@@ -2160,14 +2161,6 @@ function tlRow(it) {
       function () { if (!d.text) curP.doku = curP.doku.filter(function (y) { return y !== d; }); },
       renderVerlauf));
     sh.body.appendChild(attachBlock(curP, 'd' + d.ts));
-  } else if (it.t === 'medien' || it.t === 'dateien') {
-    var gr = it.g;
-    sh = tlShell(it.k, (it.t === 'medien' ? 'Bilder' : 'Dokumente') + ' (' + gr.list.length + ')');
-    sh.body.appendChild(fileBody(curP, gr.list, it.t === 'medien' ? 'bild' : 'dok'));
-    var zb = mk('button', 'btn btn-secondary', 'Zuordnen'); zb.type = 'button'; zb.style.cssText = 'padding:6px 10px; font-size:13px; margin-top:8px;';
-    zb.onclick = function () { openZu(curP, gr.list); };
-    sh.body.appendChild(zb);
-    sh.row.firstChild.style.cursor = 'pointer'; sh.row.firstChild.title = 'Datum ändern'; sh.row.firstChild.onclick = function () { editGroupDate(gr.list); };
   } else if (it.t === 'rechnung') {
     var iv = it.inv;
     sh = tlShell(it.k, 'Rechnung');
@@ -2186,12 +2179,10 @@ function tlRow(it) {
   return sh.row;
 }
 function renderVerlauf() {
-  renderFin();
+  renderFin(); renderMedien();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
   events.forEach(function (e) { if (e.patient === name) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
   (curP.doku || []).forEach(function (d) { items.push({ k: d.ts, t: 'doku', d: d }); });
-  fileGroups(curP, 'bild').forEach(function (g) { if (!g.zu) items.push({ k: g.k, t: 'medien', g: g }); });
-  fileGroups(curP, 'dok').forEach(function (g) { if (!g.zu) items.push({ k: g.k, t: 'dateien', g: g }); });
   (curP.log || []).forEach(function (l) { if (!(l.type === 'mail' && /^E-Mail-Fenster/.test(l.text))) items.push({ k: l.ts, t: l.type, l: l }); });
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
   lager.verbrauch.forEach(function (v) { if (v.pid === curP.id) items.push({ k: v.ts, t: 'verbrauch', v: v }); });
@@ -2294,7 +2285,6 @@ function autoZu() {
 function refreshFiles() {
   persist();
   if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
-  if (document.getElementById('tab-medien').classList.contains('active')) renderMedien();
 }
 function mediaGrid(p, list) {
   var g = mk('div', 'media');
@@ -2390,32 +2380,29 @@ function saveZu() {
   zuCtx.list.forEach(function (x) { if (v) x.zu = v; else delete x.zu; });
   closeModal('modal-zu'); refreshFiles();
 }
-/* Reiter Medien: alles an einem Ort */
+/* Medien und Dokumente des Patienten an einem Ort */
 function setMedFilter(f) { medFilter = f; medLimit = 30; renderMedien(); }
 function renderMedien() {
-  var box = document.getElementById('md-list'); if (!box) return;
+  var box = document.getElementById('md-list'); if (!box || !curP) return;
   ['alle', 'bild', 'dok'].forEach(function (k) { document.getElementById('md-' + k).className = medFilter === k ? 'on' : ''; });
   var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), groups = [], nb = 0, nd = 0;
-  patients.forEach(function (p) {
-    var kinds = medFilter === 'alle' ? ['bild', 'dok'] : [medFilter];
-    kinds.forEach(function (k) {
-      fileGroups(p, k).forEach(function (g) {
-        if (q && nameKey(p).toLowerCase().indexOf(q) < 0 && !g.list.some(function (x) { return String(x.name || '').toLowerCase().indexOf(q) >= 0; })) return;
-        groups.push(g); if (k === 'bild') nb += g.list.length; else nd += g.list.length;
-      });
+  (medFilter === 'alle' ? ['bild', 'dok'] : [medFilter]).forEach(function (k) {
+    fileGroups(curP, k).forEach(function (g) {
+      if (q) { g = { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: g.list.filter(function (x) { return String(x.name || '').toLowerCase().indexOf(q) >= 0; }) }; if (!g.list.length) return; }
+      groups.push(g); if (k === 'bild') nb += g.list.length; else nd += g.list.length;
     });
   });
   groups.sort(function (a, b) { return b.k - a.k; });
-  document.getElementById('md-sum').textContent = nb + ' Bild(er) und ' + nd + ' Dokument(e)' + (q ? ' gefunden' : ' insgesamt');
+  document.getElementById('md-sum').textContent = nb + ' Bild(er) und ' + nd + ' Dokument(e)' + (q ? ' gefunden' : '');
   box.innerHTML = '';
-  if (!groups.length) { box.appendChild(mk('div', 'hm-empty', 'Keine Dateien gefunden')); return; }
+  if (!groups.length) { box.appendChild(mk('div', 'hm-empty', q ? 'Keine Datei gefunden' : 'Noch keine Fotos oder Dokumente')); return; }
   groups.slice(0, medLimit).forEach(function (g) {
     var c = mk('div'); c.style.cssText = 'border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:10px;';
     var h = mk('div'); h.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;';
-    var nb2 = mk('button', 'pn', nameKey(g.p)); nb2.type = 'button'; nb2.style.fontWeight = '700'; nb2.onclick = function () { viewAkte(g.p); };
-    var meta = mk('span', '', (g.kind === 'bild' ? 'Bilder' : 'Dokumente') + ' (' + g.list.length + ') · ' + fmtDT(g.k).replace(/^[^,]+, /, ''));
-    meta.style.cssText = 'font-size:12px; color:#64748b;';
-    h.appendChild(nb2); h.appendChild(meta); c.appendChild(h);
+    h.appendChild(mk('b', '', (g.kind === 'bild' ? 'Bilder' : 'Dokumente') + ' (' + g.list.length + ')'));
+    var dt = mk('button', 'pn', fmtDT(g.k).replace(/^[^,]+, /, '')); dt.type = 'button'; dt.style.cssText += 'font-size:12px; color:#64748b;'; dt.title = 'Datum ändern';
+    dt.onclick = function () { editGroupDate(g.list); };
+    h.appendChild(dt); c.appendChild(h);
     if (g.zu) { var zl = mk('div', '', zuLabel(g.p, g.zu)); zl.style.cssText = 'font-size:12px; color:#047857; margin-bottom:6px;'; c.appendChild(zl); }
     c.appendChild(fileBody(g.p, g.list, g.kind));
     var zb = mk('button', 'btn btn-secondary', 'Zuordnen'); zb.type = 'button'; zb.style.cssText = 'padding:6px 10px; font-size:13px; margin-top:8px;';
