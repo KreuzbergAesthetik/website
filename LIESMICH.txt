@@ -1,0 +1,6 @@
+Kreuzberg Ästhetik Praxismanagement als App
+
+Inhalt: index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png
+Alle fünf Dateien gehören zusammen in denselben Ordner auf einem Server mit https.
+Danach die Adresse im Chrome auf dem Tablet öffnen, Menü, "App installieren" bzw. "Zum Startbildschirm hinzufügen".
+Die Patientendaten liegen nur im Browser des Tablets, nicht auf dem Server.
