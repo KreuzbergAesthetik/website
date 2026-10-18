@@ -25,7 +25,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px; }
 .card { background:#fff; border:1px solid #c5cfdb; border-radius:14px; padding:16px; margin-bottom:20px; box-shadow:0 2px 8px rgba(15,23,42,.10); }
 .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; }
 .card-title { font-size:16px; font-weight:bold; }
-.btn { background:#0f172a; color:#fff; border:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; }
+.btn { background:#0f172a; color:#fff; border:none; padding:9px 16px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; }
 .btn:hover { background:#1e293b; }
 .btn-secondary { background:#f1f5f9; color:#334155; } .btn-secondary:hover { background:#e2e8f0; }
 .btn.btn-cancel { background:#e2e8f0; color:#334155; } .btn.btn-cancel:hover { background:#cbd5e1; }
@@ -44,7 +44,20 @@ td { padding:10px; border-bottom:1px solid #f1f5f9; }
 .close-btn { background:none; border:none; font-size:18px; cursor:pointer; color:#94a3b8; }
 .form-group { margin-bottom:12px; }
 .form-group label { display:block; font-size:12px; font-weight:600; margin-bottom:4px; color:#334155; }
-.form-control { width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; }
+.form-control { width:100%; padding:10px 12px; min-height:42px; border:1px solid #cbd5e1; border-radius:8px; font-size:15px; background:#fff; }
+textarea.form-control { font-size:15px; }
+:focus-visible { outline:3px solid #0f766e55; outline-offset:1px; }
+.form-control:focus { border-color:#0f766e; outline:none; box-shadow:0 0 0 3px #0f766e33; }
+.btn { min-height:40px; }
+.x-btn { min-width:36px; min-height:36px; font-size:20px; }
+.close-btn { min-width:40px; min-height:40px; font-size:24px; }
+.nav-btn { min-height:48px; }
+.nav-btn:focus-visible, .btn:focus-visible { outline-offset:-3px; }
+.modal-box { -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
+#modal-invview .modal-box { overflow-x:auto; }
+.mc { min-height:92px; }
+.ev { box-shadow:0 1px 2px rgba(15,23,42,.15); }
+@media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; } }
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .badge { font-size:11px; padding:3px 8px; border-radius:10px; font-weight:500; }
 .badge-amber { background:#fef3c7; color:#92400e; } .badge-green { background:#d1fae5; color:#065f46; }
@@ -64,7 +77,7 @@ td { padding:10px; border-bottom:1px solid #f1f5f9; }
 .dh { text-align:center; font-size:12px; font-weight:600; padding:8px 4px; border-bottom:1px solid #e2e8f0; border-right:1px solid #f1f5f9; color:#475569; }
 .dh.today { color:#0f172a; background:#f1f5f9; }
 .dc { position:relative; border-right:1px solid #f1f5f9; background:repeating-linear-gradient(#e2e8f0 0 1px, transparent 1px 48px); }
-.ev { position:absolute; left:2px; right:2px; background:#fef3c7; border-left:3px solid #d97706; color:#78350f; border-radius:4px; padding:2px 5px; font-size:11px; line-height:1.3; overflow:hidden; }
+.ev { position:absolute; left:2px; right:2px; min-width:0; background:#fef3c7; border-left:3px solid #d97706; color:#78350f; border-radius:4px; padding:2px 5px; font-size:11px; line-height:1.3; overflow:hidden; }
 .ev.ok { background:#d1fae5; border-left-color:#059669; color:#064e3b; }
 .mg { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0; }
 .mh { text-align:center; font-size:12px; font-weight:600; padding:6px 0; color:#475569; background:#f8fafc; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; }
@@ -258,6 +271,7 @@ body.akte-open main { display:none; }
         <span class="card-title">Patientenverwaltung</span>
         <button type="button" class="btn" onclick="openModal('modal-patient')">+ Neuer Patient</button>
       </div>
+      <input type="text" id="p-filter" class="form-control" placeholder="Patient suchen (Name, Telefon, Geburtsdatum)..." autocomplete="off" oninput="renderPatients()" style="margin-bottom:12px;">
       <div class="scroll">
         <table class="pt">
           <thead><tr>
@@ -267,17 +281,6 @@ body.akte-open main { display:none; }
           <tbody id="patient-table"></tbody>
         </table>
       </div>
-    </div>
-  </div>
-
-  <!-- TAB 3: DOKUMENTATION -->
-  <div id="tab-doku" class="tab-content">
-    <div class="card">
-      <span class="card-title" style="display:block; margin-bottom:12px;">Behandlung dokumentieren</span>
-      <div class="form-group">
-        <textarea id="doku-text" class="form-control" rows="4" placeholder="Befund / Behandlungsdetails eingeben..."></textarea>
-      </div>
-      <button type="button" class="btn btn-save" onclick="saveDoku()">Dokumentation Speichern</button>
     </div>
   </div>
 
@@ -366,7 +369,7 @@ body.akte-open main { display:none; }
     <div class="tm-link" onclick="document.getElementById('t-notiz').style.display='block'">+ Notiz</div>
     <textarea id="t-notiz" class="form-control" rows="2" style="display:none; margin-bottom:6px;" placeholder="Notiz"></textarea>
     <div class="tm-row"><label>Leistungen</label>
-      <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off">
+      <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off" onchange="var b=document.getElementById('t-behandlung');if(!b.value.trim())b.value=this.value">
       <datalist id="t-leistung-list"><option value="Botulinumtoxin"><option value="Hyaluronsäure"><option value="Beratungsgespräch"><option value="Kontrolle"></datalist>
     </div>
     <div class="tm-row" style="grid-template-columns:1fr;">
@@ -647,7 +650,7 @@ function switchTab(tabId) {
   document.getElementById('tab-' + tabId).classList.add('active');
   document.getElementById('btn-' + tabId).classList.add('active');
 }
-function openModal(id) { document.getElementById(id).classList.add('active'); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
+function openModal(id) { document.getElementById(id).classList.add('active'); syncLock(); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
 var patients = [
   { anrede: 'Frau', vorname: 'Maria', nachname: 'Schmidt', dob: '12.04.1985', phone: '+49 170 1234567', email: '', allergien: 'Keine', notizen: 'Botulinumtoxin Glabella' },
   { anrede: 'Herr', vorname: 'Stefan', nachname: 'Weber', dob: '23.09.1978', phone: '+49 171 9876543', email: '', allergien: 'Pollenallergie', notizen: 'Hyaluronsäure Lippen' }
@@ -700,7 +703,10 @@ function renderPatients() {
     var d = (a.erstellt - b.erstellt) || (a.id - b.id);
     return pSort === 'desc' ? -d : d;
   });
+  var q = (document.getElementById('p-filter').value || '').trim().toLowerCase();
   list.forEach(function (p) {
+    var o = document.createElement('option'); o.value = p.vorname + ' ' + p.nachname; dl.appendChild(o);
+    if (q && (nameKey(p) + ' ' + p.nachname + ' ' + (p.phone || '') + ' ' + (p.dob || '')).toLowerCase().indexOf(q) < 0) return;
     var age = ageOf(p.dob);
     var row = tb.insertRow();
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
@@ -713,20 +719,21 @@ function renderPatients() {
     if (p.email) { var l2 = mk('div', 'pl'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); c1.appendChild(l2); }
     c2.textContent = p.dob ? p.dob + (age !== '' ? ' (' + age + ')' : '') : '-';
     c3.textContent = fmtDT(p.erstellt);
-    var o = document.createElement('option'); o.value = p.vorname + ' ' + p.nachname; dl.appendChild(o);
   });
+  if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
 }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); window.scrollTo(0, 0); } }
+function syncLock() { document.body.style.overflow = document.querySelector('.modal-overlay.active') ? 'hidden' : ''; }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); window.scrollTo(0, 0); } }
 
 /* ===== Kalender ===== */
-var H = 48, START = 8, END = 20, view = 'tag', cur = new Date();
+var H = 48, START = 8, END = 20, DSTART = 8, DEND = 20, view = 'tag', cur = new Date();
 var MN = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 var WD = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
 function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
 function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
 function monday(d) { return addDays(d, -((d.getDay() + 6) % 7)); }
-function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
 var events = [
   { date: iso(new Date()), time: '09:00', dur: 30, patient: 'Maria Schmidt', behandlung: 'Botulinumtoxin Glabella', status: 'Gebucht' },
@@ -737,12 +744,35 @@ events.forEach(function (e, i) { e.id = i + 1; });
 try { var se = JSON.parse(localStorage.getItem('ka_events')); if (Array.isArray(se)) events = se; } catch (x) {}
 var nid = events.reduce(function (m, e) { return Math.max(m, e.id || 0); }, 0) + 1, editId = null;
 function col(e) { return e.color ? 'background:' + e.color + '26;border-left-color:' + e.color + ';color:#0f172a' : ''; }
-function evBlock(e) {
+function evBlock(e, lane, lanes) {
   var p = e.time.split(':'), mins = parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
   var top = (mins - START * 60) * H / 60, h = Math.max(e.dur * H / 60, 20);
-  return '<div class="ev' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + col(e) + '" title="' + esc(e.behandlung) + '"><b>' + e.time + '</b> ' + esc(e.patient) + '<br>' + esc(e.behandlung) + '</div>';
+  var pos = lanes > 1 ? 'left:calc(' + (lane * 100 / lanes) + '% + 2px);right:auto;width:calc(' + (100 / lanes) + '% - 4px);' : '';
+  return '<div class="ev' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '"><b>' + e.time + '</b> ' + esc(e.patient) + '<br>' + esc(e.behandlung) + '</div>';
 }
 
+/* Überlappende Termine nebeneinander statt übereinander */
+function layoutDay(list) {
+  var items = list.slice().sort(function (a, b) { return toMin(a.time) - toMin(b.time); }).map(function (e) { return { e: e, s: toMin(e.time), f: toMin(e.time) + Math.max(e.dur || 60, 20 * 60 / H), lane: 0, lanes: 1 }; });
+  var grp = [], gEnd = -1;
+  function close() { var n = 0; grp.forEach(function (x) { n = Math.max(n, x.lane + 1); }); grp.forEach(function (x) { x.lanes = n; }); grp = []; }
+  items.forEach(function (x) {
+    if (grp.length && x.s >= gEnd) { close(); gEnd = -1; }
+    var used = grp.filter(function (y) { return y.f > x.s; }).map(function (y) { return y.lane; }), l = 0;
+    while (used.indexOf(l) >= 0) l++;
+    x.lane = l; grp.push(x); gEnd = Math.max(gEnd, x.f);
+  });
+  close();
+  return items;
+}
+function fitHours() {
+  START = DSTART; END = DEND;
+  events.forEach(function (e) {
+    if (!/^\d{1,2}:\d{2}$/.test(e.time || '')) return;
+    START = Math.min(START, Math.floor(toMin(e.time) / 60));
+    END = Math.max(END, Math.min(24, Math.ceil((toMin(e.time) + (e.dur || 60)) / 60)));
+  });
+}
 function timeGrid(days) {
   var cols = 'grid-template-columns:44px repeat(' + days.length + ',1fr);';
   var minW = days.length > 1 ? 'min-width:720px;' : '';
@@ -757,7 +787,7 @@ function timeGrid(days) {
   days.forEach(function (d) {
     var k = iso(d);
     html += '<div class="dc" data-date="' + k + '" style="height:' + (END - START) * H + 'px;cursor:pointer" onclick="slotClick(event,\'' + k + '\')">';
-    events.filter(function (e) { return e.date === k; }).forEach(function (e) { html += evBlock(e); });
+    layoutDay(events.filter(function (e) { return e.date === k; })).forEach(function (x) { html += evBlock(x.e, x.lane, x.lanes); });
     html += '</div>';
   });
   return html + '</div></div>';
@@ -783,6 +813,7 @@ function monthGrid() {
 }
 
 function renderCal() {
+  fitHours();
   ['tag', 'woche', 'monat'].forEach(function (v) {
     document.getElementById('v-' + v).className = (v === view) ? 'on' : '';
   });
@@ -938,7 +969,7 @@ function goHome() {
   window.scrollTo(0, 0);
 }
 /* ===== Startseite ===== */
-var WD = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+var WDL = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 function patOf(e) { return patients.filter(function (p) { return nameKey(p) === e.patient; })[0]; }
 function hasAllergy(p) { var a = p && (p.allergien || '').trim().toLowerCase(); return !!a && a !== 'keine' && a !== '-' && a !== 'nein'; }
 function hmRow(time, main, sub, onclick, extra, cls) {
@@ -963,7 +994,7 @@ function renderHome() {
   var now = new Date(), today = iso(now), nowMin = now.getHours() * 60 + now.getMinutes();
   var h = now.getHours();
   document.getElementById('hm-greet').textContent = h < 11 ? 'Guten Morgen' : h < 18 ? 'Guten Tag' : 'Guten Abend';
-  document.getElementById('hm-date').textContent = WD[now.getDay()] + ', ' + now.getDate() + '. ' + MN[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('hm-date').textContent = WDL[now.getDay()] + ', ' + now.getDate() + '. ' + MN[now.getMonth()] + ' ' + now.getFullYear();
   /* Backup */
   var lb = null; try { lb = localStorage.getItem('ka_lastbackup'); } catch (x) {}
   var bb = document.getElementById('hm-backup'); bb.innerHTML = '';
@@ -1015,7 +1046,7 @@ function renderHome() {
   });
   bd.sort(function (a, b) { return a.k - b.k; });
   hmFill('hm-bday', bd.map(function (x) {
-    var when = x.k === 0 ? 'Heute' : x.k === 1 ? 'Morgen' : WD[x.d.getDay()] + ', ' + x.d.getDate() + '. ' + MN[x.d.getMonth()];
+    var when = x.k === 0 ? 'Heute' : x.k === 1 ? 'Morgen' : WDL[x.d.getDay()] + ', ' + x.d.getDate() + '. ' + MN[x.d.getMonth()];
     return hmRow(null, nameKey(x.p), when + ' · wird ' + x.age, function () { viewAkte(x.p); }, null, x.k === 0 ? 'next' : '');
   }), 'Keine Geburtstage in den nächsten 14 Tagen.');
   /* Zahlen */
@@ -1793,6 +1824,7 @@ function toggleStamm() {
   if (!g('vorname') || !g('nachname')) { alert('Vorname und Nachname dürfen nicht leer sein.'); return; }
   if (!validDob(g('dob'))) { alert(DOB_MSG); return; }
   var old = nameKey(curP);
+  if (patients.some(function (x) { return x !== curP && nameKey(x).toLowerCase() === (g('vorname') + ' ' + g('nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon.'); return; }
   HEAD_FIELDS.forEach(function (k) { curP[k[0]] = g(k[0]); });
   var nn = nameKey(curP);
   if (nn !== old) events.forEach(function (e) { if (e.patient === old) e.patient = nn; });
@@ -2062,6 +2094,11 @@ function toggleAMenu(ev) {
   m.style.display = m.style.display === 'none' ? 'block' : 'none';
 }
 document.addEventListener('click', function () { var m = document.getElementById('a-menu'); if (m) m.style.display = 'none'; });
+document.addEventListener('keydown', function (ev) {
+  if (ev.key !== 'Escape') return;
+  var open = [].slice.call(document.querySelectorAll('.modal-overlay.active'));
+  if (open.length) { var top = open[open.length - 1]; if (top.id === 'modal-termin') closeTermin(); else closeModal(top.id); }
+});
 function aAct(x) {
   document.getElementById('a-menu').style.display = 'none';
   if (x === 'med') { medMode = true; medInput = true; renderMed(); document.getElementById('a-med-in').focus(); }
@@ -2262,6 +2299,7 @@ function savePatient() {
   var g = function (id) { return document.getElementById(id).value.trim(); };
   if (!g('p-vorname') || !g('p-nachname')) { alert('Bitte mind. Vorname und Nachname eingeben.'); return; }
   if (!validDob(g('p-dob'))) { alert(DOB_MSG); return; }
+  if (patients.some(function (x) { return nameKey(x).toLowerCase() === (g('p-vorname') + ' ' + g('p-nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon. Termine und Rechnungen werden über den Namen zugeordnet, bitte den Namen unterscheidbar eintragen (z.B. mit zweitem Vornamen).'); return; }
   patients.push({ anrede: g('p-anrede'), vorname: g('p-vorname'), nachname: g('p-nachname'), dob: g('p-dob'), phone: g('p-phone'), email: g('p-email'), allergien: g('p-allergien'), notizen: g('p-notizen') });
   ensurePatients(); persist(); renderPatients();
   ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen'].forEach(function (id) { document.getElementById(id).value = ''; });
@@ -2271,25 +2309,26 @@ function savePatient() {
 function saveTermin() {
   var datum = document.getElementById('t-datum').value;
   var ganz = document.getElementById('t-ganztag').checked;
-  var zeit = ganz ? fromMin(START * 60) : document.getElementById('t-zeit').value;
-  var dur = (END - START) * 60;
+  var zeit = ganz ? fromMin(DSTART * 60) : document.getElementById('t-zeit').value;
+  var dur = (DEND - DSTART) * 60;
   if (!ganz) {
     var ende = document.getElementById('t-ende').value;
     if (!datum || !zeit || !ende) { alert('Bitte Datum, Beginn und Ende angeben.'); return; }
     dur = toMin(ende) - toMin(zeit);
     if (dur <= 0) { alert('Das Ende muss nach dem Beginn liegen.'); return; }
   } else if (!datum) { alert('Bitte Datum angeben.'); return; }
-  if (!document.getElementById('t-patient').value.trim()) { alert('Bitte einen Patienten eingeben.'); return; }
+  var pname = document.getElementById('t-patient').value.trim().replace(/\s+/g, ' ');
+  if (!pname) { alert('Bitte einen Patienten eingeben.'); return; }
+  if (!patients.some(function (x) { return nameKey(x) === pname; }) && !confirm('Der Patient "' + pname + '" ist nicht angelegt. Der Termin kann dann keiner Akte zugeordnet werden. Trotzdem speichern?')) return;
   var ev = {
     date: datum, time: zeit, dur: dur,
-    patient: document.getElementById('t-patient').value,
+    patient: pname,
     behandlung: document.getElementById('t-behandlung').value || document.getElementById('t-leistung').value || 'Beratung',
     notiz: document.getElementById('t-notiz').value,
     color: document.getElementById('t-farbe').value
   };
   if (editId) {
-    ev.id = editId;
-    for (var i = 0; i < events.length; i++) if (events[i].id === editId) events[i] = ev;
+    for (var i = 0; i < events.length; i++) if (events[i].id === editId) { ev.id = editId; ev.doku = events[i].doku; ev.status = events[i].status; events[i] = ev; }
   } else {
     ev.id = nid++;
     events.push(ev);
@@ -2398,13 +2437,6 @@ function applyImport(d, inp) {
     alert('Daten wurden geladen.');
   } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); }
   if (inp) inp.value = '';
-}
-
-function saveDoku() {
-  var text = document.getElementById('doku-text').value;
-  if (!text) { alert('Bitte Dokumentationstext eingeben.'); return; }
-  alert('Behandlungsdokumentation erfolgreich gespeichert.');
-  document.getElementById('doku-text').value = '';
 }
 
 renderPatients();
