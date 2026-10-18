@@ -207,6 +207,7 @@ body.akte-open main { display:none; }
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
   <button type="button" class="nav-btn" id="btn-rechnungen" onclick="switchTab('rechnungen')">Rechnungen</button>
+  <button type="button" class="nav-btn" id="btn-leistungen" onclick="switchTab('leistungen')">Leistungen</button>
   <button type="button" class="nav-btn" id="btn-lager" onclick="switchTab('lager')">Lager</button>
 </nav>
 
@@ -299,6 +300,25 @@ body.akte-open main { display:none; }
         </table>
       </div>
       <div id="inv-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Rechnungen</div>
+    </div>
+  </div>
+
+  <!-- TAB: LEISTUNGEN -->
+  <div id="tab-leistungen" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Leistungen</span>
+        <button type="button" class="btn btn-save" onclick="openLeist(-1)">+ Neue Leistung</button>
+      </div>
+      <input type="text" id="ls-filter" class="form-control" placeholder="Leistung suchen..." autocomplete="off" oninput="renderLeist()" style="margin-bottom:12px;">
+      <div class="scroll">
+        <table class="pt" style="min-width:520px; font-size:14px;">
+          <thead><tr><th>Leistung</th><th style="width:130px;">Preis brutto</th><th style="width:90px;">MwSt</th><th style="width:130px;">Netto</th></tr></thead>
+          <tbody id="ls-table"></tbody>
+        </table>
+      </div>
+      <div id="ls-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Leistungen angelegt</div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:6px;">Diese Leistungen erscheinen im Termin und in der Rechnung. Wählst Du dort eine Leistung, füllt sich der Preis automatisch.</div>
     </div>
   </div>
 
@@ -482,6 +502,23 @@ body.akte-open main { display:none; }
   </div>
 </div>
 
+<!-- MODAL: LEISTUNG -->
+<div id="modal-leist" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="ls-title">Neue Leistung</strong><button type="button" class="close-btn" onclick="closeModal('modal-leist')">&times;</button></div>
+    <div class="form-group"><label>Bezeichnung *</label><input type="text" id="ls-name" class="form-control" autocomplete="off"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Preis brutto in Euro *</label><input type="text" id="ls-price" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>MwSt</label><select id="ls-rate" class="form-control"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
+    </div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-leist')">Abbrechen</button>
+      <button type="button" id="ls-del" class="btn btn-del" style="display:none;" onclick="deleteLeist()">Löschen</button>
+      <button type="button" class="btn btn-save" onclick="saveLeist()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: PRAXISDATEN -->
 <div id="modal-settings" class="modal-overlay">
   <div class="modal-box">
@@ -504,10 +541,7 @@ body.akte-open main { display:none; }
     <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
     <div class="form-group"><label>Adresse von sendmail.php</label><input type="text" id="s-mailurl" class="form-control" placeholder="https://www.kreuzberg-aesthetik.de/app/sendmail.php" autocomplete="off"></div>
     <div class="form-group"><label>Zugangscode</label><input type="password" id="s-mailtoken" class="form-control" autocomplete="off"></div>
-    <div class="ak-h">Leistungskatalog (Preise brutto)</div>
-    <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Leistungen mit Preis. In der Rechnung füllt sich der Preis automatisch, sobald Du die Leistung wählst.</div>
-    <div id="s-kat"></div>
-    <div class="add-row" onclick="katRows.push({ name: '', price: '', rate: '19' }); renderKat()">+ Leistung hinzufügen</div>
+    <div style="font-size:12px; color:#64748b; margin-top:6px;">Die Leistungen mit Preisen pflegst Du jetzt im Reiter Leistungen.</div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-settings')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveSettings()">Speichern</button></div>
   </div>
 </div>
@@ -647,6 +681,7 @@ function switchTab(tabId) {
   closeModal('modal-akte');
   if (tabId === 'start' && typeof renderHome === 'function') renderHome();
   if (tabId === 'lager' && typeof renderLager === 'function') renderLager();
+  if (tabId === 'leistungen' && typeof renderLeist === 'function') renderLeist();
   var c = document.querySelectorAll('.tab-content');
   for (var i = 0; i < c.length; i++) c[i].classList.remove('active');
   var b = document.querySelectorAll('.nav-btn');
@@ -1161,18 +1196,6 @@ function invState(inv) {
   return { txt: 'Offen', cls: 'badge-amber', full: false };
 }
 
-var katRows = [];
-function renderKat() {
-  var box = document.getElementById('s-kat'); box.innerHTML = '';
-  katRows.forEach(function (k, i) {
-    var row = mk('div', 'inv-row'); row.style.gridTemplateColumns = '1fr 84px 62px 24px';
-    var a = mk('input', 'form-control'); a.type = 'text'; a.placeholder = 'Leistung'; a.value = k.name; a.oninput = function () { k.name = a.value; };
-    var p = mk('input', 'form-control'); p.type = 'text'; p.inputMode = 'decimal'; p.placeholder = 'Preis €'; p.value = k.price; p.oninput = function () { k.price = p.value; };
-    var rt = mk('select', 'form-control'); ['19', '7', '0'].forEach(function (v) { var o = mk('option', '', v + ' %'); o.value = v; rt.appendChild(o); }); rt.value = String(k.rate); rt.onchange = function () { k.rate = rt.value; };
-    var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Entfernen'; x.onclick = function () { katRows.splice(i, 1); renderKat(); };
-    [a, p, rt, x].forEach(function (c) { row.appendChild(c); }); box.appendChild(row);
-  });
-}
 function refreshLeistungen() {
   var dl = document.getElementById('t-leistung-list'); if (!dl) return;
   var names = ['Botulinumtoxin', 'Hyaluronsäure', 'Beratungsgespräch', 'Kontrolle'];
@@ -1183,8 +1206,44 @@ function findKat(name) {
   var n = String(name || '').trim().toLowerCase();
   return (settings.katalog || []).filter(function (k) { return k.name.trim().toLowerCase() === n; })[0];
 }
+var lsIdx = -1;
+function renderLeist() {
+  var tb = document.getElementById('ls-table'); if (!tb) return;
+  tb.innerHTML = '';
+  var q = (document.getElementById('ls-filter').value || '').trim().toLowerCase(), list = settings.katalog || [];
+  document.getElementById('ls-empty').style.display = list.length ? 'none' : 'block';
+  list.forEach(function (k, i) {
+    if (q && k.name.toLowerCase().indexOf(q) < 0) return;
+    var row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
+    var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c0.appendChild(b);
+    c1.textContent = eur(k.price); c2.textContent = k.rate + ' %'; c3.textContent = eur(k.price / (1 + k.rate / 100));
+  });
+  if (list.length && !tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
+}
+function openLeist(i) {
+  lsIdx = i; var k = i >= 0 ? settings.katalog[i] : null;
+  document.getElementById('ls-title').textContent = k ? 'Leistung bearbeiten' : 'Neue Leistung';
+  document.getElementById('ls-name').value = k ? k.name : '';
+  document.getElementById('ls-price').value = k ? nf(k.price) : '';
+  document.getElementById('ls-rate').value = k ? String(k.rate) : '19';
+  document.getElementById('ls-del').style.display = k ? '' : 'none';
+  openModal('modal-leist');
+}
+function saveLeist() {
+  var name = document.getElementById('ls-name').value.trim(), price = r2(numIn(document.getElementById('ls-price').value)), rate = parseInt(document.getElementById('ls-rate').value, 10);
+  if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
+  if (price <= 0) { alert('Bitte einen Preis größer als 0 eingeben.'); return; }
+  if (settings.katalog.some(function (k, j) { return j !== lsIdx && k.name.trim().toLowerCase() === name.toLowerCase(); })) { alert('Eine Leistung mit dieser Bezeichnung gibt es schon.'); return; }
+  var k = { name: name, price: price, rate: rate };
+  if (lsIdx >= 0) settings.katalog[lsIdx] = k; else settings.katalog.push(k);
+  persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
+}
+function deleteLeist() {
+  if (lsIdx < 0 || !confirm('Leistung "' + settings.katalog[lsIdx].name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return;
+  settings.katalog.splice(lsIdx, 1);
+  persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
+}
 function openSettings() {
-  katRows = (settings.katalog || []).map(function (k) { return { name: k.name, price: String(k.price).replace('.', ','), rate: String(k.rate) }; }); renderKat();
   var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { document.getElementById(id).value = settings[m[id]] || ''; });
   openModal('modal-settings');
@@ -1192,7 +1251,6 @@ function openSettings() {
 function saveSettings() {
   var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { settings[m[id]] = document.getElementById(id).value.trim(); });
-  settings.katalog = katRows.filter(function (k) { return k.name.trim() && numIn(k.price) > 0; }).map(function (k) { return { name: k.name.trim(), price: numIn(k.price), rate: parseInt(k.rate, 10) }; });
   persist(); refreshLeistungen(); closeModal('modal-settings');
 }
 function newRow(type) { return type === 'rabatt' ? { type: 'rabatt', text: 'Rabatt', pct: '', rate: '19' } : { type: 'pos', text: '', qty: '1', price: '', rate: '19' }; }
@@ -2467,7 +2525,7 @@ function applyImport(d, inp) {
     events.forEach(function (e) { if (e.id > m) m = e.id; });
     events.forEach(function (e) { if (!e.id) e.id = ++m; });
     nid = m + 1;
-    persist(); renderPatients(); renderCal(); renderInvoices(); refreshLeistungen(); renderLager();
+    persist(); renderPatients(); renderCal(); renderInvoices(); refreshLeistungen(); renderLager(); renderLeist();
     alert('Daten wurden geladen.');
   } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); }
   if (inp) inp.value = '';
