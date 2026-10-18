@@ -110,6 +110,8 @@ textarea.form-control { font-size:15px; }
 .pt td { background:#f8f8f8; padding:12px 16px; border:2px solid #e5e5e5; vertical-align:top; color:#222; }
 .pt .pn { color:#5b6f95; cursor:pointer; background:none; border:none; font-size:15px; padding:0; text-align:left; font-family:inherit; }
 .pt .pn:hover { text-decoration:underline; }
+.pn { color:#5b6f95; cursor:pointer; background:none; border:none; font-size:15px; padding:0; text-align:left; font-family:inherit; }
+.pn:hover { text-decoration:underline; }
 .pt .pl { color:#5b6f95; margin-top:6px; display:flex; align-items:center; gap:8px; }
 .pt .pl svg { width:18px; height:18px; flex:none; color:#475569; }
 .pt .pl a { color:#5b6f95; text-decoration:none; }
@@ -206,6 +208,7 @@ body.akte-open main { display:none; }
   <button type="button" class="nav-btn active" id="btn-start" onclick="switchTab('start')">Start</button>
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
+  <button type="button" class="nav-btn" id="btn-medien" onclick="switchTab('medien')">Medien</button>
   <button type="button" class="nav-btn" id="btn-rechnungen" onclick="switchTab('rechnungen')">Rechnungen</button>
   <button type="button" class="nav-btn" id="btn-leistungen" onclick="switchTab('leistungen')">Leistungen</button>
   <button type="button" class="nav-btn" id="btn-lager" onclick="switchTab('lager')">Lager</button>
@@ -286,6 +289,23 @@ body.akte-open main { display:none; }
           <tbody id="patient-table"></tbody>
         </table>
       </div>
+    </div>
+  </div>
+
+  <!-- TAB: MEDIEN -->
+  <div id="tab-medien" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Medien und Dokumente</span></div>
+      <div class="cal-bar">
+        <input type="text" id="md-filter" class="form-control" placeholder="Patient oder Dateiname suchen..." autocomplete="off" oninput="medLimit = 30; renderMedien()" style="flex:1 1 220px;">
+        <div class="seg">
+          <button type="button" id="md-alle" onclick="setMedFilter('alle')">Alle</button>
+          <button type="button" id="md-bild" onclick="setMedFilter('bild')">Bilder</button>
+          <button type="button" id="md-dok" onclick="setMedFilter('dok')">Dokumente</button>
+        </div>
+      </div>
+      <div id="md-sum" style="font-size:13px; color:#64748b; margin:4px 0 12px;"></div>
+      <div id="md-list"></div>
     </div>
   </div>
 
@@ -457,6 +477,11 @@ body.akte-open main { display:none; }
     </div>
   </div>
 
+  <div id="a-fin-block" class="card">
+    <div class="card-header" style="margin-bottom:6px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Finanzen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="openInvoice(curP)">+ Rechnung</button></div>
+    <div id="a-fin"></div>
+  </div>
+
   <div class="card">
     <div class="ak-h" style="margin-top:0;">Zeitleiste</div>
     <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
@@ -465,9 +490,10 @@ body.akte-open main { display:none; }
       <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('bild')">+ Bild</div>
       <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('dokument')">+ Dokument</div>
     </div>
+    <div class="add-row" style="margin:0 0 8px;" onclick="autoZu()">Dateien automatisch dem Termin am selben Tag zuordnen</div>
     <div id="a-dok-pick" class="pick-box" style="display:none;">
       <div class="pick-h">Dokument hinzufügen</div>
-      <button type="button" class="btn btn-secondary" style="width:100%;" onclick="document.getElementById('a-doc-in').click()">Datei aus dem Gerät wählen</button>
+      <button type="button" class="btn btn-secondary" style="width:100%;" onclick="zuNext = null; document.getElementById('a-doc-in').click()">Datei aus dem Gerät wählen</button>
       <div style="font-size:12px; font-weight:700; color:#475569; margin:12px 0 6px;">Aus Vorlage</div>
       <div id="a-tpl-list"></div>
       <div class="foot-bar" style="margin-top:14px; padding-top:12px;">
@@ -676,8 +702,24 @@ body.akte-open main { display:none; }
 </div>
 
 <!-- MODAL: BILD GROSS -->
-<div id="modal-img" class="modal-overlay" style="z-index:60;" onclick="closeModal('modal-img')">
-  <img id="img-big" alt="" style="max-width:100%; max-height:90vh; border-radius:8px; background:#fff;">
+<div id="modal-img" class="modal-overlay" style="z-index:60; flex-direction:column; gap:12px;" onclick="closeModal('modal-img')">
+  <img id="img-big" alt="" style="max-width:100%; max-height:80vh; border-radius:8px; background:#fff;">
+  <div id="img-bar" onclick="event.stopPropagation()" style="display:flex; gap:8px; align-items:center; color:#fff; flex-wrap:wrap; justify-content:center;">
+    <button type="button" class="btn btn-secondary" onclick="galStep(-1)" aria-label="Zurück">&lsaquo;</button>
+    <span id="img-cnt"></span>
+    <button type="button" class="btn btn-secondary" onclick="galStep(1)" aria-label="Weiter">&rsaquo;</button>
+    <button type="button" class="btn btn-del" onclick="galDelete()">Löschen</button>
+  </div>
+</div>
+
+<!-- MODAL: ZUORDNEN -->
+<div id="modal-zu" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Zuordnen</strong><button type="button" class="close-btn" onclick="closeModal('modal-zu')">&times;</button></div>
+    <div style="font-size:13px; color:#475569; margin-bottom:10px;" id="zu-info"></div>
+    <div class="form-group"><label>Gehört zu</label><select id="zu-sel" class="form-control"></select></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-zu')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveZu()">Speichern</button></div>
+  </div>
 </div>
 
 <script>
@@ -686,6 +728,7 @@ function switchTab(tabId) {
   if (tabId === 'start' && typeof renderHome === 'function') renderHome();
   if (tabId === 'lager' && typeof renderLager === 'function') renderLager();
   if (tabId === 'leistungen' && typeof renderLeist === 'function') renderLeist();
+  if (tabId === 'medien' && typeof renderMedien === 'function') renderMedien();
   var c = document.querySelectorAll('.tab-content');
   for (var i = 0; i < c.length; i++) c[i].classList.remove('active');
   var b = document.querySelectorAll('.nav-btn');
@@ -2090,6 +2133,7 @@ function tlRow(it) {
     sh.body.appendChild(line);
     sh.body.appendChild(docBox('e' + e.id, e.doku, 'Dokumentation zum Termin ' + fmtTermin(e), 'Dokumentation für diesen Termin hinzufügen',
       function (t) { e.doku = t; }, null, renderVerlauf));
+    sh.body.appendChild(attachBlock(curP, 'e' + e.id));
     var pb = mk('button', 'btn btn-secondary', '+ Produkt verwenden'); pb.type = 'button'; pb.style.cssText = 'padding:6px 10px; font-size:13px; margin-top:8px;';
     pb.onclick = function () { openVb(e.id); };
     sh.body.appendChild(pb);
@@ -2115,29 +2159,15 @@ function tlRow(it) {
       function (t) { d.text = t; },
       function () { if (!d.text) curP.doku = curP.doku.filter(function (y) { return y !== d; }); },
       renderVerlauf));
-  } else if (it.t === 'bild') {
-    var b = it.b;
-    sh = tlShell(it.k, 'Bild');
-    sh.body.appendChild(xBtn(function () {
-      if (!confirm('Bild löschen?')) return;
-      fDel(b.id); curP.bilder = curP.bilder.filter(function (y) { return y.id !== b.id; }); persist(); renderVerlauf();
-    }));
-    sh.body.appendChild(mk('div', '', b.name || ''));
-    var im = document.createElement('img'); im.className = 'tl-thumb'; im.alt = b.name || '';
-    fileURL(b).then(function (u) { if (u) { im.src = u; im.onclick = function () { showImg(u); }; } });
-    sh.body.appendChild(im);
-    sh.row.firstChild.style.cursor = 'pointer'; sh.row.firstChild.title = 'Datum ändern'; sh.row.firstChild.onclick = function () { editFileDate(b); };
-  } else if (it.t === 'dokument') {
-    var dd = it.d;
-    sh = tlShell(it.k, 'Dokument');
-    sh.body.appendChild(xBtn(function () {
-      if (!confirm('Dokument löschen?')) return;
-      fDel(dd.id); curP.dokumente = curP.dokumente.filter(function (y) { return y.id !== dd.id; }); persist(); renderVerlauf();
-    }));
-    var a = mk('a', '', dd.name); a.href = '#'; a.style.color = '#5b6f95';
-    fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
-    sh.body.appendChild(a);
-    sh.row.firstChild.style.cursor = 'pointer'; sh.row.firstChild.title = 'Datum ändern'; sh.row.firstChild.onclick = function () { editFileDate(dd); };
+    sh.body.appendChild(attachBlock(curP, 'd' + d.ts));
+  } else if (it.t === 'medien' || it.t === 'dateien') {
+    var gr = it.g;
+    sh = tlShell(it.k, (it.t === 'medien' ? 'Bilder' : 'Dokumente') + ' (' + gr.list.length + ')');
+    sh.body.appendChild(fileBody(curP, gr.list, it.t === 'medien' ? 'bild' : 'dok'));
+    var zb = mk('button', 'btn btn-secondary', 'Zuordnen'); zb.type = 'button'; zb.style.cssText = 'padding:6px 10px; font-size:13px; margin-top:8px;';
+    zb.onclick = function () { openZu(curP, gr.list); };
+    sh.body.appendChild(zb);
+    sh.row.firstChild.style.cursor = 'pointer'; sh.row.firstChild.title = 'Datum ändern'; sh.row.firstChild.onclick = function () { editGroupDate(gr.list); };
   } else if (it.t === 'rechnung') {
     var iv = it.inv;
     sh = tlShell(it.k, 'Rechnung');
@@ -2156,11 +2186,12 @@ function tlRow(it) {
   return sh.row;
 }
 function renderVerlauf() {
+  renderFin();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
   events.forEach(function (e) { if (e.patient === name) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
   (curP.doku || []).forEach(function (d) { items.push({ k: d.ts, t: 'doku', d: d }); });
-  (curP.bilder || []).forEach(function (b) { items.push({ k: tsOf(b), t: 'bild', b: b }); });
-  (curP.dokumente || []).forEach(function (d) { items.push({ k: tsOf(d), t: 'dokument', d: d }); });
+  fileGroups(curP, 'bild').forEach(function (g) { if (!g.zu) items.push({ k: g.k, t: 'medien', g: g }); });
+  fileGroups(curP, 'dok').forEach(function (g) { if (!g.zu) items.push({ k: g.k, t: 'dateien', g: g }); });
   (curP.log || []).forEach(function (l) { if (!(l.type === 'mail' && /^E-Mail-Fenster/.test(l.text))) items.push({ k: l.ts, t: l.type, l: l }); });
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
   lager.verbrauch.forEach(function (v) { if (v.pid === curP.id) items.push({ k: v.ts, t: 'verbrauch', v: v }); });
@@ -2193,10 +2224,11 @@ function readImg(f) {
 }
 function addImages(inp) {
   var files = [].slice.call(inp.files || []); inp.value = '';
+  var zu = zuNext; zuNext = null;
   if (!files.length) return;
   var p = curP, base = Date.now();
   Promise.all(files.map(function (f, i) {
-    return readImg(f).then(function (b) { if (!b) return null; var id = newId(); return fPut(id, f.name, b).then(function (ok) { return ok ? { id: id, ts: base + i, name: f.name } : null; }); });
+    return readImg(f).then(function (b) { if (!b) return null; var id = newId(); return fPut(id, f.name, b).then(function (ok) { return ok ? { id: id, ts: base + i, name: f.name, zu: zu || undefined } : null; }); });
   })).then(function (res) {
     var ok = res.filter(Boolean);
     p.bilder = (p.bilder || []).concat(ok);
@@ -2206,12 +2238,13 @@ function addImages(inp) {
 }
 function addDocs(inp, key) {
   var files = [].slice.call(inp.files || []); inp.value = '';
+  var zu = zuNext; zuNext = null;
   if (!files.length) return;
   var p = curP, skipped = 0, base = Date.now();
   Promise.all(files.map(function (f, i) {
     if (f.size > 31457280) { skipped++; return Promise.resolve(null); }
     var id = newId();
-    return fPut(id, f.name, f).then(function (ok) { if (!ok) { skipped++; return null; } return { id: id, ts: base + i, name: f.name }; });
+    return fPut(id, f.name, f).then(function (ok) { if (!ok) { skipped++; return null; } return { id: id, ts: base + i, name: f.name, zu: key === 'templates' ? undefined : (zu || undefined) }; });
   })).then(function (res) {
     var ok = res.filter(Boolean);
     if (key === 'templates') templates = templates.concat(ok);
@@ -2220,7 +2253,196 @@ function addDocs(inp, key) {
     if (skipped) alert(skipped + ' Datei(en) sind größer als 30 MB oder konnten nicht gespeichert werden.');
   });
 }
-function showImg(url) { document.getElementById('img-big').src = url; openModal('modal-img'); }
+/* ===== Medien: Gruppen, Galerie, Zuordnung ===== */
+var zuNext = null, gal = null, zuCtx = null, medFilter = 'alle', medLimit = 30;
+function validZu(p) {
+  var v = {}, n = nameKey(p);
+  events.forEach(function (e) { if (e.patient === n) v['e' + e.id] = 1; });
+  (p.doku || []).forEach(function (d) { v['d' + d.ts] = 1; });
+  return v;
+}
+function zuLabel(p, key) {
+  if (key.charAt(0) === 'e') { var e = events.filter(function (x) { return 'e' + x.id === key; })[0]; return e ? 'Termin ' + fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') : ''; }
+  var d = (p.doku || []).filter(function (x) { return 'd' + x.ts === key; })[0];
+  return d ? 'Dokumentation ' + fmtDT(d.ts) : '';
+}
+/* Dateien eines Patienten bündeln: gleiche Zuordnung oder gleicher Tag */
+function fileGroups(p, kind) {
+  var arr = (kind === 'bild' ? p.bilder : p.dokumente) || [], valid = validZu(p), byZu = {}, out = [], last = null;
+  arr.slice().sort(function (a, b) { return tsOf(a) - tsOf(b); }).forEach(function (a) {
+    if (a.zu && valid[a.zu]) {
+      var g = byZu[a.zu];
+      if (!g) { g = byZu[a.zu] = { kind: kind, p: p, zu: a.zu, list: [], k: 0 }; out.push(g); }
+      g.list.push(a); g.k = Math.max(g.k, tsOf(a)); return;
+    }
+    if (last && iso(new Date(tsOf(a))) === iso(new Date(tsOf(last.list[last.list.length - 1])))) { last.list.push(a); last.k = tsOf(a); }
+    else { last = { kind: kind, p: p, zu: '', list: [a], k: tsOf(a) }; out.push(last); }
+  });
+  return out;
+}
+function autoZu() {
+  var p = curP, n = nameKey(p), days = {}, valid = validZu(p), c = 0;
+  events.forEach(function (e) { if (e.patient === n) (days[e.date] = days[e.date] || []).push(e); });
+  (p.bilder || []).concat(p.dokumente || []).forEach(function (x) {
+    if (x.zu && valid[x.zu]) return;
+    var l = days[iso(new Date(tsOf(x)))];
+    if (l && l.length === 1) { x.zu = 'e' + l[0].id; c++; }
+  });
+  persist(); renderVerlauf();
+  alert(c ? c + ' Datei(en) wurden dem Termin am selben Tag zugeordnet.' : 'Es wurde keine freie Datei mit genau einem Termin am selben Tag gefunden.');
+}
+function refreshFiles() {
+  persist();
+  if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
+  if (document.getElementById('tab-medien').classList.contains('active')) renderMedien();
+}
+function mediaGrid(p, list) {
+  var g = mk('div', 'media');
+  list.forEach(function (b, i) {
+    var im = document.createElement('img'); im.alt = b.name || ''; im.loading = 'lazy';
+    fileURL(b).then(function (u) { if (u) im.src = u; });
+    im.onclick = function () { showGallery(p, list, i); };
+    g.appendChild(im);
+  });
+  return g;
+}
+function docList(p, list) {
+  var ul = mk('div');
+  list.forEach(function (dd) {
+    var r = mk('div'); r.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid #f1f5f9;';
+    var a = mk('a', '', dd.name); a.href = '#'; a.style.cssText = 'color:#5b6f95; word-break:break-word;';
+    fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
+    var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Löschen';
+    x.onclick = function () { if (!confirm('Dokument "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); };
+    r.appendChild(a); r.appendChild(x); ul.appendChild(r);
+  });
+  return ul;
+}
+function fileBody(p, list, kind) { return kind === 'bild' ? mediaGrid(p, list) : docList(p, list); }
+/* Dateien, die zu einem Termin oder einer Dokumentation gehören, direkt dort anzeigen */
+function attachBlock(p, key) {
+  var imgs = (p.bilder || []).filter(function (x) { return x.zu === key; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
+  var docs = (p.dokumente || []).filter(function (x) { return x.zu === key; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
+  var box = mk('div'); box.style.marginTop = '8px';
+  if (imgs.length) box.appendChild(mediaGrid(p, imgs));
+  if (docs.length) box.appendChild(docList(p, docs));
+  var bar = mk('div'); bar.style.cssText = 'display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;';
+  [['+ Foto', 'a-img-in'], ['+ Dokument', 'a-doc-in']].forEach(function (c) {
+    var b = mk('button', 'btn btn-secondary', c[0]); b.type = 'button'; b.style.cssText = 'padding:6px 10px; font-size:13px;';
+    b.onclick = function () { zuNext = key; document.getElementById(c[1]).click(); }; bar.appendChild(b);
+  });
+  if (imgs.length + docs.length) {
+    var zb = mk('button', 'btn btn-secondary', 'Zuordnung ändern'); zb.type = 'button'; zb.style.cssText = 'padding:6px 10px; font-size:13px;';
+    zb.onclick = function () { openZu(p, imgs.concat(docs)); }; bar.appendChild(zb);
+  }
+  box.appendChild(bar); return box;
+}
+function editGroupDate(list) {
+  var first = list.reduce(function (m, x) { return Math.min(m, tsOf(x)); }, Infinity), c = new Date(first);
+  var def = pad(c.getDate()) + '.' + pad(c.getMonth() + 1) + '.' + c.getFullYear() + ' ' + pad(c.getHours()) + ':' + pad(c.getMinutes());
+  var v = prompt('Datum und Uhrzeit (TT.MM.JJJJ HH:MM)' + (list.length > 1 ? ' für alle ' + list.length + ' Einträge:' : ':'), def); if (v === null) return;
+  var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(v.trim());
+  var d = m ? new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)) : null;
+  if (!d || d.getMonth() !== +m[2] - 1) { alert('Bitte Datum und Uhrzeit im Format TT.MM.JJJJ HH:MM eingeben.'); return; }
+  var delta = d.getTime() - first;
+  list.forEach(function (x) { x.ts = tsOf(x) + delta; });
+  refreshFiles();
+}
+/* Galerie */
+function showGallery(p, list, i) { gal = { p: p, list: list.slice(), i: i }; galShow(); openModal('modal-img'); }
+function galShow() {
+  var r = gal.list[gal.i], im = document.getElementById('img-big');
+  im.removeAttribute('src'); document.getElementById('img-cnt').textContent = (gal.i + 1) + ' / ' + gal.list.length + (r.name ? '  ·  ' + r.name : '');
+  fileURL(r).then(function (u) { if (u && gal && gal.list[gal.i] === r) im.src = u; });
+}
+function galStep(n) { if (!gal) return; gal.i = (gal.i + n + gal.list.length) % gal.list.length; galShow(); }
+function galDelete() {
+  if (!gal || !confirm('Dieses Bild löschen?')) return;
+  var r = gal.list[gal.i], p = gal.p;
+  fDel(r.id); p.bilder = p.bilder.filter(function (y) { return y.id !== r.id; });
+  gal.list.splice(gal.i, 1);
+  if (!gal.list.length) { closeModal('modal-img'); gal = null; } else { gal.i = Math.min(gal.i, gal.list.length - 1); galShow(); }
+  refreshFiles();
+}
+document.addEventListener('keydown', function (ev) {
+  if (!gal || !document.getElementById('modal-img').classList.contains('active')) return;
+  if (ev.key === 'ArrowLeft') galStep(-1); else if (ev.key === 'ArrowRight') galStep(1);
+});
+/* Zuordnen */
+function openZu(p, list) {
+  zuCtx = { p: p, list: list };
+  var sel = document.getElementById('zu-sel'); sel.innerHTML = '';
+  var o0 = mk('option', '', 'Keine Zuordnung (frei in der Zeitleiste)'); o0.value = ''; sel.appendChild(o0);
+  var n = nameKey(p), day = iso(new Date(tsOf(list[0])));
+  events.filter(function (e) { return e.patient === n; }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
+    .forEach(function (e) { var o = mk('option', '', 'Termin ' + fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung')); o.value = 'e' + e.id; sel.appendChild(o); });
+  (p.doku || []).slice().sort(function (a, b) { return b.ts - a.ts; }).forEach(function (d) {
+    var o = mk('option', '', 'Dokumentation ' + fmtDT(d.ts) + ' · ' + String(d.text || '').split('\n')[0].slice(0, 40)); o.value = 'd' + d.ts; sel.appendChild(o);
+  });
+  var cur = list[0].zu || '';
+  if (!cur) { var same = events.filter(function (e) { return e.patient === n && e.date === day; })[0]; if (same) cur = 'e' + same.id; }
+  sel.value = cur;
+  document.getElementById('zu-info').textContent = list.length + (list.length === 1 ? ' Datei' : ' Dateien') + ' vom ' + fmtDT(tsOf(list[0])) + (cur && !list[0].zu ? '. Vorschlag: Termin am selben Tag.' : '.');
+  openModal('modal-zu');
+}
+function saveZu() {
+  var v = document.getElementById('zu-sel').value;
+  zuCtx.list.forEach(function (x) { if (v) x.zu = v; else delete x.zu; });
+  closeModal('modal-zu'); refreshFiles();
+}
+/* Reiter Medien: alles an einem Ort */
+function setMedFilter(f) { medFilter = f; medLimit = 30; renderMedien(); }
+function renderMedien() {
+  var box = document.getElementById('md-list'); if (!box) return;
+  ['alle', 'bild', 'dok'].forEach(function (k) { document.getElementById('md-' + k).className = medFilter === k ? 'on' : ''; });
+  var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), groups = [], nb = 0, nd = 0;
+  patients.forEach(function (p) {
+    var kinds = medFilter === 'alle' ? ['bild', 'dok'] : [medFilter];
+    kinds.forEach(function (k) {
+      fileGroups(p, k).forEach(function (g) {
+        if (q && nameKey(p).toLowerCase().indexOf(q) < 0 && !g.list.some(function (x) { return String(x.name || '').toLowerCase().indexOf(q) >= 0; })) return;
+        groups.push(g); if (k === 'bild') nb += g.list.length; else nd += g.list.length;
+      });
+    });
+  });
+  groups.sort(function (a, b) { return b.k - a.k; });
+  document.getElementById('md-sum').textContent = nb + ' Bild(er) und ' + nd + ' Dokument(e)' + (q ? ' gefunden' : ' insgesamt');
+  box.innerHTML = '';
+  if (!groups.length) { box.appendChild(mk('div', 'hm-empty', 'Keine Dateien gefunden')); return; }
+  groups.slice(0, medLimit).forEach(function (g) {
+    var c = mk('div'); c.style.cssText = 'border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:10px;';
+    var h = mk('div'); h.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;';
+    var nb2 = mk('button', 'pn', nameKey(g.p)); nb2.type = 'button'; nb2.style.fontWeight = '700'; nb2.onclick = function () { viewAkte(g.p); };
+    var meta = mk('span', '', (g.kind === 'bild' ? 'Bilder' : 'Dokumente') + ' (' + g.list.length + ') · ' + fmtDT(g.k).replace(/^[^,]+, /, ''));
+    meta.style.cssText = 'font-size:12px; color:#64748b;';
+    h.appendChild(nb2); h.appendChild(meta); c.appendChild(h);
+    if (g.zu) { var zl = mk('div', '', zuLabel(g.p, g.zu)); zl.style.cssText = 'font-size:12px; color:#047857; margin-bottom:6px;'; c.appendChild(zl); }
+    c.appendChild(fileBody(g.p, g.list, g.kind));
+    var zb = mk('button', 'btn btn-secondary', 'Zuordnen'); zb.type = 'button'; zb.style.cssText = 'padding:6px 10px; font-size:13px; margin-top:8px;';
+    zb.onclick = function () { openZu(g.p, g.list); }; c.appendChild(zb);
+    box.appendChild(c);
+  });
+  if (groups.length > medLimit) { var mb = mk('button', 'btn btn-secondary', 'Mehr anzeigen (' + (groups.length - medLimit) + ')'); mb.type = 'button'; mb.onclick = function () { medLimit += 30; renderMedien(); }; box.appendChild(mb); }
+}
+/* Finanzen pro Patient */
+function renderFin() {
+  var box = document.getElementById('a-fin'); if (!box || !curP) return;
+  box.innerHTML = '';
+  var list = invoices.filter(function (i) { return i.pid === curP.id; }).sort(function (a, b) { return b.date.localeCompare(a.date) || b.created - a.created; });
+  if (!list.length) { box.appendChild(mk('div', 'hm-empty', 'Noch keine Rechnungen')); return; }
+  var tot = 0, paid = 0;
+  list.forEach(function (i) { tot += i.total; paid += (i.payments || []).length ? paidSum(i) : (i.paid ? i.total : 0); });
+  var open = r2(tot - paid), st = mk('div'); st.style.cssText = 'display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;';
+  [['Gesamt', eur(tot)], ['Bezahlt', eur(paid)], ['Offen', eur(open)]].forEach(function (x) {
+    var d = mk('div', 'hm-stat'); d.style.minWidth = '110px'; d.appendChild(mk('span', '', x[0])); d.firstChild.style.cssText = 'font-size:12px; color:#64748b;';
+    var b = mk('b', '', x[1]); if (x[0] === 'Offen' && open > 0.005) b.style.color = '#b45309'; d.appendChild(b); st.appendChild(d);
+  });
+  box.appendChild(st);
+  list.forEach(function (i) {
+    var s2 = invState(i), badge = mk('span', 'badge ' + s2.cls, s2.txt);
+    box.appendChild(hmRow(fmtD(i.date), i.nr, (i.items || []).map(function (x) { return x.text; }).slice(0, 2).join(', '), function () { viewInvoice(i.id); }, (function () { var w = mk('div'); w.style.textAlign = 'right'; w.appendChild(mk('b', '', eur(i.total))); w.appendChild(document.createElement('br')); w.appendChild(badge); return w; })()));
+  });
+}
 function renderPick() {
   document.getElementById('a-dok-pick').style.display = dokPick ? 'block' : 'none';
   var tl = document.getElementById('a-tpl-list'); tl.innerHTML = '';
@@ -2275,7 +2497,7 @@ function aAct(x) {
     openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true);
     document.getElementById('t-patient').value = nameKey(p);
   }
-  else if (x === 'bild') document.getElementById('a-img-in').click();
+  else if (x === 'bild') { zuNext = null; document.getElementById('a-img-in').click(); }
   else if (x === 'dokument') { dokPick = true; renderPick(); }
   else if (x === 'mail') openMail();
   else if (x === 'produkt') openVb(null);
