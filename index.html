@@ -272,7 +272,7 @@ body.akte-open main { display:none; }
         <span class="card-title">Patientenverwaltung</span>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button type="button" class="btn btn-secondary" onclick="document.getElementById('pimp-file').click()">Importieren</button>
-          <input type="file" id="pimp-file" accept=".json,.zip,application/json,application/zip" style="display:none" onchange="importPatienten(this)">
+          <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
           <button type="button" class="btn" onclick="openModal('modal-patient')">+ Neuer Patient</button>
         </div>
       </div>
@@ -2483,17 +2483,24 @@ function readZip(buf) {
   return Promise.all(jobs).then(function () { return out; });
 }
 function importPatienten(inp) {
-  var f = inp.files[0]; if (!f) return;
-  var isZip = /\.zip$/i.test(f.name), r = new FileReader();
+  var fl = [].slice.call(inp.files || []); if (!fl.length) return;
   var fail = function () { alert('Die Datei konnte nicht gelesen werden.'); inp.value = ''; };
-  r.onerror = fail;
-  r.onload = function () {
-    var p0 = isZip
-      ? readZip(r.result).then(function (m) { if (!m['manifest.json']) throw new Error('manifest'); return m['manifest.json'].text().then(function (t) { return { d: JSON.parse(t), files: m }; }); })
-      : Promise.resolve().then(function () { return { d: JSON.parse(r.result), files: {} }; });
-    p0.then(function (o) { inp.value = ''; return doImportPatienten(o.d, o.files); }, fail);
-  };
-  if (isZip) r.readAsArrayBuffer(f); else r.readAsText(f);
+  var zip = fl.filter(function (f) { return /\.zip$/i.test(f.name); })[0];
+  var mf = zip ? null : fl.filter(function (f) { return /\.json$/i.test(f.name); })[0];
+  if (!zip && !mf) { alert('Bitte die ZIP-Datei wählen, oder die Datei manifest.json zusammen mit den zugehörigen Dateien.'); inp.value = ''; return; }
+  var done = function (o) { inp.value = ''; return doImportPatienten(o.d, o.files); };
+  if (zip) {
+    var r = new FileReader(); r.onerror = fail;
+    r.onload = function () {
+      readZip(r.result).then(function (m) { if (!m['manifest.json']) throw new Error('manifest'); return m['manifest.json'].text().then(function (t) { return { d: JSON.parse(t), files: m }; }); }).then(done, fail);
+    };
+    r.readAsArrayBuffer(zip);
+  } else {
+    mf.text().then(function (t) {
+      var files = {}; fl.forEach(function (f) { if (f !== mf) files[f.name] = f.type ? f : new Blob([f], { type: mimeOf(f.name) }); });
+      return { d: JSON.parse(t), files: files };
+    }).then(done, fail);
+  }
 }
 function doImportPatienten(d, files) {
   if (!d || d.format !== 'ka-patienten' || !Array.isArray(d.patients)) { alert('Das ist keine Patienten-Importdatei. Für eine komplette Sicherung nutze oben "Laden".'); return Promise.resolve(); }
@@ -2515,7 +2522,7 @@ function doImportPatienten(d, files) {
     (src.log || []).forEach(function (x, i) { p.log.push({ ts: tsParse(x.ts) + i, type: x.type === 'med' ? 'med' : 'notiz', text: T(x.text) }); });
     [['bilder', src.bilder], ['dokumente', src.dokumente]].forEach(function (kv) {
       (kv[1] || []).forEach(function (a, i) {
-        var bl = files[a.datei]; if (!bl) { miss++; return; }
+        var bl = files[a.datei] || files[String(a.datei).split('/').pop()]; if (!bl) { miss++; return; }
         var id = newId(), rec = { id: id, ts: a.ts ? tsParse(a.ts) + i : Date.now() + i, name: T(a.name) || T(a.datei) };
         p[kv[0]].push(rec);
         jobs.push(fPut(id, rec.name, new Blob([bl], { type: bl.type || mimeOf(rec.name) })).then(function (ok) { if (ok) nf++; else { p[kv[0]] = p[kv[0]].filter(function (x) { return x !== rec; }); miss++; } }));
