@@ -272,7 +272,7 @@ body.akte-open main { display:none; }
         <span class="card-title">Patientenverwaltung</span>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button type="button" class="btn btn-secondary" onclick="document.getElementById('pimp-file').click()">Importieren</button>
-          <input type="file" id="pimp-file" accept=".json,application/json" style="display:none" onchange="importPatienten(this)">
+          <input type="file" id="pimp-file" accept=".json,.zip,application/json,application/zip" style="display:none" onchange="importPatienten(this)">
           <button type="button" class="btn" onclick="openModal('modal-patient')">+ Neuer Patient</button>
         </div>
       </div>
@@ -588,7 +588,7 @@ body.akte-open main { display:none; }
     </div>
     <div id="bk-pwhint" style="margin:8px 0;"></div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="bk-newpw"> Ich habe ein neues Passwort vergeben (Datum merken)</label>
-    <div style="font-size:12px; color:#64748b; margin:6px 0;">Jede Sicherung gilt nur mit dem Passwort, mit dem sie erstellt wurde. Alte Passwörter bitte aufbewahren.</div>
+    <div style="font-size:12px; color:#64748b; margin:6px 0;">Jede Sicherung gilt nur mit dem Passwort, mit dem sie erstellt wurde. Alte Passwörter bitte aufbewahren. Fotos und Dokumente sind in der Sicherung enthalten, sie kann dadurch groß werden.</div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="bk-nopw" onchange="bkToggle()"> Ohne Passwort sichern (nicht empfohlen)</label>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-bk')">Abbrechen</button><button type="button" class="btn btn-save" onclick="doExport()">Sichern</button></div>
   </div>
@@ -1156,6 +1156,60 @@ var DOB_MSG = 'Bitte das Geburtsdatum im Format TT.MM.JJJJ eingeben, z.B. 23.09.
 function nameKey(p) { return p.vorname + ' ' + p.nachname; }
 function newId() { return Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
 function tsOf(x) { return x.ts || parseInt(String(x.id || '0').split('-')[0], 10) || 0; }
+/* ===== Dateispeicher (IndexedDB): Fotos und Dokumente liegen nicht im kleinen localStorage ===== */
+var fdb = null, urlCache = {};
+function fOpen() {
+  return new Promise(function (res) {
+    if (fdb) { res(fdb); return; }
+    try {
+      var rq = indexedDB.open('ka-files', 1);
+      rq.onupgradeneeded = function () { rq.result.createObjectStore('files', { keyPath: 'id' }); };
+      rq.onsuccess = function () { fdb = rq.result; res(fdb); };
+      rq.onerror = function () { res(null); };
+    } catch (x) { res(null); }
+  });
+}
+function fTx(mode, fn) {
+  return fOpen().then(function (db) {
+    if (!db) return null;
+    return new Promise(function (res) {
+      var tx = db.transaction('files', mode), out = null;
+      try { out = fn(tx.objectStore('files')); } catch (x) { res(null); return; }
+      tx.oncomplete = function () { res(out && out.result !== undefined ? out.result : true); };
+      tx.onerror = tx.onabort = function () { res(null); };
+    });
+  });
+}
+function fPut(id, name, blob) { return fTx('readwrite', function (s) { return s.put({ id: id, name: name, type: blob.type || '', blob: blob }); }).then(function (r) { return r !== null; }); }
+function fGet(id) { return fTx('readonly', function (s) { return s.get(id); }).then(function (r) { return r && r !== true ? r : null; }); }
+function fDel(id) { if (urlCache[id]) { URL.revokeObjectURL(urlCache[id]); delete urlCache[id]; } return fTx('readwrite', function (s) { return s.delete(id); }); }
+function fAll() { return fTx('readonly', function (s) { return s.getAll(); }).then(function (r) { return Array.isArray(r) ? r : []; }); }
+function fClear() { Object.keys(urlCache).forEach(function (k) { URL.revokeObjectURL(urlCache[k]); }); urlCache = {}; return fTx('readwrite', function (s) { return s.clear(); }); }
+function dataToBlob(url) { return fetch(url).then(function (r) { return r.blob(); }); }
+function fileURL(rec) {
+  if (rec.dataUrl) return Promise.resolve(rec.dataUrl);
+  if (urlCache[rec.id]) return Promise.resolve(urlCache[rec.id]);
+  return fGet(rec.id).then(function (f) { return f ? (urlCache[rec.id] = URL.createObjectURL(f.blob)) : null; });
+}
+function fileBlob(rec) { return rec.dataUrl ? dataToBlob(rec.dataUrl) : fGet(rec.id).then(function (f) { return f ? f.blob : null; }); }
+function mimeOf(n) { n = String(n).toLowerCase(); return /\.pdf$/.test(n) ? 'application/pdf' : /\.jpe?g$/.test(n) ? 'image/jpeg' : /\.png$/.test(n) ? 'image/png' : 'application/octet-stream'; }
+/* alte Einträge mit eingebetteten Daten in den Dateispeicher verschieben */
+function migrateFiles() {
+  var jobs = [];
+  function mig(rec) { if (rec && rec.dataUrl) jobs.push(dataToBlob(rec.dataUrl).then(function (b) { return fPut(rec.id, rec.name, b); }).then(function (ok) { if (ok) delete rec.dataUrl; }).catch(function () {})); }
+  patients.forEach(function (p) { (p.bilder || []).forEach(mig); (p.dokumente || []).forEach(mig); });
+  templates.forEach(mig);
+  if (!jobs.length) return Promise.resolve();
+  return Promise.all(jobs).then(function () { persist(); });
+}
+function editFileDate(rec) {
+  var c = new Date(tsOf(rec)), def = pad(c.getDate()) + '.' + pad(c.getMonth() + 1) + '.' + c.getFullYear() + ' ' + pad(c.getHours()) + ':' + pad(c.getMinutes());
+  var v = prompt('Datum und Uhrzeit (TT.MM.JJJJ HH:MM):', def); if (v === null) return;
+  var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(v.trim());
+  var d = m ? new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)) : null;
+  if (!d || d.getMonth() !== +m[2] - 1) { alert('Bitte Datum und Uhrzeit im Format TT.MM.JJJJ HH:MM eingeben.'); return; }
+  rec.ts = d.getTime(); persist(); renderVerlauf();
+}
 /* ===== Rechnungen ===== */
 var invoices = [];
 try { var sinv = JSON.parse(localStorage.getItem('ka_invoices')); if (Array.isArray(sinv)) invoices = sinv; } catch (x) {}
@@ -1921,6 +1975,7 @@ function deletePatient() {
   if (lager.verbrauch.some(function (v) { return v.pid === p.id; })) { alert('Zu diesem Patienten gibt es Produktbuchungen aus dem Lager. Deshalb kann er nicht gelöscht werden.'); return; }
   var name = nameKey(p), n = events.filter(function (e) { return e.patient === name; }).length;
   if (!confirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
+  (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });
   patients = patients.filter(function (x) { return x !== p; });
   events = events.filter(function (e) { return e.patient !== name; });
   stammEdit = false; curP = null;
@@ -2065,21 +2120,24 @@ function tlRow(it) {
     sh = tlShell(it.k, 'Bild');
     sh.body.appendChild(xBtn(function () {
       if (!confirm('Bild löschen?')) return;
-      curP.bilder = curP.bilder.filter(function (y) { return y.id !== b.id; }); persist(); renderVerlauf();
+      fDel(b.id); curP.bilder = curP.bilder.filter(function (y) { return y.id !== b.id; }); persist(); renderVerlauf();
     }));
     sh.body.appendChild(mk('div', '', b.name || ''));
-    var im = document.createElement('img'); im.className = 'tl-thumb'; im.src = b.dataUrl; im.alt = b.name || '';
-    im.onclick = function () { showImg(b.dataUrl); };
+    var im = document.createElement('img'); im.className = 'tl-thumb'; im.alt = b.name || '';
+    fileURL(b).then(function (u) { if (u) { im.src = u; im.onclick = function () { showImg(u); }; } });
     sh.body.appendChild(im);
+    sh.row.firstChild.style.cursor = 'pointer'; sh.row.firstChild.title = 'Datum ändern'; sh.row.firstChild.onclick = function () { editFileDate(b); };
   } else if (it.t === 'dokument') {
     var dd = it.d;
     sh = tlShell(it.k, 'Dokument');
     sh.body.appendChild(xBtn(function () {
       if (!confirm('Dokument löschen?')) return;
-      curP.dokumente = curP.dokumente.filter(function (y) { return y.id !== dd.id; }); persist(); renderVerlauf();
+      fDel(dd.id); curP.dokumente = curP.dokumente.filter(function (y) { return y.id !== dd.id; }); persist(); renderVerlauf();
     }));
-    var a = mk('a', '', dd.name); a.href = dd.dataUrl; a.download = dd.name; a.style.color = '#5b6f95';
+    var a = mk('a', '', dd.name); a.href = '#'; a.style.color = '#5b6f95';
+    fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
     sh.body.appendChild(a);
+    sh.row.firstChild.style.cursor = 'pointer'; sh.row.firstChild.title = 'Datum ändern'; sh.row.firstChild.onclick = function () { editFileDate(dd); };
   } else if (it.t === 'rechnung') {
     var iv = it.inv;
     sh = tlShell(it.k, 'Rechnung');
@@ -2122,11 +2180,11 @@ function readImg(f) {
     return new Promise(function (res) {
       var im = new Image();
       im.onload = function () {
-        var sc = Math.min(1, 1200 / Math.max(im.width, im.height));
+        var sc = Math.min(1, 2000 / Math.max(im.width, im.height));
         var c = document.createElement('canvas');
         c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc);
         c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-        res(c.toDataURL('image/jpeg', 0.8));
+        c.toBlob(function (b) { res(b); }, 'image/jpeg', 0.85);
       };
       im.onerror = function () { res(null); };
       im.src = url;
@@ -2138,10 +2196,12 @@ function addImages(inp) {
   if (!files.length) return;
   var p = curP, base = Date.now();
   Promise.all(files.map(function (f, i) {
-    return readImg(f).then(function (u) { return u ? { id: newId(), ts: base + i, name: f.name, dataUrl: u } : null; });
+    return readImg(f).then(function (b) { if (!b) return null; var id = newId(); return fPut(id, f.name, b).then(function (ok) { return ok ? { id: id, ts: base + i, name: f.name } : null; }); });
   })).then(function (res) {
-    p.bilder = (p.bilder || []).concat(res.filter(Boolean));
+    var ok = res.filter(Boolean);
+    p.bilder = (p.bilder || []).concat(ok);
     persist(); if (curP === p) renderVerlauf();
+    if (ok.length < files.length) alert((files.length - ok.length) + ' Bild(er) konnten nicht gespeichert werden.');
   });
 }
 function addDocs(inp, key) {
@@ -2149,14 +2209,15 @@ function addDocs(inp, key) {
   if (!files.length) return;
   var p = curP, skipped = 0, base = Date.now();
   Promise.all(files.map(function (f, i) {
-    if (f.size > 1048576) { skipped++; return Promise.resolve(null); }
-    return readFileURL(f).then(function (u) { return u ? { id: newId(), ts: base + i, name: f.name, dataUrl: u } : null; });
+    if (f.size > 31457280) { skipped++; return Promise.resolve(null); }
+    var id = newId();
+    return fPut(id, f.name, f).then(function (ok) { if (!ok) { skipped++; return null; } return { id: id, ts: base + i, name: f.name }; });
   })).then(function (res) {
     var ok = res.filter(Boolean);
     if (key === 'templates') templates = templates.concat(ok);
     else { p.dokumente = (p.dokumente || []).concat(ok); dokPick = false; }
     persist(); if (curP === p) { renderPick(); renderVerlauf(); }
-    if (skipped) alert(skipped + ' Datei(en) sind größer als 1 MB und wurden nicht gespeichert.');
+    if (skipped) alert(skipped + ' Datei(en) sind größer als 30 MB oder konnten nicht gespeichert werden.');
   });
 }
 function showImg(url) { document.getElementById('img-big').src = url; openModal('modal-img'); }
@@ -2171,13 +2232,17 @@ function renderPick() {
     var row = document.createElement('div'); row.style.cssText = 'display:flex; gap:6px; margin-bottom:6px;';
     var b = mk('button', 'btn btn-secondary', t.name); b.type = 'button'; b.style.cssText = 'flex:1; text-align:left;';
     b.onclick = function () {
-      curP.dokumente = (curP.dokumente || []).concat([{ id: newId(), ts: Date.now(), name: t.name, dataUrl: t.dataUrl }]);
-      dokPick = false; persist(); renderPick(); renderVerlauf();
+      var p = curP, id = newId();
+      fileBlob(t).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
+        if (!ok) { alert('Die Vorlage konnte nicht übernommen werden.'); return; }
+        p.dokumente = (p.dokumente || []).concat([{ id: id, ts: Date.now(), name: t.name }]);
+        dokPick = false; persist(); if (curP === p) { renderPick(); renderVerlauf(); }
+      });
     };
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Vorlage löschen';
     x.onclick = function () {
       if (!confirm('Vorlage "' + t.name + '" löschen? Bereits zugeordnete Dokumente bleiben erhalten.')) return;
-      templates = templates.filter(function (y) { return y.id !== t.id; }); persist(); renderPick();
+      fDel(t.id); templates = templates.filter(function (y) { return y.id !== t.id; }); persist(); renderPick();
     };
     row.appendChild(b); row.appendChild(x); tl.appendChild(row);
   });
@@ -2397,33 +2462,76 @@ function tsParse(v) {
   var m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(v || ''));
   return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime() : Date.now();
 }
+/* ZIP lesen (gespeichert oder deflate), ohne Fremdbibliothek */
+function readZip(buf) {
+  var dv = new DataView(buf), u8 = new Uint8Array(buf), dec = new TextDecoder('utf-8'), i = buf.byteLength - 22;
+  while (i >= 0 && dv.getUint32(i, true) !== 0x06054b50) i--;
+  if (i < 0) return Promise.reject(new Error('zip'));
+  var n = dv.getUint16(i + 10, true), p = dv.getUint32(i + 16, true), jobs = [], out = {};
+  for (var k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    var meth = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    var name = dec.decode(u8.subarray(p + 46, p + 46 + nl));
+    p += 46 + nl + el + cl;
+    var ds = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true), raw = u8.subarray(ds, ds + csz);
+    (function (nm, m, rw) {
+      if (/\/$/.test(nm)) return;
+      if (m === 0) out[nm] = new Blob([rw], { type: mimeOf(nm) });
+      else if (m === 8) jobs.push(new Response(new Blob([rw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob().then(function (b) { out[nm] = new Blob([b], { type: mimeOf(nm) }); }));
+    })(name, meth, raw);
+  }
+  return Promise.all(jobs).then(function () { return out; });
+}
 function importPatienten(inp) {
   var f = inp.files[0]; if (!f) return;
-  var r = new FileReader();
+  var isZip = /\.zip$/i.test(f.name), r = new FileReader();
+  var fail = function () { alert('Die Datei konnte nicht gelesen werden.'); inp.value = ''; };
+  r.onerror = fail;
   r.onload = function () {
-    var d; try { d = JSON.parse(r.result); } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); inp.value = ''; return; }
-    if (!d || d.format !== 'ka-patienten' || !Array.isArray(d.patients)) { alert('Das ist keine Patienten-Importdatei. Für eine komplette Sicherung nutze oben "Laden".'); inp.value = ''; return; }
-    var added = 0, ev = 0, T = function (v) { return String(v == null ? '' : v); };
-    d.patients.forEach(function (src) {
-      var name = (T(src.vorname) + ' ' + T(src.nachname)).trim();
-      if (!T(src.vorname).trim() || !T(src.nachname).trim()) return;
-      if (patients.some(function (x) { return nameKey(x).toLowerCase() === name.toLowerCase(); }) && !confirm('Einen Patienten "' + name + '" gibt es schon. Trotzdem als weiteren Patienten hinzufügen?')) return;
-      var p = { anrede: T(src.anrede), vorname: T(src.vorname).trim(), nachname: T(src.nachname).trim(), dob: T(src.dob), phone: T(src.phone), email: T(src.email), adresse: T(src.adresse), allergien: T(src.allergien), notizen: T(src.notizen), medikation: [], doku: [], log: [], erstellt: tsParse(src.erstellt) };
-      (src.medikation || []).forEach(function (m) { p.medikation.push(T(m)); });
-      (src.doku || []).forEach(function (x, i) { p.doku.push({ ts: tsParse(x.ts) + i, text: T(x.text) }); });
-      (src.log || []).forEach(function (x, i) { var t = x.type === 'med' ? 'med' : 'notiz'; p.log.push({ ts: tsParse(x.ts) + i, type: t, text: T(x.text) }); });
-      patients.push(p); ensurePatients(); added++;
-      (src.termine || []).forEach(function (t) {
-        var dt = tsParse(t.ts), dd = new Date(dt);
-        events.push({ id: nid++, date: iso(dd), time: pad(dd.getHours()) + ':' + pad(dd.getMinutes()), dur: +t.dur || 60, patient: nameKey(p), behandlung: T(t.behandlung) || 'Beratung', notiz: T(t.notiz), doku: t.doku ? T(t.doku) : undefined, color: '#2f9e44' });
-        ev++;
+    var p0 = isZip
+      ? readZip(r.result).then(function (m) { if (!m['manifest.json']) throw new Error('manifest'); return m['manifest.json'].text().then(function (t) { return { d: JSON.parse(t), files: m }; }); })
+      : Promise.resolve().then(function () { return { d: JSON.parse(r.result), files: {} }; });
+    p0.then(function (o) { inp.value = ''; return doImportPatienten(o.d, o.files); }, fail);
+  };
+  if (isZip) r.readAsArrayBuffer(f); else r.readAsText(f);
+}
+function doImportPatienten(d, files) {
+  if (!d || d.format !== 'ka-patienten' || !Array.isArray(d.patients)) { alert('Das ist keine Patienten-Importdatei. Für eine komplette Sicherung nutze oben "Laden".'); return Promise.resolve(); }
+  var added = 0, ev = 0, nf = 0, miss = 0, jobs = [], T = function (v) { return String(v == null ? '' : v); };
+  d.patients.forEach(function (src) {
+    var name = (T(src.vorname) + ' ' + T(src.nachname)).trim();
+    if (!T(src.vorname).trim() || !T(src.nachname).trim()) return;
+    var old = patients.filter(function (x) { return nameKey(x).toLowerCase() === name.toLowerCase(); })[0];
+    if (old && !confirm('Einen Patienten "' + name + '" gibt es schon.\n\nOK = seine bisherigen Daten (Termine, Dokumentation, Dateien) durch die Importdaten ersetzen.\nAbbrechen = diesen Patienten überspringen.')) return;
+    var p = { anrede: T(src.anrede), vorname: T(src.vorname).trim(), nachname: T(src.nachname).trim(), dob: T(src.dob), phone: T(src.phone), email: T(src.email), adresse: T(src.adresse), allergien: T(src.allergien), notizen: T(src.notizen), medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: tsParse(src.erstellt) };
+    if (old) {
+      p.id = old.id;
+      (old.bilder || []).concat(old.dokumente || []).forEach(function (x) { fDel(x.id); });
+      patients = patients.filter(function (x) { return x !== old; });
+      events = events.filter(function (e) { return e.patient !== nameKey(old); });
+    }
+    (src.medikation || []).forEach(function (m) { p.medikation.push(T(m)); });
+    (src.doku || []).forEach(function (x, i) { p.doku.push({ ts: tsParse(x.ts) + i, text: T(x.text) }); });
+    (src.log || []).forEach(function (x, i) { p.log.push({ ts: tsParse(x.ts) + i, type: x.type === 'med' ? 'med' : 'notiz', text: T(x.text) }); });
+    [['bilder', src.bilder], ['dokumente', src.dokumente]].forEach(function (kv) {
+      (kv[1] || []).forEach(function (a, i) {
+        var bl = files[a.datei]; if (!bl) { miss++; return; }
+        var id = newId(), rec = { id: id, ts: a.ts ? tsParse(a.ts) + i : Date.now() + i, name: T(a.name) || T(a.datei) };
+        p[kv[0]].push(rec);
+        jobs.push(fPut(id, rec.name, new Blob([bl], { type: bl.type || mimeOf(rec.name) })).then(function (ok) { if (ok) nf++; else { p[kv[0]] = p[kv[0]].filter(function (x) { return x !== rec; }); miss++; } }));
       });
     });
-    inp.value = '';
-    persist(); renderPatients(); renderCal();
-    alert(added + ' Patient(en) und ' + ev + ' Termin(e) wurden hinzugefügt.');
-  };
-  r.readAsText(f);
+    patients.push(p); ensurePatients(); added++;
+    (src.termine || []).forEach(function (t) {
+      var dt = tsParse(t.ts), dd = new Date(dt);
+      events.push({ id: nid++, date: iso(dd), time: pad(dd.getHours()) + ':' + pad(dd.getMinutes()), dur: +t.dur || 60, patient: nameKey(p), behandlung: T(t.behandlung) || 'Beratung', notiz: T(t.notiz), doku: t.doku ? T(t.doku) : undefined, color: '#2f9e44' });
+      ev++;
+    });
+  });
+  return Promise.all(jobs).then(function () {
+    persist(); renderPatients(); renderCal(); if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
+    alert(added + ' Patient(en), ' + ev + ' Termin(e) und ' + nf + ' Datei(en) wurden hinzugefügt.' + (miss ? '\n' + miss + ' Datei(en) konnten nicht übernommen werden.' : ''));
+  });
 }
 function savePatient() {
   var g = function (id) { return document.getElementById(id).value.trim(); };
@@ -2510,6 +2618,12 @@ function exportData() {
   else { hint.textContent = 'Passwort vergeben vor ' + pdays + ' Tagen, Wechsel in ' + (28 - pdays) + ' Tagen.'; hint.className = ''; hint.style.fontSize = '12px'; hint.style.color = '#64748b'; }
   openModal('modal-bk');
 }
+function blobB64(b) { return new Promise(function (res) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1] || ''); }; r.onerror = function () { res(''); }; r.readAsDataURL(b); }); }
+function restoreFiles(list) {
+  return fClear().then(function () {
+    return Promise.all(list.map(function (f) { return dataToBlob('data:' + (f.type || 'application/octet-stream') + ';base64,' + f.data).then(function (b) { return fPut(f.id, f.name, b); }); }));
+  });
+}
 function bkToggle() { document.getElementById('bk-pwbox').style.display = document.getElementById('bk-nopw').checked ? 'none' : 'block'; }
 async function doExport() {
   var nopw = document.getElementById('bk-nopw').checked, pw = document.getElementById('bk-pw').value;
@@ -2518,7 +2632,9 @@ async function doExport() {
     if (pw !== document.getElementById('bk-pw2').value) { alert('Die beiden Passwörter stimmen nicht überein.'); return; }
     if (!(window.crypto && crypto.subtle)) { alert('Verschlüsseln ist in dieser Ansicht nicht verfügbar.'); return; }
   }
-  var data = { version: 1, exportiert: new Date().toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager };
+  var files = [];
+  try { var all = await fAll(); for (var fi = 0; fi < all.length; fi++) files.push({ id: all[fi].id, name: all[fi].name, type: all[fi].type, data: await blobB64(all[fi].blob) }); } catch (x) { alert('Die Fotos und Dokumente konnten nicht gelesen werden.'); return; }
+  var data = { version: 2, exportiert: new Date().toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager, files: files };
   var text = JSON.stringify(data, null, nopw ? 2 : 0);
   try { if (!nopw) text = await encryptBackup(text, pw); } catch (x) { alert('Das Verschlüsseln hat nicht geklappt.'); return; }
   var ok = await saveBackupFile('kreuzberg-aesthetik-backup-' + iso(new Date()) + (nopw ? '' : '-verschluesselt') + '.json', text);
@@ -2564,7 +2680,7 @@ function applyImport(d, inp) {
     events.forEach(function (e) { if (!e.id) e.id = ++m; });
     nid = m + 1;
     persist(); renderPatients(); renderCal(); renderInvoices(); refreshLeistungen(); renderLager(); renderLeist();
-    alert('Daten wurden geladen.');
+    Promise.resolve(Array.isArray(d.files) ? restoreFiles(d.files) : null).then(migrateFiles).then(function () { alert('Daten wurden geladen.'); }, function () { alert('Die Daten wurden geladen, aber nicht alle Fotos und Dokumente.'); });
   } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); }
   if (inp) inp.value = '';
 }
@@ -2574,6 +2690,7 @@ renderCal();
 renderInvoices();
 refreshLeistungen();
 renderHome();
+migrateFiles();
 </script>
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
 </body>
