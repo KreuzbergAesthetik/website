@@ -515,6 +515,10 @@ body.akte-open main { display:none; }
     <div class="form-group"><label>PayPal (E-Mail)</label><input type="text" id="s-paypal" class="form-control"></div>
     <div class="form-group"><label>Standard-Hinweis zur Umsatzsteuer</label><textarea id="s-hinweis" class="form-control" rows="2"></textarea></div>
     <div class="form-group"><label>Standard-Zahlungshinweis</label><textarea id="s-zahlung" class="form-control" rows="2"></textarea></div>
+    <div class="ak-h">E-Mail-Versand (optional)</div>
+    <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
+    <div class="form-group"><label>Adresse von sendmail.php</label><input type="text" id="s-mailurl" class="form-control" placeholder="https://www.kreuzberg-aesthetik.de/app/sendmail.php" autocomplete="off"></div>
+    <div class="form-group"><label>Zugangscode</label><input type="password" id="s-mailtoken" class="form-control" autocomplete="off"></div>
     <div class="ak-h">Leistungskatalog (Preise brutto)</div>
     <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Leistungen mit Preis. In der Rechnung füllt sich der Preis automatisch, sobald Du die Leistung wählst.</div>
     <div id="s-kat"></div>
@@ -649,12 +653,10 @@ function switchTab(tabId) {
   for (var j = 0; j < b.length; j++) b[j].classList.remove('active');
   document.getElementById('tab-' + tabId).classList.add('active');
   document.getElementById('btn-' + tabId).classList.add('active');
+  if (tabId === 'start') histClean(); else histPush();
 }
-function openModal(id) { document.getElementById(id).classList.add('active'); syncLock(); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
-var patients = [
-  { anrede: 'Frau', vorname: 'Maria', nachname: 'Schmidt', dob: '12.04.1985', phone: '+49 170 1234567', email: '', allergien: 'Keine', notizen: 'Botulinumtoxin Glabella' },
-  { anrede: 'Herr', vorname: 'Stefan', nachname: 'Weber', dob: '23.09.1978', phone: '+49 171 9876543', email: '', allergien: 'Pollenallergie', notizen: 'Hyaluronsäure Lippen' }
-];
+function openModal(id) { document.getElementById(id).classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
+var patients = [];
 try { var sp = JSON.parse(localStorage.getItem('ka_patients')); if (Array.isArray(sp)) patients = sp; } catch (x) {}
 ensurePatients();
 var lager = { produkte: [], chargen: [], verbrauch: [] };
@@ -722,8 +724,21 @@ function renderPatients() {
   });
   if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
 }
+var hasEntry = false, silentPop = false;
+function anyOverlay() { return !!document.querySelector('.modal-overlay.active, .akte-page.active') || !document.getElementById('tab-start').classList.contains('active'); }
+function histPush() { if (!hasEntry) { try { history.pushState({ ka: 1 }, ''); hasEntry = true; } catch (x) {} } }
+function histClean() { setTimeout(function () { if (hasEntry && !anyOverlay()) { silentPop = true; hasEntry = false; history.back(); } }, 60); }
+window.addEventListener('popstate', function () {
+  if (silentPop) { silentPop = false; return; }
+  hasEntry = false;
+  var open = [].slice.call(document.querySelectorAll('.modal-overlay.active'));
+  if (open.length) { var top = open[open.length - 1]; if (top.id === 'modal-termin') closeTermin(); else closeModal(top.id); }
+  else if (document.getElementById('modal-akte').classList.contains('active')) closeModal('modal-akte');
+  else if (!document.getElementById('tab-start').classList.contains('active')) { switchTab('start'); return; }
+  if (anyOverlay()) histPush();
+});
 function syncLock() { document.body.style.overflow = document.querySelector('.modal-overlay.active') ? 'hidden' : ''; }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); window.scrollTo(0, 0); } }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); histClean(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); window.scrollTo(0, 0); } }
 
 /* ===== Kalender ===== */
 var H = 48, START = 8, END = 20, DSTART = 8, DEND = 20, view = 'tag', cur = new Date();
@@ -735,10 +750,7 @@ function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return
 function monday(d) { return addDays(d, -((d.getDay() + 6) % 7)); }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
-var events = [
-  { date: iso(new Date()), time: '09:00', dur: 30, patient: 'Maria Schmidt', behandlung: 'Botulinumtoxin Glabella', status: 'Gebucht' },
-  { date: iso(new Date()), time: '10:30', dur: 60, patient: 'Stefan Weber', behandlung: 'Hyaluronsäure Lippen', status: 'Bestätigt' }
-];
+var events = [];
 
 events.forEach(function (e, i) { e.id = i + 1; });
 try { var se = JSON.parse(localStorage.getItem('ka_events')); if (Array.isArray(se)) events = se; } catch (x) {}
@@ -1173,12 +1185,12 @@ function findKat(name) {
 }
 function openSettings() {
   katRows = (settings.katalog || []).map(function (k) { return { name: k.name, price: String(k.price).replace('.', ','), rate: String(k.rate) }; }); renderKat();
-  var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung' };
+  var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { document.getElementById(id).value = settings[m[id]] || ''; });
   openModal('modal-settings');
 }
 function saveSettings() {
-  var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung' };
+  var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { settings[m[id]] = document.getElementById(id).value.trim(); });
   settings.katalog = katRows.filter(function (k) { return k.name.trim() && numIn(k.price) > 0; }).map(function (k) { return { name: k.name.trim(), price: numIn(k.price), rate: parseInt(k.rate, 10) }; });
   persist(); refreshLeistungen(); closeModal('modal-settings');
@@ -1731,10 +1743,17 @@ function printInvoice() {
   try { window.print(); } catch (x) { alert('Drucken ist in dieser Ansicht nicht verfügbar.'); }
 }
 
-/* E-Mail-Versand: Der Versand über den IONOS-Server der Praxisadresse ist noch nicht angebunden. */
+/* E-Mail-Versand: über sendmail.php auf dem Webspace der Praxis (Praxisdaten), sonst über das Mailprogramm des Geräts */
 function sendViaServer(mail) {
-  // Hier später die Anbindung an den Mailserver einfügen. Bis dahin wird nichts gesendet.
-  return Promise.reject(new Error('nicht angebunden'));
+  var url = (settings.mailUrl || '').trim();
+  if (url) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: settings.mailToken || '', an: mail.an, betreff: mail.betreff, text: mail.text }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || !j.ok) throw new Error(j.error || 'Fehler ' + r.status); return { via: 'server' }; }); });
+  }
+  var href = 'mailto:' + encodeURIComponent(mail.an) + '?subject=' + encodeURIComponent(mail.betreff) + '&body=' + encodeURIComponent(mail.text);
+  if (href.length > 1800) return Promise.reject(new Error('Der Text ist für das Mailprogramm zu lang. Bitte kürzen oder den Mailversand in den Praxisdaten einrichten.'));
+  window.location.href = href;
+  return Promise.resolve({ via: 'mailto' });
 }
 function openMail() {
   document.getElementById('m-an').value = curP.email || '';
@@ -1749,11 +1768,14 @@ function sendMail() {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(an)) { alert('Bitte eine gültige E-Mail-Adresse eingeben.'); return; }
   if (!betreff) { alert('Bitte einen Betreff eingeben.'); return; }
   var p = curP;
-  sendViaServer({ von: 'manuel.fella@kreuzberg-aesthetik.de', an: an, betreff: betreff, text: text }).then(function () {
-    p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'E-Mail gesendet an ' + an + '\nBetreff: ' + betreff + (text ? '\n' + text : '') }]);
+  var btn = document.querySelector('#modal-mail .btn-save'); btn.disabled = true;
+  sendViaServer({ von: PRAXIS.mail, an: an, betreff: betreff, text: text }).then(function (r) {
+    btn.disabled = false;
+    p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: (r.via === 'mailto' ? 'E-Mail im Mailprogramm vorbereitet für ' : 'E-Mail gesendet an ') + an + '\nBetreff: ' + betreff + (text ? '\n' + text : '') }]);
     persist(); closeModal('modal-mail'); if (curP === p) renderVerlauf();
-  }, function () {
-    alert('Der Mailversand ist noch nicht eingerichtet. Es wurde nichts gesendet und nichts in die Zeitleiste eingetragen. Dein Text bleibt hier erhalten.');
+  }, function (err) {
+    btn.disabled = false;
+    alert('Die E-Mail wurde nicht gesendet und nichts in die Zeitleiste eingetragen. ' + (err && err.message ? err.message + ' ' : '') + 'Dein Text bleibt hier erhalten.');
   });
 }
 function logMailSent(p, betreff, text) {
@@ -1787,7 +1809,8 @@ function renderHead() {
     var fb = mk('div', 'foot-bar');
     var cb = mk('button', 'btn btn-cancel', 'Abbrechen'); cb.type = 'button'; cb.onclick = function () { cancelStamm(); };
     var sbn = mk('button', 'btn btn-save', 'Speichern'); sbn.type = 'button'; sbn.onclick = function () { toggleStamm(); };
-    fb.appendChild(cb); fb.appendChild(sbn); box.appendChild(fb);
+    var db = mk('button', 'btn btn-del', 'Patient löschen'); db.type = 'button'; db.onclick = function () { deletePatient(); };
+    fb.appendChild(cb); fb.appendChild(db); fb.appendChild(sbn); box.appendChild(fb);
     return;
   }
   var age = ageOf(p.dob);
@@ -1829,6 +1852,17 @@ function toggleStamm() {
   var nn = nameKey(curP);
   if (nn !== old) events.forEach(function (e) { if (e.patient === old) e.patient = nn; });
   persist(); renderPatients(); renderCal(); viewAkte(curP);
+}
+function deletePatient() {
+  var p = curP;
+  if (invoices.some(function (i) { return i.pid === p.id; })) { alert('Zu diesem Patienten gibt es Rechnungen. Diese müssen aufbewahrt werden, deshalb kann er nicht gelöscht werden.'); return; }
+  if (lager.verbrauch.some(function (v) { return v.pid === p.id; })) { alert('Zu diesem Patienten gibt es Produktbuchungen aus dem Lager. Deshalb kann er nicht gelöscht werden.'); return; }
+  var name = nameKey(p), n = events.filter(function (e) { return e.patient === name; }).length;
+  if (!confirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
+  patients = patients.filter(function (x) { return x !== p; });
+  events = events.filter(function (e) { return e.patient !== name; });
+  stammEdit = false; curP = null;
+  persist(); renderPatients(); renderCal(); closeModal('modal-akte');
 }
 function cancelStamm() { stammEdit = false; renderHead(); }
 function viewAkte(p) {
