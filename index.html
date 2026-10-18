@@ -194,6 +194,7 @@ body.akte-open main { display:none; }
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
   <button type="button" class="nav-btn" id="btn-rechnungen" onclick="switchTab('rechnungen')">Rechnungen</button>
+  <button type="button" class="nav-btn" id="btn-lager" onclick="switchTab('lager')">Lager</button>
 </nav>
 
 <main>
@@ -213,6 +214,7 @@ body.akte-open main { display:none; }
       </div>
     </div>
     <div id="hm-backup"></div>
+    <div id="hm-lager"></div>
     <div class="card"><div class="card-header"><span class="card-title">Heute</span></div><div id="hm-today"></div></div>
     <div class="hm-grid">
       <div class="card"><div class="card-header"><span class="card-title">Offene Punkte</span></div>
@@ -297,6 +299,27 @@ body.akte-open main { display:none; }
     </div>
   </div>
 
+  <!-- TAB 5: LAGER -->
+  <div id="tab-lager" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Produktlager</span></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+        <button type="button" class="btn btn-save" onclick="openWare()">+ Wareneingang</button>
+        <button type="button" class="btn btn-secondary" onclick="openProdukt(null)">+ Neues Produkt</button>
+      </div>
+      <div id="lg-warn"></div>
+      <div class="scroll">
+        <table class="pt" style="min-width:680px; font-size:14px;">
+          <thead><tr><th>Produkt</th><th>Bestand</th><th>Mindestmenge</th><th>Nächster Verfall</th><th>EK netto</th><th>VK netto</th><th>Marge</th></tr></thead>
+          <tbody id="lg-table"></tbody>
+        </table>
+      </div>
+      <div id="lg-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Produkte angelegt</div>
+      <div id="lg-sum" style="font-size:13px; color:#475569; margin-top:10px;"></div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:6px;">Preise netto je Einheit. Marge = (VK minus letzter EK) geteilt durch VK.</div>
+    </div>
+  </div>
+
 </main>
 
 <!-- MODAL: NEUER PATIENT -->
@@ -373,6 +396,7 @@ body.akte-open main { display:none; }
           <button type="button" onclick="aAct('mail')">E-Mail senden</button>
           <button type="button" onclick="aAct('bild')">Bilder hinzufügen</button>
           <button type="button" onclick="aAct('dokument')">Dokument hinzufügen</button>
+          <button type="button" onclick="aAct('produkt')">Produkt verwenden</button>
           <button type="button" onclick="aAct('rechnung')">Rechnung erstellen</button>
         </div>
       </div>
@@ -535,6 +559,65 @@ body.akte-open main { display:none; }
   </div>
 </div>
 
+<!-- MODAL: PRODUKT -->
+<div id="modal-produkt" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="lp-title">Neues Produkt</strong><button type="button" class="close-btn" onclick="closeModal('modal-produkt')">&times;</button></div>
+    <div class="form-group"><label>Produktname</label><input type="text" id="lp-name" class="form-control" autocomplete="off"></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="form-group"><label>Einheit</label><input type="text" id="lp-einheit" class="form-control" list="lp-einheiten" autocomplete="off"><datalist id="lp-einheiten"><option value="Stück"><option value="Vial"><option value="Packung"><option value="Spritze"><option value="Ampulle"><option value="ml"></datalist></div>
+      <div class="form-group"><label>Mindestmenge</label><input type="text" id="lp-min" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Einkaufspreis netto je Einheit</label><input type="text" id="lp-ek" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Verkaufspreis netto je Einheit</label><input type="text" id="lp-vk" class="form-control" inputmode="decimal"></div>
+    </div>
+    <div class="form-group"><label>Lieferant</label><input type="text" id="lp-lief" class="form-control" autocomplete="off"></div>
+    <div id="lp-chbox" style="display:none;">
+      <div style="font-weight:700; font-size:13px; margin:6px 0;">Chargen im Bestand</div>
+      <div id="lp-chargen"></div>
+    </div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-produkt')">Abbrechen</button>
+      <button type="button" id="lp-del" class="btn btn-del" style="display:none;" onclick="deleteProdukt()">Löschen</button>
+      <button type="button" class="btn btn-save" onclick="saveProdukt()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: WARENEINGANG -->
+<div id="modal-ware" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Wareneingang</strong><button type="button" class="close-btn" onclick="closeModal('modal-ware')">&times;</button></div>
+    <div class="form-group"><label>Produkt</label><select id="lw-prod" class="form-control" onchange="wareProdChanged()"></select></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="form-group"><label>Chargennummer</label><input type="text" id="lw-nr" class="form-control" autocomplete="off"></div>
+      <div class="form-group"><label>Verfallsdatum</label><input type="date" id="lw-verfall" class="form-control"></div>
+      <div class="form-group"><label>Menge</label><input type="text" id="lw-menge" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Einkaufspreis netto je Einheit</label><input type="text" id="lw-ek" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Lieferdatum</label><input type="date" id="lw-datum" class="form-control"></div>
+    </div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ware')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveWare()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PRODUKT VERWENDEN -->
+<div id="modal-vb" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Produkt verwenden</strong><button type="button" class="close-btn" onclick="closeModal('modal-vb')">&times;</button></div>
+    <div id="vb-pat" style="font-size:13px; color:#475569; margin-bottom:8px;"></div>
+    <div class="form-group"><label>Produkt</label><select id="vb-prod" class="form-control" onchange="vbProdChanged()"></select></div>
+    <div class="form-group"><label>Charge (kürzestes Verfallsdatum zuerst)</label><select id="vb-ch" class="form-control" onchange="vbChChanged()"></select></div>
+    <div class="form-group"><label>Menge <span id="vb-rest" style="font-weight:400; color:#64748b;"></span></label><input type="text" id="vb-menge" class="form-control" inputmode="decimal"></div>
+    <div class="form-group"><label>Zum Termin (optional)</label><select id="vb-termin" class="form-control"></select></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-vb')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveVb()">Abbuchen</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: E-MAIL -->
 <div id="modal-mail" class="modal-overlay">
   <div class="modal-box">
@@ -556,6 +639,7 @@ body.akte-open main { display:none; }
 function switchTab(tabId) {
   closeModal('modal-akte');
   if (tabId === 'start' && typeof renderHome === 'function') renderHome();
+  if (tabId === 'lager' && typeof renderLager === 'function') renderLager();
   var c = document.querySelectorAll('.tab-content');
   for (var i = 0; i < c.length; i++) c[i].classList.remove('active');
   var b = document.querySelectorAll('.nav-btn');
@@ -570,6 +654,8 @@ var patients = [
 ];
 try { var sp = JSON.parse(localStorage.getItem('ka_patients')); if (Array.isArray(sp)) patients = sp; } catch (x) {}
 ensurePatients();
+var lager = { produkte: [], chargen: [], verbrauch: [] };
+try { var slg = JSON.parse(localStorage.getItem('ka_lager')); if (slg && Array.isArray(slg.produkte)) lager = { produkte: slg.produkte, chargen: Array.isArray(slg.chargen) ? slg.chargen : [], verbrauch: Array.isArray(slg.verbrauch) ? slg.verbrauch : [] }; } catch (x) {}
 function persist() {
   try {
     localStorage.setItem('ka_events', JSON.stringify(events));
@@ -577,6 +663,7 @@ function persist() {
     localStorage.setItem('ka_templates', JSON.stringify(templates));
     localStorage.setItem('ka_invoices', JSON.stringify(invoices));
     localStorage.setItem('ka_settings', JSON.stringify(settings));
+    localStorage.setItem('ka_lager', JSON.stringify(lager));
   } catch (x) { alert('Der Speicher im Browser ist voll. Bitte große Dateien entfernen und eine Sicherung machen.'); }
   try { renderHome(); } catch (x) {}
 }
@@ -886,6 +973,13 @@ function renderHome() {
   if (due) {
     var w = mk('div', 'hm-warn'); w.appendChild(mk('span', '', lb === null ? 'Es gibt noch keine Datensicherung auf diesem Gerät.' : days === 1 ? 'Heute wurde noch nicht gesichert.' : 'Die letzte Datensicherung ist ' + days + ' Tage her.'));
     var sb = mk('button', 'btn btn-secondary', 'Jetzt sichern'); sb.type = 'button'; sb.style.padding = '6px 10px'; sb.onclick = function () { exportData(); }; w.appendChild(sb); bb.appendChild(w);
+  }
+  /* Lager */
+  var lgb = document.getElementById('hm-lager'); lgb.innerHTML = '';
+  var lw = lagerWarns();
+  if (lw.length) {
+    var lwd = mk('div', 'hm-warn'); lwd.appendChild(mk('span', '', 'Lager: ' + lw.map(function (x) { return x.text; }).join(', ') + '.'));
+    var lwb = mk('button', 'btn btn-secondary', 'Zum Lager'); lwb.type = 'button'; lwb.style.padding = '6px 10px'; lwb.onclick = function () { switchTab('lager'); }; lwd.appendChild(lwb); lgb.appendChild(lwd);
   }
   /* Heute */
   var te = events.filter(function (e) { return e.date === today; }).sort(function (a, b) { return a.time.localeCompare(b.time); }), nextDone = false;
@@ -1813,6 +1907,20 @@ function tlRow(it) {
     sh.body.appendChild(line);
     sh.body.appendChild(docBox('e' + e.id, e.doku, 'Dokumentation zum Termin ' + fmtTermin(e), 'Dokumentation für diesen Termin hinzufügen',
       function (t) { e.doku = t; }, null, renderVerlauf));
+    var pb = mk('button', 'btn btn-secondary', '+ Produkt verwenden'); pb.type = 'button'; pb.style.cssText = 'padding:6px 10px; font-size:13px; margin-top:8px;';
+    pb.onclick = function () { openVb(e.id); };
+    sh.body.appendChild(pb);
+  } else if (it.t === 'verbrauch') {
+    var vb = it.v;
+    sh = tlShell(it.k, 'Produkt');
+    sh.body.appendChild(xBtn(function () {
+      if (!confirm('Buchung löschen? Die Menge wird dem Lager wieder gutgeschrieben.')) return;
+      var ch = lager.chargen.filter(function (c) { return c.id === vb.chId; })[0];
+      if (ch) ch.rest = Math.round(((+ch.rest || 0) + vb.menge) * 1000) / 1000;
+      lager.verbrauch = lager.verbrauch.filter(function (y) { return y.id !== vb.id; }); persist(); renderVerlauf(); renderLager();
+    }));
+    var ev0 = vb.eid ? events.filter(function (x) { return x.id === vb.eid; })[0] : null;
+    sh.body.appendChild(mk('div', '', vb.name + ': ' + qty(vb.menge) + ' ' + (vb.einheit || '') + ' · Charge ' + (vb.nr || '-') + (vb.verfall ? ' · verwendbar bis ' + fmtD(vb.verfall) : '') + (ev0 ? ' · Termin ' + fmtTermin(ev0) : '')));
   } else if (it.t === 'doku') {
     var d = it.d;
     sh = tlShell(it.k, 'Dokumentation');
@@ -1869,6 +1977,7 @@ function renderVerlauf() {
   (curP.dokumente || []).forEach(function (d) { items.push({ k: tsOf(d), t: 'dokument', d: d }); });
   (curP.log || []).forEach(function (l) { if (!(l.type === 'mail' && /^E-Mail-Fenster/.test(l.text))) items.push({ k: l.ts, t: l.type, l: l }); });
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
+  lager.verbrauch.forEach(function (v) { if (v.pid === curP.id) items.push({ k: v.ts, t: 'verbrauch', v: v }); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
   items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = '';
@@ -1971,7 +2080,182 @@ function aAct(x) {
   else if (x === 'bild') document.getElementById('a-img-in').click();
   else if (x === 'dokument') { dokPick = true; renderPick(); }
   else if (x === 'mail') openMail();
+  else if (x === 'produkt') openVb(null);
   else if (x === 'rechnung') openInvoice(curP);
+}
+
+/* ===== Produktlager ===== */
+function lid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function num(v) { var n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
+function qty(n) { return String(Math.round((+n || 0) * 100) / 100).replace('.', ','); }
+function prodOf(id) { return lager.produkte.filter(function (p) { return p.id === id; })[0]; }
+function bestand(pid) { return lager.chargen.reduce(function (s, c) { return c.pid === pid && !(c.verfall && daysTo(c.verfall) < 0) ? s + (+c.rest || 0) : s; }, 0); }
+function daysTo(d) { return Math.round((new Date(d + 'T00:00:00') - new Date(iso(new Date()) + 'T00:00:00')) / 86400000); }
+function chargenOf(pid) {
+  return lager.chargen.filter(function (c) { return c.pid === pid && (+c.rest || 0) > 0; })
+    .sort(function (a, b) { return (a.verfall || '9999').localeCompare(b.verfall || '9999') || (a.datum || '').localeCompare(b.datum || ''); });
+}
+function lastEk(p) {
+  var cs = lager.chargen.filter(function (c) { return c.pid === p.id && c.ek !== null && c.ek !== '' && c.ek !== undefined; }).sort(function (a, b) { return (b.datum || '').localeCompare(a.datum || ''); });
+  if (cs.length) return +cs[0].ek;
+  return p.ek !== null && p.ek !== '' && p.ek !== undefined ? +p.ek : null;
+}
+function lagerWarns() {
+  var low = 0, soon = 0, exp = 0;
+  lager.produkte.forEach(function (p) {
+    var b = bestand(p.id);
+    if (p.min > 0 && b < p.min) low++;
+    chargenOf(p.id).forEach(function (c) { if (!c.verfall) return; var d = daysTo(c.verfall); if (d < 0) exp++; else if (d <= 60) soon++; });
+  });
+  var r = [];
+  if (low) r.push({ text: low + (low === 1 ? ' Produkt' : ' Produkte') + ' unter Mindestmenge' });
+  if (exp) r.push({ text: exp + (exp === 1 ? ' Charge abgelaufen' : ' Chargen abgelaufen') });
+  if (soon) r.push({ text: soon + (soon === 1 ? ' Charge läuft' : ' Chargen laufen') + ' in 60 Tagen ab' });
+  return r;
+}
+function renderLager() {
+  var tb = document.getElementById('lg-table'); if (!tb) return;
+  tb.innerHTML = '';
+  document.getElementById('lg-empty').style.display = lager.produkte.length ? 'none' : 'block';
+  var wb = document.getElementById('lg-warn'); wb.innerHTML = '';
+  lagerWarns().forEach(function (w) { var d = mk('div', 'hm-warn', w.text); wb.appendChild(d); });
+  var wert = 0;
+  lager.produkte.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); }).forEach(function (p) {
+    var b = bestand(p.id), row = tb.insertRow();
+    var c = [0, 1, 2, 3, 4, 5, 6].map(function () { return row.insertCell(); });
+    var nb = mk('button', 'pn', p.name); nb.type = 'button'; nb.onclick = function () { openProdukt(p.id); }; c[0].appendChild(nb);
+    c[1].appendChild(document.createTextNode(qty(b) + ' ' + (p.einheit || '') + ' '));
+    if (p.min > 0 && b < p.min) { var lb = mk('span', 'badge', b <= 0 ? 'leer' : 'niedrig'); lb.style.cssText = 'background:#fee2e2; color:#b91c1c;'; c[1].appendChild(lb); }
+    c[2].textContent = p.min > 0 ? qty(p.min) : '-';
+    var ch = chargenOf(p.id).filter(function (x) { return x.verfall; })[0];
+    if (ch) {
+      var dd = daysTo(ch.verfall);
+      c[3].appendChild(document.createTextNode(fmtD(ch.verfall) + ' '));
+      if (dd < 0) { var eb = mk('span', 'badge', 'abgelaufen'); eb.style.cssText = 'background:#fee2e2; color:#b91c1c;'; c[3].appendChild(eb); }
+      else if (dd <= 60) c[3].appendChild(mk('span', 'badge badge-amber', 'in ' + dd + ' Tagen'));
+    } else c[3].textContent = '-';
+    var ek = lastEk(p);
+    c[4].textContent = ek !== null ? eur(ek) : '-';
+    c[5].textContent = p.vk > 0 ? eur(p.vk) : '-';
+    c[6].textContent = (ek !== null && p.vk > 0) ? eur(p.vk - ek) + ' (' + Math.round((p.vk - ek) / p.vk * 100) + ' %)' : '-';
+    lager.chargen.forEach(function (x) { if (x.pid === p.id && x.ek !== null && x.ek !== '' && x.ek !== undefined) wert += (+x.rest || 0) * (+x.ek); });
+  });
+  document.getElementById('lg-sum').textContent = lager.produkte.length ? 'Lagerwert zum Einkaufspreis (netto): ' + eur(wert) : '';
+}
+var curProd = null;
+function openProdukt(id) {
+  curProd = id ? prodOf(id) : null;
+  var p = curProd || {};
+  document.getElementById('lp-title').textContent = p.id ? 'Produkt bearbeiten' : 'Neues Produkt';
+  document.getElementById('lp-name').value = p.name || '';
+  document.getElementById('lp-einheit').value = p.einheit || '';
+  document.getElementById('lp-min').value = p.min > 0 ? qty(p.min) : '';
+  document.getElementById('lp-ek').value = p.ek !== null && p.ek !== undefined && p.ek !== '' ? qty(p.ek) : '';
+  document.getElementById('lp-vk').value = p.vk > 0 ? qty(p.vk) : '';
+  document.getElementById('lp-lief').value = p.lief || '';
+  document.getElementById('lp-del').style.display = p.id ? '' : 'none';
+  var box = document.getElementById('lp-chbox'), list = document.getElementById('lp-chargen');
+  list.innerHTML = '';
+  if (p.id) {
+    var cs = chargenOf(p.id);
+    box.style.display = cs.length ? 'block' : 'none';
+    cs.forEach(function (c) {
+      var r = mk('div', ''); r.style.cssText = 'display:flex; gap:8px; align-items:center; justify-content:space-between; padding:6px 0; border-top:1px solid #e2e8f0; font-size:13px;';
+      r.appendChild(mk('span', '', 'Charge ' + (c.nr || '-') + (c.verfall ? ' · bis ' + fmtD(c.verfall) : '')));
+      var inp = mk('input', 'form-control'); inp.type = 'text'; inp.setAttribute('inputmode', 'decimal'); inp.style.cssText = 'width:90px;'; inp.value = qty(c.rest); inp.setAttribute('data-cid', c.id); inp.title = 'Restmenge korrigieren';
+      r.appendChild(inp); list.appendChild(r);
+    });
+  } else box.style.display = 'none';
+  openModal('modal-produkt');
+}
+function saveProdukt() {
+  var name = document.getElementById('lp-name').value.trim();
+  if (!name) { alert('Bitte einen Produktnamen eingeben.'); return; }
+  var ekv = document.getElementById('lp-ek').value.trim(), vkv = document.getElementById('lp-vk').value.trim(), mv = document.getElementById('lp-min').value.trim();
+  var ek = ekv === '' ? null : num(ekv), vk = vkv === '' ? 0 : num(vkv), mn = mv === '' ? 0 : num(mv);
+  if ((ekv !== '' && (ek === null || ek < 0)) || vk === null || vk < 0 || mn === null || mn < 0) { alert('Bitte Zahlen für Preise und Mindestmenge prüfen.'); return; }
+  var dup = lager.produkte.filter(function (p) { return p.name.toLowerCase() === name.toLowerCase() && (!curProd || p.id !== curProd.id); })[0];
+  if (dup) { alert('Ein Produkt mit diesem Namen gibt es schon.'); return; }
+  var p = curProd;
+  if (!p) { p = { id: lid() }; lager.produkte.push(p); }
+  p.name = name; p.einheit = document.getElementById('lp-einheit').value.trim(); p.min = mn; p.ek = ek; p.vk = vk; p.lief = document.getElementById('lp-lief').value.trim();
+  var bad = false;
+  [].slice.call(document.querySelectorAll('#lp-chargen input')).forEach(function (inp) {
+    var n = num(inp.value), c = lager.chargen.filter(function (x) { return x.id === inp.getAttribute('data-cid'); })[0];
+    if (!c) return; if (n === null || n < 0) { bad = true; return; } c.rest = n;
+  });
+  if (bad) { alert('Bitte die Restmengen der Chargen prüfen.'); return; }
+  persist(); renderLager(); closeModal('modal-produkt');
+}
+function deleteProdukt() {
+  if (!curProd) return;
+  if (lager.verbrauch.some(function (v) { return v.prodId === curProd.id; })) { alert('Zu diesem Produkt gibt es Buchungen bei Patienten. Setze stattdessen die Restmengen der Chargen auf 0.'); return; }
+  if (!confirm('Produkt "' + curProd.name + '" mit allen Chargen löschen?')) return;
+  var id = curProd.id;
+  lager.produkte = lager.produkte.filter(function (p) { return p.id !== id; });
+  lager.chargen = lager.chargen.filter(function (c) { return c.pid !== id; });
+  persist(); renderLager(); closeModal('modal-produkt');
+}
+function openWare() {
+  if (!lager.produkte.length) { alert('Bitte zuerst ein Produkt anlegen.'); openProdukt(null); return; }
+  var sel = document.getElementById('lw-prod'); sel.innerHTML = '';
+  lager.produkte.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); }).forEach(function (p) { var o = mk('option', '', p.name); o.value = p.id; sel.appendChild(o); });
+  ['lw-nr', 'lw-verfall', 'lw-menge'].forEach(function (i) { document.getElementById(i).value = ''; });
+  document.getElementById('lw-datum').value = iso(new Date());
+  wareProdChanged(); openModal('modal-ware');
+}
+function wareProdChanged() {
+  var p = prodOf(document.getElementById('lw-prod').value), ek = p ? lastEk(p) : null;
+  document.getElementById('lw-ek').value = ek !== null ? qty(ek) : '';
+}
+function saveWare() {
+  var p = prodOf(document.getElementById('lw-prod').value), nr = document.getElementById('lw-nr').value.trim(), m = num(document.getElementById('lw-menge').value), ekv = document.getElementById('lw-ek').value.trim(), ek = ekv === '' ? null : num(ekv);
+  if (!p) { alert('Bitte ein Produkt wählen.'); return; }
+  if (!nr) { alert('Bitte die Chargennummer eingeben. Sie wird für die Dokumentation beim Patienten gebraucht.'); return; }
+  if (m === null || m <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
+  if (ekv !== '' && (ek === null || ek < 0)) { alert('Bitte den Einkaufspreis prüfen.'); return; }
+  lager.chargen.push({ id: lid(), pid: p.id, nr: nr, verfall: document.getElementById('lw-verfall').value || '', menge: m, rest: m, ek: ek, datum: document.getElementById('lw-datum').value || iso(new Date()) });
+  persist(); renderLager(); closeModal('modal-ware');
+}
+function openVb(eid) {
+  if (!curP) return;
+  var prods = lager.produkte.filter(function (p) { return chargenOf(p.id).length; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); });
+  if (!prods.length) { alert('Im Lager ist kein Bestand vorhanden. Bitte zuerst im Reiter Lager einen Wareneingang erfassen.'); return; }
+  document.getElementById('vb-pat').textContent = 'Patient: ' + nameKey(curP);
+  var sel = document.getElementById('vb-prod'); sel.innerHTML = '';
+  prods.forEach(function (p) { var o = mk('option', '', p.name + ' (' + qty(bestand(p.id)) + ' ' + (p.einheit || '') + ')'); o.value = p.id; sel.appendChild(o); });
+  var ts = document.getElementById('vb-termin'); ts.innerHTML = '';
+  var o0 = mk('option', '', 'Kein Termin'); o0.value = ''; ts.appendChild(o0);
+  events.filter(function (e) { return e.patient === nameKey(curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung')); o.value = e.id; ts.appendChild(o); });
+  ts.value = eid ? String(eid) : '';
+  document.getElementById('vb-menge').value = '';
+  vbProdChanged(); openModal('modal-vb');
+}
+function vbProdChanged() {
+  var pid = document.getElementById('vb-prod').value, sel = document.getElementById('vb-ch'); sel.innerHTML = '';
+  chargenOf(pid).forEach(function (c) {
+    var exp = c.verfall && daysTo(c.verfall) < 0;
+    var o = mk('option', '', 'Charge ' + (c.nr || '-') + (c.verfall ? ' · bis ' + fmtD(c.verfall) : '') + (exp ? ' · ABGELAUFEN' : '') + ' · Rest ' + qty(c.rest));
+    o.value = c.id; if (exp) o.disabled = true; sel.appendChild(o);
+  });
+  var first = [].slice.call(sel.options).filter(function (o) { return !o.disabled; })[0];
+  if (first) sel.value = first.value;
+  vbChChanged();
+}
+function vbChChanged() {
+  var c = lager.chargen.filter(function (x) { return x.id === document.getElementById('vb-ch').value; })[0], p = prodOf(document.getElementById('vb-prod').value);
+  document.getElementById('vb-rest').textContent = c ? '(verfügbar: ' + qty(c.rest) + ' ' + ((p && p.einheit) || '') + ')' : '';
+}
+function saveVb() {
+  var p = prodOf(document.getElementById('vb-prod').value), c = lager.chargen.filter(function (x) { return x.id === document.getElementById('vb-ch').value; })[0], m = num(document.getElementById('vb-menge').value);
+  if (!p || !c) { alert('Bitte Produkt und Charge wählen. Abgelaufene Chargen können nicht verwendet werden.'); return; }
+  if (c.verfall && daysTo(c.verfall) < 0) { alert('Diese Charge ist abgelaufen.'); return; }
+  if (m === null || m <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
+  if (m > (+c.rest || 0) + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(c.rest) + ' ' + (p.einheit || '') + ' da.'); return; }
+  c.rest = Math.round(((+c.rest || 0) - m) * 1000) / 1000;
+  var eidv = document.getElementById('vb-termin').value;
+  lager.verbrauch.push({ id: lid(), ts: Date.now(), pid: curP.id, prodId: p.id, chId: c.id, name: p.name, einheit: p.einheit || '', nr: c.nr || '', verfall: c.verfall || '', menge: m, ek: c.ek, eid: eidv ? +eidv : null });
+  persist(); renderVerlauf(); renderLager(); closeModal('modal-vb');
 }
 
 function savePatient() {
@@ -2065,7 +2349,7 @@ async function doExport() {
     if (pw !== document.getElementById('bk-pw2').value) { alert('Die beiden Passwörter stimmen nicht überein.'); return; }
     if (!(window.crypto && crypto.subtle)) { alert('Verschlüsseln ist in dieser Ansicht nicht verfügbar.'); return; }
   }
-  var data = { version: 1, exportiert: new Date().toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings };
+  var data = { version: 1, exportiert: new Date().toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager };
   var text = JSON.stringify(data, null, nopw ? 2 : 0);
   try { if (!nopw) text = await encryptBackup(text, pw); } catch (x) { alert('Das Verschlüsseln hat nicht geklappt.'); return; }
   var ok = await saveBackupFile('kreuzberg-aesthetik-backup-' + iso(new Date()) + (nopw ? '' : '-verschluesselt') + '.json', text);
@@ -2105,11 +2389,12 @@ function applyImport(d, inp) {
     if (Array.isArray(d.invoices)) invoices = d.invoices;
     if (d.settings && typeof d.settings === 'object') settings = Object.assign(settings, d.settings);
     if (!Array.isArray(settings.katalog)) settings.katalog = [];
+    if (d.lager && Array.isArray(d.lager.produkte)) lager = { produkte: d.lager.produkte, chargen: Array.isArray(d.lager.chargen) ? d.lager.chargen : [], verbrauch: Array.isArray(d.lager.verbrauch) ? d.lager.verbrauch : [] };
     var m = 0;
     events.forEach(function (e) { if (e.id > m) m = e.id; });
     events.forEach(function (e) { if (!e.id) e.id = ++m; });
     nid = m + 1;
-    persist(); renderPatients(); renderCal(); renderInvoices(); refreshLeistungen();
+    persist(); renderPatients(); renderCal(); renderInvoices(); refreshLeistungen(); renderLager();
     alert('Daten wurden geladen.');
   } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); }
   if (inp) inp.value = '';
