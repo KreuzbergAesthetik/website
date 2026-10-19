@@ -191,11 +191,34 @@ body.akte-open main { display:none; }
 .a-contact a { color:#5b6f95; text-decoration:none; }
 .a-contact a:hover { text-decoration:underline; }
 @media (max-width:520px) { .tl-item { grid-template-columns:88px 1fr; } }
+.a-top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.a-title { flex:1; min-width:0; font-size:24px; font-weight:800; line-height:1.2; overflow-wrap:anywhere; }
+.a-pid { font-size:13px; font-weight:500; color:#94a3b8; margin-right:6px; }
+.a-tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.a-tile { position:relative; background:#f4f6f9; border:1px solid #cbd5e1; border-radius:10px; padding:10px 34px 10px 12px; min-height:104px; font-size:14px; min-width:0; }
+.a-tile h4 { font-size:13px; font-weight:800; color:#475569; margin-bottom:4px; }
+.a-tile .a-pen { position:absolute; top:4px; right:4px; }
+.a-tile .a-txt { white-space:pre-wrap; overflow-wrap:anywhere; }
+.a-tile .a-none { color:#a0aec0; }
+.a-tile.a-warn { background:#fee2e2; border-color:#fca5a5; } .a-tile.a-warn h4 { color:#b91c1c; }
+.a-tile.ed { grid-column:1 / -1; padding-right:12px; background:#fff; border-color:#64748b; }
+.a-tile .tl-ln { display:flex; align-items:center; gap:8px; margin-top:4px; }
+.a-tile .tl-ln svg { width:17px; height:17px; flex:none; color:#475569; }
+.a-tile .tl-ln a { color:#5b6f95; text-decoration:none; overflow-wrap:anywhere; }
+.a-tile ul { list-style:none; }
+.a-tile ul li { display:flex; justify-content:space-between; gap:6px; padding:2px 0; }
+.a-tile ul li button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
+.a-plusrow { display:flex; justify-content:flex-end; margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0; position:relative; }
+.a-plusrow > div { position:relative; }
+.a-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 0 14px; }
+.a-tabs button { background:#e8edf3; border:1px solid #b6c2d1; border-bottom:none; border-radius:12px 12px 0 0; padding:12px 6px; font-size:17px; font-weight:600; color:#475569; cursor:pointer; }
+.a-tabs button.on { background:#fff; color:#0f172a; font-weight:800; box-shadow:0 3px 0 #fff; position:relative; }
+@media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:20px; } .a-tabs button { font-size:15px; } }
+@media (max-width:440px) { .a-tiles { grid-template-columns:1fr; } .a-tile { min-height:0; } }
 .a-pen { width:30px; height:30px; padding:0; border:none; background:none; color:#94a3b8; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
 .a-pen svg { width:16px; height:16px; } .a-pen:hover { background:#f1f5f9; color:#475569; }
 .a-pen.on { width:38px; height:36px; background:#2f9e44; color:#fff; }
 .a-pen.on svg { width:20px; height:20px; }
-#a-editbar.editing { justify-content:space-between; margin-top:12px; }
 .pick-box { border:2px solid #64748b; background:#fff; border-radius:12px; padding:14px; margin:18px 0; box-shadow:0 4px 14px rgba(15,23,42,.15); }
 .pick-box .pick-h { font-size:14px; font-weight:700; color:#0f172a; margin-bottom:10px; }
 .foot-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:22px; padding-top:16px; border-top:1px solid #e2e8f0; }
@@ -604,8 +627,16 @@ body.akte-open main { display:none; }
 <!-- MODAL: PATIENTENAKTE -->
 <div id="modal-akte" class="akte-page">
   <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px;">
+    <div class="a-top">
       <button type="button" class="btn btn-secondary icon-btn" title="Zurück" aria-label="Zurück" onclick="closeModal('modal-akte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div id="a-title" class="a-title"></div>
+      <button type="button" id="a-edit" class="a-pen" title="Stammdaten bearbeiten" aria-label="Stammdaten bearbeiten" onclick="toggleStamm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+    </div>
+    <input type="file" id="a-img-in" accept="image/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addImages(this)">
+    <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'dokumente')">
+    <input type="file" id="a-tpl-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'templates')">
+    <div id="a-head"></div>
+    <div class="a-plusrow">
       <div style="display:flex; align-items:center; gap:8px; position:relative;">
         <button type="button" class="plus-btn" onclick="toggleAMenu(event)" aria-label="Aktionen">+</button>
         <div id="a-menu" class="a-menu" style="display:none;">
@@ -621,40 +652,38 @@ body.akte-open main { display:none; }
         </div>
       </div>
     </div>
-    <input type="file" id="a-img-in" accept="image/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addImages(this)">
-    <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'dokumente')">
-    <input type="file" id="a-tpl-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'templates')">
-    <div id="a-head"></div>
-    <div id="a-editbar" style="display:flex; justify-content:flex-end; align-items:center; gap:6px; margin-top:6px;">
-      <button type="button" id="a-edit-cancel" class="btn btn-secondary icon-btn a-cx" style="display:none;" title="Abbrechen" aria-label="Abbrechen" onclick="cancelStamm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-      <button type="button" id="a-edit" class="a-pen" title="Bearbeiten" aria-label="Bearbeiten" onclick="toggleStamm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+  </div>
+
+  <div class="a-tabs">
+    <button type="button" id="atb-akte" class="on" onclick="setAkTab('akte')">Akte</button>
+    <button type="button" id="atb-anl" onclick="setAkTab('anl')">Anlagen</button>
+    <button type="button" id="atb-fin" onclick="setAkTab('fin')">Finanzen</button>
+  </div>
+
+  <div id="at-akte">
+  <div class="card">
+    <div class="ak-h" style="margin-top:0;">Zeitleiste</div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+      <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('doku')">+ Dokumentation</div>
+      <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('termin')">+ Termin</div>
+      <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('bild')">+ Bild</div>
+      <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('dokument')">+ Dokument</div>
     </div>
-    <div id="a-notiz-block" style="display:none; margin-top:12px;">
-      <div class="ak-h">Notiz</div>
-      <p id="a-notiz-view" class="ak-p" style="cursor:pointer; white-space:pre-wrap;"></p>
-      <div id="a-notiz-add" class="add-row" onclick="notizAppend()">+ Weitere Notiz hinzufügen</div>
-      <div id="a-notiz-edit" class="ed-box" style="display:none;">
-        <textarea id="a-notiz-in" class="form-control" rows="3"></textarea>
-        <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="notizCancel()">Abbrechen</button><button type="button" class="btn btn-save" onclick="notizSave()">Speichern</button></div>
+    <div class="add-row" style="margin:0 0 8px;" onclick="autoZu()">Dateien automatisch dem Termin am selben Tag zuordnen</div>
+    <div id="a-dok-pick" class="pick-box" style="display:none;">
+      <div class="pick-h">Dokument hinzufügen</div>
+      <button type="button" class="btn btn-secondary" style="width:100%;" onclick="zuNext = null; document.getElementById('a-doc-in').click()">Datei aus dem Gerät wählen</button>
+      <div style="font-size:12px; font-weight:700; color:#475569; margin:12px 0 6px;">Aus Vorlage</div>
+      <div id="a-tpl-list"></div>
+      <div class="foot-bar" style="margin-top:14px; padding-top:12px;">
+        <button type="button" class="btn btn-secondary" onclick="dokPick=false;renderPick()">Schließen</button>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('a-tpl-in').click()">+ Vorlage hochladen</button>
       </div>
     </div>
+    <div id="a-verlauf"></div>
   </div>
-
-  <div id="a-med-block" class="card" style="display:none;">
-    <div class="ak-h" style="margin-top:0;">Medikation</div>
-    <ul id="a-med" class="ak-list"></ul>
-    <div id="a-med-add" class="add-row" onclick="medInput=true;renderMed();document.getElementById('a-med-in').focus()">+ Medikament hinzufügen</div>
-    <div id="a-med-row" style="display:none; gap:6px; margin-top:6px;">
-      <input type="text" id="a-med-in" class="form-control" placeholder="Medikament hinzufügen..." onkeydown="if(event.key==='Enter')addMed()">
-      <button type="button" class="btn" onclick="addMed()">+</button>
-    </div>
   </div>
-
-  <div id="a-fin-block" class="card">
-    <div class="card-header" style="margin-bottom:6px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Finanzen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="openInvoice(curP)">+ Rechnung</button></div>
-    <div id="a-fin"></div>
-  </div>
-
+  <div id="at-anl" style="display:none;">
   <div id="a-unt-block" class="card" style="display:none;">
     <div class="ak-h" style="margin-top:0;">Unterlagen</div>
     <div id="a-unt"></div>
@@ -680,27 +709,12 @@ body.akte-open main { display:none; }
     <div id="md-sum" style="font-size:13px; color:#64748b; margin:4px 0 10px;"></div>
     <div id="md-list"></div>
   </div>
-
-  <div class="card">
-    <div class="ak-h" style="margin-top:0;">Zeitleiste</div>
-    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
-      <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('doku')">+ Dokumentation</div>
-      <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('termin')">+ Termin</div>
-      <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('bild')">+ Bild</div>
-      <div class="add-row" style="flex:1; margin-top:0; min-width:120px;" onclick="aAct('dokument')">+ Dokument</div>
-    </div>
-    <div class="add-row" style="margin:0 0 8px;" onclick="autoZu()">Dateien automatisch dem Termin am selben Tag zuordnen</div>
-    <div id="a-dok-pick" class="pick-box" style="display:none;">
-      <div class="pick-h">Dokument hinzufügen</div>
-      <button type="button" class="btn btn-secondary" style="width:100%;" onclick="zuNext = null; document.getElementById('a-doc-in').click()">Datei aus dem Gerät wählen</button>
-      <div style="font-size:12px; font-weight:700; color:#475569; margin:12px 0 6px;">Aus Vorlage</div>
-      <div id="a-tpl-list"></div>
-      <div class="foot-bar" style="margin-top:14px; padding-top:12px;">
-        <button type="button" class="btn btn-secondary" onclick="dokPick=false;renderPick()">Schließen</button>
-        <button type="button" class="btn btn-secondary" onclick="document.getElementById('a-tpl-in').click()">+ Vorlage hochladen</button>
-      </div>
-    </div>
-    <div id="a-verlauf"></div>
+  </div>
+  <div id="at-fin" style="display:none;">
+  <div id="a-fin-block" class="card">
+    <div class="card-header" style="margin-bottom:6px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Finanzen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="openInvoice(curP)">+ Rechnung</button></div>
+    <div id="a-fin"></div>
+  </div>
   </div>
   <button type="button" class="btn btn-secondary" style="margin-bottom:20px;" onclick="closeModal('modal-akte')">&lsaquo; Zurück</button>
 </div>
@@ -2446,14 +2460,34 @@ function logMailSent(p, betreff, text) {
 }
 function logAdd(type, text) { curP.log = (curP.log || []).concat([{ ts: Date.now(), type: type, text: text }]); }
 
-/* Kopfbereich: Name, Geburtsdatum, Allergien, Kontakt */
+/* Kopfbereich: Titel und Kacheln (Kontakt, Notiz, Medikation, Allergien, Diagnosen, Anschrift) */
+var tileEdit = '', akTab = 'akte';
+function tilePen(fn) { var b = mk('button', 'a-pen'); b.type = 'button'; b.innerHTML = ICON_PEN; b.title = 'Bearbeiten'; b.setAttribute('aria-label', 'Bearbeiten'); b.onclick = fn; return b; }
+function tileBox(key, title, cls, fill) {
+  var t = mk('div', 'a-tile' + (cls ? ' ' + cls : '')); t.appendChild(mk('h4', '', title));
+  if (tileEdit === key) { t.className += ' ed'; fill(t, true); } else { t.appendChild(tilePen(function () { stammEdit = false; tileEdit = key; renderHead(); var f = document.getElementById('a-tile-in') || document.getElementById('a-med-in'); if (f) f.focus(); })); fill(t, false); }
+  return t;
+}
+function txtTile(key, title, cls, ph) {
+  return tileBox(key, title, cls, function (t, ed) {
+    if (!ed) { var v = (curP[key] || '').trim(); t.appendChild(mk('div', v ? 'a-txt' : 'a-txt a-none', v || ph)); return; }
+    var ta = mk('textarea', 'form-control'); ta.id = 'a-tile-in'; ta.rows = 3; ta.value = curP[key] || ''; t.appendChild(ta);
+    var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
+    var c = mk('button', 'btn btn-cancel', 'Abbrechen'); c.type = 'button'; c.onclick = function () { tileEdit = ''; renderHead(); };
+    var sv = mk('button', 'btn btn-save', 'Speichern'); sv.type = 'button'; sv.onclick = function () { tileSave(key); };
+    fb.appendChild(c); fb.appendChild(sv); t.appendChild(fb);
+  });
+}
+function tileSave(key) {
+  var v = document.getElementById('a-tile-in').value.trim(), changed = v !== (curP[key] || '');
+  curP[key] = v; if (key === 'notizen' && changed && v) logAdd('notiz', v);
+  tileEdit = ''; persist(); renderHead(); renderVerlauf(); renderPatients();
+}
 function renderHead() {
-  var box = document.getElementById('a-head'); box.innerHTML = '';
-  var eb = document.getElementById('a-edit');
-  eb.innerHTML = stammEdit ? ICON_OK : ICON_PEN; eb.title = stammEdit ? 'Speichern' : 'Bearbeiten';
-  eb.className = 'a-pen' + (stammEdit ? ' on' : ''); document.getElementById('a-editbar').style.display = stammEdit ? 'none' : 'flex';
-  document.getElementById('a-edit-cancel').style.display = stammEdit ? 'inline-block' : 'none';
-  var p = curP;
+  var p = curP, box = document.getElementById('a-head'), ttl = document.getElementById('a-title'); box.innerHTML = ''; ttl.innerHTML = '';
+  ttl.appendChild(mk('span', 'a-pid', '#' + p.id)); ttl.appendChild(document.createTextNode((p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname));
+  document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
+  document.getElementById('a-menu').parentNode.parentNode.style.display = stammEdit ? 'none' : 'flex';
   if (stammEdit) {
     var grid = document.createElement('div'); grid.className = 'grid-2';
     HEAD_FIELDS.forEach(function (k) {
@@ -2475,36 +2509,46 @@ function renderHead() {
     fb.appendChild(cb); fb.appendChild(db); fb.appendChild(sbn); box.appendChild(fb);
     return;
   }
-  var age = ageOf(p.dob);
-  var t = mk('div', '', (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname);
-  t.style.cssText = 'font-size:22px; font-weight:800; line-height:1.2;';
-  box.appendChild(t);
-  var d = mk('div', '', 'Geburtsdatum: ' + (p.dob ? p.dob + (age !== '' ? ' (' + age + ' Jahre)' : '') : '-') + '   ·   ID ' + p.id);
-  d.style.cssText = 'font-size:14px; color:#475569; margin-top:4px;';
-  box.appendChild(d);
-  var al = (p.allergien || '').trim();
-  if (al) {
-    var a = mk('div', '', 'Allergien: ' + al);
-    if (hasWarn(p)) a.style.cssText = 'font-size:14px; font-weight:700; color:#dc2626; margin-top:6px;';
-    else a.style.cssText = 'font-size:14px; color:#94a3b8; margin-top:6px;';
-    box.appendChild(a);
-  }
-  var c = mk('div', 'a-contact'); c.style.cssText = 'margin-top:8px; display:grid; gap:4px; font-size:14px;';
-  if (p.phone) {
-    var l1 = mk('div', 'pl'); l1.style.cssText = 'display:flex; align-items:center; gap:8px;'; l1.innerHTML = ICON_PHONE;
-    var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); c.appendChild(l1);
-  }
-  if (p.email) {
-    var l2 = mk('div', 'pl'); l2.style.cssText = 'display:flex; align-items:center; gap:8px;'; l2.innerHTML = ICON_MAIL;
-    var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email;
-    l2.appendChild(a2); c.appendChild(l2);
-  }
-  box.appendChild(c);
-  if (p.adresse) { var ad = mk('div', '', p.adresse); ad.style.cssText = 'margin-top:6px; font-size:14px; color:#475569; white-space:pre-wrap;'; box.appendChild(ad); }
-  box.querySelectorAll('.pl svg').forEach(function (sv) { sv.style.cssText = 'width:18px; height:18px; flex:none; color:#475569;'; });
+  var tiles = mk('div', 'a-tiles'), age = ageOf(p.dob);
+  var kt = mk('div', 'a-tile'); kt.appendChild(mk('h4', '', 'Kontakt')); kt.appendChild(tilePen(function () { toggleStamm(); }));
+  kt.appendChild(mk('div', p.dob ? '' : 'a-none', p.dob ? p.dob + (age !== '' ? ' (' + age + ' Jahre)' : '') : 'Geburtsdatum fehlt'));
+  if (p.phone) { var l1 = mk('div', 'tl-ln'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); kt.appendChild(l1); }
+  if (p.email) { var l2 = mk('div', 'tl-ln'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); kt.appendChild(l2); }
+  tiles.appendChild(kt);
+  tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));
+  tiles.appendChild(tileBox('med', 'Medikation', '', function (t, ed) {
+    var list = p.medikation || [];
+    if (!list.length && !ed) t.appendChild(mk('div', 'a-txt a-none', 'Keine Medikation'));
+    var ul = mk('ul'); list.forEach(function (m, i) {
+      var li = mk('li'); li.appendChild(document.createTextNode(m));
+      if (ed) { var b = mk('button', '', '×'); b.type = 'button'; b.onclick = function () { p.medikation.splice(i, 1); persist(); renderHead(); }; li.appendChild(b); }
+      ul.appendChild(li);
+    }); t.appendChild(ul);
+    if (ed) {
+      var row = mk('div'); row.style.cssText = 'display:flex; gap:6px; margin-top:6px;';
+      var inp = mk('input', 'form-control'); inp.id = 'a-med-in'; inp.placeholder = 'Medikament hinzufügen...'; inp.onkeydown = function (e) { if (e.key === 'Enter') addMed(); };
+      var ad = mk('button', 'btn', '+'); ad.type = 'button'; ad.onclick = addMed; row.appendChild(inp); row.appendChild(ad); t.appendChild(row);
+      var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
+      var ok = mk('button', 'btn btn-save', 'Fertig'); ok.type = 'button'; ok.onclick = function () { tileEdit = ''; renderHead(); }; fb.appendChild(ok); t.appendChild(fb);
+    }
+  }));
+  tiles.appendChild(txtTile('allergien', 'Allergien', hasWarn(p) ? 'a-warn' : '', 'Keine Angabe'));
+  tiles.appendChild(txtTile('diagnosen', 'Erkrankungen / Diagnosen', '', 'Keine Angabe'));
+  tiles.appendChild(txtTile('adresse', 'Anschrift', '', 'Keine Anschrift'));
+  box.appendChild(tiles);
+}
+function setAkTab(t) {
+  akTab = t;
+  ['akte', 'anl', 'fin'].forEach(function (k) { var el = document.getElementById('at-' + k), b = document.getElementById('atb-' + k); if (el) el.style.display = k === t ? 'block' : 'none'; if (b) b.className = k === t ? 'on' : ''; });
+  akTabs();
+}
+function akTabs() {
+  var b = document.getElementById('atb-anl'); if (!b || !curP) return;
+  var n = (curP.bilder || []).length + (curP.dokumente || []).length;
+  b.textContent = 'Anlagen' + (n ? ' (' + n + ')' : '');
 }
 function toggleStamm() {
-  if (!stammEdit) { stammEdit = true; renderHead(); return; }
+  if (!stammEdit) { stammEdit = true; tileEdit = ''; renderHead(); return; }
   var g = function (k) { return document.getElementById('se-' + k).value.trim(); };
   if (!g('vorname') || !g('nachname')) { alert('Vorname und Nachname dürfen nicht leer sein.'); return; }
   if (!validDob(g('dob'))) { alert(DOB_MSG); return; }
@@ -2532,60 +2576,17 @@ function viewAkte(p) {
   var was = document.getElementById('modal-akte').classList.contains('active');
   curP = p; stammEdit = false; editingDokuId = null; medInput = false; medMode = false; notizEdit = false; dokPick = false;
   document.getElementById('a-menu').style.display = 'none';
-  document.getElementById('a-med-in').value = '';
-  renderHead(); renderNotiz(); renderMed(); renderPick(); renderVerlauf();
+  tileEdit = ''; renderHead(); renderPick(); renderVerlauf(); setAkTab('akte');
   openModal('modal-akte');
   if (!was) window.scrollTo(0, 0);
 }
 
-/* Notiz (erscheint oben, sobald vorhanden) */
-function renderNotiz() {
-  var has = !!(curP.notizen && curP.notizen.trim());
-  document.getElementById('a-notiz-block').style.display = (has || notizEdit) ? 'block' : 'none';
-  var v = document.getElementById('a-notiz-view'), e = document.getElementById('a-notiz-edit');
-  v.style.display = notizEdit ? 'none' : 'block';
-  document.getElementById('a-notiz-add').style.display = notizEdit ? 'none' : 'block';
-  e.style.display = notizEdit ? 'block' : 'none';
-  v.textContent = curP.notizen || '';
-  v.onclick = function () { notizEdit = true; renderNotiz(); document.getElementById('a-notiz-in').focus(); };
-  document.getElementById('a-notiz-in').value = curP.notizen || '';
-}
-function notizAppend() {
-  notizEdit = true; renderNotiz();
-  var ta = document.getElementById('a-notiz-in');
-  if (ta.value.trim()) ta.value = ta.value.trim() + '\n';
-  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
-}
-function notizSave() {
-  var v = document.getElementById('a-notiz-in').value.trim();
-  var changed = v !== (curP.notizen || '');
-  curP.notizen = v; notizEdit = false;
-  if (changed && v) logAdd('notiz', v);
-  persist(); renderNotiz(); renderVerlauf();
-}
-function notizCancel() { notizEdit = false; renderNotiz(); }
-
-/* Medikation */
-function renderMed() {
-  var ul = document.getElementById('a-med'); ul.innerHTML = '';
-  var list = curP.medikation || [];
-  document.getElementById('a-med-block').style.display = (list.length || medMode) ? 'block' : 'none';
-  document.getElementById('a-med-add').style.display = medInput ? 'none' : 'block';
-  document.getElementById('a-med-row').style.display = medInput ? 'flex' : 'none';
-  list.forEach(function (m, i) {
-    var li = document.createElement('li');
-    li.appendChild(document.createTextNode(m));
-    var b = mk('button', '', '×'); b.type = 'button';
-    b.onclick = function () { curP.medikation.splice(i, 1); persist(); renderMed(); };
-    li.appendChild(b); ul.appendChild(li);
-  });
-}
+/* Medikament hinzufügen (Kachel Medikation) */
 function addMed() {
   var inp = document.getElementById('a-med-in'), v = inp.value.trim();
   if (!v) return;
   curP.medikation = (curP.medikation || []).concat([v]);
-  logAdd('med', v);
-  inp.value = ''; persist(); renderMed(); renderVerlauf(); inp.focus();
+  logAdd('med', v); persist(); renderHead(); renderVerlauf(); document.getElementById('a-med-in').focus();
 }
 
 /* Zeitleiste: ALLE Einträge chronologisch */
@@ -3488,6 +3489,7 @@ function saveZu() {
 function setMedFilter(f) { medFilter = f; medLimit = 30; renderMedien(); }
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
+  akTabs();
   ['alle', 'bild', 'dok'].forEach(function (k) { document.getElementById('md-' + k).className = medFilter === k ? 'on' : ''; });
   var ksel = document.getElementById('md-kat'); if (!ksel.options.length) fillKatSelect(ksel, true);
   ksel.style.display = medFilter === 'bild' ? 'none' : '';
@@ -3582,14 +3584,14 @@ document.addEventListener('keydown', function (ev) {
 });
 function aAct(x) {
   document.getElementById('a-menu').style.display = 'none';
-  if (x === 'med') { medMode = true; medInput = true; renderMed(); document.getElementById('a-med-in').focus(); }
+  if (x === 'med') { stammEdit = false; tileEdit = 'med'; renderHead(); document.getElementById('a-med-in').focus(); }
   else if (x === 'doku') {
     var d = { ts: Date.now(), text: '' };
     curP.doku = (curP.doku || []).concat([d]);
     editingDokuId = 'd' + d.ts; renderVerlauf();
     var ta = document.getElementById('doku-in'); if (ta) ta.focus();
   }
-  else if (x === 'notiz') { notizEdit = true; renderNotiz(); document.getElementById('a-notiz-in').focus(); }
+  else if (x === 'notiz') { stammEdit = false; tileEdit = 'notizen'; renderHead(); document.getElementById('a-tile-in').focus(); }
   else if (x === 'termin') {
     var p = curP, n = new Date();
     openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true);
