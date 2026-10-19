@@ -14,3 +14,7 @@ und denselben Zugangscode eintragen.
 Unterschrift am Tablet
 Die Unterschrift wird mit der Bibliothek pdf-lib (MIT-Lizenz, siehe pdf-lib-LICENSE.md) in die PDF gestempelt.
 Dafür muss die Datei pdf-lib.min.js im selben Ordner wie index.html liegen.
+
+Import aus dem Altsystem
+Die Dateien pdfjs.min.js und pdfjs.worker.min.js (pdf.js, Apache-Lizenz, siehe pdfjs-LICENSE.txt) müssen im selben Ordner wie index.html liegen.
+Sie lesen die als PDF gedruckte Akte aus den Patienten-ZIPs. Alles läuft auf dem Gerät, es werden keine Daten versendet.
