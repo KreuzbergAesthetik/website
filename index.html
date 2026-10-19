@@ -3540,17 +3540,18 @@ function mediaGrid(p, list) {
 function docList(p, list) {
   var ul = mk('div');
   list.forEach(function (dd) {
-    var r = mk('div'); r.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid #f1f5f9;';
-    var a = mk('a', '', dd.name); a.href = '#'; a.style.cssText = 'color:#5b6f95; word-break:break-word;';
+    var r = mk('div'); r.style.cssText = 'display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:9px 0; border-bottom:1px solid #eef1f5;';
+    var a = mk('a', '', dd.name); a.href = '#'; a.style.cssText = 'color:#3b4f78; font-size:14.5px; line-height:1.35; flex:1 1 240px; min-width:0; overflow-wrap:anywhere;';
     fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
-    var ks = mk('select', 'form-control'); ks.style.cssText = 'width:auto; max-width:170px; min-height:32px; padding:4px 8px; font-size:12px;'; fillKatSelect(ks, false); ks.value = katOf(dd);
+    var ks = mk('select', 'form-control'); ks.style.cssText = 'width:auto; flex:1 1 100px; min-width:0; max-width:200px; min-height:34px; padding:4px 8px; font-size:13px;'; fillKatSelect(ks, false); ks.value = katOf(dd);
     ks.onchange = function () { dd.kat = ks.value; refreshFiles(); }; ks.title = 'Kategorie';
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Löschen';
     x.onclick = function () { if (!confirm('Dokument "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); };
     var sgb = null;
     if (dd.sig) { sgb = mk('span', 'badge badge-green', 'unterschrieben ' + fmtD(iso(new Date(dd.sig.ts)))); }
-    else if (signable(dd)) { sgb = mk('button', 'btn btn-secondary', 'Unterschreiben'); sgb.type = 'button'; sgb.style.cssText = 'padding:4px 10px; font-size:12px;'; sgb.onclick = function () { openSign(p, dd); }; }
-    r.appendChild(a); if (sgb) r.appendChild(sgb); r.appendChild(ks); r.appendChild(x); ul.appendChild(r);
+    else if (signable(dd)) { sgb = mk('button', 'btn btn-secondary', 'Unterschreiben'); sgb.type = 'button'; sgb.style.cssText = 'padding:4px 10px; font-size:12px; white-space:nowrap; flex:none;'; sgb.onclick = function () { openSign(p, dd); }; }
+    var ctl = mk('div'); ctl.style.cssText = 'display:flex; align-items:center; gap:8px; flex:0 1 auto; min-width:0; max-width:100%;';
+    r.appendChild(a); if (sgb) ctl.appendChild(sgb); ctl.appendChild(ks); ctl.appendChild(x); r.appendChild(ctl); ul.appendChild(r);
   });
   return ul;
 }
