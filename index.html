@@ -36,6 +36,13 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .nav-menu button:hover:not(:disabled) { background:#f1f5f9; } .nav-menu button:disabled { color:#94a3b8; cursor:default; } .nav-menu small { color:#94a3b8; font-size:11px; margin-left:6px; }
 .nav-sep { height:1px; background:#e2e8f0; margin:4px 0; }
 .nav-badge { background:#dc2626; color:#fff; border-radius:10px; font-size:11px; padding:1px 6px; margin-left:4px; }
+.dk-sec { margin-bottom:14px; } .dk-h { font-size:13px; font-weight:700; color:#334155; margin-bottom:4px; }
+.prio { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; }
+.prio-hoch { background:#fee2e2; color:#b91c1c; } .prio-mittel { background:#fef3c7; color:#92400e; } .prio-niedrig { background:#e2e8f0; color:#475569; }
+.td-row { display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid #f1f5f9; }
+.td-row:last-child { border-bottom:none; } .td-row.done .td-text { text-decoration:line-through; color:#94a3b8; }
+.td-chk { width:22px; height:22px; margin-top:1px; flex:none; accent-color:#0f172a; }
+.td-main { flex:1; min-width:0; cursor:pointer; } .td-text { font-size:14.5px; } .td-sub { font-size:12px; color:#64748b; margin-top:2px; }
 .pid { color:#94a3b8; font-size:11px; font-weight:400; margin-right:5px; }
 .row-actions { display:flex; gap:8px; align-items:center; flex-wrap:nowrap; }
 .btn-sm { padding:6px 12px; font-size:13px; min-height:34px; }
@@ -462,6 +469,22 @@ body.akte-open main { display:none; }
     </div>
   </div>
 
+  <!-- TAB: TODOS -->
+  <div id="tab-todos" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">To-Dos</span><button type="button" class="btn btn-sm" onclick="openTodo(null)">+ To-Do</button></div>
+      <div class="cal-bar">
+        <div class="seg" id="td-prio" role="group" aria-label="Dringlichkeit">
+          <button type="button" data-v="" onclick="setTdPrio('')">Alle</button><button type="button" data-v="hoch" onclick="setTdPrio('hoch')">Hoch</button><button type="button" data-v="mittel" onclick="setTdPrio('mittel')">Mittel</button><button type="button" data-v="niedrig" onclick="setTdPrio('niedrig')">Niedrig</button>
+        </div>
+        <div class="seg" id="td-stat" role="group" aria-label="Status">
+          <button type="button" data-v="offen" onclick="setTdStat('offen')">Offen</button><button type="button" data-v="erledigt" onclick="setTdStat('erledigt')">Erledigt</button><button type="button" data-v="alle" onclick="setTdStat('alle')">Alle</button>
+        </div>
+      </div>
+      <div id="td-list" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
   <!-- TAB 5: LAGER -->
   <div id="tab-lager" class="tab-content">
     <div class="card">
@@ -659,16 +682,29 @@ body.akte-open main { display:none; }
       <div class="form-group"><label>Rechnungsdatum *</label><input type="date" id="inv-datum" class="form-control"></div>
       <div class="form-group"><label>Leistungsdatum *</label><input type="date" id="inv-leistung" class="form-control"></div>
     </div>
+    <div class="form-group"><label>Text vor der Tabelle (optional)</label><textarea id="inv-vortext" class="form-control" rows="2" placeholder="z.B. Vielen Dank für Ihr Vertrauen. Hiermit berechne ich Ihnen folgende Leistungen:"></textarea></div>
     <div class="ak-h">Positionen (Preise brutto in Euro)</div>
     <div id="inv-pos"></div>
     <div style="display:flex; gap:6px;">
       <div class="add-row" style="flex:1;" onclick="addInvRow('pos')">+ Position</div>
       <div class="add-row" style="flex:1;" onclick="addInvRow('rabatt')">+ Rabatt in %</div>
     </div>
+    <div id="inv-0info" style="display:none; font-size:12px; margin:6px 0; padding:8px 10px; border-radius:8px; background:#fef3c7; color:#92400e;"></div>
     <div class="add-row" onclick="addErstRabatt()">+ 20 % Rabatt Erstbehandlung (auf alle Positionen darüber)</div>
     <div style="text-align:right; font-weight:700; margin:10px 0;">Gesamt: <span id="inv-total">€ 0,00</span></div>
+    <div class="ak-h">Zahlung</div>
+    <div class="seg" id="inv-payseg" role="group" aria-label="Zahlung" style="flex-wrap:wrap;">
+      <button type="button" data-art="" class="on" onclick="setInvPay('')">Noch offen</button>
+      <button type="button" data-art="Karte" onclick="setInvPay('Karte')">Karte</button>
+      <button type="button" data-art="Bar" onclick="setInvPay('Bar')">Bar</button>
+      <button type="button" data-art="Überweisung" onclick="setInvPay('Überweisung')">Überweisung</button>
+      <button type="button" data-art="PayPal" onclick="setInvPay('PayPal')">PayPal</button>
+    </div>
+    <div id="inv-paybox" class="grid-2" style="display:none; margin-top:10px;">
+      <div class="form-group"><label>Betrag in Euro</label><input type="text" id="inv-paybetrag" class="form-control" inputmode="decimal" oninput="invPayAuto = false"></div>
+      <div class="form-group"><label>Zahlungsdatum</label><input type="date" id="inv-paydatum" class="form-control"></div>
+    </div>
     <div class="form-group"><label>Dokumentation zum Termin (wird auf der Rechnung gedruckt)</label><textarea id="inv-doku" class="form-control" rows="3"></textarea></div>
-    <div class="form-group"><label>Hinweis zur Umsatzsteuer (nur nötig bei 0 %)</label><textarea id="inv-hinweis" class="form-control" rows="2"></textarea></div>
     <div class="form-group"><label>Zahlungshinweis (wird bei offenen Rechnungen gedruckt)</label><textarea id="inv-zahlung" class="form-control" rows="2"></textarea></div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-inv')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveInvoice()">Rechnung erstellen</button></div>
   </div>
@@ -802,7 +838,7 @@ body.akte-open main { display:none; }
     </div>
     <div class="form-group"><label>IBAN</label><input type="text" id="s-iban" class="form-control"></div>
     <div class="form-group"><label>PayPal (E-Mail)</label><input type="text" id="s-paypal" class="form-control"></div>
-    <div class="form-group"><label>Standard-Hinweis zur Umsatzsteuer</label><textarea id="s-hinweis" class="form-control" rows="2"></textarea></div>
+    <div class="form-group"><label>Hinweis bei 0 % Umsatzsteuer (wird bei 0 %-Positionen automatisch in die Rechnung eingefügt)</label><textarea id="s-hinweis" class="form-control" rows="2"></textarea></div>
     <div class="form-group"><label>Standard-Zahlungshinweis</label><textarea id="s-zahlung" class="form-control" rows="2"></textarea></div>
     <div class="ak-h">E-Mail-Versand (optional)</div>
     <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
@@ -864,6 +900,37 @@ body.akte-open main { display:none; }
     <div style="font-size:13px; color:#475569; margin-bottom:10px;">Diese Sicherung ist verschlüsselt. Bitte das Passwort eingeben.</div>
     <div class="form-group"><label>Passwort</label><input type="password" id="bkp-pw" class="form-control" autocomplete="off"></div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-bkpw')">Abbrechen</button><button type="button" class="btn btn-save" onclick="doDecrypt()">Öffnen</button></div>
+  </div>
+</div>
+
+<!-- MODAL: DOKUMENTATION -->
+<div id="modal-dok" class="modal-overlay">
+  <div class="modal-box" style="max-width:720px;">
+    <div class="modal-header"><strong id="dk-title">Dokumentation</strong><button type="button" class="close-btn" onclick="closeModal('modal-dok')">&times;</button></div>
+    <div id="dk-body"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-dok')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveDok()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: TODO -->
+<div id="modal-todo" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="to-title">To-Do</strong><button type="button" class="close-btn" onclick="closeModal('modal-todo')">&times;</button></div>
+    <div class="form-group"><label>Aufgabe</label><textarea id="to-text" class="form-control" rows="2"></textarea></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Dringlichkeit</label><select id="to-prio" class="form-control"><option value="hoch">Hoch (heute)</option><option value="mittel">Mittel</option><option value="niedrig">Niedrig</option></select></div>
+      <div class="form-group"><label>Fällig am</label><input type="date" id="to-due" class="form-control"></div>
+    </div>
+    <div class="form-group"><label>Patient (optional)</label><input type="text" id="to-pat" class="form-control" list="t-patient-list" autocomplete="off" placeholder="Name eingeben..."></div>
+    <div id="to-ev" style="font-size:12px; color:#64748b; margin-bottom:6px;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-todo')">Abbrechen</button>
+      <button type="button" id="to-del" class="btn btn-del" style="display:none;" onclick="deleteTodo()">Löschen</button>
+      <button type="button" class="btn btn-save" onclick="saveTodo()">Speichern</button>
+    </div>
   </div>
 </div>
 
@@ -1004,6 +1071,7 @@ function persist() {
     localStorage.setItem('ka_todos', JSON.stringify(todos));
   } catch (x) { alert('Der Speicher im Browser ist voll. Bitte große Dateien entfernen und eine Sicherung machen.'); }
   try { renderHome(); } catch (x) {}
+  try { updateTodoBadge(); } catch (x) {}
 }
 var pSort = 'desc', pKey = 'erstellt';
 function ensurePatients() {
@@ -1409,7 +1477,7 @@ function renderHome() {
     return hmRow(e.time + ' bis ' + endStr, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
   }), 'Heute stehen keine Termine an.');
   /* ohne Doku */
-  var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !e.doku && (e.date < today || (e.date === today && end <= nowMin)); })
+  var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); })
     .sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
   var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, e.patient, fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung'), function () { openDokuFromTermin(e.id); }); });
   if (nd.length > 5) ndRows.push(mk('div', 'hm-empty', 'und ' + (nd.length - 5) + ' weitere'));
@@ -1460,7 +1528,7 @@ function openDokuFromTermin(id) {
   var p = patients.filter(function (x) { return (x.vorname + ' ' + x.nachname) === e.patient; })[0];
   if (!p) { alert('Für diesen Termin ist kein Patient angelegt.'); return; }
   viewAkte(p);
-  editingDokuId = 'e' + e.id; renderVerlauf();
+  openDok(e.id);
 }
 function slotClick(e, k) {
   if (noClick || e.target.closest('.ev')) return;
@@ -1654,6 +1722,24 @@ function saveSettings() {
   Object.keys(m).forEach(function (id) { settings[m[id]] = document.getElementById(id).value.trim(); });
   persist(); refreshLeistungen(); closeModal('modal-settings');
 }
+var invPayArt = '', invPayAuto = true;
+function setInvPay(art) {
+  invPayArt = art;
+  [].forEach.call(document.querySelectorAll('#inv-payseg button'), function (b) { b.className = b.getAttribute('data-art') === art ? 'on' : ''; });
+  document.getElementById('inv-paybox').style.display = art ? 'grid' : 'none';
+  if (art) { if (!document.getElementById('inv-paydatum').value) document.getElementById('inv-paydatum').value = document.getElementById('inv-datum').value || iso(new Date()); invPayAuto = true; syncInvPay(); }
+}
+function syncInvPay() { if (invPayArt && invPayAuto) document.getElementById('inv-paybetrag').value = nf(invTotal()); }
+function updZeroInfo() {
+  var z = invRows.some(function (r) { return String(r.rate) === '0'; }), el = document.getElementById('inv-0info');
+  el.style.display = z ? 'block' : 'none';
+  if (z) el.textContent = settings.hinweis ? 'Bei 0 % wird automatisch dieser Hinweis in die Rechnung eingefügt: ' + settings.hinweis : 'Bei 0 % fehlt noch der Standardhinweis. Trage ihn im Menü Praxis unter Praxisdaten ein, sonst steht kein Hinweis in der Rechnung.';
+}
+function nextPayNr(date) {
+  var yr = String(date).slice(0, 4), seq = 0;
+  invoices.forEach(function (i) { (i.payments || []).forEach(function (p) { var m = /^B(\d{4})-(\d+)$/.exec(p.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); }); });
+  return 'B' + yr + '-' + String(seq + 1).padStart(5, '0');
+}
 function newRow(type) { return type === 'rabatt' ? { type: 'rabatt', text: 'Rabatt', pct: '', rate: '19' } : { type: 'pos', text: '', qty: '1', price: '', rate: '19' }; }
 function openInvoice(p) {
   invP = p;
@@ -1661,7 +1747,8 @@ function openInvoice(p) {
   document.getElementById('inv-adresse').value = p && p.adresse ? p.adresse : '';
   var t = iso(new Date());
   document.getElementById('inv-datum').value = t; document.getElementById('inv-leistung').value = t;
-  document.getElementById('inv-hinweis').value = settings.hinweis || '';
+  document.getElementById('inv-vortext').value = '';
+  document.getElementById('inv-paydatum').value = ''; document.getElementById('inv-paybetrag').value = ''; setInvPay('');
   document.getElementById('inv-zahlung').value = settings.zahlung || '';
   invRows = [newRow('pos')];
   document.getElementById('inv-doku').value = '';
@@ -1675,13 +1762,13 @@ function fillTermine(p) {
   if (!p) return;
   events.filter(function (e) { return e.patient === nameKey(p); })
     .sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
-    .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (e.doku ? ' · mit Doku' : '')); o.value = String(e.id); sel.appendChild(o); });
+    .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Doku' : '')); o.value = String(e.id); sel.appendChild(o); });
 }
 function invTerminChanged() {
   var id = parseInt(document.getElementById('inv-termin').value, 10);
   var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
   document.getElementById('inv-leistung').value = e.date;
-  document.getElementById('inv-doku').value = e.doku || '';
+  document.getElementById('inv-doku').value = dokuText(e);
   var first = invRows[0];
   if (invRows.length === 1 && first.type === 'pos' && !first.text.trim() && !first.price) { first.text = e.behandlung || 'Beratung'; }
   else if (!invRows.some(function (r) { return r.text === e.behandlung; })) { var r = newRow('pos'); r.text = e.behandlung || 'Beratung'; invRows.push(r); }
@@ -1708,12 +1795,12 @@ function renderInvRows() {
     else { q.value = r.qty; q.placeholder = 'Menge'; pr.type = 'text'; pr.inputMode = 'decimal'; pr.value = r.price; pr.placeholder = 'Preis €'; }
     var rt = mk('select', 'form-control');
     ['19', '7', '0'].forEach(function (v) { var o = mk('option', '', v + ' %'); o.value = v; rt.appendChild(o); });
-    rt.value = r.rate; rt.onchange = function () { r.rate = rt.value; };
+    rt.value = r.rate; rt.onchange = function () { r.rate = rt.value; updZeroInfo(); };
     var sum = mk('div', '', eurP(rowAmount(i))); sum.style.cssText = 'text-align:right; font-size:13px;';
     var upd = function () {
       if (r.type === 'rabatt') r.pct = q.value; else { r.qty = q.value; r.price = pr.value; }
       box.querySelectorAll('.inv-row').forEach(function (rw, k) { rw.children[4].textContent = eurP(rowAmount(k)); });
-      document.getElementById('inv-total').textContent = eurP(invTotal());
+      document.getElementById('inv-total').textContent = eurP(invTotal()); syncInvPay();
     };
     q.oninput = upd; if (r.type !== 'rabatt') pr.oninput = upd;
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Entfernen';
@@ -1721,7 +1808,7 @@ function renderInvRows() {
     [a, q, pr, rt, sum, x].forEach(function (c) { row.appendChild(c); });
     box.appendChild(row);
   });
-  document.getElementById('inv-total').textContent = eurP(invTotal());
+  document.getElementById('inv-total').textContent = eurP(invTotal()); syncInvPay(); updZeroInfo();
 }
 function saveInvoice() {
   var name = document.getElementById('inv-patient').value.trim();
@@ -1744,9 +1831,16 @@ function saveInvoice() {
     }
   });
   if (bad || !items.length) { alert('Bitte jede Position mit Leistung, Menge und Preis (Rabatt: Bezeichnung und Prozent) ausfüllen.'); return; }
-  var hinweis = document.getElementById('inv-hinweis').value.trim();
+  var hinweis = items.some(function (i) { return i.rate === 0; }) ? (settings.hinweis || '').trim() : '';
   if (!settings.steuernr && !settings.ustid && !confirm('In den Praxisdaten fehlt die Steuernummer oder USt-IdNr. Die Rechnung wäre unvollständig. Trotzdem erstellen?')) return;
-  if (items.some(function (i) { return i.rate === 0; }) && !hinweis && !confirm('Eine Position hat 0 % Umsatzsteuer, aber es ist kein Hinweis dazu eingetragen. Trotzdem erstellen?')) return;
+  if (items.some(function (i) { return i.rate === 0; }) && !hinweis && !confirm('Eine Position hat 0 % Umsatzsteuer, aber im Menü Praxis unter Praxisdaten ist kein Hinweis für 0 % hinterlegt. Trotzdem erstellen?')) return;
+  var payAmount = 0, payDate = '';
+  if (invPayArt) {
+    payAmount = r2(numIn(document.getElementById('inv-paybetrag').value)); payDate = document.getElementById('inv-paydatum').value;
+    var tot0 = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
+    if (payAmount <= 0 || !payDate) { alert('Bitte bei der Zahlung Betrag und Datum angeben, oder "Noch offen" wählen.'); return; }
+    if (payAmount > tot0 + 0.005) { alert('Der Zahlungsbetrag ist höher als die Rechnungssumme.'); return; }
+  }
   var yr = datum.slice(0, 4), seq = 0;
   invoices.forEach(function (i) { var m = /^(?:RE-)?(\d{4})-(\d+)$/.exec(i.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); });
   var nr = yr + '-' + String(seq + 1).padStart(5, '0');
@@ -1754,7 +1848,9 @@ function saveInvoice() {
   var inv = { id: newId(), nr: nr, date: datum, leistung: leist, pid: p.id,
     name: (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname, adresse: adresse,
     items: items, doku: document.getElementById('inv-doku').value.trim(), eid: parseInt(document.getElementById('inv-termin').value, 10) || null, hinweis: hinweis, zahlung: document.getElementById('inv-zahlung').value.trim(),
+    vortext: document.getElementById('inv-vortext').value.trim(),
     total: total, payments: [], created: Date.now() };
+  if (invPayArt) inv.payments.push({ nr: nextPayNr(payDate), art: invPayArt, amount: payAmount, date: payDate });
   p.adresse = adresse;
   invoices.push(inv); persist();
   closeModal('modal-inv');
@@ -1799,6 +1895,7 @@ function invoiceDOM(inv) {
     var r = mk('div'); r.style.cssText = 'display:flex; justify-content:space-between; gap:8px;'; r.appendChild(mk('span', '', m[0])); r.appendChild(mk('span', '', m[1])); right.appendChild(r);
   });
   two.appendChild(left); two.appendChild(right); w.appendChild(two);
+  if (inv.vortext) { var vt = mk('div', '', inv.vortext); vt.style.cssText = 'white-space:pre-wrap; margin-top:18px;'; w.appendChild(vt); }
   var tab = mk('table', 'inv2'); tab.style.marginTop = '18px'; var th = mk('thead'), hr = mk('tr');
   [['Datum', ''], ['Menge', 'c'], ['Position', ''], ['MwSt-%', 'c'], ['Brutto', 'r']].forEach(function (c) { hr.appendChild(mk('th', c[1], c[0])); });
   th.appendChild(hr); tab.appendChild(th); var tb = mk('tbody');
@@ -1849,7 +1946,7 @@ function invoiceDOM(inv) {
       w.appendChild(bx);
     }
   }
-  var so = mk('div'); so.style.cssText = 'margin-top:30px; font-size:13px;'; so.appendChild(mk('div', '', 'Bis zum nächsten Mal')); so.appendChild(mk('div', '', 'Manuel')); w.appendChild(so);
+  var so = mk('div'); so.style.cssText = 'margin-top:18px; font-size:13px;'; so.appendChild(mk('div', '', 'Bis zum nächsten Mal')); so.appendChild(mk('div', '', 'Manuel')); w.appendChild(so);
   var ft = mk('div', '', PRAXIS.mail + '   •   ' + PRAXIS.web); ft.style.cssText = 'text-align:center; font-size:11px; color:#444; margin-top:26px;'; w.appendChild(ft);
   return w;
 }
@@ -1871,9 +1968,7 @@ function savePay() {
   var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
   var amount = r2(numIn(document.getElementById('pay-betrag').value)), date = document.getElementById('pay-datum').value;
   if (amount <= 0 || !date) { alert('Bitte Betrag und Datum angeben.'); return; }
-  var yr = date.slice(0, 4), seq = 0;
-  invoices.forEach(function (i) { (i.payments || []).forEach(function (p) { var m = /^B(\d{4})-(\d+)$/.exec(p.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); }); });
-  inv.payments = (inv.payments || []).concat([{ nr: 'B' + yr + '-' + String(seq + 1).padStart(5, '0'), art: document.getElementById('pay-art').value, amount: amount, date: date }]);
+  inv.payments = (inv.payments || []).concat([{ nr: nextPayNr(date), art: document.getElementById('pay-art').value, amount: amount, date: date }]);
   persist(); closeModal('modal-pay'); renderInvoices(); viewInvoice(inv.id);
   if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
 }
@@ -2088,6 +2183,7 @@ function buildInvoicePdf(inv, logo) {
   y = Math.max(ry, 190) + 16;
   var cx = [60, 161, 199, 424, 480, 543];
   function row(top, h, hdr) { for (var k = 0; k < 5; k++) box(cx[k], top, cx[k + 1] - cx[k], h, 0.8); }
+  if (inv.vortext) { pdfWrap(inv.vortext, false, 9.5, 483).forEach(function (t) { if (y > 770) np(); txt(L, y, t, 9.5); y += 13; }); y += 8; }
   fill(60, y, 483, 23, 0.93); row(y, 23);
   txt(66, y + 15, 'Datum', 9, true); txtC((cx[1] + cx[2]) / 2, y + 15, 'Menge', 9, true); txt(205, y + 15, 'Position', 9, true); txtC((cx[3] + cx[4]) / 2, y + 15, 'MwSt-%', 9, true); txtR(537, y + 15, 'Brutto', 9, true);
   y += 23;
@@ -2149,7 +2245,7 @@ function buildInvoicePdf(inv, logo) {
       y += 58;
     }
   }
-  y = Math.max(y + 34, 735); if (y > 780) np(), y = 735;
+  y += 28; if (y > 765) { np(); }
   txt(L, y, 'Bis zum nächsten Mal', 9.5); txt(L, y + 13, 'Manuel', 9.5);
   pages.forEach(function (pg, i) {
     cur = pg;
@@ -2434,8 +2530,7 @@ function tlRow(it) {
     line = mk('div', '', e.behandlung || 'Beratung'); line.style.cssText = 'font-weight:600; cursor:pointer;';
     line.onclick = function () { editTermin(e.id, true); };
     sh.body.appendChild(line);
-    sh.body.appendChild(docBox('e' + e.id, e.doku, 'Dokumentation zum Termin ' + fmtTermin(e), 'Dokumentation für diesen Termin hinzufügen',
-      function (t) { e.doku = t; }, null, renderVerlauf));
+    sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));
     var pb = mk('button', 'btn btn-secondary', '+ Produkt verwenden'); pb.type = 'button'; pb.style.cssText = 'padding:6px 10px; font-size:13px; margin-top:8px;';
     pb.onclick = function () { openVb(e.id); };
@@ -2546,6 +2641,172 @@ function addDocs(inp, key) {
     if (skipped) alert(skipped + ' Datei(en) sind größer als 30 MB oder konnten nicht gespeichert werden.');
   });
 }
+/* ===== Dokumentation eines Termins (strukturiert) und To-Dos ===== */
+var DK_TEXT = [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung']];
+var DK_VERW = [['aufkl', 'Aufklärung'], ['dok', 'Dokumente'], ['anam', 'Anamnesebogen'], ['honorar', 'Honorarvertrag']];
+var DK_FIELDS = ['anamnese', 'befund', 'behandlung', 'leist', 'produkte', 'ausblick'];
+var dkEv = null, dkTodos = [], tdPrio = '', tdStat = 'offen', toCur = null;
+function dokOf(e) { return e.dok || { anamnese: '', befund: '', behandlung: e.doku || '', verw: {}, leist: '', produkte: '', ausblick: '' }; }
+function dokFilled(e) {
+  if (e.doku && String(e.doku).trim()) return true;
+  var d = e.dok; if (!d) return false;
+  return DK_FIELDS.some(function (k) { return String(d[k] || '').trim(); }) || (d.verw && (DK_VERW.some(function (v) { return d.verw[v[0]]; }) || String(d.verw.text || '').trim()));
+}
+/* Text für die Rechnung: ohne Verwaltung und To-Dos. e.doku wird bei jedem Speichern daraus abgeleitet. */
+function dokuText(e) {
+  if (!e.dok) return e.doku || '';
+  var d = e.dok, out = [];
+  [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung'], ['leist', 'Leistungen'], ['produkte', 'Weitere Produkte'], ['ausblick', 'Ausblick und Procedere']].forEach(function (k) { if (String(d[k[0]] || '').trim()) out.push(k[1] + ': ' + String(d[k[0]]).trim()); });
+  var used = lager.verbrauch.filter(function (v) { return v.eid === e.id; });
+  if (used.length) out.push('Verwendete Produkte: ' + used.map(function (v) { return v.name + ' ' + qty(v.menge) + ' ' + (v.einheit || '') + ' (Charge ' + (v.nr || '-') + ')'; }).join(', '));
+  return out.join('\n');
+}
+function dokSummary(e) {
+  var box = mk('div'); box.style.cssText = 'font-size:13px; margin:4px 0 0; padding:8px 10px; background:#f8fafc; border-radius:6px; cursor:pointer;';
+  var d = e.dok, open = todos.filter(function (t) { return t.eid === e.id && !t.done; }).length;
+  if (!dokFilled(e) && !open) { box.textContent = 'Dokumentation für diesen Termin hinzufügen'; box.style.color = '#94a3b8'; }
+  else {
+    var shown = false;
+    [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung'], ['leist', 'Leistungen'], ['ausblick', 'Ausblick']].forEach(function (k) {
+      var t = d ? String(d[k[0]] || '').trim() : (k[0] === 'behandlung' ? String(e.doku || '').trim() : '');
+      if (!t) return; shown = true;
+      var r = mk('div'); r.style.cssText = 'white-space:pre-wrap; margin-bottom:3px;'; r.appendChild(mk('b', '', k[1] + ': ')); r.appendChild(document.createTextNode(t.length > 160 ? t.slice(0, 160) + '…' : t)); box.appendChild(r);
+    });
+    if (d && d.verw) { var v = DK_VERW.filter(function (x) { return d.verw[x[0]]; }).map(function (x) { return x[1]; }); if (v.length) { shown = true; var r2v = mk('div'); r2v.style.marginBottom = '3px'; r2v.appendChild(mk('b', '', 'Verwaltung: ')); r2v.appendChild(document.createTextNode(v.join(', '))); box.appendChild(r2v); } }
+    if (open) { var tb = mk('span', 'badge badge-amber', open + ' offene(s) To-Do'); box.appendChild(tb); }
+    if (!shown && !open) box.textContent = 'Dokumentation geöffnet';
+  }
+  box.onclick = function () { openDok(e.id); }; return box;
+}
+function dkSec(label, node) { var s2 = mk('div', 'dk-sec'); s2.appendChild(mk('div', 'dk-h', label)); s2.appendChild(node); return s2; }
+function dkTa(id, val, rows) { var ta = mk('textarea', 'form-control'); ta.id = id; ta.rows = rows || 3; ta.value = val || ''; return ta; }
+function dkTextSec(id, label, val, rows) {
+  var w = mk('div'), ta = dkTa(id, val, rows); w.appendChild(ta); var tp = tbPicker(ta); if (tp) w.appendChild(tp); return dkSec(label, w);
+}
+function dkRenderProd() {
+  var box = document.getElementById('dk-prod'); if (!box || !dkEv) return; box.innerHTML = '';
+  var used = lager.verbrauch.filter(function (v) { return v.eid === dkEv.id; });
+  used.forEach(function (v) { var r = mk('div', '', '• ' + v.name + ': ' + qty(v.menge) + ' ' + (v.einheit || '') + ' · Charge ' + (v.nr || '-')); r.style.cssText = 'font-size:13.5px; padding:2px 0;'; box.appendChild(r); });
+  if (!used.length) { var n = mk('div', 'hm-empty', 'Noch keine Produkte aus dem Lager abgebucht.'); n.style.padding = '2px 0'; box.appendChild(n); }
+}
+function dkRenderTodos() {
+  var box = document.getElementById('dk-todos'); if (!box) return; box.innerHTML = '';
+  dkTodos.forEach(function (t, i) {
+    var r = mk('div'); r.style.cssText = 'display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px;';
+    var cb = mk('input', 'td-chk'); cb.type = 'checkbox'; cb.checked = !!t.done; cb.onchange = function () { t.done = cb.checked; t.doneTs = cb.checked ? Date.now() : 0; };
+    var tx = mk('input', 'form-control'); tx.type = 'text'; tx.value = t.text; tx.placeholder = 'Aufgabe'; tx.style.cssText = 'flex:1 1 160px; min-width:0;'; tx.oninput = function () { t.text = tx.value; };
+    var pr = mk('select', 'form-control'); pr.style.cssText = 'width:auto;'; [['hoch', 'Hoch'], ['mittel', 'Mittel'], ['niedrig', 'Niedrig']].forEach(function (o) { var op = mk('option', '', o[1]); op.value = o[0]; pr.appendChild(op); }); pr.value = t.prio; pr.onchange = function () { t.prio = pr.value; };
+    var du = mk('input', 'form-control'); du.type = 'date'; du.value = t.due || ''; du.style.cssText = 'width:auto;'; du.onchange = function () { t.due = du.value; };
+    var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Entfernen'; x.onclick = function () { dkTodos.splice(i, 1); dkRenderTodos(); };
+    [cb, tx, pr, du, x].forEach(function (c) { r.appendChild(c); }); box.appendChild(r);
+  });
+}
+function openDok(id) {
+  var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
+  dkEv = e; var d = dokOf(e), box = document.getElementById('dk-body'); box.innerHTML = '';
+  document.getElementById('dk-title').textContent = 'Dokumentation · ' + e.patient + ' · ' + fmtTermin(e);
+  dkTodos = todos.filter(function (t) { return t.eid === e.id; }).map(function (t) { return Object.assign({}, t); });
+  DK_TEXT.forEach(function (k) { box.appendChild(dkTextSec('dk-' + k[0], k[1], d[k[0]])); });
+  var vw = mk('div'), vs = d.verw || {};
+  DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin-bottom:4px;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vw.appendChild(l); });
+  var vt = dkTa('dk-verwtext', vs.text, 2); vt.placeholder = 'Freitext zur Verwaltung'; vt.style.marginTop = '6px'; vw.appendChild(vt);
+  box.appendChild(dkSec('Verwaltung', vw));
+  var lw = mk('div'), lta = dkTa('dk-leist', d.leist || (e.leistung || ''), 2); lw.appendChild(lta);
+  if ((settings.katalog || []).length) {
+    var ls = mk('select', 'form-control'); ls.style.cssText = 'width:auto; max-width:100%; min-height:32px; padding:4px 8px; font-size:12.5px; margin-top:6px;';
+    var o0 = mk('option', '', 'Leistung aus dem Katalog hinzufügen...'); o0.value = ''; ls.appendChild(o0);
+    settings.katalog.forEach(function (k, i) { var o = mk('option', '', k.name); o.value = String(i); ls.appendChild(o); });
+    ls.onchange = function () { var k = settings.katalog[+ls.value]; ls.value = ''; if (!k) return; lta.value = (lta.value.trim() ? lta.value.trim() + '\n' : '') + k.name; };
+    lw.appendChild(ls);
+  }
+  box.appendChild(dkSec('Leistungen', lw));
+  var pw = mk('div'); var pl = mk('div'); pl.id = 'dk-prod'; pw.appendChild(pl);
+  var pb = mk('button', 'btn btn-secondary btn-sm', '+ Produkt verwenden'); pb.type = 'button'; pb.style.margin = '4px 0 8px'; pb.onclick = function () { openVb(e.id); }; pw.appendChild(pb);
+  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Weitere Produkte oder Anmerkungen'; pw.appendChild(pta);
+  box.appendChild(dkSec('Verwendete Produkte', pw));
+  box.appendChild(dkTextSec('dk-ausblick', 'Ausblick und Procedere', d.ausblick));
+  var tw = mk('div'); var tl = mk('div'); tl.id = 'dk-todos'; tw.appendChild(tl);
+  var ta2 = mk('div', 'add-row', '+ To-Do hinzufügen'); ta2.onclick = function () { dkTodos.push({ id: newId(), text: '', prio: 'mittel', due: '', done: false, created: Date.now() }); dkRenderTodos(); var ins = document.querySelectorAll('#dk-todos input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); }; tw.appendChild(ta2);
+  box.appendChild(dkSec('To-Do', tw));
+  dkRenderProd(); dkRenderTodos(); openModal('modal-dok');
+}
+function saveDok() {
+  var e = dkEv; if (!e) return;
+  var g = function (id) { return (document.getElementById(id).value || '').trim(); };
+  var verw = { text: g('dk-verwtext') }; DK_VERW.forEach(function (v) { verw[v[0]] = document.getElementById('dk-v-' + v[0]).checked; });
+  e.dok = { anamnese: g('dk-anamnese'), befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick') };
+  e.doku = dokuText(e);
+  var p = patOf(e);
+  todos = todos.filter(function (t) { return t.eid !== e.id; }).concat(dkTodos.filter(function (t) { return String(t.text).trim(); }).map(function (t) { t.eid = e.id; t.pid = p ? p.id : undefined; t.text = String(t.text).trim(); return t; }));
+  persist(); closeModal('modal-dok'); dkEv = null;
+  if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
+  var tt = document.getElementById('tab-todos'); if (tt && tt.classList.contains('active')) renderTodos();
+}
+/* To-Do-Liste */
+var PRIO_RANK = { hoch: 0, mittel: 1, niedrig: 2 };
+function todoOpenToday(t) { return !t.done && (t.prio === 'hoch' || (t.due && t.due <= iso(new Date()))); }
+function sortTodos(list) {
+  var today = iso(new Date());
+  return list.slice().sort(function (a, b) {
+    if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+    var oa = a.due && a.due < today ? 0 : 1, ob = b.due && b.due < today ? 0 : 1; if (oa !== ob) return oa - ob;
+    if (PRIO_RANK[a.prio] !== PRIO_RANK[b.prio]) return PRIO_RANK[a.prio] - PRIO_RANK[b.prio];
+    return (a.due || '9999').localeCompare(b.due || '9999') || (a.created || 0) - (b.created || 0);
+  });
+}
+function todoRow(t) {
+  var today = iso(new Date()), row = mk('div', 'td-row' + (t.done ? ' done' : ''));
+  var cb = mk('input', 'td-chk'); cb.type = 'checkbox'; cb.checked = !!t.done; cb.setAttribute('aria-label', 'Erledigt');
+  cb.onchange = function () { t.done = cb.checked; t.doneTs = cb.checked ? Date.now() : 0; persist(); refreshTodoViews(); };
+  var main = mk('div', 'td-main'); main.appendChild(mk('div', 'td-text', t.text));
+  var sub = mk('div', 'td-sub'), p = t.pid ? patients.filter(function (x) { return x.id === t.pid; })[0] : null, ev = t.eid ? events.filter(function (x) { return x.id === t.eid; })[0] : null;
+  var parts = []; if (p) parts.push(nameKey(p)); if (ev) parts.push('Termin ' + fmtTermin(ev)); sub.textContent = parts.join(' · ');
+  if (t.due) { var du = mk('span', '', (parts.length ? ' · ' : '') + 'fällig ' + fmtD(t.due)); if (!t.done && t.due < today) { du.style.color = '#b91c1c'; du.style.fontWeight = '600'; du.textContent += ' (überfällig)'; } sub.appendChild(du); }
+  if (parts.length || t.due) main.appendChild(sub);
+  main.onclick = function () { openTodo(t.id); };
+  var pr = mk('span', 'prio prio-' + t.prio, t.prio === 'hoch' ? 'Hoch' : t.prio === 'mittel' ? 'Mittel' : 'Niedrig');
+  row.appendChild(cb); row.appendChild(main); row.appendChild(pr); return row;
+}
+function refreshTodoViews() {
+  updateTodoBadge();
+  var tt = document.getElementById('tab-todos'); if (tt && tt.classList.contains('active')) renderTodos();
+  if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
+}
+function updateTodoBadge() {
+  var n = todos.filter(todoOpenToday).length, b = document.getElementById('todo-badge'); if (!b) return;
+  b.textContent = n; b.style.display = n ? 'inline' : 'none';
+}
+function setTdPrio(v) { tdPrio = v; renderTodos(); }
+function setTdStat(v) { tdStat = v; renderTodos(); }
+function renderTodos() {
+  var box = document.getElementById('td-list'); if (!box) return;
+  [].forEach.call(document.querySelectorAll('#td-prio button'), function (b) { b.className = b.getAttribute('data-v') === tdPrio ? 'on' : ''; });
+  [].forEach.call(document.querySelectorAll('#td-stat button'), function (b) { b.className = b.getAttribute('data-v') === tdStat ? 'on' : ''; });
+  var list = todos.filter(function (t) { return (!tdPrio || t.prio === tdPrio) && (tdStat === 'alle' || (tdStat === 'offen' ? !t.done : !!t.done)); });
+  box.innerHTML = '';
+  sortTodos(list).forEach(function (t) { box.appendChild(todoRow(t)); });
+  if (!list.length) box.appendChild(mk('div', 'hm-empty', tdStat === 'erledigt' ? 'Noch nichts erledigt.' : 'Keine offenen To-Dos.'));
+  updateTodoBadge();
+}
+function openTodo(id) {
+  toCur = id ? todos.filter(function (t) { return t.id === id; })[0] : null;
+  document.getElementById('to-title').textContent = toCur ? 'To-Do bearbeiten' : 'Neues To-Do';
+  document.getElementById('to-text').value = toCur ? toCur.text : ''; document.getElementById('to-prio').value = toCur ? toCur.prio : 'mittel'; document.getElementById('to-due').value = toCur ? (toCur.due || '') : '';
+  var p = toCur && toCur.pid ? patients.filter(function (x) { return x.id === toCur.pid; })[0] : null; document.getElementById('to-pat').value = p ? nameKey(p) : '';
+  var ev = toCur && toCur.eid ? events.filter(function (x) { return x.id === toCur.eid; })[0] : null; document.getElementById('to-ev').textContent = ev ? 'Aus der Dokumentation zum Termin ' + fmtTermin(ev) : '';
+  document.getElementById('to-del').style.display = toCur ? '' : 'none'; openModal('modal-todo');
+}
+function saveTodo() {
+  var tx = document.getElementById('to-text').value.trim(); if (!tx) { alert('Bitte eine Aufgabe eingeben.'); return; }
+  var pn = document.getElementById('to-pat').value.trim(), p = pn ? patients.filter(function (x) { return nameKey(x) === pn; })[0] : null;
+  if (pn && !p) { alert('Den Patienten "' + pn + '" gibt es nicht. Bitte aus der Liste wählen oder das Feld leeren.'); return; }
+  var t = toCur || { id: newId(), done: false, created: Date.now() };
+  t.text = tx; t.prio = document.getElementById('to-prio').value; t.due = document.getElementById('to-due').value; t.pid = p ? p.id : undefined;
+  if (!toCur) todos.push(t);
+  persist(); closeModal('modal-todo'); refreshTodoViews();
+}
+function deleteTodo() { if (!toCur || !confirm('To-Do löschen?')) return; todos = todos.filter(function (t) { return t !== toCur; }); persist(); closeModal('modal-todo'); refreshTodoViews(); }
+
 /* ===== Zahlungen und Ausgaben ===== */
 var AUSG_KATS = ['Material und Waren', 'Miete und Nebenkosten', 'Versicherung', 'Personal', 'Marketing', 'Steuern und Abgaben', 'Fortbildung', 'Sonstiges'];
 var zMonth = iso(new Date()).slice(0, 7), zArt = '', agCur = null;
@@ -2671,7 +2932,8 @@ function tbPicker(ta) {
   sel.onchange = function () {
     var t = list.filter(function (x) { return x.id === sel.value; })[0]; sel.value = ''; if (!t) return;
     var a = ta.selectionStart == null ? ta.value.length : ta.selectionStart, b = ta.selectionEnd == null ? a : ta.selectionEnd;
-    ta.value = ta.value.slice(0, a) + t.text + ta.value.slice(b); ta.focus(); ta.selectionStart = ta.selectionEnd = a + t.text.length;
+    var pre = (a > 0 && !/\s$/.test(ta.value.slice(0, a))) ? '\n' : '', ins = pre + t.text;
+    ta.value = ta.value.slice(0, a) + ins + ta.value.slice(b); ta.focus(); ta.selectionStart = ta.selectionEnd = a + ins.length;
     ta.dispatchEvent(new Event('input'));
   };
   return sel;
@@ -3333,7 +3595,7 @@ function saveVb() {
   c.rest = Math.round(((+c.rest || 0) - m) * 1000) / 1000;
   var eidv = document.getElementById('vb-termin').value;
   lager.verbrauch.push({ id: lid(), ts: Date.now(), pid: curP.id, prodId: p.id, chId: c.id, name: p.name, einheit: p.einheit || '', nr: c.nr || '', verfall: c.verfall || '', menge: m, ek: c.ek, eid: eidv ? +eidv : null });
-  persist(); renderVerlauf(); renderLager(); closeModal('modal-vb');
+  persist(); renderVerlauf(); renderLager(); closeModal('modal-vb'); if (dkEv) dkRenderProd();
 }
 
 /* Patienten aus einer JSON-Datei hinzufügen (ersetzt nichts, bestehende Daten bleiben) */
@@ -3456,7 +3718,7 @@ function saveTermin() {
     leistung: document.getElementById('t-leistung').value.trim()
   };
   if (editId) {
-    for (var i = 0; i < events.length; i++) if (events[i].id === editId) { ev.id = editId; ev.doku = events[i].doku; ev.status = events[i].status; events[i] = ev; }
+    for (var i = 0; i < events.length; i++) if (events[i].id === editId) { ev.id = editId; ev.doku = events[i].doku; ev.dok = events[i].dok; ev.status = events[i].status; events[i] = ev; }
   } else {
     ev.id = nid++;
     events.push(ev);
