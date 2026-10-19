@@ -246,7 +246,7 @@ body.akte-open main { display:none; }
       <span class="live-dot" title="System aktiv" aria-label="System aktiv"></span>
       <button type="button" class="ico-btn" title="Sichern" aria-label="Sichern" onclick="exportData()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span class="ico-lbl">Sichern</span></button>
       <button type="button" class="ico-btn" title="Laden" aria-label="Laden" onclick="document.getElementById('imp-file').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg><span class="ico-lbl">Laden</span></button>
-      <input type="file" id="imp-file" accept=".json,application/json" style="display:none" onchange="importData(this)">
+      <input type="file" id="imp-file" multiple style="display:none" onchange="importData(this)">
     </div>
   </div>
   <div class="hd-search">
@@ -938,6 +938,7 @@ body.akte-open main { display:none; }
 <div id="modal-bk" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><strong>Datensicherung</strong><button type="button" class="close-btn" onclick="closeModal('modal-bk')">&times;</button></div>
+    <div style="font-size:13px; color:#475569; margin-bottom:10px;">Die Sicherung wird als ZIP-Datei erstellt und enthält alle Daten sowie alle Fotos und Dokumente. Bei großen Datenmengen besteht sie aus mehreren Teilen. Speichere dann <b>alle Teile</b> und bewahre sie zusammen auf.</div>
     <div id="bk-pwbox">
       <div style="font-size:13px; color:#475569; margin-bottom:10px;">Die Sicherung wird mit diesem Passwort verschlüsselt. Ohne das Passwort lässt sie sich nicht mehr öffnen, es gibt keine Wiederherstellung.</div>
       <div class="form-group"><label>Passwort (mindestens 8 Zeichen)</label><input type="password" id="bk-pw" class="form-control" autocomplete="new-password"></div>
@@ -948,6 +949,17 @@ body.akte-open main { display:none; }
     <div style="font-size:12px; color:#64748b; margin:6px 0;">Jede Sicherung gilt nur mit dem Passwort, mit dem sie erstellt wurde. Alte Passwörter bitte aufbewahren. Fotos und Dokumente sind in der Sicherung enthalten, sie kann dadurch groß werden.</div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="bk-nopw" onchange="bkToggle()"> Ohne Passwort sichern (nicht empfohlen)</label>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-bk')">Abbrechen</button><button type="button" class="btn btn-save" onclick="doExport()">Sichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: FORTSCHRITT -->
+<div id="modal-prog" class="modal-overlay" style="z-index:70;">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header"><strong id="pg-title">Bitte warten</strong></div>
+    <div style="height:8px; background:#e2e8f0; border-radius:4px; margin:6px 0;"><div id="pg-bar" style="height:8px; width:0; background:#0f172a; border-radius:4px;"></div></div>
+    <div id="pg-status" style="font-size:13px; color:#475569; min-height:20px;"></div>
+    <div id="pg-parts" style="margin-top:10px;"></div>
+    <div class="foot-bar"><span></span><button type="button" class="btn btn-cancel" id="pg-close" style="display:none;" onclick="progClose()">Schließen</button></div>
   </div>
 </div>
 
@@ -3771,7 +3783,32 @@ function tsParse(v) {
   return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime() : Date.now();
 }
 /* ZIP lesen (gespeichert oder deflate), ohne Fremdbibliothek */
-function readZip(buf) {
+function readZip(x) { return (typeof Blob !== 'undefined' && x instanceof Blob) ? readZipBlob(x) : readZipBuf(x); }
+/* ZIP direkt aus einer Datei lesen, ohne sie ganz in den Arbeitsspeicher zu laden (auch für mehrere GB geeignet) */
+async function readZipBlob(file) {
+  var size = file.size, tl = Math.min(size, 65557), tail = new DataView(await file.slice(size - tl).arrayBuffer()), i = tl - 22;
+  while (i >= 0 && tail.getUint32(i, true) !== 0x06054b50) i--;
+  if (i < 0) throw new Error('zip');
+  var n = tail.getUint16(i + 10, true), cdSize = tail.getUint32(i + 12, true), cdOff = tail.getUint32(i + 16, true);
+  var cdBuf = await file.slice(cdOff, cdOff + cdSize).arrayBuffer(), cd = new DataView(cdBuf), u8 = new Uint8Array(cdBuf), dec = new TextDecoder('utf-8'), p = 0, list = [];
+  for (var k = 0; k < n; k++) {
+    if (cd.getUint32(p, true) !== 0x02014b50) break;
+    var nl = cd.getUint16(p + 28, true), el = cd.getUint16(p + 30, true), cl = cd.getUint16(p + 32, true);
+    list.push({ name: dec.decode(u8.subarray(p + 46, p + 46 + nl)), meth: cd.getUint16(p + 10, true), csz: cd.getUint32(p + 20, true), lo: cd.getUint32(p + 42, true) });
+    p += 46 + nl + el + cl;
+  }
+  var out = {};
+  for (var a = 0; a < list.length; a += 200) {
+    await Promise.all(list.slice(a, a + 200).map(async function (e) {
+      if (/\/$/.test(e.name)) return;
+      var lh = new DataView(await file.slice(e.lo, e.lo + 30).arrayBuffer()), ds = e.lo + 30 + lh.getUint16(26, true) + lh.getUint16(28, true), part = file.slice(ds, ds + e.csz);
+      if (e.meth === 0) out[e.name] = new Blob([part], { type: mimeOf(e.name) });
+      else if (e.meth === 8) out[e.name] = new Blob([await new Response(part.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob()], { type: mimeOf(e.name) });
+    }));
+  }
+  return out;
+}
+function readZipBuf(buf) {
   var dv = new DataView(buf), u8 = new Uint8Array(buf), dec = new TextDecoder('utf-8'), i = buf.byteLength - 22;
   while (i >= 0 && dv.getUint32(i, true) !== 0x06054b50) i--;
   if (i < 0) return Promise.reject(new Error('zip'));
@@ -4167,19 +4204,6 @@ async function decryptBackup(obj, pw) {
   var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(obj.iv) }, key, fromB64(obj.data));
   return new TextDecoder().decode(pt);
 }
-async function saveBackupFile(filename, text) {
-  var dl = null;
-  try { dl = window.claude && await window.claude.use('downloads'); } catch (x) {}
-  try {
-    if (dl) await dl.save({ filename: filename, data: text });
-    else { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); }
-    try { localStorage.setItem('ka_lastbackup', new Date().toISOString()); } catch (x) {}
-    renderHome(); return true;
-  } catch (x) {
-    if (!x || x.code !== 'declined') alert('Die Sicherung konnte nicht gespeichert werden.');
-    return false;
-  }
-}
 function exportData() {
   ['bk-pw', 'bk-pw2'].forEach(function (id) { document.getElementById(id).value = ''; });
   document.getElementById('bk-nopw').checked = false; document.getElementById('bk-newpw').checked = false; bkToggle();
@@ -4197,34 +4221,140 @@ function restoreFiles(list) {
   });
 }
 function bkToggle() { document.getElementById('bk-pwbox').style.display = document.getElementById('bk-nopw').checked ? 'none' : 'block'; }
+/* ===== Sicherung als ZIP: streamt die Dateien, teilt große Mengen in mehrere Teile, optional verschlüsselt ===== */
+var BK_PART = 400 * 1048576, CRC_T = null, bkParts = [];
+function crcTab() { if (!CRC_T) { CRC_T = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); CRC_T[n] = c >>> 0; } } return CRC_T; }
+function crcBytes(u, c) { var T = crcTab(); for (var i = 0; i < u.length; i++) c = T[(c ^ u[i]) & 255] ^ (c >>> 8); return c; }
+async function crcBlob(blob) { var c = 0xFFFFFFFF, rd = blob.stream().getReader(); for (;;) { var x = await rd.read(); if (x.done) break; c = crcBytes(x.value, c); } return (c ^ 0xFFFFFFFF) >>> 0; }
+function ZipPart() { this.body = []; this.ents = []; this.off = 0; }
+ZipPart.prototype.add = function (name, blob, crc) {
+  var nb = new TextEncoder().encode(name), h = new DataView(new ArrayBuffer(30)), d = new Date();
+  var dt = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate(), tm = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true); h.setUint16(10, tm, true); h.setUint16(12, dt, true);
+  h.setUint32(14, crc, true); h.setUint32(18, blob.size, true); h.setUint32(22, blob.size, true); h.setUint16(26, nb.length, true); h.setUint16(28, 0, true);
+  this.ents.push({ nb: nb, crc: crc, size: blob.size, off: this.off, tm: tm, dt: dt });
+  this.body.push(new Uint8Array(h.buffer), nb, blob); this.off += 30 + nb.length + blob.size;
+};
+ZipPart.prototype.finish = function () {
+  var cd = [], cdSize = 0;
+  this.ents.forEach(function (e) {
+    var h = new DataView(new ArrayBuffer(46));
+    h.setUint32(0, 0x02014b50, true); h.setUint16(4, 20, true); h.setUint16(6, 20, true); h.setUint16(8, 0x0800, true); h.setUint16(10, 0, true); h.setUint16(12, e.tm, true); h.setUint16(14, e.dt, true);
+    h.setUint32(16, e.crc, true); h.setUint32(20, e.size, true); h.setUint32(24, e.size, true); h.setUint16(28, e.nb.length, true); h.setUint32(42, e.off, true);
+    cd.push(new Uint8Array(h.buffer), e.nb); cdSize += 46 + e.nb.length;
+  });
+  var t = new DataView(new ArrayBuffer(22)); t.setUint32(0, 0x06054b50, true); t.setUint16(8, this.ents.length, true); t.setUint16(10, this.ents.length, true); t.setUint32(12, cdSize, true); t.setUint32(16, this.off, true);
+  return new Blob(this.body.concat(cd, [new Uint8Array(t.buffer)]), { type: 'application/zip' });
+};
+async function encEntry(key, u8) { var iv = crypto.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, u8)), out = new Uint8Array(12 + ct.length); out.set(iv); out.set(ct, 12); return out; }
+async function decEntry(key, u8) { return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8.subarray(0, 12) }, key, u8.subarray(12))); }
+function progOpen(title) { document.getElementById('pg-title').textContent = title; document.getElementById('pg-bar').style.width = '0'; document.getElementById('pg-status').textContent = ''; document.getElementById('pg-parts').innerHTML = ''; document.getElementById('pg-close').style.display = 'none'; openModal('modal-prog'); }
+function progSet(pct, text) { document.getElementById('pg-bar').style.width = Math.max(0, Math.min(100, pct)) + '%'; if (text !== undefined) document.getElementById('pg-status').textContent = text; }
+var bkOpen = 0;
+function progClose(force) {
+  if (!force && bkOpen > 0 && !confirm('Es wurden noch nicht alle Teile der Sicherung gespeichert. Ohne alle Teile ist die Sicherung unvollständig.\n\nTrotzdem schließen?')) return;
+  bkOpen = 0; closeModal('modal-prog');
+}
 async function doExport() {
-  var nopw = document.getElementById('bk-nopw').checked, pw = document.getElementById('bk-pw').value;
+  var nopw = document.getElementById('bk-nopw').checked, pw = document.getElementById('bk-pw').value, newpw = document.getElementById('bk-newpw').checked;
   if (!nopw) {
     if (pw.length < 8) { alert('Das Passwort braucht mindestens 8 Zeichen.'); return; }
     if (pw !== document.getElementById('bk-pw2').value) { alert('Die beiden Passwörter stimmen nicht überein.'); return; }
     if (!(window.crypto && crypto.subtle)) { alert('Verschlüsseln ist in dieser Ansicht nicht verfügbar.'); return; }
   }
-  var files = [], ohneDateien = false;
-  try { var all0 = await fAll(), total = all0.reduce(function (s, f) { return s + (f.blob ? f.blob.size : 0); }, 0);
-    if (total > 150 * 1048576) {
-      if (!confirm('Fotos und Dokumente sind zusammen ' + Math.round(total / 1048576) + ' MB groß. Das ist für eine Sicherung in einer einzigen Datei zu viel.\n\nOK = nur die Daten sichern (ohne Fotos und Dokumente)\nAbbrechen = nichts sichern')) return;
-      ohneDateien = true;
-    } } catch (x) {}
-  try { var all = ohneDateien ? [] : await fAll(); for (var fi = 0; fi < all.length; fi++) files.push({ id: all[fi].id, name: all[fi].name, type: all[fi].type, data: await blobB64(all[fi].blob) }); } catch (x) { alert('Die Fotos und Dokumente konnten nicht gelesen werden.'); return; }
-  var data = { version: 2, exportiert: new Date().toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager, ausgaben: ausgaben, todos: todos, files: files, ohneDateien: ohneDateien };
-  var text = JSON.stringify(data, null, nopw ? 2 : 0);
-  try { if (!nopw) text = await encryptBackup(text, pw); } catch (x) { alert('Das Verschlüsseln hat nicht geklappt.'); return; }
-  var ok = await saveBackupFile('kreuzberg-aesthetik-backup-' + iso(new Date()) + (nopw ? '' : '-verschluesselt') + '.json', text);
-  if (ok) {
-    if (!nopw && document.getElementById('bk-newpw').checked) { try { localStorage.setItem('ka_pwdate', new Date().toISOString()); } catch (x) {} }
-    closeModal('modal-bk');
-  }
+  closeModal('modal-bk'); progOpen('Sicherung wird erstellt');
+  try {
+    var files = await fAll(), key = null, salt = null, sid = newId(), parts = [new ZipPart()], meta = [], now = new Date();
+    if (!nopw) { salt = crypto.getRandomValues(new Uint8Array(16)); key = await bkKey(pw, salt, BK_ITER); }
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i], name = 'dateien/' + f.id, eb, crc;
+      progSet(files.length ? (i / files.length) * 90 : 90, 'Datei ' + (i + 1) + ' von ' + files.length);
+      if (key) { var e = await encEntry(key, new Uint8Array(await f.blob.arrayBuffer())); eb = new Blob([e]); crc = (crcBytes(e, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0; name += '.enc'; }
+      else { eb = f.blob; crc = await crcBlob(f.blob); }
+      var part = parts[parts.length - 1];
+      if (part.ents.length && part.off + eb.size > BK_PART) { part = new ZipPart(); parts.push(part); }
+      part.add(name, eb, crc); meta.push({ id: f.id, name: f.name, type: f.type || '', size: f.blob.size, teil: parts.length });
+      if (i % 20 === 19) await new Promise(function (r) { setTimeout(r, 0); });
+    }
+    progSet(92, 'Daten werden geschrieben...');
+    var data = { format: 'ka-sicherung', version: 3, id: sid, exportiert: now.toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager, ausgaben: ausgaben, todos: todos, dateien: meta };
+    var jb = new TextEncoder().encode(JSON.stringify(data)), jn = 'daten.json';
+    if (key) { jb = await encEntry(key, jb); jn += '.enc'; }
+    parts[0].add(jn, new Blob([jb]), (crcBytes(jb, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0);
+    var pruef = key ? toB64(await encEntry(key, new TextEncoder().encode('ka-ok'))) : '';
+    var blobs = parts.map(function (pt, idx) {
+      var info = new TextEncoder().encode(JSON.stringify({ format: 'ka-sicherung-teil', sicherung: sid, teil: idx + 1, von: parts.length, exportiert: now.toISOString(), verschluesselt: !!key, iter: BK_ITER, salt: salt ? toB64(salt) : '', pruefung: pruef }));
+      pt.add('info.json', new Blob([info]), (crcBytes(info, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0); return pt.finish();
+    });
+    progSet(100, 'Fertig. Bitte jetzt alle Teile speichern.');
+    var base = 'kreuzberg-aesthetik-sicherung-' + iso(now), box = document.getElementById('pg-parts'), got = 0, total = blobs.length;
+    box.innerHTML = ''; bkParts = blobs; bkOpen = total;
+    blobs.forEach(function (bl, idx) {
+      var nm = base + (total > 1 ? '-teil-' + (idx + 1) + '-von-' + total : '') + (key ? '-verschluesselt' : '') + '.zip';
+      var row = mk('div'); row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9;';
+      row.appendChild(mk('span', '', (total > 1 ? 'Teil ' + (idx + 1) + ' von ' + total + ' · ' : '') + Math.round(bl.size / 1048576) + ' MB'));
+      var b = mk('button', 'btn btn-save btn-sm', 'Speichern'); b.type = 'button';
+      b.onclick = function () {
+        var a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = nm; document.body.appendChild(a); a.click(); a.remove();
+        if (!b.getAttribute('data-ok')) { b.setAttribute('data-ok', '1'); b.textContent = 'Gespeichert ✓'; got++; bkOpen = total - got; }
+        if (got === total) {
+          try { localStorage.setItem('ka_lastbackup', new Date().toISOString()); if (key && newpw) localStorage.setItem('ka_pwdate', new Date().toISOString()); } catch (x) {}
+          renderHome(); document.getElementById('pg-status').textContent = 'Alle Teile wurden gespeichert.';
+        }
+      };
+      row.appendChild(b); box.appendChild(row);
+    });
+    document.getElementById('pg-close').style.display = '';
+  } catch (x) { progClose(true); alert('Die Sicherung konnte nicht erstellt werden. (' + (x && x.message ? x.message : 'unbekannter Fehler') + ')'); }
+}
+/* Sicherung laden (ZIP mit einem oder mehreren Teilen) */
+async function restoreZips(zips, inp) {
+  progOpen('Sicherung wird gelesen');
+  try {
+    var parts = [];
+    for (var i = 0; i < zips.length; i++) { var map = await readZipBlob(zips[i]); if (!map['info.json']) throw new Error('Keine Sicherung: ' + zips[i].name); parts.push({ map: map, info: JSON.parse(await map['info.json'].text()), file: zips[i] }); }
+    var inf = parts[0].info;
+    if (parts.some(function (p) { return p.info.sicherung !== inf.sicherung; })) throw new Error('Die Teile gehören nicht zur selben Sicherung');
+    var have = {}; parts.forEach(function (p) { have[p.info.teil] = p; }); var miss = []; for (var t = 1; t <= inf.von; t++) if (!have[t]) miss.push(t);
+    if (miss.length) throw new Error('Es fehlen die Teile ' + miss.join(', ') + ' von ' + inf.von + '. Bitte alle Teile gemeinsam auswählen.');
+    var ctx = { have: have, inf: inf, inp: inp };
+    progClose(true);
+    if (inf.verschluesselt) { pendingEnc = { zip: true, ctx: ctx }; importInp = inp; document.getElementById('bkp-pw').value = ''; openModal('modal-bkpw'); }
+    else await continueZipRestore(null, ctx);
+  } catch (x) { progClose(true); alert('Die Sicherung konnte nicht gelesen werden. ' + (x && x.message ? x.message : '')); if (inp) inp.value = ''; }
+}
+async function continueZipRestore(pw, ctx) {
+  var inf = ctx.inf, key = null;
+  try {
+    if (pw) { key = await bkKey(pw, fromB64(inf.salt), inf.iter); try { var ok = new TextDecoder().decode(await decEntry(key, fromB64(inf.pruefung))); if (ok !== 'ka-ok') throw 0; } catch (x) { alert('Das Passwort stimmt nicht.'); return false; } }
+    var dn = key ? 'daten.json.enc' : 'daten.json', dp = null;
+    Object.keys(ctx.have).forEach(function (k) { if (ctx.have[k].map[dn]) dp = ctx.have[k]; });
+    if (!dp) throw new Error('daten.json fehlt');
+    var bytes = new Uint8Array(await dp.map[dn].arrayBuffer()); if (key) bytes = await decEntry(key, bytes);
+    var d = JSON.parse(new TextDecoder().decode(bytes));
+    closeModal('modal-bkpw'); pendingEnc = null;
+    var restorer = async function () {
+      progOpen('Fotos und Dokumente werden wiederhergestellt'); await fClear(); var list = d.dateien || [], missing = 0;
+      for (var i = 0; i < list.length; i++) {
+        var m = list[i], p = ctx.have[m.teil], nm = 'dateien/' + m.id + (key ? '.enc' : ''), bl = p && p.map[nm];
+        progSet(list.length ? (i / list.length) * 100 : 100, 'Datei ' + (i + 1) + ' von ' + list.length);
+        if (!bl) { missing++; continue; }
+        var out = key ? new Blob([await decEntry(key, new Uint8Array(await bl.arrayBuffer()))], { type: m.type }) : new Blob([bl], { type: m.type });
+        if (!(await fPut(m.id, m.name, out))) missing++;
+        if (i % 25 === 24) await new Promise(function (r) { setTimeout(r, 0); });
+      }
+      progClose(true); return missing ? ' ' + missing + ' Datei(en) konnten nicht wiederhergestellt werden.' : '';
+    };
+    applyImport(d, ctx.inp, restorer);
+    return true;
+  } catch (x) { progClose(true); alert('Die Sicherung konnte nicht gelesen werden. ' + (x && x.message ? x.message : '')); return false; }
 }
 var pendingEnc = null, importInp = null;
 function importData(inp) {
-  var f = inp.files[0];
-  if (!f) return;
-  var r = new FileReader();
+  var fl = [].slice.call(inp.files || []); if (!fl.length) return;
+  var zips = fl.filter(function (f) { return /\.zip$/i.test(f.name); });
+  if (zips.length) { restoreZips(zips, inp); return; }
+  var f = fl[0], r = new FileReader();
   r.onload = function () {
     var d; try { d = JSON.parse(r.result); } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); inp.value = ''; return; }
     if (d && d.format === 'ka-backup-enc') {
@@ -4237,12 +4367,13 @@ function importData(inp) {
 async function doDecrypt() {
   var pw = document.getElementById('bkp-pw').value;
   if (!pendingEnc || !pw) { alert('Bitte das Passwort eingeben.'); return; }
+  if (pendingEnc.zip) { var ctx0 = pendingEnc.ctx; await continueZipRestore(pw, ctx0); return; }
   var text;
   try { text = await decryptBackup(pendingEnc, pw); } catch (x) { alert('Das Passwort stimmt nicht oder die Datei ist beschädigt.'); return; }
   var d; try { d = JSON.parse(text); } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); return; }
   closeModal('modal-bkpw'); pendingEnc = null; applyImport(d, importInp);
 }
-function applyImport(d, inp) {
+function applyImport(d, inp, restorer) {
   try {
     if (!d || !Array.isArray(d.events) || !Array.isArray(d.patients)) throw new Error('Format');
     if (!confirm('Aktuelle Daten durch die Sicherung ersetzen? (' + d.events.length + ' Termine, ' + d.patients.length + ' Patienten)')) { if (inp) inp.value = ''; return; }
@@ -4259,7 +4390,7 @@ function applyImport(d, inp) {
     events.forEach(function (e) { if (!e.id) e.id = ++m; });
     nid = m + 1;
     persist(); renderPatients(); renderCal(); renderInvoices(); refreshLeistungen(); renderLager(); renderLeist();
-    Promise.resolve(Array.isArray(d.files) && !d.ohneDateien ? restoreFiles(d.files) : null).then(migrateFiles).then(function () { alert('Daten wurden geladen.'); }, function () { alert('Die Daten wurden geladen, aber nicht alle Fotos und Dokumente.'); });
+    Promise.resolve(restorer ? restorer() : (Array.isArray(d.files) && !d.ohneDateien ? restoreFiles(d.files) : null)).then(function (msg) { return migrateFiles().then(function () { return msg; }); }).then(function (msg) { alert('Daten wurden geladen.' + (typeof msg === 'string' ? msg : '')); }, function () { progClose(true); alert('Die Daten wurden geladen, aber nicht alle Fotos und Dokumente.'); });
   } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); }
   if (inp) inp.value = '';
 }
