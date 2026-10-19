@@ -736,12 +736,12 @@ body.akte-open main { display:none; }
     </div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:10px; font-weight:400;"><input type="checkbox" id="rx-merk" checked> Neue Medikamente in die Medikation der Akte übernehmen</label>
     <div class="ak-h">Druck auf A6 quer (148 × 105 mm)</div>
-    <label class="tm-chk" style="display:flex; gap:8px; align-items:center; font-weight:400;"><input type="checkbox" id="rx-label"> Mit Beschriftung und Praxiskopf (für Papier ohne Vordruck)</label>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center; font-weight:400;"><input type="checkbox" id="rx-label" checked> Praxisstempel rechts mitdrucken</label>
     <div class="grid-2" style="margin-top:8px;">
       <div class="form-group"><label>Versatz nach rechts (mm)</label><input type="number" id="rx-dx" class="form-control" step="0.5" value="0"></div>
       <div class="form-group"><label>Versatz nach unten (mm)</label><input type="number" id="rx-dy" class="form-control" step="0.5" value="0"></div>
     </div>
-    <div style="font-size:12px; color:#64748b;">Ohne Haken wird nur Patient, Datum und Medikation gedruckt, passend für deinen Vordruck. Mit dem Versatz richtest du den Druck nach einem Testausdruck aus. Er wird gemerkt.</div>
+    <div style="font-size:12px; color:#64748b;">Aufbau: „Privat“, Name und Anschrift links, Geburtsdatum und Datum in der Mitte, Medikation darunter, Stempel rechts. Mit dem Versatz richtest du den Druck nach einem Testausdruck aus. Er wird gemerkt.</div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-rx')">Abbrechen</button><button type="button" class="btn btn-save" id="rx-go" onclick="rxMake()">PDF erstellen</button></div>
   </div>
 </div>
@@ -2623,7 +2623,7 @@ function openRx(zu) {
   document.getElementById('rx-datum').value = iso(new Date());
   document.getElementById('rx-new').value = '';
   var o = settings.rx || {}; document.getElementById('rx-dx').value = o.dx || 0; document.getElementById('rx-dy').value = o.dy || 0;
-  document.getElementById('rx-label').checked = !!o.label;
+  document.getElementById('rx-label').checked = o.label !== false;
   rxRender(); openModal('modal-rx');
 }
 function rxRender() {
@@ -2659,17 +2659,27 @@ async function rxMake() {
     var f = await doc.embedFont(L.StandardFonts.Helvetica), fb = await doc.embedFont(L.StandardFonts.HelveticaBold);
     var X = function (mm) { return (mm + dx) * MM; }, Y = function (mm) { return H - (mm + dy) * MM; };
     var txt = function (t, x, y, sz, bold) { page.drawText(rxSafe(t), { x: X(x), y: Y(y), size: sz, font: bold ? fb : f, color: L.rgb(0, 0, 0) }); };
+    var wrap = function (t, font, sz, maxW) {
+      var out = [], line = '';
+      rxSafe(t).split(/\s+/).forEach(function (w) { var c = line ? line + ' ' + w : w; if (line && font.widthOfTextAtSize(c, sz) > maxW * MM) { out.push(line); line = w; } else line = c; });
+      if (line) out.push(line); return out;
+    };
+    txt('Privat', 11, 13.3, 10);
+    txt(p.nachname + ', ' + p.vorname, 11, 22.5, 10);
+    var ad = (p.adresse || '').split(/\r?\n/).filter(Boolean).slice(0, 2); ad.forEach(function (l, i) { txt(l, 11, 27 + i * 4.2, 10); });
+    if (p.dob) txt(p.dob, 68, 27.5, 10);
+    var dp = datum.split('-'); txt(dp[2] + '.' + dp[1] + '.' + dp[0], 68, 49.5, 10);
+    var my = 61.5;
+    sel.forEach(function (r) { wrap(r.text.trim(), f, 10.5, 84).forEach(function (l) { txt(l, 11, my, 10.5); my += 4.4; }); my += 2; });
     if (label) {
-      page.drawRectangle({ x: 6 * MM, y: 6 * MM, width: W - 12 * MM, height: H - 12 * MM, borderColor: L.rgb(.3, .3, .3), borderWidth: .7 });
-      txt('Privatrezept', 12, 12, 13, true); txt(PRAXIS.kopf, 12, 18, 8.5); txt(PRAXIS.strasse + ', ' + PRAXIS.ort + ' · Tel. ' + PRAXIS.tel, 12, 22.5, 8);
+      var kp = PRAXIS.kopf.split(' - '), st = [[kp[0], 1, 10]].concat(kp[1] ? [[kp[1], 1, 10]] : [], [[PRAXIS.titel, 0, 8.5], [PRAXIS.strasse, 0, 9], [PRAXIS.ort, 0, 9], ['Tel. ' + PRAXIS.tel, 0, 9]]), sy = 59;
+      st.forEach(function (e) {
+        var fo = e[1] ? fb : f; wrap(e[0], fo, e[2], 40).forEach(function (l) {
+          var wd = fo.widthOfTextAtSize(l, e[2]) / MM; page.drawText(l, { x: X(121.5 - wd / 2), y: Y(sy), size: e[2], font: fo, color: L.rgb(0, 0, 0) }); sy += e[2] * 0.4;
+        });
+        sy += 1.2;
+      });
     }
-    var y0 = label ? 30 : 14;
-    txt(p.nachname + ', ' + p.vorname, 12, y0, 11, true);
-    if (p.dob) txt('geb. ' + p.dob, 12, y0 + 5.5, 10);
-    var ad = (p.adresse || '').split(/\r?\n/).filter(Boolean).slice(0, 2); ad.forEach(function (l, i) { txt(l, 12, y0 + 11 + i * 5, 9.5); });
-    var my = Math.max(y0 + 28, 44);
-    sel.slice(0, 8).forEach(function (r, i) { txt('Rp. ' + (sel.length > 1 ? (i + 1) + '. ' : '') + r.text.trim(), 12, my + i * 6.5, 11); });
-    var dp = datum.split('-'); txt(dp[2] + '.' + dp[1] + '.' + dp[0], 12, 98, 10);
     var bytes = await doc.save(), blob = new Blob([bytes], { type: 'application/pdf' });
     var name = 'Rezept ' + dp[2] + '.' + dp[1] + '.' + dp[0] + '.pdf', id = newId();
     var ok = await fPut(id, name, blob); if (!ok) throw new Error('save');
