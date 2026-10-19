@@ -208,7 +208,7 @@ body.akte-open main { display:none; }
 .inv-tab th { text-align:left; border-bottom:2px solid #111; padding:6px 4px; background:none; color:#111; }
 .inv-tab td { padding:6px 4px; border-bottom:1px solid #ddd; background:none; }
 .inv-tab .r { text-align:right; }
-@media (max-width:560px) { .inv-row { grid-template-columns:1fr 48px 70px 58px 66px 22px; } }
+@media (max-width:560px) { .inv-row { grid-template-columns:56px 1fr 64px 78px 22px; } .inv-row > :first-child { grid-column:1 / -1; } }
 @media print {
   body > *:not(#modal-invview) { display:none !important; }
   #modal-invview { position:static !important; background:#fff !important; padding:0 !important; display:block !important; }
