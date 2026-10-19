@@ -762,6 +762,26 @@ body.akte-open main { display:none; }
   </div>
 </div>
 
+<!-- MODAL: ALTSYSTEM-IMPORT -->
+<div id="modal-bimp" class="modal-overlay">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header"><strong>Patienten aus ZIP-Dateien importieren</strong><button type="button" class="close-btn" id="bi-x" onclick="biClose()">&times;</button></div>
+    <div id="bi-info" style="font-size:14px; color:#334155; margin-bottom:10px;"></div>
+    <div id="bi-opts">
+      <div class="form-group"><label>Patient gibt es schon</label><select id="bi-dup" class="form-control"><option value="skip">Überspringen (empfohlen)</option><option value="replace">Durch die Importdaten ersetzen</option></select></div>
+      <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="bi-shrink" checked> Fotos verkleinern (max. 2000 Pixel, spart Speicher)</label>
+      <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="bi-mail"> E-Mails aus dem Altsystem übernehmen (belegt viel Speicher)</label>
+    </div>
+    <div style="height:8px; background:#e2e8f0; border-radius:4px; margin:14px 0 6px;"><div id="bi-bar" style="height:8px; width:0; background:#0f172a; border-radius:4px;"></div></div>
+    <div id="bi-status" style="font-size:13px; color:#475569;"></div>
+    <div id="bi-log" style="max-height:220px; overflow:auto; font-size:12px; line-height:1.5; margin-top:8px; padding:8px; background:#f8fafc; border-radius:8px; display:none;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" id="bi-cancel" onclick="biClose()">Abbrechen</button>
+      <button type="button" class="btn" id="bi-go" onclick="biRun()">Import starten</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: UNTERSCHRIFT -->
 <div id="modal-sign" class="modal-overlay">
   <div class="modal-box" style="max-width:760px;">
@@ -1574,7 +1594,7 @@ function renderHome() {
   for (var mi = 0; mi <= now.getMonth(); mi++) { cum += ms.rev[mi]; var r = bo.insertRow(); r.insertCell().textContent = MN3[mi]; r.insertCell().textContent = eurShort(ms.rev[mi]); r.insertCell().textContent = eurShort(ms.out[mi]); r.insertCell().textContent = eurShort(cum); }
   fin.appendChild(tb);
   /* offene Punkte */
-  var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
+  var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !e.alt && !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
   var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, e.patient, fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung'), function () { openDokuFromTermin(e.id); }); });
   if (nd.length > 5) ndRows.push(mk('div', 'hm-empty', 'und ' + (nd.length - 5) + ' weitere'));
   hmFill('hm-nodoku', ndRows, 'Alles dokumentiert.');
@@ -3770,17 +3790,269 @@ function readZip(buf) {
   }
   return Promise.all(jobs).then(function () { return out; });
 }
+/*PARSER-BEGIN*/
+/* Liest die als PDF gedruckte Patientenakte des Altsystems (Text mit Positionen) und gibt Stammdaten und Akteneinträge zurück.
+   pages: pro Seite eine Liste von Textstücken { str, x, y, w }. Rein funktional, ohne Zugriff auf die Oberfläche. */
+function akteGroupLines(items) {
+  var its = items.filter(function (i) { return String(i.str).replace(/\s/g, '') !== ''; }).sort(function (a, b) { return b.y - a.y || a.x - b.x; });
+  var lines = [];
+  its.forEach(function (i) {
+    var l = lines.length ? lines[lines.length - 1] : null;
+    if (l && Math.abs(l.y - i.y) < 2) l.items.push(i); else lines.push({ y: i.y, items: [i] });
+  });
+  lines.forEach(function (l) { l.items.sort(function (a, b) { return a.x - b.x; }); });
+  return lines;
+}
+function akteText(l, from, to) {
+  var out = '', end = null;
+  l.items.forEach(function (i) {
+    if (i.x < from || i.x >= to) return;
+    if (end !== null && i.x - end > 1.2) out += ' ';
+    out += String(i.str).replace(/﻿|​/g, ''); end = i.x + i.w;
+  });
+  return out.replace(/\s+/g, ' ').trim();
+}
+function parseAkte(pages) {
+  var res = { titel: '', geb: '', kasse: '', erwartet: null, stamm: [], eintraege: [], druck: '', warn: [] };
+  var all = [];
+  pages.forEach(function (items, pi) {
+    akteGroupLines(items).forEach(function (l) {
+      var t = akteText(l, -1e9, 1e9);
+      if (l.y > 785) { if (!res.titel && t) res.titel = t; return; }
+      if (l.y < 45) { var dm = /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2})$/.exec(t); if (dm) res.druck = dm[1]; return; }
+      l.page = pi; l.text = t; all.push(l);
+    });
+  });
+  var i = 0, n = all.length, hdr;
+  for (; i < n; i++) {
+    var t = all[i].text, m;
+    if ((m = /^Patient:\s*(.+)$/.exec(t))) res.patientName = m[1];
+    else if ((m = /^Geb\.\s*(\d{2}\.\d{2}\.\d{4})(?:\s*\(([^)]*)\))?/.exec(t))) { res.geb = m[1]; res.kasse = m[2] || ''; }
+    else if ((m = /^Inhalt:\s*(.*)$/.exec(t))) {
+      var e = {}, re = /(\d+)\s+(Dokumentationen|Medikamente|Rechnungen|Termine|Dateien)/g, mm;
+      while ((mm = re.exec(m[1]))) e[mm[2]] = +mm[1];
+      res.erwartet = e;
+    }
+    else if (t === 'Stammdaten') { hdr = i + 1; break; }
+  }
+  /* Stammdaten-Tabelle: Spalten aus der Kopfzeile */
+  var ak = -1; for (var k = i; k < n; k++) if (all[k].text === 'Akteneinträge') { ak = k; break; }
+  if (hdr !== undefined && ak > hdr) {
+    var hl = all[hdr], xv = 1e9, xd = 1e9;
+    hl.items.forEach(function (it) { if (/^Inhalt/.test(it.str)) xv = it.x; if (/^Erstellt/.test(it.str)) xd = it.x; });
+    var cur = null;
+    for (var r = hdr + 1; r < ak; r++) {
+      var ln = all[r], lab = akteText(ln, -1e9, xv - 2), val = akteText(ln, xv - 2, xd - 2), dat = akteText(ln, xd - 2, 1e9);
+      var dm2 = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.exec(dat); if (dm2 && cur && !cur.erstellt) cur.erstellt = dm2[0];
+      if (lab && val) { cur = { label: lab, value: val, erstellt: dm2 ? dm2[0] : '' }; res.stamm.push(cur); }
+      else if (lab && !val) { if (cur) cur.label += ' ' + lab; else { cur = { label: lab, value: '', erstellt: '' }; res.stamm.push(cur); } }
+      else if (!lab && val) { if (cur) cur.value += '\n' + val; }
+    }
+    res.stamm.forEach(function (s) { s.label = s.label.replace(/\s*\*\s*$/, '').trim(); });
+  }
+  /* Akteneinträge */
+  var ent = null, prevY = null, prevPage = -1;
+  for (var q = ak + 1; q < n; q++) {
+    var L = all[q], first = L.items[0], txt = L.text;
+    var isMeta = /^(Erstellt|Geändert) am \d{4}-/.test(txt) && first.x > 300;
+    var isHead = first.x < 58 && !isMeta;
+    if (isHead) {
+      var dm3 = /(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*$/.exec(txt);
+      if (!dm3) { res.warn.push('Kopfzeile ohne Datum: ' + txt.slice(0, 60)); if (ent) ent.body.push(txt); continue; }
+      var head = txt.slice(0, dm3.index).replace(/Erstellt am\s*$/, '').trim(), am = /^(Nachricht \(E-Mail\)|[^\s\[]+)\s*(?:\[([^\]]*)\])?\s*(.*)$/.exec(head);
+      ent = { typ: am[1].trim(), autor: am[2] || '', titel: (am[3] || '').trim(), datum: dm3[1], body: [] };
+      res.eintraege.push(ent); prevY = null; continue;
+    }
+    if (isMeta || !ent) continue;
+    if (prevY !== null && L.page === prevPage && prevY - L.y > 15) ent.body.push('');
+    ent.body.push(txt); prevY = L.y; prevPage = L.page;
+  }
+  res.eintraege.forEach(function (e) { while (e.body.length && e.body[e.body.length - 1] === '') e.body.pop(); });
+  return res;
+}
+
+/* Baut aus der gelesenen Akte und den Dateien der ZIP einen Patienten, seine Termine und Anhänge.
+   dep: { tsParse, katGuess }. files: [{ id, name, blob }] (id = Nummer vor dem Dateinamen). */
+function akteNorm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9äöüß]+/g, ''); }
+function akteBuild(P, files, dep) {
+  var rep = [], tn = String(P.titel || '').split(','), nach = (tn[0] || '').trim(), vor = tn.slice(1).join(',').trim();
+  if (!nach || !vor) { var pn = String(P.patientName || '').trim().split(/\s+/); if (pn.length >= 2) { vor = vor || pn.slice(0, -1).join(' '); nach = nach || pn[pn.length - 1]; } }
+  if (!nach || !vor) return { fehler: 'Name nicht erkennbar' };
+  var p = { anrede: '', vorname: vor, nachname: nach, dob: P.geb || '', phone: '', email: '', adresse: '', allergien: '', notizen: '', medikation: [], doku: [], log: [], bilder: [], dokumente: [] };
+  var notes = [], earliest = '';
+  P.stamm.forEach(function (s) {
+    var l = s.label.toLowerCase(), v = String(s.value || '').trim();
+    if (s.erstellt && (!earliest || s.erstellt < earliest)) earliest = s.erstellt;
+    if (!v || v === '-') return;
+    if (l === 'adresse') p.adresse = v;
+    else if (/^e-?mail/.test(l)) p.email = v;
+    else if (/^telefon|handy/.test(l)) p.phone = p.phone || v;
+    else if (l === 'geschlecht') p.anrede = /männ/i.test(v) ? 'Herr' : /weib/i.test(v) ? 'Frau' : /divers/i.test(v) ? 'Divers' : '';
+    else if (/^allerg/.test(l)) p.allergien = v;
+    else notes.push(s.label + ': ' + v.replace(/\n/g, ', '));
+  });
+  if (P.kasse && !notes.some(function (x) { return /^Krankenversicherung/.test(x); })) notes.push('Krankenversicherung: ' + P.kasse);
+  p.notizen = notes.join('\n');
+  var firstEntry = '';
+  P.eintraege.forEach(function (e) { if (!firstEntry || e.datum < firstEntry) firstEntry = e.datum; });
+  p.erstellt = dep.tsParse(earliest || firstEntry || '');
+  var termine = [], verl = [], dat = [], clean = function (a) { return a.join('\n').replace(/\n{3,}/g, '\n\n').trim(); };
+  var seenMed = {};
+  P.eintraege.slice().reverse().forEach(function (e) {
+    var body = clean(e.body), one = e.body.join(' ').replace(/\s+/g, ' ').trim();
+    if (e.typ === 'Termin') {
+      var b = one.replace(/^.*?\)\s*:\s*\[[^\]]*\]\s*/, ''), nz = '';
+      if (b === one) b = one.replace(/^.*\[[^\]]*\]\s*/, '') === one ? '' : one.replace(/^.*\[[^\]]*\]\s*/, '');
+      var m = /^(.*?)\s*-?\s*\((.*)\)\s*$/.exec(b); if (m && (m[1] === '' || / - \(/.test(b) || /^\(/.test(b))) { b = m[1].replace(/\s*-\s*$/, ''); nz = m[2]; }
+      termine.push({ datum: e.datum, behandlung: b.trim(), notiz: nz.trim(), verl: [] });
+    } else if (e.typ === 'Verlauf') verl.push({ datum: e.datum, text: ((e.titel ? e.titel + '\n' : '') + body).trim() });
+    else if (e.typ === 'Datei') dat.push({ datum: e.datum, name: one.replace(/\s*\((?:Bild|PDF|Datei|Dokument)\)\s*$/i, '').trim() });
+    else if (e.typ === 'Medikament') {
+      var nm = e.body.filter(function (x) { return x && !/^\d+([.,]\d+)?$/.test(x); }).join(' ').trim();
+      if (nm) { if (!seenMed[nm.toLowerCase()]) { seenMed[nm.toLowerCase()] = 1; p.medikation.push(nm); } p.log.push({ ts: dep.tsParse(e.datum), type: 'med', text: nm }); }
+    } else if (e.typ === 'Rezept') {
+      var lines = [], names = [], q = null;
+      for (var i = 0; i < e.body.length; i++) { var x = e.body[i]; if (/^Verknüpfte Dateien/.test(x)) break; if (!x) continue; if (/^\d+([.,]\d+)?$/.test(x)) { if (names.length) lines[names.length - 1] = names[names.length - 1] + ' (Menge ' + x + ')'; } else { names.push(x); lines.push(x); } }
+      p.log.push({ ts: dep.tsParse(e.datum), type: 'notiz', text: 'Rezept (Altsystem)\n' + lines.join('\n') });
+    } else if (e.typ === 'Rechnung') p.log.push({ ts: dep.tsParse(e.datum), type: 'notiz', text: 'Rechnung (Altsystem)\n' + body });
+    else if (/^Nachricht/.test(e.typ)) p.log.push({ ts: dep.tsParse(e.datum), type: 'mail', text: ('E-Mail (Altsystem)\n' + body).slice(0, 4000) });
+    else if (e.typ === 'Infoskop') { /* nur Verweis auf Dateien, die schon als Datei geführt werden */ }
+    else p.log.push({ ts: dep.tsParse(e.datum), type: 'notiz', text: e.typ + (e.titel ? ' ' + e.titel : '') + '\n' + body });
+  });
+  /* Termine: gleiche Tagesdokumentation zuordnen, wenn an dem Tag genau ein Termin liegt */
+  var byDay = {}; termine.forEach(function (t, i) { (byDay[t.datum.slice(0, 10)] = byDay[t.datum.slice(0, 10)] || []).push(i); });
+  var events = termine.map(function (t) { return { date: t.datum.slice(0, 10), time: t.datum.slice(11, 16), dur: 60, behandlung: t.behandlung || 'Beratung', notiz: t.notiz, color: '#2f9e44', alt: true }; });
+  verl.forEach(function (v) {
+    var d = byDay[v.datum.slice(0, 10)];
+    if (d && d.length === 1) { termine[d[0]].verl.push(v); } else p.doku.push({ ts: dep.tsParse(v.datum), text: v.text });
+  });
+  termine.forEach(function (t, i) {
+    if (!t.verl.length) return;
+    var txt = t.verl.map(function (v) { return v.text; }).join('\n\n');
+    events[i].doku = txt; events[i].dok = { anamnese: '', befund: '', behandlung: txt, verw: {}, leist: '', produkte: '', ausblick: '' };
+  });
+  /* Dateien den Einträgen zuordnen */
+  var list = files.map(function (f) { return { id: f.id, name: f.name, blob: f.blob, key: akteNorm(f.name), used: false }; }).sort(function (a, b) { return a.id - b.id; });
+  var akteKey = akteNorm(P.titel + '.pdf'), akteCopies = list.filter(function (f) { return f.key === akteKey; });
+  var rest = list.filter(function (f) { return f.key !== akteKey; });
+  var atts = [];
+  var attach = function (f, ts, nameOverride) {
+    var isImg = /\.(jpe?g|png|gif|webp|heic|heif|bmp)$/i.test(f.name), t = ts, day = new Date(t), dk = day.getFullYear() + '-' + ('0' + (day.getMonth() + 1)).slice(-2) + '-' + ('0' + day.getDate()).slice(-2);
+    var zi = byDay[dk] && byDay[dk].length === 1 ? byDay[dk][0] : -1;
+    atts.push({ name: nameOverride || f.name, blob: f.blob, ts: t, kind: isImg ? 'bild' : 'dok', kat: isImg ? '' : dep.katGuess(f.name), zuIdx: zi });
+  };
+  dat.forEach(function (d) {
+    var k = akteNorm(d.name), f = rest.filter(function (x) { return !x.used && x.key === k; })[0];
+    if (!f) { rep.push('Datei fehlt im ZIP: ' + d.name); return; }
+    f.used = true; attach(f, dep.tsParse(d.datum));
+  });
+  rest.forEach(function (f) {
+    if (f.used) return;
+    var m = /(\d{4})(\d{2})(\d{2})[_-]?(\d{2})?(\d{2})?/.exec(f.name), ts = m ? dep.tsParse(m[1] + '-' + m[2] + '-' + m[3] + ' ' + (m[4] || '12') + ':' + (m[5] || '00')) : p.erstellt;
+    rep.push('Datei ohne Eintrag in der Akte: ' + f.name); attach(f, ts);
+  });
+  if (akteCopies.length) { var newest = akteCopies[akteCopies.length - 1]; atts.push({ name: 'Altakte (Altsystem).pdf', blob: newest.blob, ts: dep.tsParse(P.druck || ''), kind: 'dok', kat: 'Sonstiges', zuIdx: -1 }); }
+  /* Plausibilität gegen die Zusammenfassung in der Akte */
+  var ex = P.erwartet || {}, cnt = { Dokumentationen: 0, Medikamente: 0, Rechnungen: 0, Termine: 0, Dateien: 0 };
+  P.eintraege.forEach(function (e) { if (e.typ === 'Verlauf' || e.typ === 'Rezept' || e.typ === 'Infoskop') cnt.Dokumentationen++; else if (e.typ === 'Medikament') cnt.Medikamente++; else if (e.typ === 'Rechnung') cnt.Rechnungen++; else if (e.typ === 'Termin') cnt.Termine++; else if (e.typ === 'Datei') cnt.Dateien++; });
+  Object.keys(cnt).forEach(function (k) { if (ex[k] !== undefined && ex[k] !== cnt[k]) rep.push('Zahl stimmt nicht überein: ' + k + ' laut Akte ' + ex[k] + ', gelesen ' + cnt[k]); });
+  return { patient: p, events: events, atts: atts, report: rep.concat(P.warn || []) };
+}
+/*PARSER-END*/
+/* ===== Import von Patienten-ZIPs aus dem Altsystem (läuft komplett auf diesem Gerät) ===== */
+var bi = { files: [], running: false, cancel: false };
+function loadPdfJs() {
+  return new Promise(function (res, rej) {
+    if (window.pdfjsLib) { res(window.pdfjsLib); return; }
+    var sc = document.createElement('script'); sc.src = 'pdfjs.min.js';
+    sc.onload = function () { if (!window.pdfjsLib) { rej(new Error('lib')); return; } window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs.worker.min.js'; res(window.pdfjsLib); };
+    sc.onerror = function () { rej(new Error('lib')); }; document.head.appendChild(sc);
+  });
+}
+async function pdfPages(blob) {
+  var lib = await loadPdfJs(), doc = await lib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise, out = [];
+  for (var n = 1; n <= doc.numPages; n++) { var pg = await doc.getPage(n), tc = await pg.getTextContent(); out.push(tc.items.map(function (i) { return { str: i.str, x: i.transform[4], y: i.transform[5], w: i.width }; })); }
+  if (doc.destroy) doc.destroy(); return out;
+}
+function shrinkImg(blob, maxPx) {
+  return createImageBitmap(blob).then(function (bm) {
+    var sc = Math.min(1, maxPx / Math.max(bm.width, bm.height));
+    if (sc >= 1 && blob.size < 600 * 1024) { if (bm.close) bm.close(); return blob; }
+    var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(bm.width * sc)); c.height = Math.max(1, Math.round(bm.height * sc));
+    c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); if (bm.close) bm.close();
+    return new Promise(function (res) { c.toBlob(function (b) { res(b && b.size < blob.size ? b : blob); }, 'image/jpeg', 0.85); });
+  }).catch(function () { return blob; });
+}
+function storageChars() { var n = 0; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); n += k.length + (localStorage.getItem(k) || '').length; } } catch (x) {} return n; }
+function biLog(t, bad) { var l = document.getElementById('bi-log'); l.style.display = 'block'; var d = mk('div', '', t); if (bad) d.style.color = '#b91c1c'; l.appendChild(d); l.scrollTop = l.scrollHeight; }
+function biOpen(files) {
+  bi = { files: files, running: false, cancel: false };
+  document.getElementById('bi-info').textContent = files.length + (files.length === 1 ? ' ZIP-Datei ausgewählt.' : ' ZIP-Dateien ausgewählt.') + ' Jede ZIP gehört zu einem Patienten und soll die Akte als PDF (Nachname, Vorname.pdf) enthalten. Die Daten bleiben auf diesem Gerät.';
+  document.getElementById('bi-bar').style.width = '0'; document.getElementById('bi-status').textContent = ''; var l = document.getElementById('bi-log'); l.innerHTML = ''; l.style.display = 'none';
+  document.getElementById('bi-go').disabled = false; document.getElementById('bi-go').style.display = ''; document.getElementById('bi-opts').style.display = '';
+  document.getElementById('bi-cancel').textContent = 'Abbrechen'; openModal('modal-bimp');
+}
+function biClose() { if (bi.running) { bi.cancel = true; document.getElementById('bi-status').textContent = 'Wird nach der aktuellen Datei beendet...'; return; } closeModal('modal-bimp'); }
+async function biOne(file, o) {
+  var map = await readZip(await file.arrayBuffer()), keys = Object.keys(map).filter(function (k) { return !/\/$/.test(k); });
+  var mfk = keys.filter(function (k) { return /(^|\/)manifest\.json$/.test(k); })[0];
+  if (mfk) { var d = JSON.parse(await map[mfk].text()), fm = {}; keys.forEach(function (k) { fm[k] = map[k]; }); var cnt = await doImportPatienten(d, fm, o); return { ok: true, text: file.name + ': ' + (cnt ? cnt.added : 0) + ' Patient(en) im eigenen Format' }; }
+  var files = keys.map(function (k) { var base = k.split('/').pop(), m = /^(\d+)_(.*)$/.exec(base); return { id: m ? +m[1] : 0, name: m ? m[2] : base, blob: map[k] }; });
+  var akten = files.filter(function (f) { return /^[^,]+,\s*[^,]+\.pdf$/i.test(f.name); }).sort(function (a, b) { return a.id - b.id; });
+  if (!akten.length) return { fehler: file.name + ': keine Akte-PDF (Nachname, Vorname.pdf) in der ZIP gefunden' };
+  var P = parseAkte(await pdfPages(akten[akten.length - 1].blob)), r = akteBuild(P, files, { tsParse: tsParse, katGuess: katGuess });
+  if (r.fehler) return { fehler: file.name + ': ' + r.fehler };
+  var p = r.patient, name = nameKey(p), old = patients.filter(function (x) { return nameKey(x).toLowerCase() === name.toLowerCase(); })[0];
+  if (old) {
+    if (o.dup === 'skip') return { skip: true, text: name + ': übersprungen (gibt es schon)' };
+    p.id = old.id; (old.bilder || []).concat(old.dokumente || []).forEach(function (x) { fDel(x.id); });
+    patients = patients.filter(function (x) { return x !== old; }); events = events.filter(function (e) { return e.patient !== nameKey(old); });
+  }
+  if (!o.mail) p.log = p.log.filter(function (l) { return l.type !== 'mail'; });
+  var evs = r.events.map(function (e) { e.patient = name; e.id = nid++; return e; }), nf = 0, bad = 0;
+  p.doku.forEach(function (d, i) { d.ts += i; });
+  for (var i = 0; i < r.atts.length; i++) {
+    var a = r.atts[i], id = newId(), blob = a.blob;
+    if (a.kind === 'bild' && o.shrink) blob = await shrinkImg(blob, 2000);
+    if (!(await fPut(id, a.name, blob))) { bad++; continue; }
+    var rec = { id: id, ts: a.ts + i, name: a.name }; if (a.kat) rec.kat = a.kat; if (a.zuIdx >= 0) rec.zu = 'e' + evs[a.zuIdx].id;
+    (a.kind === 'bild' ? p.bilder : p.dokumente).push(rec); nf++;
+  }
+  patients.push(p); ensurePatients(); events = events.concat(evs); persist();
+  return { ok: true, text: name + ': ' + evs.length + ' Termine, ' + (p.doku.length + evs.filter(function (e) { return e.doku; }).length) + ' Dokumentationen, ' + nf + ' Dateien' + (bad ? ', ' + bad + ' Datei(en) nicht gespeichert' : ''), report: r.report.map(function (x) { return name + ': ' + x; }) };
+}
+async function biRun() {
+  if (bi.running) return;
+  var o = { dup: document.getElementById('bi-dup').value, shrink: document.getElementById('bi-shrink').checked, mail: document.getElementById('bi-mail').checked, quiet: true };
+  bi.running = true; bi.cancel = false; document.getElementById('bi-go').disabled = true; document.getElementById('bi-opts').style.display = 'none'; document.getElementById('bi-cancel').textContent = 'Anhalten';
+  var sum = { ok: 0, skip: 0, fail: 0 }, total = bi.files.length, i;
+  for (i = 0; i < total && !bi.cancel; i++) {
+    var f = bi.files[i]; document.getElementById('bi-status').textContent = (i + 1) + ' von ' + total + ': ' + f.name;
+    if (storageChars() > 4400000) { biLog('Der Browser-Speicher für Patientendaten ist fast voll. Der Import wurde angehalten, um nichts zu verlieren.', true); bi.cancel = true; break; }
+    try {
+      var r = await biOne(f, o);
+      if (r.fehler) { sum.fail++; biLog(r.fehler, true); } else if (r.skip) { sum.skip++; biLog(r.text); } else { sum.ok++; biLog(r.text); (r.report || []).forEach(function (x) { biLog('  Hinweis: ' + x); }); }
+    } catch (e) { sum.fail++; biLog(f.name + ': Fehler (' + (e && e.message ? e.message : 'unbekannt') + ')', true); }
+    document.getElementById('bi-bar').style.width = Math.round((i + 1) / total * 100) + '%';
+    await new Promise(function (r2) { setTimeout(r2, 0); });
+  }
+  bi.running = false; persist(); renderPatients(); renderCal(); renderHome();
+  document.getElementById('bi-status').textContent = 'Fertig: ' + sum.ok + ' importiert, ' + sum.skip + ' übersprungen, ' + sum.fail + ' mit Fehler' + (bi.cancel ? ' (angehalten nach ' + i + ' von ' + total + ')' : '') + '. Speicher: ' + Math.round(storageChars() / 52428.8) + ' % des Browser-Speichers für Patientendaten belegt.';
+  document.getElementById('bi-go').style.display = 'none'; document.getElementById('bi-cancel').textContent = 'Schließen';
+}
 function importPatienten(inp) {
   var fl = [].slice.call(inp.files || []); if (!fl.length) return;
   var fail = function () { alert('Die Datei konnte nicht gelesen werden.'); inp.value = ''; };
   var zip = fl.filter(function (f) { return /\.zip$/i.test(f.name); })[0];
   var mf = zip ? null : fl.filter(function (f) { return /\.json$/i.test(f.name); })[0];
   if (!zip && !mf) { alert('Bitte die ZIP-Datei wählen, oder die Datei manifest.json zusammen mit den zugehörigen Dateien.'); inp.value = ''; return; }
+  var zips = fl.filter(function (f) { return /\.zip$/i.test(f.name); });
+  if (zips.length > 1) { inp.value = ''; biOpen(zips); return; }
   var done = function (o) { inp.value = ''; return doImportPatienten(o.d, o.files); };
   if (zip) {
     var r = new FileReader(); r.onerror = fail;
     r.onload = function () {
-      readZip(r.result).then(function (m) { if (!m['manifest.json']) throw new Error('manifest'); return m['manifest.json'].text().then(function (t) { return { d: JSON.parse(t), files: m }; }); }).then(done, fail);
+      readZip(r.result).then(function (m) { if (!m['manifest.json']) { inp.value = ''; biOpen([zip]); return Promise.reject(new Error('batch')); } return m['manifest.json'].text().then(function (t) { return { d: JSON.parse(t), files: m }; }); }).then(done, function (e) { if (e && e.message === 'batch') return; fail(); });
     };
     r.readAsArrayBuffer(zip);
   } else {
@@ -3790,14 +4062,14 @@ function importPatienten(inp) {
     }).then(done, fail);
   }
 }
-function doImportPatienten(d, files) {
-  if (!d || d.format !== 'ka-patienten' || !Array.isArray(d.patients)) { alert('Das ist keine Patienten-Importdatei. Für eine komplette Sicherung nutze oben "Laden".'); return Promise.resolve(); }
+function doImportPatienten(d, files, q) {
+  if (!d || d.format !== 'ka-patienten' || !Array.isArray(d.patients)) { if (q) return Promise.reject(new Error('kein Patienten-Importpaket')); alert('Das ist keine Patienten-Importdatei. Für eine komplette Sicherung nutze oben "Laden".'); return Promise.resolve(); }
   var added = 0, ev = 0, nf = 0, miss = 0, jobs = [], T = function (v) { return String(v == null ? '' : v); };
   d.patients.forEach(function (src) {
     var name = (T(src.vorname) + ' ' + T(src.nachname)).trim();
     if (!T(src.vorname).trim() || !T(src.nachname).trim()) return;
     var old = patients.filter(function (x) { return nameKey(x).toLowerCase() === name.toLowerCase(); })[0];
-    if (old && !confirm('Einen Patienten "' + name + '" gibt es schon.\n\nOK = seine bisherigen Daten (Termine, Dokumentation, Dateien) durch die Importdaten ersetzen.\nAbbrechen = diesen Patienten überspringen.')) return;
+    if (old && (q ? q.dup === 'skip' : !confirm('Einen Patienten "' + name + '" gibt es schon.\n\nOK = seine bisherigen Daten (Termine, Dokumentation, Dateien) durch die Importdaten ersetzen.\nAbbrechen = diesen Patienten überspringen.'))) return;
     var p = { anrede: T(src.anrede), vorname: T(src.vorname).trim(), nachname: T(src.nachname).trim(), dob: T(src.dob), phone: T(src.phone), email: T(src.email), adresse: T(src.adresse), allergien: T(src.allergien), notizen: T(src.notizen), medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: tsParse(src.erstellt) };
     if (old) {
       p.id = old.id;
@@ -3825,6 +4097,7 @@ function doImportPatienten(d, files) {
   });
   return Promise.all(jobs).then(function () {
     persist(); renderPatients(); renderCal(); if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
+    if (q) return { added: added, ev: ev, nf: nf, miss: miss };
     alert(added + ' Patient(en), ' + ev + ' Termin(e) und ' + nf + ' Datei(en) wurden hinzugefügt.' + (miss ? '\n' + miss + ' Datei(en) konnten nicht übernommen werden.' : ''));
   });
 }
@@ -3931,9 +4204,14 @@ async function doExport() {
     if (pw !== document.getElementById('bk-pw2').value) { alert('Die beiden Passwörter stimmen nicht überein.'); return; }
     if (!(window.crypto && crypto.subtle)) { alert('Verschlüsseln ist in dieser Ansicht nicht verfügbar.'); return; }
   }
-  var files = [];
-  try { var all = await fAll(); for (var fi = 0; fi < all.length; fi++) files.push({ id: all[fi].id, name: all[fi].name, type: all[fi].type, data: await blobB64(all[fi].blob) }); } catch (x) { alert('Die Fotos und Dokumente konnten nicht gelesen werden.'); return; }
-  var data = { version: 2, exportiert: new Date().toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager, ausgaben: ausgaben, todos: todos, files: files };
+  var files = [], ohneDateien = false;
+  try { var all0 = await fAll(), total = all0.reduce(function (s, f) { return s + (f.blob ? f.blob.size : 0); }, 0);
+    if (total > 150 * 1048576) {
+      if (!confirm('Fotos und Dokumente sind zusammen ' + Math.round(total / 1048576) + ' MB groß. Das ist für eine Sicherung in einer einzigen Datei zu viel.\n\nOK = nur die Daten sichern (ohne Fotos und Dokumente)\nAbbrechen = nichts sichern')) return;
+      ohneDateien = true;
+    } } catch (x) {}
+  try { var all = ohneDateien ? [] : await fAll(); for (var fi = 0; fi < all.length; fi++) files.push({ id: all[fi].id, name: all[fi].name, type: all[fi].type, data: await blobB64(all[fi].blob) }); } catch (x) { alert('Die Fotos und Dokumente konnten nicht gelesen werden.'); return; }
+  var data = { version: 2, exportiert: new Date().toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager, ausgaben: ausgaben, todos: todos, files: files, ohneDateien: ohneDateien };
   var text = JSON.stringify(data, null, nopw ? 2 : 0);
   try { if (!nopw) text = await encryptBackup(text, pw); } catch (x) { alert('Das Verschlüsseln hat nicht geklappt.'); return; }
   var ok = await saveBackupFile('kreuzberg-aesthetik-backup-' + iso(new Date()) + (nopw ? '' : '-verschluesselt') + '.json', text);
@@ -3981,7 +4259,7 @@ function applyImport(d, inp) {
     events.forEach(function (e) { if (!e.id) e.id = ++m; });
     nid = m + 1;
     persist(); renderPatients(); renderCal(); renderInvoices(); refreshLeistungen(); renderLager(); renderLeist();
-    Promise.resolve(Array.isArray(d.files) ? restoreFiles(d.files) : null).then(migrateFiles).then(function () { alert('Daten wurden geladen.'); }, function () { alert('Die Daten wurden geladen, aber nicht alle Fotos und Dokumente.'); });
+    Promise.resolve(Array.isArray(d.files) && !d.ohneDateien ? restoreFiles(d.files) : null).then(migrateFiles).then(function () { alert('Daten wurden geladen.'); }, function () { alert('Die Daten wurden geladen, aber nicht alle Fotos und Dokumente.'); });
   } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); }
   if (inp) inp.value = '';
 }
