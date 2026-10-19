@@ -573,6 +573,21 @@ body.akte-open main { display:none; }
   </div>
 </div>
 
+<!-- MODAL: UNTERSCHRIFT -->
+<div id="modal-sign" class="modal-overlay">
+  <div class="modal-box" style="max-width:760px;">
+    <div class="modal-header"><strong>Unterschrift</strong><button type="button" class="close-btn" onclick="closeModal('modal-sign')">&times;</button></div>
+    <div id="sg-info" style="font-size:14px; color:#334155; margin-bottom:8px;"></div>
+    <div style="border:2px dashed #94a3b8; border-radius:10px; background:#fff;"><canvas id="sg-cv" width="1400" height="400" style="width:100%; display:block; touch-action:none; cursor:crosshair;"></canvas></div>
+    <div style="font-size:12px; color:#64748b; margin-top:6px;">Bitte mit Finger oder Stift im Feld unterschreiben.</div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-sign')">Abbrechen</button>
+      <button type="button" class="btn btn-secondary" onclick="sgClear()">Löschen</button>
+      <button type="button" class="btn btn-save" id="sg-ok" onclick="applySign()">Unterschrift übernehmen</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: VORLAGE -->
 <div id="modal-tpl" class="modal-overlay">
   <div class="modal-box">
@@ -581,7 +596,22 @@ body.akte-open main { display:none; }
     <div class="form-group"><label>Kategorie</label><select id="tp-kat" class="form-control"></select></div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-neu"> Bei jedem neuen Patienten vorschlagen</label>
     <div id="tp-leist" style="font-size:12px; color:#64748b; margin:8px 0;"></div>
-    <button type="button" class="btn btn-secondary" id="tp-view" onclick="viewTpl()">Vorlage ansehen</button>
+    <div class="ak-h">Unterschriftsfeld</div>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-sig" onchange="updateSigPrev()"> Unterschrift am Tablet erforderlich</label>
+    <div id="tp-sigcfg" style="display:none; margin-top:8px;">
+      <div style="font-size:12px; color:#64748b; margin-bottom:6px;">Lege fest, wo die Unterschrift auf dem Formular steht. Mit dem Testlauf siehst Du das Ergebnis.</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Seite (0 = letzte Seite)</label><input type="number" id="tp-pg" class="form-control" min="0" max="99" value="0"></div>
+        <div class="form-group"><label>Breite <span id="tp-wv"></span></label><input type="range" id="tp-w" min="15" max="60" value="30" oninput="updateSigPrev()"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Von links <span id="tp-xv"></span></label><input type="range" id="tp-x" min="0" max="85" value="55" oninput="updateSigPrev()"></div>
+        <div class="form-group"><label>Von oben <span id="tp-yv"></span></label><input type="range" id="tp-y" min="0" max="95" value="86" oninput="updateSigPrev()"></div>
+      </div>
+      <div id="tp-prev" style="position:relative; width:150px; aspect-ratio:1/1.414; background:#fff; border:1px solid #94a3b8; margin:6px 0;"><div id="tp-box" style="position:absolute; border:2px solid #2f9e44; background:#2f9e4433;"></div></div>
+      <button type="button" class="btn btn-secondary" onclick="testSig()">Testlauf mit Probe-Unterschrift</button>
+    </div>
+    <div style="margin-top:10px;"><button type="button" class="btn btn-secondary" id="tp-view" onclick="viewTpl()">Vorlage ansehen</button></div>
     <div class="foot-bar">
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tpl')">Abbrechen</button>
       <button type="button" class="btn btn-del" onclick="deleteTpl()">Löschen</button>
@@ -1151,11 +1181,11 @@ function renderHome() {
   hmFill('hm-today', te.map(function (e) {
     var end = toMin(e.time) + (e.dur || 60), isNext = !nextDone && end > nowMin; if (isNext) nextDone = true;
     var p = patOf(e), ex = null;
-    var miss = p ? tplsForEvent(e).filter(function (t) { return !hasTpl(p, t); }) : [];
+    var miss = p ? tplsForEvent(e).filter(function (t) { return tplState(p, t).s !== 'ok'; }) : [];
     if (hasAllergy(p) || miss.length) {
       ex = mk('div'); ex.style.cssText = 'display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;';
       if (hasAllergy(p)) ex.appendChild(mk('span', 'badge hm-allergy', 'Allergie: ' + p.allergien));
-      if (miss.length) ex.appendChild(mk('span', 'badge badge-amber', 'Unterlagen fehlen: ' + miss.map(function (t) { return t.name; }).join(', ')));
+      if (miss.length) ex.appendChild(mk('span', 'badge badge-amber', 'Unterlagen offen: ' + miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' (Unterschrift)' : ''); }).join(', ')));
     }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
     return hmRow(e.time + ' bis ' + endStr, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
@@ -2358,12 +2388,12 @@ function renderUnterlagen() {
   events.forEach(function (e) { if (e.patient === n && e.date >= today) tplsForEvent(e).forEach(function (t) { if (req.indexOf(t) < 0) req.push(t); }); });
   blk.style.display = req.length ? 'block' : 'none'; box.innerHTML = '';
   req.forEach(function (t) {
-    var d = (curP.dokumente || []).filter(function (x) { return x.tid === t.id || String(x.name).toLowerCase() === String(t.name).toLowerCase(); })[0];
-    var btn = null;
-    if (!d) { btn = mk('button', 'btn btn-secondary', 'Hinzufügen'); btn.type = 'button'; btn.style.cssText = 'padding:6px 10px; font-size:13px;'; btn.onclick = function (ev) { ev.stopPropagation(); addTplsTo(curP, [t], null); }; }
-    else { btn = mk('span', 'badge badge-green', 'vom ' + fmtD(iso(new Date(tsOf(d))))); }
-    var row = hmRow(d ? '✓' : '✗', t.name, katOf(t), function () { if (!d) addTplsTo(curP, [t], null); }, btn);
-    row.firstChild.style.cssText += d ? 'color:#047857; width:28px;' : 'color:#b91c1c; width:28px;';
+    var st = tplState(curP, t), d = st.d, btn = null;
+    if (st.s === 'fehlt') { btn = mk('button', 'btn btn-secondary', 'Hinzufügen'); btn.type = 'button'; btn.style.cssText = 'padding:6px 10px; font-size:13px;'; btn.onclick = function (ev) { ev.stopPropagation(); addTplsTo(curP, [t], null); }; }
+    else if (st.s === 'offen') { btn = mk('button', 'btn btn-save', 'Unterschreiben'); btn.type = 'button'; btn.style.cssText = 'padding:6px 10px; font-size:13px;'; btn.onclick = function (ev) { ev.stopPropagation(); openSign(curP, d); }; }
+    else { btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben ' + fmtD(iso(new Date(d.sig.ts))) : 'vom ' + fmtD(iso(new Date(tsOf(d))))); }
+    var row = hmRow(st.s === 'ok' ? '✓' : st.s === 'offen' ? '✎' : '✗', t.name, katOf(t) + (st.s === 'offen' ? ' · Unterschrift fehlt' : ''), function () { if (st.s === 'fehlt') addTplsTo(curP, [t], null); }, btn);
+    row.firstChild.style.cssText += (st.s === 'ok' ? 'color:#047857;' : st.s === 'offen' ? 'color:#b45309;' : 'color:#b91c1c;') + ' width:28px;';
     box.appendChild(row);
   });
 }
@@ -2378,12 +2408,111 @@ function renderTemplates() {
     c3.textContent = n ? n + ' Leistung' + (n > 1 ? 'en' : '') : '-';
   });
 }
+/* ===== Unterschrift am Tablet, in die Original-PDF gestempelt ===== */
+var DEF_SIG = { page: 0, x: 0.55, y: 0.86, w: 0.30 };
+var sgCtx = null, sgDraw = null, sgInk = false, sgBox = null, sgTarget = null;
+function loadPdfLib() {
+  return new Promise(function (res, rej) {
+    if (window.PDFLib) { res(window.PDFLib); return; }
+    var sc = document.createElement('script'); sc.src = 'pdf-lib.min.js';
+    sc.onload = function () { window.PDFLib ? res(window.PDFLib) : rej(new Error('lib')); }; sc.onerror = function () { rej(new Error('lib')); };
+    document.head.appendChild(sc);
+  });
+}
+function tplDoc(p, t) { return (p.dokumente || []).filter(function (d) { return d.tid === t.id || String(d.name).toLowerCase() === String(t.name).toLowerCase(); })[0]; }
+function tplFor(rec) { return templates.filter(function (t) { return t.id === rec.tid || String(t.name).toLowerCase() === String(rec.name).toLowerCase(); })[0]; }
+function tplState(p, t) {
+  var d = tplDoc(p, t);
+  if (!d) return { d: null, s: 'fehlt' };
+  return (t.sig && t.sig.on && !d.sig) ? { d: d, s: 'offen' } : { d: d, s: 'ok' };
+}
+function sigCfg(rec) { var t = tplFor(rec); return t && t.sig && t.sig.on ? t.sig : DEF_SIG; }
+function signable(dd) { return /\.pdf$/i.test(dd.name) && !dd.sig && [KATS[0], KATS[1], KATS[2]].indexOf(katOf(dd)) >= 0; }
+function pdfText(t) { return String(t).replace(/[^\x20-\x7E\u00A0-\u00FF]/g, '?'); }
+function stampPdf(srcBlob, cfg, sigBlob, text) {
+  return loadPdfLib().then(function (L) {
+    return Promise.all([srcBlob.arrayBuffer(), sigBlob.arrayBuffer()]).then(function (b) {
+      return L.PDFDocument.load(b[0], { ignoreEncryption: true, updateMetadata: false }).then(function (doc) {
+        var pages = doc.getPages(), pi = cfg.page > 0 ? Math.min(cfg.page, pages.length) - 1 : pages.length - 1, pg = pages[pi], sz = pg.getSize();
+        return Promise.all([doc.embedPng(b[1]), doc.embedFont(L.StandardFonts.Helvetica)]).then(function (r) {
+          var img = r[0], font = r[1], bw = sz.width * cfg.w, bh = bw / 3.5, bx = sz.width * cfg.x, top = sz.height * cfg.y;
+          var sc = Math.min(bw / img.width, bh / img.height), dw = img.width * sc, dh = img.height * sc, fs = Math.max(5, Math.min(8, sz.width * 0.013));
+          pg.drawImage(img, { x: bx, y: sz.height - top - bh + (bh - dh) / 2, width: dw, height: dh });
+          pg.drawText(pdfText(text), { x: bx, y: sz.height - top - bh - fs - 2, size: fs, font: font, color: L.rgb(0.25, 0.25, 0.25) });
+          return doc.save();
+        });
+      });
+    }).then(function (bytes) { return new Blob([bytes], { type: 'application/pdf' }); });
+  });
+}
+function sgSetup() {
+  var cv = document.getElementById('sg-cv'); sgCtx = cv.getContext('2d');
+  if (cv._ready) return; cv._ready = true;
+  function pos(e) { var r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width / r.width, y: (e.clientY - r.top) * cv.height / r.height, p: e.pressure > 0 ? e.pressure : 0.5 }; }
+  cv.addEventListener('pointerdown', function (e) { e.preventDefault(); cv.setPointerCapture(e.pointerId); sgDraw = pos(e); sgInk = true; var q = sgDraw; sgBox = sgBox || { x0: q.x, y0: q.y, x1: q.x, y1: q.y }; sgDot(q, q); });
+  cv.addEventListener('pointermove', function (e) { if (!sgDraw) return; e.preventDefault(); var q = pos(e); sgDot(sgDraw, q); sgDraw = q; });
+  ['pointerup', 'pointercancel'].forEach(function (n) { cv.addEventListener(n, function () { sgDraw = null; }); });
+}
+function sgDot(a, b) {
+  sgCtx.strokeStyle = '#111'; sgCtx.lineCap = 'round'; sgCtx.lineJoin = 'round'; sgCtx.lineWidth = 3 + b.p * 5;
+  sgCtx.beginPath(); sgCtx.moveTo(a.x, a.y); sgCtx.lineTo(b.x + 0.01, b.y + 0.01); sgCtx.stroke();
+  sgBox.x0 = Math.min(sgBox.x0, b.x); sgBox.y0 = Math.min(sgBox.y0, b.y); sgBox.x1 = Math.max(sgBox.x1, b.x); sgBox.y1 = Math.max(sgBox.y1, b.y);
+}
+function sgClear() { var cv = document.getElementById('sg-cv'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); sgInk = false; sgBox = null; sgDraw = null; }
+function sgPng() {
+  var cv = document.getElementById('sg-cv'), pad = 12, x0 = Math.max(0, sgBox.x0 - pad), y0 = Math.max(0, sgBox.y0 - pad), x1 = Math.min(cv.width, sgBox.x1 + pad), y1 = Math.min(cv.height, sgBox.y1 + pad);
+  var t = document.createElement('canvas'); t.width = Math.max(1, Math.round(x1 - x0)); t.height = Math.max(1, Math.round(y1 - y0));
+  t.getContext('2d').drawImage(cv, x0, y0, x1 - x0, y1 - y0, 0, 0, t.width, t.height);
+  return new Promise(function (res) { t.toBlob(res, 'image/png'); });
+}
+function openSign(p, rec) {
+  sgTarget = { p: p, rec: rec }; sgSetup(); sgClear();
+  document.getElementById('sg-info').textContent = nameKey(p) + ' unterschreibt: ' + rec.name;
+  openModal('modal-sign');
+}
+function applySign() {
+  if (!sgInk || !sgBox) { alert('Bitte zuerst im Feld unterschreiben.'); return; }
+  var t = sgTarget, btn = document.getElementById('sg-ok'), now = new Date(); btn.disabled = true;
+  var label = 'Unterschrieben am ' + pad(now.getDate()) + '.' + pad(now.getMonth() + 1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' Uhr von ' + nameKey(t.p);
+  Promise.all([sgPng(), fileBlob(t.rec)]).then(function (r) {
+    if (!r[1]) throw new Error('file');
+    return stampPdf(r[1], sigCfg(t.rec), r[0], label);
+  }).then(function (out) {
+    if (urlCache[t.rec.id]) { URL.revokeObjectURL(urlCache[t.rec.id]); delete urlCache[t.rec.id]; }
+    return fPut(t.rec.id, t.rec.name, out);
+  }).then(function (ok) {
+    btn.disabled = false;
+    if (!ok) { alert('Die unterschriebene Datei konnte nicht gespeichert werden.'); return; }
+    t.rec.sig = { ts: now.getTime(), name: nameKey(t.p) };
+    closeModal('modal-sign'); refreshFiles();
+  }).catch(function () { btn.disabled = false; alert('Die Unterschrift konnte nicht in die PDF eingefügt werden. Die Datei bleibt unverändert. (Ist die Datei pdf-lib.min.js hochgeladen und bist Du online?)'); });
+}
+/* Einstellungen der Vorlage */
+function updateSigPrev() {
+  var on = document.getElementById('tp-sig').checked; document.getElementById('tp-sigcfg').style.display = on ? 'block' : 'none';
+  var w = +document.getElementById('tp-w').value, x = +document.getElementById('tp-x').value, y = +document.getElementById('tp-y').value;
+  document.getElementById('tp-wv').textContent = w + ' %'; document.getElementById('tp-xv').textContent = x + ' %'; document.getElementById('tp-yv').textContent = y + ' %';
+  var b = document.getElementById('tp-box'); b.style.left = x + '%'; b.style.top = y + '%'; b.style.width = w + '%'; b.style.height = (w / 3.5 / 1.414) + '%';
+}
+function sigFromForm() { return { on: true, page: Math.max(0, parseInt(document.getElementById('tp-pg').value, 10) || 0), x: +document.getElementById('tp-x').value / 100, y: +document.getElementById('tp-y').value / 100, w: +document.getElementById('tp-w').value / 100 }; }
+function testSig() {
+  var c = document.createElement('canvas'); c.width = 700; c.height = 200; var g = c.getContext('2d');
+  g.strokeStyle = '#111'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(30, 140); g.bezierCurveTo(120, 20, 180, 20, 230, 120); g.bezierCurveTo(260, 180, 320, 60, 400, 100); g.bezierCurveTo(470, 140, 520, 60, 640, 90); g.stroke();
+  var win = window.open('', '_blank');
+  new Promise(function (r) { c.toBlob(r, 'image/png'); }).then(function (png) { return fileBlob(tpCur).then(function (src) { return stampPdf(src, sigFromForm(), png, 'Unterschrieben am TT.MM.JJJJ HH:MM Uhr von Max Mustermann (Probe)'); }); })
+    .then(function (out) { var u = URL.createObjectURL(out); if (win) win.location.href = u; else window.open(u, '_blank'); })
+    .catch(function () { if (win) win.close(); alert('Der Testlauf hat nicht geklappt. Ist die Datei pdf-lib.min.js hochgeladen und bist Du online?'); });
+}
 var tpCur = null;
 function openTpl(id) {
   tpCur = templates.filter(function (t) { return t.id === id; })[0]; if (!tpCur) return;
   document.getElementById('tp-name').value = tpCur.name;
   var sel = document.getElementById('tp-kat'); fillKatSelect(sel, false); sel.value = katOf(tpCur);
   document.getElementById('tp-neu').checked = !!tpCur.neu;
+  var sg = tpCur.sig && tpCur.sig.on ? tpCur.sig : DEF_SIG;
+  document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on);
+  document.getElementById('tp-pg').value = sg.page; document.getElementById('tp-x').value = Math.round(sg.x * 100); document.getElementById('tp-y').value = Math.round(sg.y * 100); document.getElementById('tp-w').value = Math.round(sg.w * 100);
+  updateSigPrev();
   var ls = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(id) >= 0; }).map(function (k) { return k.name; });
   document.getElementById('tp-leist').textContent = ls.length ? 'Verknüpft mit: ' + ls.join(', ') : 'Noch mit keiner Leistung verknüpft (im Reiter Leistungen bei der jeweiligen Leistung auswählen).';
   openModal('modal-tpl');
@@ -2391,6 +2520,7 @@ function openTpl(id) {
 function saveTpl() {
   var name = document.getElementById('tp-name').value.trim(); if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
   tpCur.name = name; tpCur.kat = document.getElementById('tp-kat').value; tpCur.neu = document.getElementById('tp-neu').checked;
+  if (document.getElementById('tp-sig').checked) tpCur.sig = sigFromForm(); else delete tpCur.sig;
   persist(); renderTemplates(); closeModal('modal-tpl');
 }
 function deleteTpl() {
@@ -2474,7 +2604,10 @@ function docList(p, list) {
     ks.onchange = function () { dd.kat = ks.value; refreshFiles(); }; ks.title = 'Kategorie';
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Löschen';
     x.onclick = function () { if (!confirm('Dokument "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); };
-    r.appendChild(a); r.appendChild(ks); r.appendChild(x); ul.appendChild(r);
+    var sgb = null;
+    if (dd.sig) { sgb = mk('span', 'badge badge-green', 'unterschrieben ' + fmtD(iso(new Date(dd.sig.ts)))); }
+    else if (signable(dd)) { sgb = mk('button', 'btn btn-secondary', 'Unterschreiben'); sgb.type = 'button'; sgb.style.cssText = 'padding:4px 10px; font-size:12px;'; sgb.onclick = function () { openSign(p, dd); }; }
+    r.appendChild(a); if (sgb) r.appendChild(sgb); r.appendChild(ks); r.appendChild(x); ul.appendChild(r);
   });
   return ul;
 }

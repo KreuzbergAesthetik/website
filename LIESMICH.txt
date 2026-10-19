@@ -1,7 +1,7 @@
 Kreuzberg Ästhetik Praxismanagement als App
 
-Inhalt: index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png
-Alle fünf Dateien gehören zusammen in denselben Ordner auf einem Server mit https.
+Inhalt: index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png, pdf-lib.min.js
+Alle Dateien gehören zusammen in denselben Ordner auf einem Server mit https.
 Danach die Adresse im Chrome auf dem Tablet öffnen, Menü, "App installieren" bzw. "Zum Startbildschirm hinzufügen".
 Die Patientendaten liegen nur im Browser des Tablets, nicht auf dem Server.
 
@@ -10,3 +10,7 @@ Ohne Einrichtung öffnet "E-Mail senden" das Mailprogramm des Geräts.
 Für direkten Versand von manuel.fella@kreuzberg-aesthetik.de: sendmail.php in denselben Ordner legen,
 darin TOKEN und ORIGIN anpassen, dann in der App unter Rechnungen, Praxisdaten die Adresse der sendmail.php
 und denselben Zugangscode eintragen.
+
+Unterschrift am Tablet
+Die Unterschrift wird mit der Bibliothek pdf-lib (MIT-Lizenz, siehe pdf-lib-LICENSE.md) in die PDF gestempelt.
+Dafür muss die Datei pdf-lib.min.js im selben Ordner wie index.html liegen.
