@@ -36,6 +36,9 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .nav-menu button:hover:not(:disabled) { background:#f1f5f9; } .nav-menu button:disabled { color:#94a3b8; cursor:default; } .nav-menu small { color:#94a3b8; font-size:11px; margin-left:6px; }
 .nav-sep { height:1px; background:#e2e8f0; margin:4px 0; }
 .nav-badge { background:#dc2626; color:#fff; border-radius:10px; font-size:11px; padding:1px 6px; margin-left:4px; }
+.viz-wrap { position:relative; } .viz-wrap svg { display:block; width:100%; height:auto; }
+.viz-legend { display:flex; gap:16px; font-size:13px; color:#334155; margin-bottom:6px; flex-wrap:wrap; } .viz-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; }
+.viz-tip { position:absolute; pointer-events:none; background:#0f172a; color:#fff; font-size:12px; padding:6px 9px; border-radius:6px; z-index:5; white-space:nowrap; display:none; line-height:1.5; }
 .dk-sec { margin-bottom:14px; } .dk-h { font-size:13px; font-weight:700; color:#334155; margin-bottom:4px; }
 .prio { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; }
 .prio-hoch { background:#fee2e2; color:#b91c1c; } .prio-mittel { background:#fef3c7; color:#92400e; } .prio-niedrig { background:#e2e8f0; color:#475569; }
@@ -289,28 +292,25 @@ body.akte-open main { display:none; }
   <!-- TAB 0: START -->
   <div id="tab-start" class="tab-content active">
     <div class="card">
-      <div style="font-size:22px; font-weight:700;" id="hm-greet"></div>
+      <div style="font-size:26px; font-weight:700;" id="hm-greet"></div>
       <div style="color:#64748b; margin-bottom:12px;" id="hm-date"></div>
-      <input type="text" id="hm-search" class="form-control" placeholder="Patient suchen..." autocomplete="off" oninput="homeSearch()">
-      <div id="hm-results"></div>
-      <div class="row-actions" style="margin-top:12px;">
+      <div class="row-actions">
         <button type="button" class="btn btn-sm" onclick="openTermin()">+ Termin</button>
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')">+ Patient</button>
         <button type="button" class="btn btn-sm" onclick="openInvoice(null)">+ Rechnung</button>
       </div>
     </div>
-    <div id="hm-backup"></div>
-    <div id="hm-lager"></div>
-    <div class="card"><div class="card-header"><span class="card-title">Heute</span></div><div id="hm-today"></div></div>
+    <div class="card"><div class="card-header"><span class="card-title">Deine Termine</span><span id="hm-tcount" style="font-size:13px; color:#64748b;"></span></div><div id="hm-today"></div></div>
+    <div class="card"><div class="card-header"><span class="card-title">Heute wichtig</span></div><div id="hm-important"></div></div>
     <div class="hm-grid">
-      <div class="card"><div class="card-header"><span class="card-title">Offene Punkte</span></div>
-        <div class="hm-sec">Termine ohne Dokumentation</div><div id="hm-nodoku"></div>
-        <div class="hm-sec" style="margin-top:14px;">Offene Rechnungen</div><div id="hm-open"></div>
-      </div>
-      <div class="card"><div class="card-header"><span class="card-title">Geburtstage</span></div>
-        <div class="hm-sec">Heute und in den nächsten 14 Tagen</div><div id="hm-bday"></div>
-        <div style="display:flex; gap:10px; margin-top:16px;"><div class="hm-stat"><span style="font-size:12px;color:#64748b;">Termine diese Woche</span><b id="hm-weekn"></b></div><div class="hm-stat"><span style="font-size:12px;color:#64748b;">Umsatz im Monat</span><b id="hm-rev"></b></div></div>
-      </div>
+      <div class="card"><div class="card-header"><span class="card-title">Geburtstage</span></div><div class="hm-sec">In den nächsten 7 Tagen</div><div id="hm-bday"></div></div>
+      <div class="card"><div class="card-header"><span class="card-title">Bestellungen</span></div><div class="hm-sec">Bald nachbestellen</div><div id="hm-order"></div></div>
+    </div>
+    <div class="card"><div class="card-header"><span class="card-title">Behandlungsliste diese Woche</span></div><div id="hm-week"></div></div>
+    <div class="card"><div class="card-header"><span class="card-title">Umsatz und Ausgaben</span><button type="button" class="btn btn-secondary btn-sm" onclick="switchTab('statistik')">Statistik</button></div><div class="scroll" id="hm-fin"></div></div>
+    <div class="card"><div class="card-header"><span class="card-title">Offene Punkte</span></div>
+      <div class="hm-sec">Termine ohne Dokumentation</div><div id="hm-nodoku"></div>
+      <div class="hm-sec" style="margin-top:14px;">Offene Rechnungen</div><div id="hm-open"></div>
     </div>
   </div>
 
@@ -482,6 +482,40 @@ body.akte-open main { display:none; }
         </div>
       </div>
       <div id="td-list" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <!-- TAB: STATISTIK -->
+  <div id="tab-statistik" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Statistik</span>
+        <div class="cal-nav">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="stStep(-1)" aria-label="Vorjahr">&lsaquo;</button>
+          <b id="st-year" style="min-width:48px; text-align:center;"></b>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="stStep(1)" aria-label="Folgejahr">&rsaquo;</button>
+        </div>
+      </div>
+      <div id="st-kpi" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;"></div>
+      <div style="font-size:12px; color:#94a3b8;">Umsatz = erfasste Zahlungen (brutto). Ausgaben = erfasste Ausgaben und Wareneingänge (netto).</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px;">Umsatz und Ausgaben pro Monat</div>
+      <div class="viz-legend"><span><i style="background:#2a78d6"></i>Umsatz</span><span><i style="background:#eb6834"></i>Ausgaben</span></div>
+      <div class="viz-wrap" id="st-bars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px;">Kumuliert im Jahresverlauf</div>
+      <div class="viz-legend"><span><i style="background:#2a78d6"></i>Umsatz kumuliert</span><span><i style="background:#eb6834"></i>Ausgaben kumuliert</span></div>
+      <div class="viz-wrap" id="st-line"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px;">Tabelle</div>
+      <div class="scroll"><table class="pt" style="min-width:560px; font-size:13.5px;"><thead><tr><th>Monat</th><th>Umsatz</th><th>Ausgaben</th><th>Ergebnis</th><th>Umsatz kum.</th><th>Ausgaben kum.</th></tr></thead><tbody id="st-table"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px;">Umsatz nach Leistung</div>
+      <div class="scroll"><table class="pt" style="min-width:420px; font-size:13.5px;"><thead><tr><th>Leistung</th><th>Anzahl</th><th>Umsatz brutto</th></tr></thead><tbody id="st-top"></tbody></table></div>
     </div>
   </div>
 
@@ -839,6 +873,10 @@ body.akte-open main { display:none; }
     <div class="form-group"><label>IBAN</label><input type="text" id="s-iban" class="form-control"></div>
     <div class="form-group"><label>PayPal (E-Mail)</label><input type="text" id="s-paypal" class="form-control"></div>
     <div class="form-group"><label>Hinweis bei 0 % Umsatzsteuer (wird bei 0 %-Positionen automatisch in die Rechnung eingefügt)</label><textarea id="s-hinweis" class="form-control" rows="2"></textarea></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Umsatzsteuer-Voranmeldung</label><select id="s-ustva" class="form-control"><option value="quartal">Vierteljährlich</option><option value="monat">Monatlich</option><option value="aus">Keine Erinnerung</option></select></div>
+      <div class="form-group"><label>Zahlungsziel in Tagen</label><input type="text" id="s-ziel" class="form-control" inputmode="numeric"></div>
+    </div>
     <div class="form-group"><label>Standard-Zahlungshinweis</label><textarea id="s-zahlung" class="form-control" rows="2"></textarea></div>
     <div class="ak-h">E-Mail-Versand (optional)</div>
     <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
@@ -1419,6 +1457,7 @@ function goHome() {
   window.scrollTo(0, 0);
 }
 /* ===== Startseite ===== */
+var MN3 = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 var WDL = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 function patOf(e) { return patients.filter(function (p) { return nameKey(p) === e.patient; })[0]; }
 function hasAllergy(p) { var a = p && (p.allergien || '').trim().toLowerCase(); return !!a && a !== 'keine' && a !== '-' && a !== 'nein'; }
@@ -1432,42 +1471,46 @@ function hmFill(id, rows, emptyTxt) {
   var b = document.getElementById(id); b.innerHTML = '';
   if (!rows.length) b.appendChild(mk('div', 'hm-empty', emptyTxt)); else rows.forEach(function (r) { b.appendChild(r); });
 }
-function homeSearch() {
-  var q = document.getElementById('hm-search').value.trim().toLowerCase(), box = document.getElementById('hm-results'); box.innerHTML = '';
-  if (!q) return;
-  patients.filter(function (p) { return (nameKey(p) + ' ' + (p.nachname + ' ' + p.vorname)).toLowerCase().indexOf(q) >= 0; }).slice(0, 6)
-    .forEach(function (p) { box.appendChild(hmRow(null, nameKey(p), p.dob || '', function () { document.getElementById('hm-search').value = ''; box.innerHTML = ''; viewAkte(p); })); });
-  if (!box.children.length) box.appendChild(mk('div', 'hm-empty', 'Kein Patient gefunden'));
+/* Umsatzsteuer-Voranmeldung: Frist ist der 10. nach Ende des Zeitraums */
+function ustvaInfo(now) {
+  var m = settings.ustva || 'quartal'; if (m === 'aus') return null;
+  var y = now.getFullYear(), mo = now.getMonth(), due, key, label;
+  if (m === 'monat') {
+    due = new Date(y, mo + (now.getDate() >= 10 ? 0 : -1), 10);
+    var pm = new Date(due.getFullYear(), due.getMonth() - 1, 1); key = pm.getFullYear() + '-' + pad(pm.getMonth() + 1); label = MN[pm.getMonth()] + ' ' + pm.getFullYear();
+  } else {
+    var qm = [0, 3, 6, 9], cand = [];
+    for (var yy = y - 1; yy <= y; yy++) qm.forEach(function (q) { cand.push(new Date(yy, q, 10)); });
+    cand = cand.filter(function (d) { return d <= now; }); due = cand[cand.length - 1];
+    var qEnd = new Date(due.getFullYear(), due.getMonth() - 1, 1), q = Math.floor(qEnd.getMonth() / 3) + 1; key = qEnd.getFullYear() + '-Q' + q; label = q + '. Quartal ' + qEnd.getFullYear();
+  }
+  return { key: key, label: label, due: due };
+}
+function monthSeries(year) {
+  var rev = [], out = [], pat = [], ter = [], i;
+  for (i = 0; i < 12; i++) { rev.push(0); out.push(0); pat.push(0); ter.push(0); }
+  allPayments().forEach(function (p) { if (String(p.date).slice(0, 4) === String(year)) rev[+String(p.date).slice(5, 7) - 1] += p.amount; });
+  allAusgaben().forEach(function (a) { if (a.date && String(a.date).slice(0, 4) === String(year)) out[+String(a.date).slice(5, 7) - 1] += a.betrag; });
+  patients.forEach(function (p) { var d = new Date(p.erstellt); if (d.getFullYear() === +year) pat[d.getMonth()]++; });
+  events.forEach(function (e) { if (String(e.date).slice(0, 4) === String(year)) ter[+String(e.date).slice(5, 7) - 1]++; });
+  return { rev: rev, out: out, pat: pat, ter: ter };
+}
+function hmImportantRow(title, sub, fn, label, action) {
+  var ex = null; if (label) { ex = mk('button', 'btn btn-secondary btn-sm', label); ex.type = 'button'; ex.onclick = function (ev) { ev.stopPropagation(); action(); }; }
+  return hmRow(null, title, sub, fn, ex);
 }
 function renderHome() {
   if (!document.getElementById('hm-today')) return;
-  var now = new Date(), today = iso(now), nowMin = now.getHours() * 60 + now.getMinutes();
-  var h = now.getHours();
-  document.getElementById('hm-greet').textContent = h < 11 ? 'Guten Morgen' : h < 18 ? 'Guten Tag' : 'Guten Abend';
+  var now = new Date(), today = iso(now), nowMin = now.getHours() * 60 + now.getMinutes(), h = now.getHours();
+  var first = String(settings.inhaber || '').split(' ')[0];
+  document.getElementById('hm-greet').textContent = 'Hallo' + (first ? ' ' + first : '');
   document.getElementById('hm-date').textContent = WDL[now.getDay()] + ', ' + now.getDate() + '. ' + MN[now.getMonth()] + ' ' + now.getFullYear();
-  /* Backup */
-  var lb = null; try { lb = localStorage.getItem('ka_lastbackup'); } catch (x) {}
-  var bb = document.getElementById('hm-backup'); bb.innerHTML = '';
-  var lbd = lb ? iso(new Date(lb)) : null;
-  var days = lb ? Math.round((new Date(today) - new Date(lbd)) / 86400000) : null;
-  var due = lb === null || days >= 2 || (days === 1 && h >= 12) || (days >= 1 && h >= 17);
-  if (due) {
-    var w = mk('div', 'hm-warn'); w.appendChild(mk('span', '', lb === null ? 'Es gibt noch keine Datensicherung auf diesem Gerät.' : days === 1 ? 'Heute wurde noch nicht gesichert.' : 'Die letzte Datensicherung ist ' + days + ' Tage her.'));
-    var sb = mk('button', 'btn btn-secondary', 'Jetzt sichern'); sb.type = 'button'; sb.style.padding = '6px 10px'; sb.onclick = function () { exportData(); }; w.appendChild(sb); bb.appendChild(w);
-  }
-  /* Lager */
-  var lgb = document.getElementById('hm-lager'); lgb.innerHTML = '';
-  var lw = lagerWarns();
-  if (lw.length) {
-    var lwd = mk('div', 'hm-warn'); lwd.appendChild(mk('span', '', 'Lager: ' + lw.map(function (x) { return x.text; }).join(', ') + '.'));
-    var lwb = mk('button', 'btn btn-secondary', 'Zum Lager'); lwb.type = 'button'; lwb.style.padding = '6px 10px'; lwb.onclick = function () { switchTab('lager'); }; lwd.appendChild(lwb); lgb.appendChild(lwd);
-  }
-  /* Heute */
+  /* Deine Termine */
   var te = events.filter(function (e) { return e.date === today; }).sort(function (a, b) { return a.time.localeCompare(b.time); }), nextDone = false;
+  document.getElementById('hm-tcount').textContent = te.length ? te.length + (te.length === 1 ? ' Termin' : ' Termine') : '';
   hmFill('hm-today', te.map(function (e) {
     var end = toMin(e.time) + (e.dur || 60), isNext = !nextDone && end > nowMin; if (isNext) nextDone = true;
-    var p = patOf(e), ex = null;
-    var miss = p ? tplsForEvent(e).filter(function (t) { return tplState(p, t).s !== 'ok'; }) : [];
+    var p = patOf(e), ex = null, miss = p ? tplsForEvent(e).filter(function (t) { return tplState(p, t).s !== 'ok'; }) : [];
     if (hasAllergy(p) || miss.length) {
       ex = mk('div'); ex.style.cssText = 'display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;';
       if (hasAllergy(p)) ex.appendChild(mk('span', 'badge hm-allergy', 'Allergie: ' + p.allergien));
@@ -1476,43 +1519,71 @@ function renderHome() {
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
     return hmRow(e.time + ' bis ' + endStr, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
   }), 'Heute stehen keine Termine an.');
-  /* ohne Doku */
-  var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); })
-    .sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
+  /* Heute wichtig: nur, was heute erledigt werden muss */
+  var imp = document.getElementById('hm-important'); imp.innerHTML = '';
+  sortTodos(todos.filter(todoOpenToday)).forEach(function (t) { imp.appendChild(todoRow(t)); });
+  var us = ustvaInfo(now);
+  if (us && (settings.ustvaDone || []).indexOf(us.key) < 0) {
+    var late = iso(us.due) < today;
+    imp.appendChild(hmImportantRow('Umsatzsteuer-Voranmeldung ' + us.label, (late ? 'war am ' : 'fällig am ') + fmtD(iso(us.due)) + (late ? ' fällig' : ''), function () {}, 'Erledigt', function () { settings.ustvaDone = (settings.ustvaDone || []).concat([us.key]); persist(); }));
+  }
+  var low = lager.produkte.filter(function (p) { return p.min > 0 && bestand(p.id) < p.min; });
+  low.forEach(function (p) { imp.appendChild(hmImportantRow('Lager: ' + p.name + ' unter Mindestmenge', qty(bestand(p.id)) + ' ' + (p.einheit || '') + ' vorhanden, Mindestmenge ' + qty(p.min), function () { switchTab('lager'); }, 'Zum Lager', function () { switchTab('lager'); })); });
+  var expd = 0; lager.chargen.forEach(function (c) { if ((+c.rest || 0) > 0 && c.verfall && daysTo(c.verfall) < 0) expd++; });
+  if (expd) imp.appendChild(hmImportantRow(expd + (expd === 1 ? ' Charge abgelaufen' : ' Chargen abgelaufen'), 'Bitte aus dem Bestand nehmen', function () { switchTab('lager'); }, 'Zum Lager', function () { switchTab('lager'); }));
+  var ziel = parseInt(settings.zahlungsziel, 10) || 14;
+  var verzug = invoices.filter(function (i) { return !invState(i).full && Math.round((new Date(today) - new Date(i.date)) / 86400000) > ziel; }).sort(function (a, b) { return a.date.localeCompare(b.date); });
+  verzug.slice(0, 3).forEach(function (i) { imp.appendChild(hmImportantRow('Zahlungsverzug: ' + i.name, i.nr + ' vom ' + fmtD(i.date) + ' · offen ' + eur(i.total - paidSum(i)), function () { viewInvoice(i.id); }, 'Zahlung', function () { viewInvId = i.id; openPay(); })); });
+  if (verzug.length > 3) imp.appendChild(mk('div', 'hm-empty', 'und ' + (verzug.length - 3) + ' weitere überfällige Rechnungen'));
+  patients.forEach(function (p) {
+    var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(p.dob || ''); if (!m || +m[1] !== now.getDate() || +m[2] !== now.getMonth() + 1) return;
+    imp.appendChild(hmRow(null, 'Geburtstag: ' + nameKey(p), 'wird heute ' + (now.getFullYear() - +m[3]), function () { viewAkte(p); }, null, 'next'));
+  });
+  var lb = null; try { lb = localStorage.getItem('ka_lastbackup'); } catch (x) {}
+  var days = lb ? Math.round((new Date(today) - new Date(iso(new Date(lb)))) / 86400000) : null;
+  if (lb === null || days >= 2 || (days === 1 && h >= 12) || (days >= 1 && h >= 17)) imp.appendChild(hmImportantRow(lb === null ? 'Noch keine Datensicherung auf diesem Gerät' : days === 1 ? 'Heute noch nicht gesichert' : 'Letzte Datensicherung vor ' + days + ' Tagen', '', function () { exportData(); }, 'Jetzt sichern', function () { exportData(); }));
+  if (!imp.children.length) imp.appendChild(mk('div', 'hm-empty', 'Heute nichts Dringendes.'));
+  /* Geburtstage in den nächsten 7 Tagen (ab morgen) */
+  var bd = [];
+  patients.forEach(function (p) {
+    var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(p.dob || ''); if (!m) return;
+    for (var k = 1; k <= 7; k++) { var d = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), k); if (d.getMonth() === +m[2] - 1 && d.getDate() === +m[1]) { bd.push({ p: p, k: k, d: d, age: d.getFullYear() - +m[3] }); break; } }
+  });
+  bd.sort(function (a, b) { return a.k - b.k; });
+  hmFill('hm-bday', bd.map(function (x) { return hmRow(null, nameKey(x.p), (x.k === 1 ? 'Morgen' : WDL[x.d.getDay()] + ', ' + x.d.getDate() + '. ' + MN[x.d.getMonth()]) + ' · wird ' + x.age, function () { viewAkte(x.p); }); }), 'Keine Geburtstage in den nächsten 7 Tagen.');
+  /* Bestellungen, die nicht akut sind */
+  var ord = [];
+  lager.produkte.forEach(function (p) { var b = bestand(p.id); if (p.min > 0 && b >= p.min && b <= p.min * 1.5) ord.push({ t: p.name, s: 'Bestand ' + qty(b) + ' ' + (p.einheit || '') + ', Mindestmenge ' + qty(p.min) }); });
+  lager.chargen.forEach(function (c) { if ((+c.rest || 0) > 0 && c.verfall) { var d = daysTo(c.verfall); if (d >= 0 && d <= 60) { var pr = prodOf(c.pid); ord.push({ t: (pr ? pr.name : '?') + ': Charge läuft ab', s: 'Charge ' + (c.nr || '-') + ' in ' + d + ' Tagen (' + fmtD(c.verfall) + ')' }); } } });
+  hmFill('hm-order', ord.map(function (o) { return hmRow(null, o.t, o.s, function () { switchTab('lager'); }); }), 'Aktuell nichts nachzubestellen.');
+  /* Behandlungsliste diese Woche */
+  var wd = (now.getDay() + 6) % 7, wk = document.getElementById('hm-week'); wk.innerHTML = '';
+  var any = false;
+  for (var di = 0; di < 7; di++) {
+    var dd = addDays(now, di - wd), k = iso(dd), ev = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time.localeCompare(b.time); });
+    if (!ev.length) continue; any = true;
+    wk.appendChild(mk('div', 'hm-sec', WDL[dd.getDay()] + ', ' + dd.getDate() + '. ' + MN[dd.getMonth()] + (k === today ? ' (heute)' : '')));
+    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); })); });
+  }
+  if (!any) wk.appendChild(mk('div', 'hm-empty', 'Diese Woche stehen keine Termine an.'));
+  /* Umsatz und Ausgaben des Jahres */
+  var ms = monthSeries(now.getFullYear()), fin = document.getElementById('hm-fin'); fin.innerHTML = '';
+  var tb = mk('table', 'pt'); tb.style.cssText = 'min-width:0; font-size:13.5px; white-space:nowrap;';
+  var hd = tb.createTHead().insertRow(); ['Monat', 'Umsatz', 'Ausgaben', 'Umsatz kum.'].forEach(function (t) { hd.appendChild(mk('th', '', t)); });
+  var bo = tb.createTBody(), cum = 0;
+  for (var mi = 0; mi <= now.getMonth(); mi++) { cum += ms.rev[mi]; var r = bo.insertRow(); r.insertCell().textContent = MN3[mi]; r.insertCell().textContent = eurShort(ms.rev[mi]); r.insertCell().textContent = eurShort(ms.out[mi]); r.insertCell().textContent = eurShort(cum); }
+  fin.appendChild(tb);
+  /* offene Punkte */
+  var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
   var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, e.patient, fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung'), function () { openDokuFromTermin(e.id); }); });
   if (nd.length > 5) ndRows.push(mk('div', 'hm-empty', 'und ' + (nd.length - 5) + ' weitere'));
   hmFill('hm-nodoku', ndRows, 'Alles dokumentiert.');
-  /* offene Rechnungen */
   var op = invoices.filter(function (i) { return !invState(i).full; }).sort(function (a, b) { return a.date.localeCompare(b.date); }), sum = 0;
   op.forEach(function (i) { sum += i.total - paidSum(i); });
   var opRows = op.slice(0, 5).map(function (i) { return hmRow(null, i.name, i.nr + ' vom ' + fmtD(i.date), function () { viewInvoice(i.id); }, mk('b', '', eur(i.total - paidSum(i)))); });
   if (op.length > 5) opRows.push(mk('div', 'hm-empty', 'und ' + (op.length - 5) + ' weitere'));
   if (op.length) opRows.push(mk('div', 'hm-empty', 'Offen insgesamt: ' + eur(sum)));
   hmFill('hm-open', opRows, 'Keine offenen Rechnungen.');
-  /* Geburtstage */
-  var bd = [];
-  patients.forEach(function (p) {
-    var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(p.dob || ''); if (!m) return;
-    var dd = +m[1], mm = +m[2] - 1, yy = +m[3];
-    for (var k = 0; k <= 14; k++) {
-      var d = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), k);
-      if (d.getMonth() === mm && d.getDate() === dd) { bd.push({ p: p, k: k, d: d, age: d.getFullYear() - yy }); break; }
-    }
-  });
-  bd.sort(function (a, b) { return a.k - b.k; });
-  hmFill('hm-bday', bd.map(function (x) {
-    var when = x.k === 0 ? 'Heute' : x.k === 1 ? 'Morgen' : WDL[x.d.getDay()] + ', ' + x.d.getDate() + '. ' + MN[x.d.getMonth()];
-    return hmRow(null, nameKey(x.p), when + ' · wird ' + x.age, function () { viewAkte(x.p); }, null, x.k === 0 ? 'next' : '');
-  }), 'Keine Geburtstage in den nächsten 14 Tagen.');
-  /* Zahlen */
-  var wd = (now.getDay() + 6) % 7, ws = iso(addDays(now, -wd)), we = iso(addDays(now, 6 - wd));
-  document.getElementById('hm-weekn').textContent = events.filter(function (e) { return e.date >= ws && e.date <= we; }).length;
-  var ym = today.slice(0, 7), rev = 0;
-  invoices.forEach(function (i) {
-    if ((i.payments || []).length) i.payments.forEach(function (p) { if (p.date.slice(0, 7) === ym) rev += p.amount; });
-    else if (i.paid && i.date.slice(0, 7) === ym) rev += i.total;
-  });
-  document.getElementById('hm-rev').textContent = eur(rev);
 }
 function openAkteFromTermin(id) {
   if (noClick) return;
@@ -1713,12 +1784,13 @@ function deleteLeist() {
   persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
 function openSettings() {
-  var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
+  var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-ustva': 'ustva', 's-ziel': 'zahlungsziel', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { document.getElementById(id).value = settings[m[id]] || ''; });
+  if (!settings.ustva) document.getElementById('s-ustva').value = 'quartal'; if (!settings.zahlungsziel) document.getElementById('s-ziel').value = '14';
   openModal('modal-settings');
 }
 function saveSettings() {
-  var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
+  var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-ustva': 'ustva', 's-ziel': 'zahlungsziel', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { settings[m[id]] = document.getElementById(id).value.trim(); });
   persist(); refreshLeistungen(); closeModal('modal-settings');
 }
@@ -2806,6 +2878,80 @@ function saveTodo() {
   persist(); closeModal('modal-todo'); refreshTodoViews();
 }
 function deleteTodo() { if (!toCur || !confirm('To-Do löschen?')) return; todos = todos.filter(function (t) { return t !== toCur; }); persist(); closeModal('modal-todo'); refreshTodoViews(); }
+
+/* ===== Statistik ===== */
+var stYear = new Date().getFullYear(), COL1 = '#2a78d6', COL2 = '#eb6834', SVGNS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs, parent) { var e = document.createElementNS(SVGNS, tag); Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); }); if (parent) parent.appendChild(e); return e; }
+function niceMax(v) { if (v <= 0) return 400; var x = v / 4, e = Math.pow(10, Math.floor(Math.log10(x))), f = x / e, ns = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]; return ns.filter(function (a) { return a >= f - 1e-9; })[0] * e * 4; }
+function eurShort(v) { return Math.round(v).toLocaleString('de-DE') + ' €'; }
+function stStep(n) { stYear += n; renderStat(); }
+function vizTip(wrap, evt, lines) {
+  var t = wrap.querySelector('.viz-tip'); if (!t) { t = mk('div', 'viz-tip'); wrap.appendChild(t); }
+  t.innerHTML = ''; lines.forEach(function (l, i) { var d = mk('div', '', l); if (i === 0) d.style.fontWeight = '700'; t.appendChild(d); });
+  var r = wrap.getBoundingClientRect(), x = evt.clientX - r.left + 12, y = evt.clientY - r.top - 10;
+  t.style.display = 'block'; t.style.left = Math.max(0, Math.min(x, r.width - t.offsetWidth - 4)) + 'px'; t.style.top = Math.max(0, y - t.offsetHeight) + 'px';
+}
+function vizTipHide(wrap) { var t = wrap.querySelector('.viz-tip'); if (t) t.style.display = 'none'; }
+function chartFrame(wrap, W, H, ml, mr, mt, mb, max) {
+  wrap.innerHTML = '';
+  var svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Diagramm, die Tabelle darunter enthält dieselben Werte' }, wrap), ph = H - mt - mb;
+  for (var i = 0; i <= 4; i++) {
+    var y = mt + ph - ph * i / 4; sv('line', { x1: ml, x2: W - mr, y1: y, y2: y, stroke: '#e2e8f0', 'stroke-width': 1 }, svg);
+    var tx = sv('text', { x: ml - 6, y: y + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#64748b' }, svg); tx.textContent = eurShort(max * i / 4);
+  }
+  return { svg: svg, ph: ph, pw: W - ml - mr };
+}
+function barPath(x, y, w, h) { var r = Math.min(4, w / 2, h); return 'M' + x + ',' + (y + h) + ' L' + x + ',' + (y + r) + ' Q' + x + ',' + y + ' ' + (x + r) + ',' + y + ' L' + (x + w - r) + ',' + y + ' Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + ' L' + (x + w) + ',' + (y + h) + ' Z'; }
+function drawBars(ms) {
+  var wrap = document.getElementById('st-bars'), W = 720, H = 280, ml = 62, mr = 10, mt = 12, mb = 28, max = niceMax(Math.max.apply(null, ms.rev.concat(ms.out))), f = chartFrame(wrap, W, H, ml, mr, mt, mb, max), cw = f.pw / 12, bw = Math.min(18, cw * 0.32);
+  for (var i = 0; i < 12; i++) {
+    var x0 = ml + i * cw + cw / 2, base = mt + f.ph;
+    [[ms.rev[i], COL1, x0 - bw - 1], [ms.out[i], COL2, x0 + 1]].forEach(function (b) { var h = b[0] / max * f.ph; if (h > 0.5) sv('path', { d: barPath(b[2], base - h, bw, h), fill: b[1] }, f.svg); });
+    var lb = sv('text', { x: x0, y: H - 8, 'text-anchor': 'middle', 'font-size': 11, fill: '#64748b' }, f.svg); lb.textContent = MN3[i];
+    (function (i) {
+      var hit = sv('rect', { x: ml + i * cw, y: mt, width: cw, height: f.ph, fill: 'transparent', style: 'cursor:pointer' }, f.svg);
+      var show = function (e) { vizTip(wrap, e, [MN[i] + ' ' + stYear, 'Umsatz: ' + eur(ms.rev[i]), 'Ausgaben: ' + eur(ms.out[i])]); };
+      hit.addEventListener('mousemove', show); hit.addEventListener('click', show); hit.addEventListener('mouseleave', function () { vizTipHide(wrap); });
+    })(i);
+  }
+}
+function drawLine(ms) {
+  var wrap = document.getElementById('st-line'), W = 720, H = 280, ml = 62, mr = 74, mt = 12, mb = 28, now = new Date(), last = stYear === now.getFullYear() ? now.getMonth() : stYear < now.getFullYear() ? 11 : -1;
+  var cr = [], co = [], a = 0, b = 0; for (var i = 0; i < 12; i++) { a += ms.rev[i]; b += ms.out[i]; cr.push(a); co.push(b); }
+  var max = niceMax(Math.max(a, b)), f = chartFrame(wrap, W, H, ml, mr, mt, mb, max), cw = f.pw / 12, base = mt + f.ph;
+  var X = function (i) { return ml + i * cw + cw / 2; }, Y = function (v) { return base - v / max * f.ph; };
+  for (var m = 0; m < 12; m++) { var lb = sv('text', { x: X(m), y: H - 8, 'text-anchor': 'middle', 'font-size': 11, fill: '#64748b' }, f.svg); lb.textContent = MN3[m]; }
+  if (last >= 0) {
+    [[cr, COL1, 'Umsatz'], [co, COL2, 'Ausgaben']].forEach(function (s2, si) {
+      var d = ''; for (var k = 0; k <= last; k++) d += (k ? 'L' : 'M') + X(k) + ',' + Y(s2[0][k]);
+      sv('path', { d: d, fill: 'none', stroke: s2[1], 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, f.svg);
+      for (var k2 = 0; k2 <= last; k2++) sv('circle', { cx: X(k2), cy: Y(s2[0][k2]), r: 4, fill: s2[1], stroke: '#fff', 'stroke-width': 2 }, f.svg);
+      var ly = Y(s2[0][last]), other = Y((si === 0 ? co : cr)[last]); if (Math.abs(ly - other) < 14) ly += (ly <= other ? -7 : 7);
+      var t = sv('text', { x: X(last) + 10, y: ly + 4, 'font-size': 12, fill: '#0f172a' }, f.svg); t.textContent = s2[2];
+    });
+    var rule = sv('line', { x1: 0, x2: 0, y1: mt, y2: base, stroke: '#94a3b8', 'stroke-width': 1, style: 'display:none' }, f.svg);
+    for (var j = 0; j <= last; j++) (function (j) {
+      var hit = sv('rect', { x: ml + j * cw, y: mt, width: cw, height: f.ph, fill: 'transparent', style: 'cursor:pointer' }, f.svg);
+      var show = function (e) { rule.setAttribute('x1', X(j)); rule.setAttribute('x2', X(j)); rule.style.display = ''; vizTip(wrap, e, [MN[j] + ' ' + stYear, 'Umsatz kumuliert: ' + eur(cr[j]), 'Ausgaben kumuliert: ' + eur(co[j])]); };
+      hit.addEventListener('mousemove', show); hit.addEventListener('click', show); hit.addEventListener('mouseleave', function () { rule.style.display = 'none'; vizTipHide(wrap); });
+    })(j);
+  }
+}
+function renderStat() {
+  var kp = document.getElementById('st-kpi'); if (!kp) return;
+  document.getElementById('st-year').textContent = stYear;
+  var ms = monthSeries(stYear), sum = function (a) { return a.reduce(function (x, y) { return x + y; }, 0); }, rev = sum(ms.rev), out = sum(ms.out);
+  var openSum = 0; invoices.forEach(function (i) { if (!invState(i).full) openSum += i.total - paidSum(i); });
+  kp.innerHTML = ''; [['Umsatz', eur(rev)], ['Ausgaben', eur(out)], ['Ergebnis', eur(rev - out), rev - out < 0 ? '#b91c1c' : ''], ['Offene Forderungen', eur(openSum)], ['Termine', String(sum(ms.ter))], ['Neue Patienten', String(sum(ms.pat))]].forEach(function (x) { kp.appendChild(statBox(x[0], x[1], x[2])); });
+  drawBars(ms); drawLine(ms);
+  var tb = document.getElementById('st-table'); tb.innerHTML = ''; var cr = 0, co = 0;
+  for (var i = 0; i < 12; i++) { cr += ms.rev[i]; co += ms.out[i]; var r = tb.insertRow(); [MN[i], eur(ms.rev[i]), eur(ms.out[i]), eur(ms.rev[i] - ms.out[i]), eur(cr), eur(co)].forEach(function (t) { r.insertCell().textContent = t; }); }
+  var tr = tb.insertRow(); [['Summe', eur(rev), eur(out), eur(rev - out), '', '']][0].forEach(function (t) { var c = tr.insertCell(); c.textContent = t; c.style.fontWeight = '700'; });
+  var by = {}; invoices.forEach(function (i) { if (String(i.date).slice(0, 4) !== String(stYear)) return; (i.items || []).forEach(function (it) { if (it.rabatt) return; var k = String(it.text).trim(); by[k] = by[k] || { n: 0, sum: 0 }; by[k].n += it.qty || 1; by[k].sum += it.amount != null ? it.amount : r2(it.qty * it.price); }); });
+  var tt = document.getElementById('st-top'); tt.innerHTML = '';
+  Object.keys(by).sort(function (a, b) { return by[b].sum - by[a].sum; }).slice(0, 10).forEach(function (k) { var r2r = tt.insertRow(); r2r.insertCell().textContent = k; r2r.insertCell().textContent = String(by[k].n).replace('.', ','); r2r.insertCell().textContent = eur(by[k].sum); });
+  if (!tt.rows.length) { var er = tt.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = 'Keine Rechnungen in diesem Jahr'; ec.style.color = '#94a3b8'; }
+}
 
 /* ===== Zahlungen und Ausgaben ===== */
 var AUSG_KATS = ['Material und Waren', 'Miete und Nebenkosten', 'Versicherung', 'Personal', 'Marketing', 'Steuern und Abgaben', 'Fortbildung', 'Sonstiges'];
