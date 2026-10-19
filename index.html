@@ -211,7 +211,9 @@ body.akte-open main { display:none; }
 @media (max-width:440px) { .a-tiles { grid-template-columns:1fr; } .a-tile { min-height:0; } }
 .a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #c5cfdb; border-radius:14px; padding:8px 12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(15,23,42,.10); }
 .a-sex { font-size:17px; color:#b6bfcb; margin-left:8px; font-weight:400; }
-.a-fab { position:fixed; right:18px; bottom:18px; z-index:35; }
+.a-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:40; width:56px; height:56px; }
+body.akte-open .a-fab { display:block; }
+.akte-page { padding-bottom:90px; }
 .plus-btn.fab { width:56px; height:56px; font-size:32px; box-shadow:0 6px 18px rgba(15,23,42,.35); background:#0f172a; display:flex; align-items:center; justify-content:center; padding:0 0 3px; }
 .a-fab .a-menu { top:auto; bottom:66px; right:0; min-width:270px; }
 .a-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:0; position:relative; z-index:1; }
@@ -646,23 +648,6 @@ body.akte-open main { display:none; }
     <input type="file" id="a-tpl-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'templates')">
     <div id="a-head"></div>
   </div>
-  <div class="a-fab">
-    <div id="a-menu" class="a-menu" style="display:none;">
-      <button type="button" onclick="aAct('doku')">Dokumentation erstellen</button>
-      <button type="button" onclick="aAct('termin')">Termin erstellen</button>
-      <button type="button" onclick="aAct('notiz')">Notiz</button>
-      <button type="button" onclick="aAct('med')">Medikament hinzufügen</button>
-      <button type="button" onclick="aAct('rezept')">Rezept</button>
-      <button type="button" onclick="aAct('mail')">E-Mail senden</button>
-      <button type="button" onclick="aAct('bild')">Bilder hinzufügen</button>
-      <button type="button" onclick="aAct('dokument')">Dokument hinzufügen</button>
-      <button type="button" onclick="aAct('produkt')">Produkt verwenden</button>
-      <button type="button" onclick="aAct('rechnung')">Rechnung erstellen</button>
-      <button type="button" onclick="aAct('auto')">Dateien automatisch Terminen zuordnen</button>
-    </div>
-    <button type="button" class="plus-btn fab" onclick="toggleAMenu(event)" aria-label="Aktionen">+</button>
-  </div>
-
   <div class="a-tabs">
     <button type="button" id="atb-akte" class="on" onclick="setAkTab('akte')">Akte</button>
     <button type="button" id="atb-anl" onclick="setAkTab('anl')">Anlagen</button>
@@ -721,6 +706,24 @@ body.akte-open main { display:none; }
   </div>
   </div>
   <button type="button" class="btn btn-secondary" style="margin-bottom:20px;" onclick="closeModal('modal-akte')">&lsaquo; Zurück</button>
+</div>
+
+<!-- Schwebender Aktionsknopf der Akte (eigene Ebene, verschiebt das Layout nicht) -->
+  <div class="a-fab">
+  <div id="a-menu" class="a-menu" style="display:none;">
+    <button type="button" onclick="aAct('doku')">Dokumentation erstellen</button>
+    <button type="button" onclick="aAct('termin')">Termin erstellen</button>
+    <button type="button" onclick="aAct('notiz')">Notiz</button>
+    <button type="button" onclick="aAct('med')">Medikament hinzufügen</button>
+    <button type="button" onclick="aAct('rezept')">Rezept</button>
+    <button type="button" onclick="aAct('mail')">E-Mail senden</button>
+    <button type="button" onclick="aAct('bild')">Bilder hinzufügen</button>
+    <button type="button" onclick="aAct('dokument')">Dokument hinzufügen</button>
+    <button type="button" onclick="aAct('produkt')">Produkt verwenden</button>
+    <button type="button" onclick="aAct('rechnung')">Rechnung erstellen</button>
+    <button type="button" onclick="aAct('auto')">Dateien automatisch Terminen zuordnen</button>
+  </div>
+  <button type="button" class="plus-btn fab" onclick="toggleAMenu(event)" aria-label="Aktionen">+</button>
 </div>
 
 <!-- MODAL: REZEPT -->
@@ -2518,7 +2521,7 @@ function renderHead() {
   ttl.appendChild(mk('span', 'a-pid', '#' + p.id)); ttl.appendChild(document.createTextNode(p.vorname + ' ' + p.nachname));
   var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (sx) { var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; ttl.appendChild(sp); }
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
-  document.querySelector('.a-fab').style.display = stammEdit ? 'none' : '';
+  document.querySelector('.a-fab').style.visibility = stammEdit ? 'hidden' : '';
   if (stammEdit) {
     var grid = document.createElement('div'); grid.className = 'grid-2';
     HEAD_FIELDS.forEach(function (k) {
