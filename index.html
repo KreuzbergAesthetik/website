@@ -326,6 +326,21 @@ body.akte-open main { display:none; }
       <div id="ls-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Leistungen angelegt</div>
       <div style="font-size:12px; color:#94a3b8; margin-top:6px;">Diese Leistungen erscheinen im Termin und in der Rechnung. Wählst Du dort eine Leistung, füllt sich der Preis automatisch.</div>
     </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Vorlagen und Aufklärungen</span>
+        <button type="button" class="btn btn-save" onclick="document.getElementById('tpl-lib-in').click()">+ Vorlage hochladen</button>
+        <input type="file" id="tpl-lib-in" multiple style="display:none" onchange="addTemplates(this)">
+      </div>
+      <div class="scroll">
+        <table class="pt" style="min-width:520px; font-size:14px;">
+          <thead><tr><th>Vorlage</th><th style="width:210px;">Kategorie</th><th style="width:120px;">Neuer Patient</th><th style="width:110px;">Leistungen</th></tr></thead>
+          <tbody id="tp-table"></tbody>
+        </table>
+      </div>
+      <div id="tp-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Vorlagen. Lade leere Formulare hoch, zum Beispiel Aufnahmebogen, Anamnese, Datenschutz und die Aufklärungen.</div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:6px;">Eine Vorlage wird bei einem neuen Patienten oder bei einem Termin mit der verknüpften Leistung der Akte vorgeschlagen. Verknüpft wird in der jeweiligen Leistung.</div>
+    </div>
   </div>
 
   <!-- TAB 5: LAGER -->
@@ -464,6 +479,11 @@ body.akte-open main { display:none; }
     <div id="a-fin"></div>
   </div>
 
+  <div id="a-unt-block" class="card" style="display:none;">
+    <div class="ak-h" style="margin-top:0;">Unterlagen</div>
+    <div id="a-unt"></div>
+  </div>
+
   <div id="a-medien-block" class="card">
     <div class="card-header" style="margin-bottom:6px;">
       <div class="ak-h" style="margin:0; border:none; padding:0;">Medien und Dokumente</div>
@@ -479,6 +499,7 @@ body.akte-open main { display:none; }
         <button type="button" id="md-bild" onclick="setMedFilter('bild')">Bilder</button>
         <button type="button" id="md-dok" onclick="setMedFilter('dok')">Dokumente</button>
       </div>
+      <select id="md-kat" class="form-control" style="max-width:230px;" onchange="medLimit = 30; renderMedien()"></select>
     </div>
     <div id="md-sum" style="font-size:13px; color:#64748b; margin:4px 0 10px;"></div>
     <div id="md-list"></div>
@@ -543,10 +564,28 @@ body.akte-open main { display:none; }
       <div class="form-group"><label>Preis brutto in Euro *</label><input type="text" id="ls-price" class="form-control" inputmode="decimal"></div>
       <div class="form-group"><label>MwSt</label><select id="ls-rate" class="form-control"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
     </div>
+    <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
     <div class="foot-bar">
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-leist')">Abbrechen</button>
       <button type="button" id="ls-del" class="btn btn-del" style="display:none;" onclick="deleteLeist()">Löschen</button>
       <button type="button" class="btn btn-save" onclick="saveLeist()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VORLAGE -->
+<div id="modal-tpl" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Vorlage bearbeiten</strong><button type="button" class="close-btn" onclick="closeModal('modal-tpl')">&times;</button></div>
+    <div class="form-group"><label>Bezeichnung</label><input type="text" id="tp-name" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Kategorie</label><select id="tp-kat" class="form-control"></select></div>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-neu"> Bei jedem neuen Patienten vorschlagen</label>
+    <div id="tp-leist" style="font-size:12px; color:#64748b; margin:8px 0;"></div>
+    <button type="button" class="btn btn-secondary" id="tp-view" onclick="viewTpl()">Vorlage ansehen</button>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tpl')">Abbrechen</button>
+      <button type="button" class="btn btn-del" onclick="deleteTpl()">Löschen</button>
+      <button type="button" class="btn btn-save" onclick="saveTpl()">Speichern</button>
     </div>
   </div>
 </div>
@@ -729,7 +768,7 @@ function switchTab(tabId) {
   closeModal('modal-akte');
   if (tabId === 'start' && typeof renderHome === 'function') renderHome();
   if (tabId === 'lager' && typeof renderLager === 'function') renderLager();
-  if (tabId === 'leistungen' && typeof renderLeist === 'function') renderLeist();
+  if (tabId === 'leistungen' && typeof renderLeist === 'function') { renderLeist(); renderTemplates(); }
   var c = document.querySelectorAll('.tab-content');
   for (var i = 0; i < c.length; i++) c[i].classList.remove('active');
   var b = document.querySelectorAll('.nav-btn');
@@ -991,7 +1030,7 @@ function editTermin(id, fromAkte) {
   dLabel(e.dur);
   document.getElementById('t-patient').value = e.patient;
   document.getElementById('t-behandlung').value = e.behandlung;
-  document.getElementById('t-leistung').value = '';
+  document.getElementById('t-leistung').value = e.leistung || '';
   document.getElementById('t-notiz').value = e.notiz || '';
   document.getElementById('t-notiz').style.display = e.notiz ? 'block' : 'none';
   document.getElementById('t-farbe').value = e.color || '#2f9e44';
@@ -1112,7 +1151,12 @@ function renderHome() {
   hmFill('hm-today', te.map(function (e) {
     var end = toMin(e.time) + (e.dur || 60), isNext = !nextDone && end > nowMin; if (isNext) nextDone = true;
     var p = patOf(e), ex = null;
-    if (hasAllergy(p)) { ex = mk('span', 'badge hm-allergy', 'Allergie: ' + p.allergien); }
+    var miss = p ? tplsForEvent(e).filter(function (t) { return !hasTpl(p, t); }) : [];
+    if (hasAllergy(p) || miss.length) {
+      ex = mk('div'); ex.style.cssText = 'display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;';
+      if (hasAllergy(p)) ex.appendChild(mk('span', 'badge hm-allergy', 'Allergie: ' + p.allergien));
+      if (miss.length) ex.appendChild(mk('span', 'badge badge-amber', 'Unterlagen fehlen: ' + miss.map(function (t) { return t.name; }).join(', ')));
+    }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
     return hmRow(e.time + ' bis ' + endStr, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
   }), 'Heute stehen keine Termine an.');
@@ -1329,6 +1373,13 @@ function openLeist(i) {
   document.getElementById('ls-price').value = k ? nf(k.price) : '';
   document.getElementById('ls-rate').value = k ? String(k.rate) : '19';
   document.getElementById('ls-del').style.display = k ? '' : 'none';
+  var vb = document.getElementById('ls-vorl'); vb.innerHTML = '';
+  if (!templates.length) vb.appendChild(mk('div', 'hm-empty', 'Noch keine Vorlagen hochgeladen.'));
+  templates.forEach(function (t) {
+    var l = document.createElement('label'); l.className = 'tm-chk'; l.style.fontWeight = '400';
+    var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = t.id; cb.checked = !!(k && (k.vorlagen || []).indexOf(t.id) >= 0);
+    l.appendChild(cb); l.appendChild(document.createTextNode(' ' + t.name + ' (' + katOf(t) + ')')); vb.appendChild(l);
+  });
   openModal('modal-leist');
 }
 function saveLeist() {
@@ -1336,7 +1387,7 @@ function saveLeist() {
   if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
   if (price <= 0) { alert('Bitte einen Preis größer als 0 eingeben.'); return; }
   if (settings.katalog.some(function (k, j) { return j !== lsIdx && k.name.trim().toLowerCase() === name.toLowerCase(); })) { alert('Eine Leistung mit dieser Bezeichnung gibt es schon.'); return; }
-  var k = { name: name, price: price, rate: rate };
+  var k = { name: name, price: price, rate: rate, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
   if (lsIdx >= 0) settings.katalog[lsIdx] = k; else settings.katalog.push(k);
   persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
@@ -2179,7 +2230,7 @@ function tlRow(it) {
   return sh.row;
 }
 function renderVerlauf() {
-  renderFin(); renderMedien();
+  renderFin(); renderUnterlagen(); renderMedien();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
   events.forEach(function (e) { if (e.patient === name) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
   (curP.doku || []).forEach(function (d) { items.push({ k: d.ts, t: 'doku', d: d }); });
@@ -2235,13 +2286,130 @@ function addDocs(inp, key) {
   Promise.all(files.map(function (f, i) {
     if (f.size > 31457280) { skipped++; return Promise.resolve(null); }
     var id = newId();
-    return fPut(id, f.name, f).then(function (ok) { if (!ok) { skipped++; return null; } return { id: id, ts: base + i, name: f.name, zu: key === 'templates' ? undefined : (zu || undefined) }; });
+    return fPut(id, f.name, f).then(function (ok) { if (!ok) { skipped++; return null; } return { id: id, ts: base + i, name: f.name, zu: key === 'templates' ? undefined : (zu || undefined), kat: katGuess(f.name) }; });
   })).then(function (res) {
     var ok = res.filter(Boolean);
     if (key === 'templates') templates = templates.concat(ok);
     else { p.dokumente = (p.dokumente || []).concat(ok); dokPick = false; }
     persist(); if (curP === p) { renderPick(); renderVerlauf(); }
     if (skipped) alert(skipped + ' Datei(en) sind größer als 30 MB oder konnten nicht gespeichert werden.');
+  });
+}
+/* ===== Kategorien und Vorlagen ===== */
+var KATS = ['Aufnahme und Anamnese', 'Aufklärung', 'Einwilligung und Datenschutz', 'Nachsorge', 'Rezept', 'Befund', 'Sonstiges'];
+function katGuess(n) {
+  n = String(n || '').toLowerCase();
+  if (/aufkl|dermalfiller|hylase|sculptra|neuromodulator|botulinum|filler/.test(n)) return KATS[1];
+  if (/aufnahme|anamnese/.test(n)) return KATS[0];
+  if (/datenschutz|einwilligung|dsgvo/.test(n)) return KATS[2];
+  if (/after|nachsorge|verhaltens/.test(n)) return KATS[3];
+  if (/rezept/.test(n)) return KATS[4];
+  if (/befund|labor/.test(n)) return KATS[5];
+  return KATS[6];
+}
+function katOf(r) { return r.kat || katGuess(r.name); }
+function fillKatSelect(sel, withAll) {
+  var v = sel.value; sel.innerHTML = '';
+  if (withAll) { var o = mk('option', '', 'Alle Kategorien'); o.value = ''; sel.appendChild(o); }
+  KATS.forEach(function (k) { var o = mk('option', '', k); o.value = k; sel.appendChild(o); });
+  sel.value = v || (withAll ? '' : KATS[1]);
+}
+function hasTpl(p, t) { return (p.dokumente || []).some(function (d) { return d.tid === t.id || String(d.name).toLowerCase() === String(t.name).toLowerCase(); }); }
+function tplsForEvent(e) {
+  var out = [];
+  [e.leistung, e.behandlung].forEach(function (n) {
+    var k = n ? findKat(n) : null;
+    (k && k.vorlagen || []).forEach(function (id) { var t = templates.filter(function (x) { return x.id === id; })[0]; if (t && out.indexOf(t) < 0) out.push(t); });
+  });
+  return out;
+}
+function addTplTo(p, t, zu, i) {
+  var id = newId();
+  return fileBlob(t).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
+    if (ok) p.dokumente = (p.dokumente || []).concat([{ id: id, ts: Date.now() + (i || 0), name: t.name, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }]);
+    return ok;
+  });
+}
+function addTplsTo(p, list, zu, then) {
+  Promise.all(list.map(function (t, i) { return addTplTo(p, t, zu, i); })).then(function (r) {
+    persist(); if (curP === p && document.getElementById('modal-akte').classList.contains('active')) { renderVerlauf(); }
+    if (r.some(function (x) { return !x; })) alert('Nicht alle Vorlagen konnten übernommen werden.');
+    if (then) then();
+  });
+}
+/* beim Anlegen eines Termins: zur Leistung gehörende Unterlagen vorschlagen */
+function offerVorlagen(e) {
+  var p = patients.filter(function (x) { return nameKey(x) === e.patient; })[0]; if (!p) return;
+  var miss = tplsForEvent(e).filter(function (t) { return !hasTpl(p, t); });
+  if (!miss.length) return;
+  if (!confirm('Zu "' + (e.leistung || e.behandlung) + '" gehören diese Unterlagen:\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n') + '\n\nJetzt der Akte von ' + nameKey(p) + ' hinzufügen?')) return;
+  addTplsTo(p, miss, 'e' + e.id);
+}
+/* bei einem neuen Patienten: Aufnahme, Anamnese, Datenschutz usw. */
+function offerNeu(p) {
+  var miss = templates.filter(function (t) { return t.neu && !hasTpl(p, t); });
+  if (!miss.length) return;
+  if (!confirm('Für den neuen Patienten ' + nameKey(p) + ' diese Unterlagen hinzufügen?\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n'))) return;
+  addTplsTo(p, miss, null);
+}
+function renderUnterlagen() {
+  var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
+  var req = templates.filter(function (t) { return t.neu; }), today = iso(new Date()), n = nameKey(curP);
+  events.forEach(function (e) { if (e.patient === n && e.date >= today) tplsForEvent(e).forEach(function (t) { if (req.indexOf(t) < 0) req.push(t); }); });
+  blk.style.display = req.length ? 'block' : 'none'; box.innerHTML = '';
+  req.forEach(function (t) {
+    var d = (curP.dokumente || []).filter(function (x) { return x.tid === t.id || String(x.name).toLowerCase() === String(t.name).toLowerCase(); })[0];
+    var btn = null;
+    if (!d) { btn = mk('button', 'btn btn-secondary', 'Hinzufügen'); btn.type = 'button'; btn.style.cssText = 'padding:6px 10px; font-size:13px;'; btn.onclick = function (ev) { ev.stopPropagation(); addTplsTo(curP, [t], null); }; }
+    else { btn = mk('span', 'badge badge-green', 'vom ' + fmtD(iso(new Date(tsOf(d))))); }
+    var row = hmRow(d ? '✓' : '✗', t.name, katOf(t), function () { if (!d) addTplsTo(curP, [t], null); }, btn);
+    row.firstChild.style.cssText += d ? 'color:#047857; width:28px;' : 'color:#b91c1c; width:28px;';
+    box.appendChild(row);
+  });
+}
+function renderTemplates() {
+  var tb = document.getElementById('tp-table'); if (!tb) return;
+  tb.innerHTML = ''; document.getElementById('tp-empty').style.display = templates.length ? 'none' : 'block';
+  templates.forEach(function (t) {
+    var row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
+    var b = mk('button', 'pn', t.name); b.type = 'button'; b.onclick = function () { openTpl(t.id); }; c0.appendChild(b);
+    c1.textContent = katOf(t); c2.textContent = t.neu ? 'ja' : '-';
+    var n = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(t.id) >= 0; }).length;
+    c3.textContent = n ? n + ' Leistung' + (n > 1 ? 'en' : '') : '-';
+  });
+}
+var tpCur = null;
+function openTpl(id) {
+  tpCur = templates.filter(function (t) { return t.id === id; })[0]; if (!tpCur) return;
+  document.getElementById('tp-name').value = tpCur.name;
+  var sel = document.getElementById('tp-kat'); fillKatSelect(sel, false); sel.value = katOf(tpCur);
+  document.getElementById('tp-neu').checked = !!tpCur.neu;
+  var ls = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(id) >= 0; }).map(function (k) { return k.name; });
+  document.getElementById('tp-leist').textContent = ls.length ? 'Verknüpft mit: ' + ls.join(', ') : 'Noch mit keiner Leistung verknüpft (im Reiter Leistungen bei der jeweiligen Leistung auswählen).';
+  openModal('modal-tpl');
+}
+function saveTpl() {
+  var name = document.getElementById('tp-name').value.trim(); if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
+  tpCur.name = name; tpCur.kat = document.getElementById('tp-kat').value; tpCur.neu = document.getElementById('tp-neu').checked;
+  persist(); renderTemplates(); closeModal('modal-tpl');
+}
+function deleteTpl() {
+  if (!confirm('Vorlage "' + tpCur.name + '" löschen? Bereits in Akten abgelegte Dokumente bleiben erhalten.')) return;
+  var id = tpCur.id; fDel(id); templates = templates.filter(function (t) { return t.id !== id; });
+  (settings.katalog || []).forEach(function (k) { if (k.vorlagen) k.vorlagen = k.vorlagen.filter(function (x) { return x !== id; }); });
+  persist(); renderTemplates(); closeModal('modal-tpl');
+}
+function viewTpl() { fileURL(tpCur).then(function (u) { if (u) window.open(u, '_blank'); }); }
+function addTemplates(inp) {
+  var files = [].slice.call(inp.files || []); inp.value = ''; if (!files.length) return;
+  var skipped = 0, base = Date.now();
+  Promise.all(files.map(function (f, i) {
+    if (f.size > 31457280) { skipped++; return Promise.resolve(null); }
+    var id = newId(), nm = f.name.replace(/\.[^.]+$/, '');
+    return fPut(id, f.name, f).then(function (ok) { if (!ok) { skipped++; return null; } return { id: id, ts: base + i, name: nm, kat: katGuess(nm), neu: false }; });
+  })).then(function (res) {
+    templates = templates.concat(res.filter(Boolean)); persist(); renderTemplates();
+    if (skipped) alert(skipped + ' Datei(en) konnten nicht gespeichert werden.');
   });
 }
 /* ===== Medien: Gruppen, Galerie, Zuordnung ===== */
@@ -2302,9 +2470,11 @@ function docList(p, list) {
     var r = mk('div'); r.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid #f1f5f9;';
     var a = mk('a', '', dd.name); a.href = '#'; a.style.cssText = 'color:#5b6f95; word-break:break-word;';
     fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
+    var ks = mk('select', 'form-control'); ks.style.cssText = 'width:auto; max-width:170px; min-height:32px; padding:4px 8px; font-size:12px;'; fillKatSelect(ks, false); ks.value = katOf(dd);
+    ks.onchange = function () { dd.kat = ks.value; refreshFiles(); }; ks.title = 'Kategorie';
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Löschen';
     x.onclick = function () { if (!confirm('Dokument "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); };
-    r.appendChild(a); r.appendChild(x); ul.appendChild(r);
+    r.appendChild(a); r.appendChild(ks); r.appendChild(x); ul.appendChild(r);
   });
   return ul;
 }
@@ -2385,15 +2555,18 @@ function setMedFilter(f) { medFilter = f; medLimit = 30; renderMedien(); }
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
   ['alle', 'bild', 'dok'].forEach(function (k) { document.getElementById('md-' + k).className = medFilter === k ? 'on' : ''; });
+  var ksel = document.getElementById('md-kat'); if (!ksel.options.length) fillKatSelect(ksel, true);
+  ksel.style.display = medFilter === 'bild' ? 'none' : '';
+  var kf = medFilter === 'bild' ? '' : ksel.value;
   var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), groups = [], nb = 0, nd = 0;
   (medFilter === 'alle' ? ['bild', 'dok'] : [medFilter]).forEach(function (k) {
     fileGroups(curP, k).forEach(function (g) {
-      if (q) { g = { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: g.list.filter(function (x) { return String(x.name || '').toLowerCase().indexOf(q) >= 0; }) }; if (!g.list.length) return; }
+      if (q || (kf && k === 'dok')) { g = { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(kf && k === 'dok') || katOf(x) === kf); }) }; if (!g.list.length) return; }
       groups.push(g); if (k === 'bild') nb += g.list.length; else nd += g.list.length;
     });
   });
   groups.sort(function (a, b) { return b.k - a.k; });
-  document.getElementById('md-sum').textContent = nb + ' Bild(er) und ' + nd + ' Dokument(e)' + (q ? ' gefunden' : '');
+  document.getElementById('md-sum').textContent = nb + ' Bild(er) und ' + nd + ' Dokument(e)' + ((q || kf) ? ' gefunden' : '');
   box.innerHTML = '';
   if (!groups.length) { box.appendChild(mk('div', 'hm-empty', q ? 'Keine Datei gefunden' : 'Noch keine Fotos oder Dokumente')); return; }
   groups.slice(0, medLimit).forEach(function (g) {
@@ -2444,7 +2617,7 @@ function renderPick() {
       var p = curP, id = newId();
       fileBlob(t).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
         if (!ok) { alert('Die Vorlage konnte nicht übernommen werden.'); return; }
-        p.dokumente = (p.dokumente || []).concat([{ id: id, ts: Date.now(), name: t.name }]);
+        p.dokumente = (p.dokumente || []).concat([{ id: id, ts: Date.now(), name: t.name, kat: t.kat || katOf(t), tid: t.id }]);
         dokPick = false; persist(); if (curP === p) { renderPick(); renderVerlauf(); }
       });
     };
@@ -2756,8 +2929,10 @@ function savePatient() {
   if (patients.some(function (x) { return nameKey(x).toLowerCase() === (g('p-vorname') + ' ' + g('p-nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon. Termine und Rechnungen werden über den Namen zugeordnet, bitte den Namen unterscheidbar eintragen (z.B. mit zweitem Vornamen).'); return; }
   patients.push({ anrede: g('p-anrede'), vorname: g('p-vorname'), nachname: g('p-nachname'), dob: g('p-dob'), phone: g('p-phone'), email: g('p-email'), allergien: g('p-allergien'), notizen: g('p-notizen') });
   ensurePatients(); persist(); renderPatients();
+  var newP = patients[patients.length - 1];
   ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen'].forEach(function (id) { document.getElementById(id).value = ''; });
   closeModal('modal-patient');
+  offerNeu(newP);
 }
 
 function saveTermin() {
@@ -2779,7 +2954,8 @@ function saveTermin() {
     patient: pname,
     behandlung: document.getElementById('t-behandlung').value || document.getElementById('t-leistung').value || 'Beratung',
     notiz: document.getElementById('t-notiz').value,
-    color: document.getElementById('t-farbe').value
+    color: document.getElementById('t-farbe').value,
+    leistung: document.getElementById('t-leistung').value.trim()
   };
   if (editId) {
     for (var i = 0; i < events.length; i++) if (events[i].id === editId) { ev.id = editId; ev.doku = events[i].doku; ev.status = events[i].status; events[i] = ev; }
@@ -2790,6 +2966,7 @@ function saveTermin() {
   var p = datum.split('-'); cur = new Date(+p[0], +p[1] - 1, +p[2]);
   persist(); renderCal();
   closeTermin();
+  offerVorlagen(ev);
 }
 
 /* Backup: Export und Import */
@@ -2906,6 +3083,7 @@ renderCal();
 renderInvoices();
 refreshLeistungen();
 renderHome();
+renderTemplates();
 migrateFiles();
 </script>
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
