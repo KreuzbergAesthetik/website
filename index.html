@@ -802,6 +802,19 @@ body { overflow-x:clip; }
   <button type="button" class="plus-btn fab" onclick="toggleAMenu(event)" aria-label="Aktionen">+</button>
 </div>
 
+<!-- MODAL: TERMIN ANSEHEN -->
+<div id="modal-tview" class="modal-overlay">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header"><strong>Termin</strong><button type="button" class="close-btn" onclick="closeModal('modal-tview')">&times;</button></div>
+    <div id="tv-body"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tview')">Schließen</button>
+      <button type="button" class="btn btn-secondary" id="tv-dok">Dokumentation</button>
+      <button type="button" class="btn btn-save" id="tv-edit">Bearbeiten</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: DOKUMENTATION ZU TERMIN -->
 <div id="modal-dkp" class="modal-overlay">
   <div class="modal-box" style="max-width:480px;">
@@ -1263,7 +1276,24 @@ function toggleNavMenu(ev) {
   m.style.top = (r.bottom + 4) + 'px'; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; if (id === 'settings') openSettings(); else switchTab(id); }
+/* Letzte Seite merken: nach dem Neuladen (z. B. Ziehen nach unten) geht es dort weiter, wo man war */
+var lastTab = 'start', lastReady = false;
+function saveLast() {
+  if (!lastReady) return;
+  try { localStorage.setItem('ka_last', JSON.stringify({ tab: lastTab, pid: (curP && document.getElementById('modal-akte').classList.contains('active')) ? curP.id : null, akTab: akTab, view: view, cur: iso(cur) })); } catch (x) {}
+}
+function restoreLast() {
+  var l = null; try { l = JSON.parse(localStorage.getItem('ka_last')); } catch (x) {} lastReady = true; if (!l) return;
+  try {
+    if (l.view) view = l.view;
+    if (l.cur) { var q = String(l.cur).split('-'); if (q.length === 3) cur = new Date(+q[0], +q[1] - 1, +q[2]); }
+    if (l.tab && l.tab !== 'start' && document.getElementById('tab-' + l.tab)) switchTab(l.tab);
+    if (l.pid) { var pt = patients.filter(function (x) { return x.id === l.pid; })[0]; if (pt) { viewAkte(pt); if (l.akTab) setAkTab(l.akTab); } }
+    if (l.tab === 'kalender' || l.view) renderCal();
+  } catch (x) {}
+}
 function switchTab(tabId) {
+  lastTab = tabId;
   closeModal('modal-akte');
   var nm = document.getElementById('nav-menu'); if (nm) nm.style.display = 'none';
   var gr = document.getElementById('gs-res'); if (gr) gr.style.display = 'none';
@@ -1275,6 +1305,7 @@ function switchTab(tabId) {
   document.getElementById('tab-' + tabId).classList.add('active');
   var nb = document.getElementById(PRAXIS_TABS.indexOf(tabId) >= 0 ? 'btn-praxis' : 'btn-' + tabId); if (nb) nb.classList.add('active');
   if (tabId === 'start') histClean(); else histPush();
+  saveLast();
 }
 function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
 var ausgaben = [], todos = [];
@@ -1372,7 +1403,7 @@ window.addEventListener('popstate', function () {
   if (anyOverlay()) histPush();
 });
 function syncLock() { document.body.style.overflow = document.querySelector('.modal-overlay.active') ? 'hidden' : ''; }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); histClean(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); window.scrollTo(0, 0); } }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); histClean(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); window.scrollTo(0, 0); saveLast(); } }
 
 /* ===== Globale Suche im Kopfbereich ===== */
 var gsScope = { kal: true, pat: true, rec: true };
@@ -1487,7 +1518,7 @@ function monthGrid() {
     var list = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time < b.time ? -1 : 1; });
     html += '<div class="mc' + (d.getMonth() !== m ? ' out' : '') + (k === today ? ' today' : '') + '" onclick="openDay(\'' + k + '\')"><div class="n">' + d.getDate() + '</div>';
     list.slice(0, 3).forEach(function (e) {
-      html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openAkteFromTermin(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + esc(e.patient) + '</div>';
+      html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openTerminView(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + esc(e.patient) + '</div>';
     });
     if (list.length > 3) html += '<div style="color:#64748b;margin-top:2px;">+' + (list.length - 3) + ' weitere</div>';
     html += '</div>';
@@ -1526,7 +1557,7 @@ function renderCal() {
     body = monthGrid();
   }
   calLegend();
-  document.getElementById('cal-title').innerText = title;
+  document.getElementById('cal-title').innerText = title; saveLast();
   document.getElementById('cal-body').innerHTML = body;
 }
 function setView(v) { view = v; renderCal(); }
@@ -1643,7 +1674,7 @@ function evMove(e) {
 function evUp(e) {
   var d = drag; if (!d) return;
   clearTimeout(d.t); drag = null;
-  if (!d.on) { openAkteFromTermin(d.id); return; }
+  if (!d.on) { openTerminView(d.id); return; }
   noClick = true; setTimeout(function () { noClick = false; }, 400);
   if (d.mins !== undefined) {
     for (var i = 0; i < events.length; i++) {
@@ -1791,6 +1822,28 @@ function renderHome() {
   if (op.length > 5) opRows.push(mk('div', 'hm-empty', 'und ' + (op.length - 5) + ' weitere'));
   if (op.length) opRows.push(mk('div', 'hm-empty', 'Offen insgesamt: ' + eur(sum)));
   hmFill('hm-open', opRows, 'Keine offenen Rechnungen.');
+}
+/* Terminansicht: erst die Details, die Akte öffnet der Patientenname */
+function openTerminView(id) {
+  if (noClick) return;
+  var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
+  var box = document.getElementById('tv-body'); box.innerHTML = '';
+  var row = function (k, node) { var r = mk('div'); r.style.cssText = 'display:grid; grid-template-columns:110px 1fr; gap:8px; padding:9px 0; border-bottom:1px solid #eef2f6; font-size:15px;'; var l = mk('div', '', k); l.style.cssText = 'color:#64748b; font-size:13px; padding-top:2px;'; r.appendChild(l); if (typeof node === 'string') { var v = mk('div', '', node); v.style.cssText = 'white-space:pre-wrap; overflow-wrap:anywhere;'; r.appendChild(v); } else r.appendChild(node); box.appendChild(r); };
+  var d = new Date(e.date + 'T12:00:00');
+  row('Datum', WDL[d.getDay()] + ', ' + fmtD(e.date));
+  row('Zeit', e.time + ' bis ' + fromMin(toMin(e.time) + e.dur) + ' Uhr (' + e.dur + ' min)');
+  var p = patOf(e), pn;
+  if (p) { pn = mk('a', '', nameKey(p)); pn.href = '#'; pn.style.cssText = 'color:#2563eb; font-weight:700; text-decoration:underline; font-size:16px;'; pn.title = 'Patientenakte öffnen'; pn.onclick = function (ev) { ev.preventDefault(); closeModal('modal-tview'); viewAkte(p); }; }
+  else { pn = mk('div', '', e.patient + ' (keine Akte angelegt)'); }
+  row('Patient', pn);
+  var ls = evLeistungen(e);
+  if (ls.length) { var w = mk('div'); w.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px;'; ls.forEach(function (n, i) { var l = findKat(n), c = l ? lkatOf(l) : null, col = c ? c.color : '#94a3b8'; var ch = mk('span'); ch.style.cssText = 'display:inline-flex; align-items:center; gap:6px; border:1.5px solid ' + col + '; border-radius:16px; padding:2px 10px; font-size:13px;'; var dt = mk('i'); dt.style.cssText = 'width:9px; height:9px; border-radius:50%; background:' + col + ';'; ch.appendChild(dt); ch.appendChild(document.createTextNode(n + (c && c.name !== n ? ' · ' + c.name : ''))); w.appendChild(ch); }); row('Leistungen', w); }
+  if (e.behandlung && ls.indexOf(e.behandlung) < 0) row('Betreff', e.behandlung);
+  if (e.notiz) row('Notiz', e.notiz);
+  if (dokFilled(e)) { var ds = dokSummary(e); ds.onclick = function () { closeModal('modal-tview'); openDok(e.id); }; row('Dokumentation', ds); }
+  document.getElementById('tv-edit').onclick = function () { closeModal('modal-tview'); editTermin(id); };
+  document.getElementById('tv-dok').onclick = function () { closeModal('modal-tview'); openDok(id); };
+  openModal('modal-tview');
 }
 function openAkteFromTermin(id) {
   if (noClick) return;
@@ -2832,7 +2885,7 @@ window.addEventListener('resize', hdH);
 try { new ResizeObserver(hdH).observe(document.querySelector('header')); } catch (x) {}
 hdH();
 function setAkTab(t) {
-  akTab = t;
+  akTab = t; saveLast();
   ['akte', 'anl', 'fin'].forEach(function (k) { var el = document.getElementById('at-' + k), b = document.getElementById('atb-' + k); if (el) el.style.display = k === t ? 'block' : 'none'; if (b) b.className = k === t ? 'on' : ''; });
   akTabs();
 }
@@ -2873,6 +2926,7 @@ function viewAkte(p) {
   tileEdit = ''; recentAdd(p.id); hdH(); renderHead(); renderPick(); renderVerlauf(); setAkTab('akte');
   openModal('modal-akte');
   if (!was) window.scrollTo(0, 0);
+  saveLast();
 }
 
 /* Rezept: Medikamente wählen, A6 quer (148 x 105 mm) als PDF für den Vordruck */
@@ -5060,6 +5114,7 @@ refreshLeistungen();
 renderHome();
 renderTemplates();
 migrateFiles();
+restoreLast();
 </script>
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
 </body>
