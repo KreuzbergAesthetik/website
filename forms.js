@@ -22,7 +22,7 @@ function ynToggle(name, onchange) {
     inp.addEventListener('change', function () { val = o[0] === 'ja'; seg.classList.remove('err'); if (onchange) onchange(val); });
     seg.appendChild(el('label', {}, [inp, el('span', { text: o[1] })]));
   });
-  return { node: seg, get: function () { return val; }, mark: function () { seg.classList.add('err'); } };
+  return { node: seg, get: function () { return val; }, mark: function () { seg.classList.add('err'); }, clear: function () { val = null; seg.classList.remove('err'); [].forEach.call(seg.querySelectorAll('input'), function (i) { i.checked = false; }); } };
 }
 
 /* Unterschriftenfeld */
