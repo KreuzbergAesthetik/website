@@ -23,3 +23,14 @@ Sicherung
 "Sichern" erstellt eine ZIP-Datei mit allen Daten, Fotos und Dokumenten (bei großen Mengen mehrere Teile, alle Teile speichern).
 "Laden" liest die Sicherung wieder ein. Bei mehreren Teilen alle Teile gemeinsam auswählen.
 Mit Passwort sind Daten und Dateien verschlüsselt (AES-256). Ohne das Passwort lässt sich die Sicherung nicht öffnen.
+
+Webformulare (Patientenanmeldung und Anamnese)
+Dateien: anmeldung.html, anamnese.html, forms.css, forms.js (zusammen mit icon-192.png und pdf-lib.min.js im selben Ordner).
+Die Links stehen in der App unter Praxis, Webformulare und lassen sich in Nachrichtenvorlagen mit {LinkAnmeldung} und {LinkAnamnese} einsetzen.
+Der Patient füllt das Formular am Handy aus und unterschreibt mit dem Finger. Das PDF entsteht im Browser des Patienten.
+Ohne Empfang bekommt er das PDF zum Teilen oder Herunterladen und schickt es selbst an die Praxis.
+Empfang per Website (empfohlen): formular-empfang.php in den Hauptordner der Praxis-Website legen (bei WordPress neben wp-config.php).
+Darin EMPFAENGER und ERLAUBT prüfen. Dann in forms.js bei ENDPOINT die Adresse der Datei eintragen.
+Das ausgefüllte PDF kommt als E-Mail-Anhang bei der Praxis an.
+In die App übernehmen: PDF speichern, unter Patienten auf Import tippen und das PDF wählen. Die Formulardaten stecken im PDF.
+Der Datenschutztext in forms.js (DATENSCHUTZ) ist ein Entwurf und sollte durch den eigenen, geprüften Text ersetzt werden.
