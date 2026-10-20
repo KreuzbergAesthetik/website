@@ -2779,6 +2779,7 @@ function tlShell(ts, label) {
   return { row: row, body: body };
 }
 function xBtn(fn) { var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Löschen'; x.style.cssText += 'float:right;'; x.onclick = fn; return x; }
+var tlEditLog = null;
 function tlRow(it) {
   var sh, line;
   if (it.t === 'termin') {
@@ -2827,8 +2828,22 @@ function tlRow(it) {
   } else {
     var lab = it.t === 'med' ? 'Medikament' : it.t === 'mail' ? 'E-Mail' : it.t === 'rezept' ? 'Rezept' : 'Notiz';
     sh = tlShell(it.k, lab);
-    var tx = mk('div', '', it.t === 'med' ? 'Medikament hinzugefügt: ' + it.l.text : it.l.text);
-    tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
+    var lg = it.l;
+    if (tlEditLog === lg) {
+      var ta = mk('textarea', 'form-control'); ta.rows = 4; ta.value = lg.text; sh.body.appendChild(ta);
+      var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
+      var cb = mk('button', 'btn btn-cancel', 'Abbrechen'); cb.type = 'button'; cb.onclick = function () { tlEditLog = null; renderVerlauf(); };
+      var sv = mk('button', 'btn btn-save', 'Speichern'); sv.type = 'button';
+      sv.onclick = function () { var v = ta.value.trim(); if (!v) { alert('Der Text darf nicht leer sein. Zum Entfernen bitte „Löschen“ wählen.'); return; } lg.text = v; tlEditLog = null; persist(); renderVerlauf(); };
+      fb.appendChild(cb); fb.appendChild(sv); sh.body.appendChild(fb);
+    } else {
+      var tx = mk('div', '', it.t === 'med' ? 'Medikament hinzugefügt: ' + lg.text : lg.text);
+      tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
+      tlPlus(sh, [['Bearbeiten', function () { tlEditLog = lg; renderVerlauf(); }], ['Löschen', function () {
+        if (!confirm('Eintrag aus dem Zeitstrahl löschen?')) return;
+        curP.log = (curP.log || []).filter(function (y) { return y !== lg; }); persist(); renderVerlauf();
+      }]]);
+    }
   }
   return sh.row;
 }

@@ -18,3 +18,8 @@ Dafür muss die Datei pdf-lib.min.js im selben Ordner wie index.html liegen.
 Import aus dem Altsystem
 Die Dateien pdfjs.min.js und pdfjs.worker.min.js (pdf.js, Apache-Lizenz, siehe pdfjs-LICENSE.txt) müssen im selben Ordner wie index.html liegen.
 Sie lesen die als PDF gedruckte Akte aus den Patienten-ZIPs. Alles läuft auf dem Gerät, es werden keine Daten versendet.
+
+Sicherung
+"Sichern" erstellt eine ZIP-Datei mit allen Daten, Fotos und Dokumenten (bei großen Mengen mehrere Teile, alle Teile speichern).
+"Laden" liest die Sicherung wieder ein. Bei mehreren Teilen alle Teile gemeinsam auswählen.
+Mit Passwort sind Daten und Dateien verschlüsselt (AES-256). Ohne das Passwort lässt sich die Sicherung nicht öffnen.
