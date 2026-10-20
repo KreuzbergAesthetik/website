@@ -750,6 +750,16 @@ body.akte-open .a-fab { display:block; }
   <button type="button" class="plus-btn fab" onclick="toggleAMenu(event)" aria-label="Aktionen">+</button>
 </div>
 
+<!-- MODAL: DOKUMENTATION ZU TERMIN -->
+<div id="modal-dkp" class="modal-overlay">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header"><strong id="dkp-title">Dokumentation zu einem Termin</strong><button type="button" class="close-btn" onclick="closeModal('modal-dkp')">&times;</button></div>
+    <div class="form-group"><label>Termin</label><select id="dkp-sel" class="form-control"></select></div>
+    <div id="dkp-info" style="font-size:12px; color:#64748b;"></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-dkp')">Abbrechen</button><button type="button" class="btn btn-save" id="dkp-go" onclick="dkpGo()">Weiter</button></div>
+  </div>
+</div>
+
 <!-- MODAL: REZEPT -->
 <div id="modal-rx" class="modal-overlay">
   <div class="modal-box" style="max-width:560px;">
@@ -890,6 +900,7 @@ body.akte-open .a-fab { display:block; }
     <div class="form-group"><label>Name der Vorlage</label><input type="text" id="nv-name" class="form-control" autocomplete="off"></div>
     <div class="form-group"><label>Betreff</label><input type="text" id="nv-betreff" class="form-control" autocomplete="off"></div>
     <div class="form-group"><label>Nachricht</label><textarea id="nv-text" class="form-control" rows="8"></textarea></div>
+    <div class="form-group"><label>Anhänge (Dokumente aus Praxis → Dokumente)</label><div id="nv-att"></div></div>
     <div class="foot-bar">
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-nv')">Abbrechen</button>
       <button type="button" id="nv-del" class="btn btn-del" style="display:none;" onclick="deleteNachr()">Löschen</button>
@@ -1140,6 +1151,7 @@ body.akte-open .a-fab { display:block; }
     <div class="form-group"><label>Vorlage</label><select id="m-vorl" class="form-control" onchange="applyMailVorl()"></select></div>
     <div class="form-group"><label>Betreff</label><input type="text" id="m-betreff" class="form-control"></div>
     <div class="form-group"><label>Nachricht</label><textarea id="m-text" class="form-control" rows="8"></textarea><div id="m-tb"></div></div>
+    <div class="form-group"><label>Anhänge</label><div id="m-att"></div></div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-mail')">Abbrechen</button><button type="button" class="btn btn-save" onclick="sendMail()">Senden</button></div>
   </div>
 </div>
@@ -2515,6 +2527,7 @@ function openMail() {
   document.getElementById('m-an').value = curP.email || '';
   document.getElementById('m-betreff').value = '';
   document.getElementById('m-text').value = '';
+  mailAtt = []; mailAttRender();
   openModal('modal-mail');
 }
 function sendMail() {
@@ -2525,6 +2538,7 @@ function sendMail() {
   if (!betreff) { alert('Bitte einen Betreff eingeben.'); return; }
   var p = curP;
   var btn = document.querySelector('#modal-mail .btn-save'); btn.disabled = true;
+  if (mailAtt.length) { sendMailWithFiles(an, betreff, text, p, btn); return; }
   sendViaServer({ von: PRAXIS.mail, an: an, betreff: betreff, text: text }).then(function (r) {
     btn.disabled = false;
     p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: (r.via === 'mailto' ? 'E-Mail im Mailprogramm vorbereitet für ' : 'E-Mail gesendet an ') + an + '\nBetreff: ' + betreff + (text ? '\n' + text : '') }]);
@@ -2533,6 +2547,26 @@ function sendMail() {
     btn.disabled = false;
     alert('Die E-Mail wurde nicht gesendet und nichts in die Zeitleiste eingetragen. ' + (err && err.message ? err.message + ' ' : '') + 'Dein Text bleibt hier erhalten.');
   });
+}
+async function sendMailWithFiles(an, betreff, text, p, btn) {
+  try {
+    var files = [];
+    for (var i = 0; i < mailAtt.length; i++) { var f = await fGet(mailAtt[i].id); if (f && f.blob) files.push(new File([f.blob], mailAtt[i].name, { type: f.blob.type || 'application/octet-stream' })); }
+    if (!files.length) throw new Error('Die Anhänge konnten nicht gelesen werden.');
+    var names = files.map(function (x) { return x.name; }).join(', '), via;
+    if (navigator.canShare && navigator.canShare({ files: files })) {
+      await navigator.share({ files: files, title: betreff, text: text }); via = 'Teilen-Menü';
+    } else {
+      files.forEach(function (x) { var a = document.createElement('a'); a.href = URL.createObjectURL(x); a.download = x.name; document.body.appendChild(a); a.click(); a.remove(); });
+      await sendViaServer({ von: PRAXIS.mail, an: an, betreff: betreff, text: text }); via = 'Mailprogramm';
+      alert('Dein Gerät kann keine Anhänge direkt übergeben. Die Dateien wurden heruntergeladen, bitte im Mailprogramm anhängen.');
+    }
+    p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'E-Mail vorbereitet (' + via + ') für ' + an + '\nBetreff: ' + betreff + '\nAnhänge: ' + names + (text ? '\n' + text : '') }]);
+    persist(); closeModal('modal-mail'); if (curP === p) renderVerlauf();
+  } catch (x) {
+    if (!(x && x.name === 'AbortError')) alert('Die E-Mail wurde nicht vorbereitet. ' + (x && x.message ? x.message + ' ' : '') + 'Dein Text bleibt hier erhalten.');
+  }
+  btn.disabled = false;
 }
 function logMailSent(p, betreff, text) {
   p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'E-Mail gesendet an ' + (p.email || '') + '\nBetreff: ' + betreff + (text ? '\n' + text : '') }]);
@@ -2815,6 +2849,43 @@ function tlShell(ts, label) {
   return { row: row, body: body };
 }
 function xBtn(fn) { var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Löschen'; x.style.cssText += 'float:right;'; x.onclick = fn; return x; }
+/* Dokumentation mit einem Termin verknüpfen */
+var dkpDoc = null;
+function newFreeDoku() {
+  var d = { ts: Date.now(), text: '' };
+  curP.doku = (curP.doku || []).concat([d]);
+  editingDokuId = 'd' + d.ts; renderVerlauf();
+  var ta = document.getElementById('doku-in'); if (ta) ta.focus();
+}
+function openDkPick(doc) {
+  dkpDoc = doc || null;
+  var evs = events.filter(function (e) { return e.patient === nameKey(curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
+  if (!doc && !evs.length) { newFreeDoku(); return; }
+  if (doc && !evs.length) { alert('Für diesen Patienten gibt es noch keinen Termin, mit dem die Dokumentation verknüpft werden kann.'); return; }
+  var sel = document.getElementById('dkp-sel'); sel.innerHTML = ''; var today = iso(new Date()), pre = null;
+  evs.forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); if (!pre && e.date <= today) pre = String(e.id); });
+  if (!doc) { var o2 = mk('option', '', 'Ohne Termin (freie Dokumentation)'); o2.value = ''; sel.appendChild(o2); }
+  sel.value = pre || String(evs[evs.length - 1].id);
+  document.getElementById('dkp-title').textContent = doc ? 'Dokumentation mit Termin verknüpfen' : 'Dokumentation zu einem Termin';
+  document.getElementById('dkp-info').textContent = doc ? 'Der Text und die Anhänge dieser Dokumentation wandern in die Dokumentation des gewählten Termins.' : 'Vorgewählt ist der letzte Termin bis heute.';
+  document.getElementById('dkp-go').textContent = doc ? 'Verknüpfen' : 'Weiter';
+  openModal('modal-dkp');
+}
+function dkpGo() {
+  var v = document.getElementById('dkp-sel').value; closeModal('modal-dkp');
+  if (dkpDoc) { linkDokuToTermin(dkpDoc, parseInt(v, 10)); return; }
+  if (v === '') newFreeDoku(); else openDok(parseInt(v, 10));
+}
+function linkDokuToTermin(d, eid) {
+  var e = events.filter(function (x) { return x.id === eid; })[0]; if (!e) return;
+  var o = dokOf(e); e.dok = Object.assign({}, o, { verw: Object.assign({}, o.verw || {}) });
+  var add = String(d.text || '').trim();
+  if (add) e.dok.behandlung = (e.dok.behandlung ? e.dok.behandlung + '\n\n' : '') + add;
+  e.doku = dokuText(e);
+  [curP.bilder, curP.dokumente].forEach(function (l) { (l || []).forEach(function (x) { if (x.zu === 'd' + d.ts) x.zu = 'e' + e.id; }); });
+  curP.doku = (curP.doku || []).filter(function (y) { return y !== d; });
+  persist(); renderVerlauf();
+}
 var tlEditLog = null;
 function tlRow(it) {
   var sh, line;
@@ -2851,7 +2922,7 @@ function tlRow(it) {
       function () { if (!d.text) curP.doku = curP.doku.filter(function (y) { return y !== d; }); },
       renderVerlauf));
     sh.body.appendChild(attachBlock(curP, 'd' + d.ts));
-    tlPlus(sh, attItems('d' + d.ts).concat(attMove('d' + d.ts)));
+    tlPlus(sh, [['Mit Termin verknüpfen', function () { openDkPick(d); }]].concat(attItems('d' + d.ts), attMove('d' + d.ts)));
   } else if (it.t === 'rechnung') {
     var iv = it.inv;
     sh = tlShell(it.k, 'Rechnung');
@@ -3301,14 +3372,23 @@ function nvDefaults() {
 }
 function renderNachr() { settings.nachrichten = settings.nachrichten || []; simpleList('nv-list', settings.nachrichten, openNachr, function (x) { return (x.betreff || '') + (x.text ? ' · ' + x.text.replace(/\s+/g, ' ').slice(0, 70) : ''); }); }
 function renderTxt() { settings.textbausteine = settings.textbausteine || []; simpleList('tb-list', settings.textbausteine, openTxt, function (x) { return x.text.replace(/\s+/g, ' ').slice(0, 90); }); }
+function nvAttRender(sel) {
+  var box = document.getElementById('nv-att'); box.innerHTML = '';
+  if (!templates.length) { box.appendChild(mk('div', 'hm-empty', 'Noch keine Dokumente unter Praxis → Dokumente hochgeladen.')); return; }
+  templates.forEach(function (t) {
+    var l = mk('label'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; margin-bottom:4px;';
+    var c = mk('input'); c.type = 'checkbox'; c.value = t.id; c.checked = sel.indexOf(t.id) >= 0; l.appendChild(c); l.appendChild(document.createTextNode(t.name)); box.appendChild(l);
+  });
+}
 function openNachr(i) {
   nvIdx = i; var x = i >= 0 ? settings.nachrichten[i] : null;
   document.getElementById('nv-name').value = x ? x.name : ''; document.getElementById('nv-betreff').value = x ? x.betreff : ''; document.getElementById('nv-text').value = x ? x.text : '';
+  nvAttRender(x ? x.anhang || [] : []);
   document.getElementById('nv-del').style.display = x ? '' : 'none'; openModal('modal-nv');
 }
 function saveNachr() {
   var n = document.getElementById('nv-name').value.trim(); if (!n) { alert('Bitte einen Namen eingeben.'); return; }
-  var x = { id: nvIdx >= 0 ? settings.nachrichten[nvIdx].id : newId(), name: n, betreff: document.getElementById('nv-betreff').value.trim(), text: document.getElementById('nv-text').value };
+  var x = { id: nvIdx >= 0 ? settings.nachrichten[nvIdx].id : newId(), name: n, betreff: document.getElementById('nv-betreff').value.trim(), text: document.getElementById('nv-text').value, anhang: [].slice.call(document.querySelectorAll('#nv-att input:checked')).map(function (c) { return c.value; }) };
   if (nvIdx >= 0) settings.nachrichten[nvIdx] = x; else settings.nachrichten.push(x);
   persist(); closeModal('modal-nv'); renderNachr();
 }
@@ -3352,9 +3432,26 @@ function fillPlatzhalter(text, p) {
     NaechsterTermin: nx ? nx.date.slice(8, 10) + '.' + nx.date.slice(5, 7) + '. um ' + nx.time : '' };
   return String(text || '').replace(/\{([A-Za-z]+)\}/g, function (m, k) { return map[k] !== undefined ? map[k] : m; });
 }
+var mailAtt = [];
+function mailAttAdd(id, name) { if (!mailAtt.some(function (a) { return a.id === id; })) mailAtt.push({ id: id, name: name }); }
+function mailAttRender() {
+  var box = document.getElementById('m-att'); box.innerHTML = '';
+  mailAtt.forEach(function (a, i) {
+    var r = mk('div'); r.style.cssText = 'display:flex; justify-content:space-between; gap:8px; align-items:center; padding:4px 0; font-size:14px;';
+    r.appendChild(mk('span', '', '\ud83d\udcce ' + a.name)); var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.onclick = function () { mailAtt.splice(i, 1); mailAttRender(); }; r.appendChild(x); box.appendChild(r);
+  });
+  var sel = mk('select', 'form-control'); sel.style.cssText = 'margin-top:6px;';
+  var o0 = mk('option', '', '+ Anhang hinzufügen...'); o0.value = ''; sel.appendChild(o0);
+  var addGrp = function (label, list) { if (!list.length) return; var g = document.createElement('optgroup'); g.label = label; list.forEach(function (x) { var o = mk('option', '', x.name); o.value = x.id; g.appendChild(o); }); sel.appendChild(g); };
+  addGrp('Vorlagen (Praxis → Dokumente)', templates); addGrp('Aus der Akte', curP.dokumente || []);
+  sel.onchange = function () { var id = sel.value; if (!id) return; var f = templates.concat(curP.dokumente || []).filter(function (x) { return x.id === id; })[0]; if (f) mailAttAdd(f.id, f.name); mailAttRender(); };
+  box.appendChild(sel);
+  if (mailAtt.length) box.appendChild(Object.assign(mk('div', '', 'Mit Anhängen öffnet sich das Teilen-Menü deines Geräts. Dort wählst du dein Mailprogramm, die Dateien hängen schon dran.'), { style: 'font-size:12px; color:#64748b; margin-top:6px;' }));
+}
 function applyMailVorl() {
   var id = document.getElementById('m-vorl').value, n = (settings.nachrichten || []).filter(function (x) { return x.id === id; })[0]; if (!n) return;
   document.getElementById('m-betreff').value = fillPlatzhalter(n.betreff, curP); document.getElementById('m-text').value = fillPlatzhalter(n.text, curP);
+  (n.anhang || []).forEach(function (id) { var t = templates.filter(function (x) { return x.id === id; })[0]; if (t) mailAttAdd(t.id, t.name); }); mailAttRender();
 }
 
 /* ===== Kategorien und Vorlagen ===== */
@@ -3808,12 +3905,7 @@ document.addEventListener('keydown', function (ev) {
 function aAct(x) {
   document.getElementById('a-menu').style.display = 'none';
   if (x === 'med') { stammEdit = false; tileEdit = 'med'; renderHead(); document.getElementById('a-med-in').focus(); }
-  else if (x === 'doku') {
-    var d = { ts: Date.now(), text: '' };
-    curP.doku = (curP.doku || []).concat([d]);
-    editingDokuId = 'd' + d.ts; renderVerlauf();
-    var ta = document.getElementById('doku-in'); if (ta) ta.focus();
-  }
+  else if (x === 'doku') openDkPick(null);
   else if (x === 'notiz') { stammEdit = false; tileEdit = 'notizen'; renderHead(); document.getElementById('a-tile-in').focus(); }
   else if (x === 'termin') {
     var p = curP, n = new Date();
