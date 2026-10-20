@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Anamnese Kreuzberg Ästhetik</title>
+<link rel="stylesheet" href="forms.css">
+</head>
+<body>
+<div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
+<div class="wrap" id="formbox">
+  <form id="f" novalidate autocomplete="on">
+    <h1>Anamnese</h1>
+    <div class="intro"><p>Bitte beantworte die folgenden Fragen zur gesundheitlichen Vorgeschichte. Alle Fragen sind mit <b>Ja</b> oder <b>Nein</b> zu beantworten. Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p></div>
+
+    <div class="card">
+      <div class="grid2">
+        <div><label class="l">Vorname <span class="req">*</span></label><input type="text" id="vorname" autocomplete="given-name"></div>
+        <div><label class="l">Nachname <span class="req">*</span></label><input type="text" id="nachname" autocomplete="family-name"></div>
+      </div>
+      <label class="l">Geburtsdatum <span class="req">*</span></label>
+      <div class="grid3" id="g-dob">
+        <input type="text" id="dob-t" inputmode="numeric" maxlength="2" placeholder="Tag" aria-label="Tag" autocomplete="bday-day">
+        <select id="dob-m" aria-label="Monat" autocomplete="bday-month"><option value="">Monat</option><option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option><option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">August</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option></select>
+        <input type="text" id="dob-j" inputmode="numeric" maxlength="4" placeholder="Jahr" aria-label="Jahr" autocomplete="bday-year">
+      </div>
+    </div>
+
+    <div id="fragen"></div>
+
+    <div class="card" style="margin-top:20px">
+      <label class="chk" id="g-ok"><input type="checkbox" id="ok"><span>Die Fragen zu den Vorerkrankungen habe ich nach bestem Wissen und Gewissen beantwortet. <span style="color:#dc2626">*</span></span></label>
+      <label class="l" style="margin-top:14px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
+      <canvas id="sig" class="sigbox"></canvas>
+      <div class="sigbar"><span>Unterschrift der Patientin / des Patienten</span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
+      <div id="datenschutz" style="margin-top:12px"></div>
+    </div>
+
+    <div class="hp"><label>Website <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
+    <div id="errmsg" class="msg err" style="display:none"></div>
+    <div class="actions">
+      <button type="reset" class="btn" id="reset">Zurücksetzen</button>
+      <button type="submit" class="btn primary" id="go">Absenden</button>
+    </div>
+  </form>
+</div>
+<script src="forms.js"></script>
+<script>
+/* Fragen nach dem Anamnesebogen der Praxis. dep = Unterfrage erscheint nur, wenn Frage dep mit Ja beantwortet ist. */
+var QS = [
+  { n: 1, t: 'Schwangerschaft/Stillzeit', items: [{ t: 'Könnte eine Schwangerschaft bestehen?' }, { t: 'Wird zurzeit gestillt?' }] },
+  { n: 2, t: 'Tabakkonsum', items: [{ t: 'Werden Tabakwaren regelmäßig konsumiert?' }], follow: 'Was und wie viel pro Tag?' },
+  { n: 3, t: 'Medikamente', items: [{ t: 'Werden regelmäßig oder zurzeit Medikamente eingenommen?' }], hint: '(auch frei käufliche/pflanzliche Präparate)', follow: 'Welche und wie viel pro Tag?' },
+  { n: 4, t: 'Allergien/Unverträglichkeiten', cls: 'warn', items: [{ t: 'Besteht eine Allergie/Unverträglichkeit?' }], hint: '(z. B. gegen Jod, Betäubungsmittel, Medikamente (Antibiotika, Paracetamol, Metamizol), Kontrastmittel, Pflaster, Latex, Desinfektionsmittel, Kunststoffe)', follow: 'Welche?' },
+  { n: 5, t: 'Herz-Kreislauf-Gefäßerkrankungen', intro: 'Besteht oder bestand eine der folgenden Erkrankungen/Beschwerden:', items: [{ t: 'Erhöhter Blutdruck' }, { t: 'Herzinfarkt' }, { t: 'Schlaganfall' }, { t: 'Thrombose, Embolie' }, { t: 'Andere Herz-Kreislauf- oder Gefäßerkrankung' }], hint: '(z. B. niedriger Blutdruck, Herzschwäche/Herzinsuffizienz, Herzfehler/Herzklappenfehler, Angina pectoris/Brustschmerzen, Herzmuskelentzündung, Herzrhythmusstörungen, koronare Herzkrankheit, Aneurysma, Arteriosklerose, verengte Halsschlagader, Krampfadern/Varizen, Durchblutungsstörungen)', follow: 'Welche?' },
+  { n: 6, t: 'Herpes/Gürtelrose', items: [{ t: 'Besteht oder bestand eine Herpesinfektion (Lippen-, Genitalherpes) oder eine Gürtelrose?' }] },
+  { n: 7, t: 'Stoffwechselerkrankungen', intro: 'Besteht oder bestand eine der folgenden Stoffwechselerkrankungen:', items: [{ t: 'Diabetes mellitus (Zuckerkrankheit)' }, { t: 'Gicht/Porphyrie' }, { t: 'Andere Stoffwechselkrankheit' }], follow: 'Welche?' },
+  { n: 8, t: 'Gerinnungsstörungen/Bluterkrankungen', intro: 'Besteht oder bestand eine der folgenden Gerinnungsstörungen/Bluterkrankungen:', items: [{ t: 'Häufige blaue Flecken, Blutergüsse, Nasenbluten, Zahnfleischbluten' }, { t: 'Nachbluten nach Verletzungen, Operationen' }, { t: 'Gibt es Blutsverwandte mit Blutungsneigung oder Gerinnungsstörung?' }, { t: 'Andere Gerinnungsstörung oder Bluterkrankung' }], follow: 'Welche?' },
+  { n: 9, t: 'Infektionskrankheiten', intro: 'Besteht oder bestand eine der folgenden Infektionskrankheiten:', items: [{ t: 'Hepatitis' }, { t: 'HIV-positiv (AIDS)' }, { t: 'Tuberkulose (TBc)' }, { t: 'Hirnhautentzündung' }, { t: 'Andere Infektionskrankheit' }], follow: 'Welche?' },
+  { n: 10, t: 'Schilddrüsenerkrankungen', items: [{ t: 'Besteht oder bestand eine Schilddrüsenerkrankung?' }], hint: '(z. B. Über-, Unterfunktion, Schilddrüsenvergrößerung, Kropf, Morbus Hashimoto)', follow: 'Welche?' },
+  { n: 11, t: 'Erkrankung des Immunsystems', items: [{ t: 'Besteht eine Erkrankung des Immunsystems?' }], hint: '(z. B. Immunschwäche, Morbus Crohn, Multiple Sklerose, Rheuma/rheumatoide Arthritis, Sklerodermie, Colitis ulcerosa, Lupus erythematodes, Dermatomyositis, Autoimmunthyreoiditis, Immunglobulin-A-Mangel, hämolytische Anämie)', follow: 'Welche?' },
+  { n: 12, t: 'Gemütserkrankungen', items: [{ t: 'Besteht eine psychische Erkrankung?' }], hint: '(z. B. Angststörungen, Stimmungsschwankungen, Depression, Borderline-Syndrom, Schizophrenie, Burnout)', follow: 'Welche?' },
+  { n: 13, t: 'Nervenerkrankungen', items: [{ t: 'Besteht oder bestand eine Nervenerkrankung?' }], hint: '(z. B. Gefühlsstörungen, Parkinson, Krampfanfälle/Epilepsie, Polyneuropathie, Gehstörungen, Lähmungen, chronische Schmerzen)', follow: 'Welche?' },
+  { n: 14, t: 'Erkrankungen der Oberbauchorgane', items: [{ t: 'Besteht oder bestand eine Erkrankung der Oberbauchorgane?' }], hint: '(z. B. Leberentzündung/Gelbsucht, Gallensteine, Gallenkolik, Fettleber, Zirrhose, Pankreatitis)', follow: 'Welche?' },
+  { n: 15, t: 'Erkrankungen der Nieren/Harnorgane', items: [{ t: 'Besteht oder bestand eine Erkrankung der Nieren oder der Harnorgane?' }], hint: '(z. B. Nierenentzündung, Nierenfunktionsstörung, Nierensteine, angeborene Fehlbildung, Blasenentleerungsstörung, chronischer Harnwegsinfekt)', follow: 'Welche?' },
+  { n: 16, t: 'Krebserkrankungen', items: [{ t: 'Besteht oder bestand eine (weitere) Krebserkrankung?' }], hint: '(z. B. an Haut, Darm, Brust, Leber, Bauchspeicheldrüse, Lunge, Gebärmutter, Prostata)', follow: 'Welche?' },
+  { n: 17, t: 'Weitere Erkrankungen', items: [{ t: 'Besteht eine andere, hier nicht aufgeführte Erkrankung?' }], follow: 'Welche?' },
+  { n: 18, t: 'Botulinumtoxin-Injektionen', cls: 'green', items: [{ t: 'Wurde schon einmal eine Behandlung mit Botulinumtoxin durchgeführt?', follow: 'Wann das letzte Mal, was und an welcher Stelle?' }, { t: 'Kam es zu Komplikationen?', dep: 0, follow: 'Welche?' }] },
+  { n: 19, t: 'Filler-Behandlungen', cls: 'green', items: [{ t: 'Wurde schon einmal eine Behandlung mit Fillern durchgeführt?', follow: 'Wann das letzte Mal, was und an welcher Stelle?' }, { t: 'Kam es zu Komplikationen?', dep: 0, follow: 'Welche?' }] },
+  { n: 20, t: 'Frühere Operationen/Wunden', cls: 'amber', intro: 'Kam es bei früheren Operationen/Wunden zu folgenden Komplikationen:', items: [{ t: 'Abszesse/Eiterungen/Fisteln' }, { t: 'Verzögerte Heilung/Wundheilungsstörungen' }, { t: 'Verstärkte Narbenbildung' }, { t: 'Kam es zu sonstigen Besonderheiten?' }], follow: 'Welche?' },
+  { n: 21, t: 'Betäubung', cls: 'amber', items: [{ t: 'Wurde schon einmal eine Betäubung durchgeführt?' }, { t: 'Kam es zu Komplikationen?', dep: 0, follow: 'Welche?' }], hint: '(z. B. örtliche Betäubung beim Zahnarzt, Hautarzt, Narkose, Regionalanästhesie, Sedierung)' }
+];
+var qbox = $('fragen'), ui = [];
+QS.forEach(function (q, qi) {
+  var card = el('div', { class: 'q ' + (q.cls || '') });
+  card.appendChild(el('h3', { text: q.n + '. ' + q.t }));
+  if (q.intro) card.appendChild(el('div', { class: 'sub', text: q.intro }));
+  if (q.hint && q.items.length === 1) card.appendChild(el('div', { class: 'small', text: q.hint }));
+  var u = { items: [], rows: [], follows: [], follow: null };
+  q.items.forEach(function (it, ii) {
+    var row = el('div', { class: 'row' }), box = el('div', { style: 'flex:1; min-width:0' });
+    var tx = el('div', { class: 't', text: (q.items.length > 1 ? '• ' : '') + it.t }); box.appendChild(tx);
+    var fo = null;
+    if (it.follow) { fo = el('div', { class: 'follow', style: 'display:none' }, [el('label', { text: '→ wenn ja: ' + it.follow }), el('textarea', { rows: 2 })]); box.appendChild(fo); }
+    var tg = ynToggle('q' + qi + '_' + ii, function () { refresh(); });
+    row.appendChild(box); row.appendChild(tg.node);
+    u.items.push(tg); u.rows.push(row); u.follows.push(fo); card.appendChild(row);
+    if (it.dep != null) row.style.display = 'none';
+  });
+  if (q.hint && q.items.length > 1) card.appendChild(el('div', { class: 'small', text: q.hint }));
+  if (q.follow) { u.follow = el('div', { class: 'follow', style: 'display:none' }, [el('label', { text: '→ wenn ja: ' + q.follow }), el('textarea', { rows: 2 })]); card.appendChild(u.follow); }
+  function refresh() {
+    q.items.forEach(function (it, ii) {
+      if (it.dep != null) u.rows[ii].style.display = u.items[it.dep].get() === true ? '' : 'none';
+      if (u.follows[ii]) u.follows[ii].style.display = u.items[ii].get() === true ? 'block' : 'none';
+    });
+    if (u.follow) u.follow.style.display = u.items.some(function (t, i) { return t.get() === true && u.rows[i].style.display !== 'none'; }) ? 'block' : 'none';
+  }
+  u.refresh = refresh; u.card = card; ui.push(u); qbox.appendChild(card);
+});
+$('datenschutz').appendChild(datenschutzBlock());
+var sig = makeSig($('sig'));
+$('sig-clear').onclick = function () { sig.clear(); };
+$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); setTimeout(function () { ui.forEach(function (u) { u.refresh(); u.rows.forEach(function (r, i) { if (QS[ui.indexOf(u)].items[i].dep != null) r.style.display = 'none'; }); }); }, 0); });
+
+function val(id) { return $(id).value.trim(); }
+function collect() {
+  document.querySelectorAll('.invalid').forEach(function (n) { n.classList.remove('invalid'); });
+  document.querySelectorAll('.seg.err').forEach(function (n) { n.classList.remove('err'); });
+  var bad = [], d = { vorname: val('vorname'), nachname: val('nachname') };
+  if (!d.vorname) bad.push($('vorname')); if (!d.nachname) bad.push($('nachname'));
+  var t = val('dob-t'), m = $('dob-m').value, j = val('dob-j'), ok = /^\d{1,2}$/.test(t) && m && /^\d{4}$/.test(j);
+  if (ok) { var dt = new Date(+j, +m - 1, +t); ok = dt.getFullYear() === +j && dt.getMonth() === +m - 1 && dt.getDate() === +t && dt < new Date() && +j > 1900; }
+  if (!ok) bad.push($('g-dob')); else d.dob = pad2(+t) + '.' + m + '.' + j;
+  d.q = QS.map(function (q, qi) {
+    var u = ui[qi], items = q.items.map(function (it, ii) {
+      var visible = u.rows[ii].style.display !== 'none', v = u.items[ii].get();
+      if (visible && v === null) { u.items[ii].mark(); bad.push(u.items[ii].node); }
+      return { t: it.t, visible: visible, ja: visible ? v === true : false, followLabel: it.follow || '', follow: it.follow && v === true ? u.follows[ii].querySelector('textarea').value.trim() : '' };
+    });
+    var any = items.some(function (x) { return x.visible && x.ja; });
+    return { n: q.n, t: q.t, intro: q.intro || '', hint: q.hint || '', followLabel: q.follow || '', items: items, follow: q.follow && any ? u.follow.querySelector('textarea').value.trim() : '', any: any };
+  });
+  if (!$('ok').checked) bad.push($('g-ok'));
+  if (sig.isEmpty()) bad.push($('sig'));
+  return { d: d, bad: bad };
+}
+
+async function buildAnamnese(d, data) {
+  var who = d.nachname + ', ' + d.vorname + ' (geb. ' + d.dob + ')';
+  var P = await newPdf('Anamnese', who);
+  P.text('Patient/in: ' + d.vorname + ' ' + d.nachname + '      Geburtsdatum: ' + d.dob, { size: 10.5, bold: true, gap: 4 });
+  P.text('J = Ja | N = Nein', { size: 8.5, color: P.gray, gap: 6 });
+  var xYn = P.W - P.M - 46;
+  d.q.forEach(function (q) {
+    var need = 56 + q.items.filter(function (i) { return i.visible; }).length * 16;
+    P.ensure(Math.min(need, 160));
+    P.y -= 3; P.text(q.n + '. ' + q.t, { size: 10.5, bold: true, gap: 1 });
+    if (q.intro) P.text(q.intro, { size: 9, color: P.gray });
+    q.items.forEach(function (it) {
+      if (!it.visible) return;
+      var lines = P.wrap((q.items.length > 1 ? '- ' : '') + it.t, P.f, 9.5, xYn - P.M - 16); P.ensure(lines.length * 13 + 4);
+      var y0 = P.y; lines.forEach(function (l, i) { P.page.drawText(l, { x: P.M + 8, y: P.y - 9.5 - i * 13, size: 9.5, font: P.f, color: P.black }); });
+      P.yn(xYn, y0 - 10, it.ja); P.y -= lines.length * 13 + 3;
+      if (it.ja && it.followLabel) P.text('-> wenn ja: ' + it.followLabel + ' ' + (it.follow || '(keine Angabe)'), { size: 9, x: P.M + 22, italic: true, color: P.gray });
+    });
+    if (q.hint) P.text(q.hint, { size: 7.8, color: P.gray, x: P.M + 8 });
+    if (q.followLabel && q.any) { P.text('-> wenn ja: ' + q.followLabel, { size: 9, bold: true, x: P.M + 8 }); P.text(q.follow || '(keine Angabe)', { size: 9.5, x: P.M + 22, gap: 2 }); }
+    P.rule(4);
+  });
+  P.ensure(150); P.y -= 4;
+  var y0 = P.y; P.page.drawRectangle({ x: P.M, y: y0 - 10, width: 10, height: 10, borderColor: P.black, borderWidth: 1 });
+  P.page.drawLine({ start: { x: P.M + 2, y: y0 - 8 }, end: { x: P.M + 8, y: y0 - 2 }, thickness: 1.4, color: P.black }); P.page.drawLine({ start: { x: P.M + 2, y: y0 - 2 }, end: { x: P.M + 8, y: y0 - 8 }, thickness: 1.4, color: P.black });
+  P.text('Die Fragen zu den Vorerkrankungen habe ich nach bestem Wissen und Gewissen beantwortet.', { x: P.M + 18, size: 9.5, gap: 8 });
+  await P.sign(sig.png(), 'Unterschrift der Patientin / des Patienten', d.vorname + ' ' + d.nachname);
+  return await P.finish(data);
+}
+
+function summary(d) {
+  var by = function (n) { return d.q.filter(function (q) { return q.n === n; })[0]; };
+  var out = { allergien: '', medikamente: '', diagnosen: [], hinweise: [] };
+  var a = by(4); if (a.any) out.allergien = a.follow || 'ja (ohne nähere Angabe)';
+  var m = by(3); if (m.any) out.medikamente = m.follow || 'ja (ohne nähere Angabe)';
+  d.q.forEach(function (q) {
+    if (!q.any || q.n === 3 || q.n === 4) return;
+    var pos = q.items.filter(function (i) { return i.visible && i.ja; }).map(function (i) { return i.t + (i.follow ? ' (' + i.follow + ')' : ''); });
+    var line = q.t + ': ' + (pos.length && q.items.length > 1 ? pos.join('; ') : (q.follow || 'ja'));
+    if (q.items.length > 1 && q.follow) line += ' - ' + q.follow;
+    if (q.n === 1 || q.n === 2 || q.n >= 18) out.hinweise.push(line); else out.diagnosen.push(line);
+  });
+  return out;
+}
+
+$('f').addEventListener('submit', async function (ev) {
+  ev.preventDefault(); $('errmsg').style.display = 'none';
+  var r = collect();
+  if (r.bad.length) { r.bad.forEach(function (n) { if (n.classList && !n.classList.contains('seg')) n.classList.add('invalid'); }); r.bad[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); errBox('Bitte beantworte alle Fragen mit Ja oder Nein und fülle die mit * markierten Felder aus (rot umrandet).'); return; }
+  var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
+  try {
+    var d = r.d;
+    var data = { format: 'ka-formular', version: 1, typ: 'anamnese', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob }, antworten: d.q, zusammenfassung: summary(d) };
+    var pdf = await buildAnamnese(d, data);
+    var res = await deliver('anamnese', 'Anamnese', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
+    showDone(res, 'Anamnesebogen');
+  } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox('Das hat leider nicht geklappt: ' + (x && x.message ? x.message : x) + ' Bitte versuche es noch einmal.'); }
+});
+</script>
+</body>
+</html>

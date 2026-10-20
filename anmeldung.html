@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Patientenanmeldung Kreuzberg Ästhetik</title>
+<link rel="stylesheet" href="forms.css">
+</head>
+<body>
+<div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
+<div class="wrap" id="formbox">
+  <form id="f" novalidate autocomplete="on">
+    <h1>Willkommen</h1>
+    <div class="intro">
+      <p>bei Kreuzberg Ästhetik. Bitte fülle das Formular aus.<br>Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p>
+      <p>Liebe Grüße und bis ganz bald,<br><b>Manuel</b> von Kreuzberg Ästhetik</p>
+      <p class="ps">P.S.: Das System arbeitet mit einer automatischen Erkennung, indem es Vorname, Nachname und Geburtsdatum abgleicht. Wenn möglich benutze immer die gleiche Konstellation Deines Namens und die gleiche Schreibweise. Merci.</p>
+    </div>
+
+    <div class="card">
+      <label class="l">Ich identifiziere mich … <span class="req">*</span></label>
+      <div class="radios" id="g-geschlecht">
+        <label><input type="radio" name="geschlecht" value="Divers"> nicht binär</label>
+        <label><input type="radio" name="geschlecht" value="Herr"> männlich</label>
+        <label><input type="radio" name="geschlecht" value="Frau"> weiblich</label>
+      </div>
+
+      <label class="l">Geburtsdatum <span class="req">*</span></label>
+      <div class="grid3" id="g-dob">
+        <input type="text" id="dob-t" inputmode="numeric" maxlength="2" placeholder="Tag" aria-label="Tag" autocomplete="bday-day">
+        <select id="dob-m" aria-label="Monat" autocomplete="bday-month"><option value="">Monat</option><option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option><option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">August</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option></select>
+        <input type="text" id="dob-j" inputmode="numeric" maxlength="4" placeholder="Jahr" aria-label="Jahr" autocomplete="bday-year">
+      </div>
+
+      <div class="grid3" style="grid-template-columns:.7fr 1fr 1fr; margin-top:0;">
+        <div><label class="l">Titel</label><input type="text" id="titel" placeholder="Dr., Prof., ..." autocomplete="honorific-prefix"></div>
+        <div><label class="l">Vorname(n) <span class="req">*</span></label><input type="text" id="vorname" autocomplete="given-name"></div>
+        <div><label class="l">Nachname(n) <span class="req">*</span></label><input type="text" id="nachname" autocomplete="family-name"></div>
+      </div>
+
+      <div class="grid2">
+        <div><label class="l">Straße <span class="req">*</span></label><input type="text" id="strasse" autocomplete="address-line1"></div>
+        <div><label class="l">Nummer <span class="req">*</span></label><input type="text" id="nr"></div>
+        <div><label class="l">Postleitzahl <span class="req">*</span></label><input type="text" id="plz" inputmode="numeric" autocomplete="postal-code"></div>
+        <div><label class="l">Stadt <span class="req">*</span></label><input type="text" id="stadt" autocomplete="address-level2"></div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label class="l">Telefonnummer <span class="req">*</span></label>
+          <div class="phone"><span class="pre">+49</span><input type="tel" id="phone" placeholder="01512 3456789" autocomplete="tel-national"></div>
+          <div class="hint">Bitte ohne Ländervorwahl eingeben (z. B. 0173 2774413)</div>
+        </div>
+        <div><label class="l">E-Mail-Adresse <span class="req">*</span></label><input type="email" id="email" autocomplete="email"></div>
+      </div>
+      <label class="l">Notfallkontakt (Name &amp; Telefonnummer)</label>
+      <input type="text" id="notfall">
+    </div>
+
+    <h2>Weitere Angaben</h2>
+    <div class="card" id="weitere"></div>
+
+    <h2>Terminerinnerungen</h2>
+    <div class="card">
+      <label class="l">Terminerinnerungen <span class="req">*</span></label>
+      <select id="erinnerung"><option value="">Bitte auswählen</option><option>SMS</option><option>E-Mail</option><option>Keine Erinnerung</option></select>
+      <label class="l" style="margin-top:16px">Ich erkläre mich mit der unten beschriebenen Verarbeitung meiner Daten, zum Zweck des Versands einer Terminerinnerung per SMS oder E-Mail, einverstanden. <span class="req">*</span></label>
+      <div class="radios" id="g-einw">
+        <label><input type="radio" name="einw" value="ja"> ja</label>
+        <label><input type="radio" name="einw" value="nein"> nein</label>
+      </div>
+      <div id="datenschutz"></div>
+    </div>
+
+    <label class="l" style="margin-top:20px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
+    <canvas id="sig" class="sigbox"></canvas>
+    <div class="sigbar"><span>Unterschrift</span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
+
+    <div class="hp"><label>Website <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
+    <div id="errmsg" class="msg err" style="display:none"></div>
+    <div class="actions">
+      <button type="reset" class="btn" id="reset">Zurücksetzen</button>
+      <button type="submit" class="btn primary" id="go">Anmelden</button>
+    </div>
+  </form>
+</div>
+<script src="forms.js"></script>
+<script>
+var weitere = $('weitere'), yn = {};
+function ynBlock(key, title, ask, followLabel) {
+  var wrap = el('div', { style: 'margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid #eef2f6;' });
+  wrap.appendChild(el('label', { class: 'l', html: ask + ' <span class="req">*</span>' }));
+  var follow = el('div', { class: 'follow', style: 'display:none' }), ta = el('input', { type: 'text', id: key + '-t', placeholder: followLabel });
+  follow.appendChild(ta);
+  var t = ynToggle(key, function (v) { follow.style.display = v ? 'block' : 'none'; });
+  yn[key] = t; wrap.appendChild(t.node); wrap.appendChild(follow); weitere.appendChild(wrap);
+}
+ynBlock('allergien', 'Allergien', 'Sind Allergien (<b>insbesondere Bienen-/Wespengift, Lidocain, Fisch, Krustentiere</b>) bekannt?', 'Welche?');
+ynBlock('vorbeh', 'Vorbehandlungen', 'Hattest Du bereits vorher ästhetische Behandlungen (<u>Injectables:</u> z.B <b>Botox, Hyaluron</b>)?', 'Welche und wann?');
+ynBlock('ops', 'Operationen', 'Hattest Du schon <b>Operationen</b> insbesondere im <u>Gesichtsbereich</u>?', 'Welche und wann?');
+weitere.appendChild(el('label', { class: 'l', text: 'Chronische Erkrankungen' })); weitere.appendChild(el('input', { type: 'text', id: 'chronisch' }));
+weitere.appendChild(el('label', { class: 'l', text: 'Medikamente' })); weitere.appendChild(el('input', { type: 'text', id: 'medikamente' }));
+weitere.appendChild(el('label', { class: 'l', text: 'Wie bist Du auf die Praxis aufmerksam geworden?' }));
+var q = el('select', { id: 'quelle' }); ['Bitte auswählen (freiwillige Angabe)', 'Persönliche Empfehlung', 'Instagram', 'Google', 'Website', 'Sonstiges'].forEach(function (o, i) { var op = el('option', { text: o }); op.value = i ? o : ''; q.appendChild(op); }); weitere.appendChild(q);
+$('datenschutz').appendChild(datenschutzBlock());
+
+var sig = makeSig($('sig'));
+$('sig-clear').onclick = function () { sig.clear(); };
+$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); setTimeout(function () { document.querySelectorAll('.follow').forEach(function (f) { f.style.display = 'none'; }); }, 0); });
+
+function val(id) { return $(id).value.trim(); }
+function mark(node) { node.classList.add('invalid'); }
+function collect() {
+  document.querySelectorAll('.invalid').forEach(function (n) { n.classList.remove('invalid'); });
+  document.querySelectorAll('.seg.err').forEach(function (n) { n.classList.remove('err'); });
+  var bad = [], d = {};
+  d.geschlecht = (document.querySelector('input[name=geschlecht]:checked') || {}).value || '';
+  if (!d.geschlecht) bad.push($('g-geschlecht'));
+  var t = val('dob-t'), m = $('dob-m').value, j = val('dob-j'), ok = /^\d{1,2}$/.test(t) && m && /^\d{4}$/.test(j);
+  if (ok) { var dt = new Date(+j, +m - 1, +t); ok = dt.getFullYear() === +j && dt.getMonth() === +m - 1 && dt.getDate() === +t && dt < new Date() && +j > 1900; }
+  if (!ok) bad.push($('g-dob')); else d.dob = pad2(+t) + '.' + m + '.' + j;
+  [['vorname', 'vorname'], ['nachname', 'nachname'], ['strasse', 'strasse'], ['nr', 'nr'], ['plz', 'plz'], ['stadt', 'stadt']].forEach(function (k) { d[k[0]] = val(k[1]); if (!d[k[0]]) bad.push($(k[1])); });
+  d.titel = val('titel');
+  var ph = val('phone').replace(/[^\d+]/g, ''); if (ph.length < 6) bad.push($('phone')); else d.phone = ph.charAt(0) === '+' ? ph : '+49' + ph.replace(/^0+/, '');
+  d.email = val('email'); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) bad.push($('email'));
+  d.notfall = val('notfall');
+  d.fragen = {};
+  [['allergien', 'Allergien bekannt'], ['vorbeh', 'Frühere ästhetische Behandlungen'], ['ops', 'Operationen, insbesondere im Gesichtsbereich']].forEach(function (k) {
+    var v = yn[k[0]].get(); if (v === null) { yn[k[0]].mark(); bad.push(yn[k[0]].node); } else d.fragen[k[0]] = { frage: k[1], ja: v, text: v ? val(k[0] + '-t') : '' };
+  });
+  d.chronisch = val('chronisch'); d.medikamente = val('medikamente'); d.quelle = $('quelle').value;
+  d.erinnerung = $('erinnerung').value; if (!d.erinnerung) bad.push($('erinnerung'));
+  d.einwilligung = (document.querySelector('input[name=einw]:checked') || {}).value || ''; if (!d.einwilligung) bad.push($('g-einw'));
+  if (sig.isEmpty()) bad.push($('sig'));
+  return { d: d, bad: bad };
+}
+
+async function buildAnmeldung(d, data) {
+  var who = (d.titel ? d.titel + ' ' : '') + d.vorname + ' ' + d.nachname;
+  var P = await newPdf('Patientenanmeldung', d.nachname + ', ' + d.vorname + ' (geb. ' + d.dob + ')');
+  function sec(t) { P.ensure(40); P.y -= 8; P.text(t.toUpperCase(), { size: 10.5, bold: true, gap: 2 }); P.rule(8); }
+  function kv(k, v) {
+    var lines = P.wrap(v || '-', P.f, 10.5, P.W - P.M * 2 - 180), kl = P.wrap(k, P.f, 9.5, 165), lh = 14, rows = Math.max(lines.length, kl.length); P.ensure(lh * rows + 4);
+    kl.forEach(function (l, i) { P.page.drawText(l, { x: P.M, y: P.y - 10 - i * lh, size: 9.5, font: P.f, color: P.gray }); });
+    lines.forEach(function (l, i) { P.page.drawText(l, { x: P.M + 180, y: P.y - 10 - i * lh, size: 10.5, font: P.f, color: P.black }); });
+    P.y -= lh * rows + 4;
+  }
+  sec('Persönliche Angaben');
+  kv('Name', who); kv('Geschlecht', { Frau: 'weiblich', Herr: 'männlich', Divers: 'nicht binär' }[d.geschlecht]); kv('Geburtsdatum', d.dob);
+  kv('Anschrift', d.strasse + ' ' + d.nr + '\n' + d.plz + ' ' + d.stadt); kv('Telefon', d.phone); kv('E-Mail', d.email); kv('Notfallkontakt', d.notfall);
+  sec('Weitere Angaben');
+  Object.keys(d.fragen).forEach(function (k) { var f = d.fragen[k]; kv(f.frage, f.ja ? 'Ja' + (f.text ? ': ' + f.text : '') : 'Nein'); });
+  kv('Chronische Erkrankungen', d.chronisch); kv('Medikamente', d.medikamente); kv('Aufmerksam geworden durch', d.quelle);
+  sec('Terminerinnerungen');
+  kv('Gewünschte Erinnerung', d.erinnerung);
+  kv('Einwilligung', d.einwilligung === 'ja' ? 'Ja, ich bin mit der Verarbeitung meiner Daten zum Versand von Terminerinnerungen einverstanden.' : 'Nein');
+  P.y -= 6; P.text('Mit meiner Unterschrift bestätige ich die Richtigkeit meiner Angaben und habe die Datenschutzhinweise zur Kenntnis genommen.', { size: 9, italic: true, color: P.gray, gap: 8 });
+  await P.sign(sig.png(), 'Unterschrift', who);
+  return await P.finish(data);
+}
+
+$('f').addEventListener('submit', async function (ev) {
+  ev.preventDefault(); $('errmsg').style.display = 'none';
+  var r = collect();
+  if (r.bad.length) { r.bad.forEach(function (n) { if (n.classList && !n.classList.contains('seg')) mark(n); }); r.bad[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); errBox('Bitte fülle alle mit * markierten Felder aus (rot umrandet).'); return; }
+  var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
+  try {
+    var d = r.d;
+    var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: new Date().toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { fragen: d.fragen, chronisch: d.chronisch, medikamente: d.medikamente, quelle: d.quelle }, erinnerung: d.erinnerung, einwilligung: d.einwilligung };
+    var pdf = await buildAnmeldung(d, data);
+    var res = await deliver('anmeldung', 'Patientenanmeldung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
+    showDone(res, 'Anmeldebogen');
+  } catch (x) { go.disabled = false; go.textContent = 'Anmelden'; errBox('Das hat leider nicht geklappt: ' + (x && x.message ? x.message : x) + ' Bitte versuche es noch einmal.'); }
+});
+</script>
+</body>
+</html>
