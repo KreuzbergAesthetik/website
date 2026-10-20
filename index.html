@@ -1312,6 +1312,7 @@ var ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 var ICON_MAIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 7 9-7"/></svg>';
 function mk(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
 function warnIcon(p) { var w = mk('span', 'warn', '!'); w.title = 'Allergie oder Unverträglichkeit hinterlegt'; return w; }
+function sexIcon(p) { var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (!sx) return null; var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; return sp; }
 function renderPatients() {
   var tb = document.getElementById('patient-table'), dl = document.getElementById('t-patient-list');
   tb.innerHTML = ''; dl.innerHTML = '';
@@ -1331,8 +1332,9 @@ function renderPatients() {
     if (q && (nameKey(p) + ' ' + p.nachname + ' ' + (p.phone || '') + ' ' + (p.dob || '') + ' #' + p.id).toLowerCase().indexOf(q) < 0) return;
     var age = ageOf(p.dob), row = tb.insertRow(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
     c1.appendChild(mk('span', 'pid', '#' + p.id));
-    var full = (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + String(p.nachname).toUpperCase() + (age !== '' ? ' (' + age + ')' : '');
+    var full = p.vorname + ' ' + String(p.nachname).toUpperCase() + (age !== '' ? ' (' + age + ')' : '');
     var nb = mk('button', 'pn', full); nb.type = 'button'; nb.onclick = function () { viewAkte(p); }; c1.appendChild(nb);
+    var sxi = sexIcon(p); if (sxi) c1.appendChild(sxi);
     if (hasWarn(p)) c1.appendChild(warnIcon(p));
     if (p.phone) { var l1 = mk('div', 'pl'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); c1.appendChild(l1); }
     if (p.email) { var l2 = mk('div', 'pl'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); c1.appendChild(l2); }
@@ -1361,10 +1363,9 @@ function closeModal(id) { document.getElementById(id).classList.remove('active')
 var gsScope = { kal: true, pat: true, rec: true };
 /* Die drei Knöpfe im Header legen Neues an */
 function hdAdd(k) {
-  var inAkte = !!curP && document.getElementById('modal-akte').classList.contains('active');
-  if (k === 'termin') { if (inAkte) aAct('termin'); else openTermin(); }
-  else if (k === 'pat') openModal('modal-patient');
-  else if (k === 'rec') openInvoice(inAkte ? curP : null);
+  /* Die Knöpfe im Header gehören zu keiner Seite: immer eine frische, leere Maske */
+  if (k === 'termin') openTermin(); else if (k === 'pat') { ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; }); openModal('modal-patient'); }
+  else if (k === 'rec') openInvoice(null);
 }
 function recentAdd(id) { try { var l = JSON.parse(localStorage.getItem('ka_recent') || '[]').filter(function (x) { return x !== id; }); l.unshift(id); localStorage.setItem('ka_recent', JSON.stringify(l.slice(0, 12))); } catch (x) {} }
 /* Suche: nur Patienten, die letzten fünf Treffer merkt sich die App */
