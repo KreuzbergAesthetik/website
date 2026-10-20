@@ -286,6 +286,8 @@ body.akte-open .a-fab { display:block; }
 .pick-box .pick-h { font-size:14px; font-weight:700; color:#0f172a; margin-bottom:10px; }
 .foot-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:22px; padding-top:16px; border-top:1px solid #e2e8f0; }
 .foot-bar .btn { min-width:120px; }
+.modal-box { overflow-x:hidden; }
+@media (max-width:520px) { .foot-bar { flex-wrap:wrap; gap:8px; } .foot-bar .btn { min-width:0; flex:1 1 90px; padding-left:10px; padding-right:10px; } }
 .icon-btn { width:38px; height:36px; padding:0 !important; display:inline-flex; align-items:center; justify-content:center; }
 .icon-btn svg { width:20px; height:20px; }
 .inv-row { display:grid; grid-template-columns:1fr 58px 86px 66px 80px 24px; gap:6px; align-items:center; margin-bottom:6px; }
@@ -387,9 +389,7 @@ body { overflow-x:clip; }
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
   <button type="button" class="nav-btn" id="btn-rechnungen" onclick="switchTab('rechnungen')">Rechnungen</button>
-  <button type="button" class="nav-btn" id="btn-zahlungen" onclick="switchTab('zahlungen')">Zahlungen</button>
   <button type="button" class="nav-btn" id="btn-todos" onclick="switchTab('todos')">To-Dos <span id="todo-badge" class="nav-badge" style="display:none;"></span></button>
-  <button type="button" class="nav-btn" id="btn-statistik" onclick="switchTab('statistik')">Statistik</button>
   <button type="button" class="nav-btn" id="btn-praxis" onclick="toggleNavMenu(event)">Praxis &#9662;</button>
 </nav>
 </header>
@@ -404,6 +404,9 @@ body { overflow-x:clip; }
   <button type="button" disabled>Patientenstammdaten <small>geplant</small></button>
   <button type="button" disabled>Automationen <small>geplant</small></button>
   <button type="button" onclick="navGo('webformulare')">Webformulare</button>
+  <div class="nav-sep"></div>
+  <button type="button" onclick="navGo('zahlungen')">Zahlungen</button>
+  <button type="button" onclick="navGo('statistik')">Statistik</button>
 </div>
 
 <main>
@@ -512,18 +515,28 @@ body { overflow-x:clip; }
     <div class="card">
       <div class="card-header">
         <span class="card-title">Leistungen</span>
-        <button type="button" class="btn btn-sm" onclick="openLeist(-1)">+ Leistung</button>
+        <div class="row-actions">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="lsExport()">Exportieren</button>
+          <button type="button" class="btn btn-sm" onclick="openLeist(-1)">+ Leistung</button>
+        </div>
       </div>
       <div id="lk-box" style="margin-bottom:14px;"></div>
-      <input type="text" id="ls-filter" class="form-control" placeholder="Leistung suchen..." autocomplete="off" oninput="renderLeist()" style="margin-bottom:12px;">
+      <div class="cal-bar" style="margin-bottom:10px;">
+        <input type="text" id="ls-filter" class="form-control" placeholder="Leistungsname..." autocomplete="off" oninput="lsPage = 1; renderLeist()" style="flex:1 1 200px;">
+        <select id="ls-fkat" class="form-control" style="width:auto; max-width:240px;" onchange="lsPage = 1; renderLeist()" aria-label="Gruppe"></select>
+      </div>
       <div class="scroll">
-        <table class="pt" style="min-width:520px; font-size:14px;">
-          <thead><tr><th>Leistung</th><th style="width:130px;">Preis brutto</th><th style="width:90px;">MwSt</th><th style="width:130px;">Netto</th></tr></thead>
+        <table class="pt" style="min-width:640px; font-size:14px;">
+          <thead><tr><th style="width:52px; cursor:pointer;" onclick="lsSortBy('id')">ID</th><th style="cursor:pointer;" onclick="lsSortBy('name')">Leistung</th><th style="width:150px; cursor:pointer;" onclick="lsSortBy('kat')">Gruppe</th><th style="width:100px; cursor:pointer;" onclick="lsSortBy('price')">Preis</th><th style="width:64px;">MwSt</th><th style="width:76px; cursor:pointer;" onclick="lsSortBy('dauer')">Dauer</th><th style="width:118px;"></th></tr></thead>
           <tbody id="ls-table"></tbody>
         </table>
       </div>
       <div id="ls-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Leistungen angelegt</div>
-      <div style="font-size:12px; color:#94a3b8; margin-top:6px;">Diese Leistungen erscheinen im Termin und in der Rechnung. Wählst Du dort eine Leistung, füllt sich der Preis automatisch.</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <select id="ls-per" class="form-control" style="width:auto;" onchange="lsPage = 1; renderLeist()" aria-label="Pro Seite"><option value="10">10 / Seite</option><option value="25" selected>25 / Seite</option><option value="50">50 / Seite</option><option value="0">Alle</option></select>
+        <div id="ls-pager" class="seg"></div>
+      </div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Diese Leistungen erscheinen im Termin und in der Rechnung. Wählst Du dort eine Leistung, füllen sich Preis und Dauer automatisch.</div>
     </div>
   </div>
 
@@ -950,7 +963,7 @@ body { overflow-x:clip; }
       <div class="form-group"><label>Preis brutto in Euro *</label><input type="text" id="ls-price" class="form-control" inputmode="decimal"></div>
       <div class="form-group"><label>MwSt</label><select id="ls-rate" class="form-control"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
     </div>
-    <div class="form-group"><label>Kategorie (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div>
+    <div class="grid-2"><div class="form-group"><label>Gruppe (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div><div class="form-group"><label>Dauer in Minuten</label><input type="text" id="ls-dauer" class="form-control" inputmode="numeric" placeholder="z.B. 30"></div></div>
     <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
     <div class="foot-bar">
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-leist')">Abbrechen</button>
@@ -1205,25 +1218,62 @@ body { overflow-x:clip; }
 
 <!-- MODAL: PRODUKT -->
 <div id="modal-produkt" class="modal-overlay">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:600px;">
     <div class="modal-header"><strong id="lp-title">Neues Produkt</strong><button type="button" class="close-btn" onclick="closeModal('modal-produkt')">&times;</button></div>
-    <div class="form-group"><label>Produktname</label><input type="text" id="lp-name" class="form-control" autocomplete="off"></div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-      <div class="form-group"><label>Einheit</label><input type="text" id="lp-einheit" class="form-control" list="lp-einheiten" autocomplete="off"><datalist id="lp-einheiten"><option value="Stück"><option value="Vial"><option value="Packung"><option value="Spritze"><option value="Ampulle"><option value="ml"></datalist></div>
-      <div class="form-group"><label>Mindestmenge</label><input type="text" id="lp-min" class="form-control" inputmode="decimal"></div>
-      <div class="form-group"><label>Einkaufspreis netto je Einheit</label><input type="text" id="lp-ek" class="form-control" inputmode="decimal"></div>
-      <div class="form-group"><label>Verkaufspreis netto je Einheit</label><input type="text" id="lp-vk" class="form-control" inputmode="decimal"></div>
+    <div class="form-group"><label>Bezeichnung</label><input type="text" id="lp-name" class="form-control" autocomplete="off"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Brutto (Verkaufspreis)</label><div style="display:flex;"><input type="text" id="lp-brutto" class="form-control" inputmode="decimal" oninput="lpPreview()" style="border-radius:8px 0 0 8px;"><span style="padding:0 12px; background:#f1f5f9; border:1px solid #cbd5e1; border-left:none; border-radius:0 8px 8px 0; display:flex; align-items:center; color:#475569;">€</span></div></div>
+      <div class="form-group"><label>Steuer</label><select id="lp-steuer" class="form-control" onchange="lpPreview()"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
     </div>
-    <div class="form-group"><label>Lieferant</label><input type="text" id="lp-lief" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Produktgruppe</label><input type="text" id="lp-gruppe" class="form-control" list="lp-gruppen" autocomplete="off" placeholder="z.B. Hyaluron Filler"><datalist id="lp-gruppen"></datalist></div>
+    <div class="ak-h">Vorschau</div>
+    <table class="pt" style="font-size:14px; min-width:0;"><thead><tr><th>Produkt</th><th>Netto</th><th>MwSt</th><th>Brutto</th></tr></thead><tbody><tr><td id="lpv-name">-</td><td id="lpv-n">-</td><td id="lpv-m">-</td><td id="lpv-b">-</td></tr></tbody></table>
+    <div class="grid-2" style="margin-top:12px;">
+      <div class="form-group"><label>Einheit</label><input type="text" id="lp-einheit" class="form-control" list="lp-einheiten" autocomplete="off"><datalist id="lp-einheiten"><option value="Stück"><option value="Stk"><option value="ml"><option value="Vial"><option value="Spritze"><option value="Einheiten"></datalist></div>
+      <div class="form-group"><label>Einkaufspreis (netto)</label><div style="display:flex;"><input type="text" id="lp-ek" class="form-control" inputmode="decimal" style="border-radius:8px 0 0 8px;"><span style="padding:0 12px; background:#f1f5f9; border:1px solid #cbd5e1; border-left:none; border-radius:0 8px 8px 0; display:flex; align-items:center; color:#475569;">€</span></div></div>
+    </div>
+    <div class="form-group"><label>Barcode</label><input type="text" id="lp-barcode" class="form-control" autocomplete="off"><div style="font-size:12px; color:#64748b; margin-top:3px;">Der Barcode dient der Zuordnung, zum Beispiel beim Scannen im Lager.</div></div>
+    <div class="form-group"><label>Produkttext</label><textarea id="lp-text" class="form-control" rows="3"></textarea><div style="font-size:12px; color:#64748b; margin-top:3px;">Falls angegeben, steht dieser Text auf der Rechnung beim Produkt.</div></div>
+    <div class="form-group"><label>Buchhaltungs-Konto</label><input type="text" id="lp-konto" class="form-control" autocomplete="off"></div>
+    <div id="lp-stock" style="display:none;">
+      <div class="ak-h">Lagerstand</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+        <div id="lp-stand" style="font-size:30px; font-weight:700;"></div>
+        <div style="display:flex; gap:6px;"><button type="button" class="btn btn-secondary" onclick="lpEinbuchen()">+ Produkt einbuchen</button><button type="button" class="btn btn-secondary" onclick="lpAusbuchen()">– Ausbuchen</button></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Minimaler Lagerbestand</label><input type="text" id="lp-min" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Lieferant</label><input type="text" id="lp-lief" class="form-control" autocomplete="off"></div>
+    </div>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center; font-weight:400; margin-bottom:8px;"><input type="checkbox" id="lp-verw" checked> Lagerstand verwalten</label>
     <div id="lp-chbox" style="display:none;">
       <div style="font-weight:700; font-size:13px; margin:6px 0;">Chargen im Bestand</div>
       <div id="lp-chargen"></div>
+    </div>
+    <div id="lp-histbox" style="display:none;">
+      <div class="ak-h">Buchungen</div>
+      <div class="scroll"><table class="pt" style="font-size:13.5px; min-width:420px;"><thead><tr><th>Datum</th><th>Grund</th><th>Anzahl</th><th>EK netto</th></tr></thead><tbody id="lp-hist"></tbody></table></div>
+      <button type="button" class="btn btn-secondary btn-sm" id="lp-histmore" style="margin-top:8px; display:none;" onclick="lpHistN += 10; lpHistory()">Mehr anzeigen</button>
     </div>
     <div class="foot-bar">
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-produkt')">Abbrechen</button>
       <button type="button" id="lp-del" class="btn btn-del" style="display:none;" onclick="deleteProdukt()">Löschen</button>
       <button type="button" class="btn btn-save" onclick="saveProdukt()">Speichern</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: AUSBUCHEN -->
+<div id="modal-aus" class="modal-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><strong id="au-title">Ausbuchen</strong><button type="button" class="close-btn" onclick="closeModal('modal-aus')">&times;</button></div>
+    <div class="form-group"><label>Charge</label><select id="au-ch" class="form-control"></select></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Menge</label><input type="text" id="au-menge" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Grund</label><select id="au-grund" class="form-control"><option>Verfall</option><option>Verlust/Bruch</option><option>Eigenverbrauch</option><option>Korrektur</option></select></div>
+    </div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-aus')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveAus()">Ausbuchen</button></div>
   </div>
 </div>
 
@@ -1298,7 +1348,7 @@ body { overflow-x:clip; }
 </div>
 
 <script>
-var PRAXIS_TABS = ['lager', 'leistungen', 'dokumente', 'nachrichten', 'textbausteine', 'webformulare'];
+var PRAXIS_TABS = ['lager', 'leistungen', 'dokumente', 'nachrichten', 'textbausteine', 'webformulare', 'zahlungen', 'statistik'];
 var TAB_RENDER = { webformulare: 'renderWebf', kalender: 'renderCal', start: 'renderHome', lager: 'renderLager', leistungen: 'renderLeist', dokumente: 'renderTemplates', zahlungen: 'renderZahlungen', todos: 'renderTodos', statistik: 'renderStat', nachrichten: 'renderNachr', textbausteine: 'renderTxt', rechnungen: 'renderInvoices' };
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
 function errBanner(msg) {
@@ -2133,20 +2183,19 @@ var lsIdx = -1;
 var lkIdx = -1;
 function renderLKats() {
   var box = document.getElementById('lk-box'); if (!box) return; box.innerHTML = '';
-  var head = mk('div'); head.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;';
+  var head = mk('div'); head.style.cssText = 'display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:8px; flex-wrap:wrap;';
   head.appendChild(mk('div', 'hm-sec', 'Kategorien und Farben'));
-  var bt = mk('div'); bt.style.cssText = 'display:flex; gap:6px;';
-  var rc = mk('button', 'btn btn-sm btn-secondary', 'Termine neu einfärben'); rc.type = 'button'; rc.onclick = recolorEvents; bt.appendChild(rc);
-  var nb = mk('button', 'btn btn-sm btn-secondary', '+ Kategorie'); nb.type = 'button'; nb.onclick = function () { openLKat(-1); }; bt.appendChild(nb);
-  head.appendChild(bt); box.appendChild(head);
-  var row = mk('div'); row.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px;';
+  var rc = mk('button', '', 'Termine neu einfärben'); rc.type = 'button'; rc.onclick = recolorEvents; rc.style.cssText = 'border:none; background:none; color:#64748b; font-size:12.5px; text-decoration:underline; cursor:pointer; padding:2px 0;'; head.appendChild(rc);
+  box.appendChild(head);
+  var row = mk('div'); row.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px;';
+  var chip = 'display:inline-flex; align-items:center; gap:7px; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:3px 11px; font-size:13px; cursor:pointer; color:#0f172a; min-height:28px;';
   ensureLKats().forEach(function (c, i) {
     var n = (settings.katalog || []).filter(function (l) { return l.kat === c.id; }).length;
-    var b = mk('button'); b.type = 'button'; b.onclick = function () { openLKat(i); };
-    b.style.cssText = 'display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #cbd5e1; border-radius:20px; padding:6px 12px; font-size:13.5px; cursor:pointer; color:#0f172a;';
-    var d = mk('span'); d.style.cssText = 'width:12px; height:12px; border-radius:50%; background:' + c.color + '; flex:none;'; b.appendChild(d);
-    b.appendChild(document.createTextNode(c.name + ' (' + n + ')')); row.appendChild(b);
+    var b = mk('button'); b.type = 'button'; b.onclick = function () { openLKat(i); }; b.style.cssText = chip;
+    var d = mk('span'); d.style.cssText = 'width:10px; height:10px; border-radius:50%; background:' + c.color + '; flex:none;'; b.appendChild(d);
+    b.appendChild(document.createTextNode(c.name + ' ' + n)); row.appendChild(b);
   });
+  var nb = mk('button', '', '+ Kategorie'); nb.type = 'button'; nb.onclick = function () { openLKat(-1); }; nb.style.cssText = chip + 'border-style:dashed; color:#64748b; background:none;'; row.appendChild(nb);
   box.appendChild(row);
 }
 function openLKat(i) {
@@ -2198,6 +2247,7 @@ function tLeistAdd(v) {
   if (tLeist.indexOf(v) < 0) tLeist.push(v);
   inp.value = ''; var b = document.getElementById('t-behandlung'); if (!b.value.trim()) b.value = tLeist[0];
   renderTLeist(); terminKatColor();
+  if (tLeist.length === 1 && !editId && k && k.dauer) { tDur = k.dauer; shiftEnd(); }
 }
 function terminKatColor() {
   var c = lkatColorFor(tLeist[0] || document.getElementById('t-leistung').value); if (c) document.getElementById('t-farbe').value = c;
@@ -2207,20 +2257,44 @@ function calLegend() {
   var kats = ensureLKats(); if (!kats.length) return;
   kats.forEach(function (c) { var s = mk('span'); s.style.cssText = 'display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#475569; margin-right:12px;'; var d = mk('i'); d.style.cssText = 'width:10px; height:10px; border-radius:3px; background:' + c.color + '; display:inline-block;'; s.appendChild(d); s.appendChild(document.createTextNode(c.name)); box.appendChild(s); });
 }
+var lsPage = 1, lsSort = { k: 'name', dir: 1 };
+function lsEnsureIds() { var m = 0, l = settings.katalog || []; l.forEach(function (k) { if (k.id > m) m = k.id; }); l.forEach(function (k) { if (!k.id) k.id = ++m; }); }
+function lsSortBy(k) { if (lsSort.k === k) lsSort.dir = -lsSort.dir; else { lsSort.k = k; lsSort.dir = 1; } renderLeist(); }
+function lsRow(k) { return k; }
 function renderLeist() {
   var tb = document.getElementById('ls-table'); if (!tb) return;
-  tb.innerHTML = '';
-  renderLKats();
-  var q = (document.getElementById('ls-filter').value || '').trim().toLowerCase(), list = settings.katalog || [];
-  document.getElementById('ls-empty').style.display = list.length ? 'none' : 'block';
-  list.forEach(function (k, i) {
-    if (q && k.name.toLowerCase().indexOf(q) < 0) return;
-    var row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
-    var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; dt.title = kc.name; c0.appendChild(dt); }
-    var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c0.appendChild(b);
-    c1.textContent = eur(k.price); c2.textContent = k.rate + ' %'; c3.textContent = eur(k.price / (1 + k.rate / 100));
+  tb.innerHTML = ''; renderLKats(); lsEnsureIds();
+  var fs = document.getElementById('ls-fkat'), fv = fs.value; fs.innerHTML = ''; var o0 = mk('option', '', 'Alle Gruppen'); o0.value = ''; fs.appendChild(o0);
+  ensureLKats().forEach(function (c) { var o = mk('option', '', c.name); o.value = c.id; fs.appendChild(o); }); fs.value = fv;
+  var q = (document.getElementById('ls-filter').value || '').trim().toLowerCase(), all = settings.katalog || [];
+  document.getElementById('ls-empty').style.display = all.length ? 'none' : 'block';
+  var list = all.filter(function (k) { return (!q || k.name.toLowerCase().indexOf(q) >= 0) && (!fs.value || k.kat === fs.value); });
+  var key = { id: function (k) { return k.id; }, name: function (k) { return k.name.toLowerCase(); }, kat: function (k) { var c = lkatOf(k); return c ? c.name.toLowerCase() : 'zzz'; }, price: function (k) { return k.price; }, dauer: function (k) { return k.dauer || 0; } }[lsSort.k];
+  list.sort(function (a, b) { var x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * lsSort.dir; });
+  var per = parseInt(document.getElementById('ls-per').value, 10) || list.length || 1, pages = Math.max(1, Math.ceil(list.length / per)); if (lsPage > pages) lsPage = pages;
+  list.slice((lsPage - 1) * per, lsPage * per).forEach(function (k) {
+    var i = all.indexOf(k), row = tb.insertRow(), c = [0, 1, 2, 3, 4, 5, 6].map(function () { return row.insertCell(); });
+    c[0].textContent = k.id; c[0].style.color = '#64748b';
+    var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c[1].appendChild(b);
+    c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); c[2].appendChild(document.createTextNode(kc.name)); } else c[2].textContent = '-';
+    c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %'; c[5].textContent = k.dauer ? k.dauer + ' min' : '-';
+    c[6].style.cssText = 'white-space:nowrap;';
+    c[6].appendChild(lsAct('copy', 'Kopieren', function () { lsCopy(i); }, ''));
+    c[6].appendChild(lsAct('pen', 'Bearbeiten', function () { openLeist(i); }, ''));
+    c[6].appendChild(lsAct('trash', 'Löschen', function () { lsDelete(i); }, 'del'));
   });
-  if (list.length && !tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
+  if (all.length && !list.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 7; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
+  var pg = document.getElementById('ls-pager'); pg.innerHTML = ''; pg.style.display = pages > 1 ? 'inline-flex' : 'none';
+  for (var p = 1; p <= pages; p++) (function (p) { var b = mk('button', '', String(p)); b.type = 'button'; b.className = p === lsPage ? 'on' : ''; b.onclick = function () { lsPage = p; renderLeist(); }; pg.appendChild(b); })(p);
+}
+var LS_I = { copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>' };
+function lsAct(k, title, fn, cls) { var b = mk('button', 'tv-ib' + (cls ? ' ' + cls : '')); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.style.cssText = 'width:32px; height:30px; margin-right:4px;' + (cls === 'del' ? 'border-color:#fca5a5; background:#fef2f2; color:#dc2626;' : ''); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">' + LS_I[k] + '</svg>'; b.onclick = fn; return b; }
+function lsCopy(i) { var k = settings.katalog[i]; if (!k) return; var n = Object.assign({}, k, { id: 0, name: k.name + ' (Kopie)', vorlagen: (k.vorlagen || []).slice() }); settings.katalog.push(n); lsEnsureIds(); persist(); refreshLeistungen(); renderLeist(); }
+function lsDelete(i) { var k = settings.katalog[i]; if (!k || !confirm('Leistung "' + k.name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return; settings.katalog.splice(i, 1); persist(); refreshLeistungen(); renderLeist(); }
+function lsExport() {
+  var q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+  var rows = [['ID', 'Leistung', 'Gruppe', 'Preis brutto', 'MwSt', 'Dauer (min)'].map(q).join(';')].concat((settings.katalog || []).map(function (k) { var c = lkatOf(k); return [k.id, k.name, c ? c.name : '', String(k.price).replace('.', ','), k.rate, k.dauer || ''].map(q).join(';'); }));
+  var blob = new Blob(['\uFEFF' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Leistungen.csv'; document.body.appendChild(a); a.click(); a.remove();
 }
 function openLeist(i) {
   lsIdx = i; var k = i >= 0 ? settings.katalog[i] : null;
@@ -2230,7 +2304,7 @@ function openLeist(i) {
   document.getElementById('ls-rate').value = k ? String(k.rate) : '19';
   var ks = document.getElementById('ls-kat'); ks.innerHTML = ''; var o0 = mk('option', '', 'Keine Kategorie'); o0.value = ''; ks.appendChild(o0);
   ensureLKats().forEach(function (c) { var o = mk('option', '', c.name); o.value = c.id; ks.appendChild(o); });
-  ks.value = k ? (k.kat || '') : '';
+  ks.value = k ? (k.kat || '') : ''; document.getElementById('ls-dauer').value = k && k.dauer ? k.dauer : '';
   document.getElementById('ls-del').style.display = k ? '' : 'none';
   var vb = document.getElementById('ls-vorl'); vb.innerHTML = '';
   if (!templates.length) vb.appendChild(mk('div', 'hm-empty', 'Noch keine Vorlagen hochgeladen.'));
@@ -2246,9 +2320,9 @@ function saveLeist() {
   if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
   if (price <= 0) { alert('Bitte einen Preis größer als 0 eingeben.'); return; }
   if (settings.katalog.some(function (k, j) { return j !== lsIdx && k.name.trim().toLowerCase() === name.toLowerCase(); })) { alert('Eine Leistung mit dieser Bezeichnung gibt es schon.'); return; }
-  var k = { name: name, price: price, rate: rate, kat: document.getElementById('ls-kat').value || undefined, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
+  var k = { name: name, price: price, rate: rate, kat: document.getElementById('ls-kat').value || undefined, dauer: parseInt(document.getElementById('ls-dauer').value, 10) || undefined, id: lsIdx >= 0 ? settings.katalog[lsIdx].id : 0, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
   if (lsIdx >= 0) settings.katalog[lsIdx] = k; else settings.katalog.push(k);
-  persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
+  lsEnsureIds(); persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
 function deleteLeist() {
   if (lsIdx < 0 || !confirm('Leistung "' + settings.katalog[lsIdx].name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return;
@@ -4530,7 +4604,7 @@ function lagerWarns() {
   var low = 0, soon = 0, exp = 0;
   lager.produkte.forEach(function (p) {
     var b = bestand(p.id);
-    if (p.min > 0 && b < p.min) low++;
+    if (p.verwalten !== false && p.min > 0 && b < p.min) low++;
     chargenOf(p.id).forEach(function (c) { if (!c.verfall) return; var d = daysTo(c.verfall); if (d < 0) exp++; else if (d <= 60) soon++; });
   });
   var r = [];
@@ -4569,20 +4643,38 @@ function renderLager() {
   document.getElementById('lg-sum').textContent = lager.produkte.length ? 'Lagerwert zum Einkaufspreis (netto): ' + eur(wert) : '';
 }
 var curProd = null;
+var lpHistN = 10;
+function lpPreview() {
+  var br = num(document.getElementById('lp-brutto').value), st = parseInt(document.getElementById('lp-steuer').value, 10) || 0, nm = document.getElementById('lp-name').value.trim();
+  document.getElementById('lpv-name').textContent = nm || '-';
+  if (br === null || br <= 0) { ['lpv-n', 'lpv-m', 'lpv-b'].forEach(function (i) { document.getElementById(i).textContent = '-'; }); return; }
+  var net = r2(br / (1 + st / 100)); document.getElementById('lpv-n').textContent = eur(net); document.getElementById('lpv-m').textContent = eur(r2(br - net)); document.getElementById('lpv-b').textContent = eur(br);
+}
 function openProdukt(id) {
   curProd = id ? prodOf(id) : null;
   var p = curProd || {};
-  document.getElementById('lp-title').textContent = p.id ? 'Produkt bearbeiten' : 'Neues Produkt';
+  document.getElementById('lp-title').textContent = p.id ? p.name + ' bearbeiten' : 'Neues Produkt';
   document.getElementById('lp-name').value = p.name || '';
+  var st = p.steuer !== undefined ? p.steuer : 19; document.getElementById('lp-steuer').value = String(st);
+  document.getElementById('lp-brutto').value = p.vk > 0 ? qty(r2(p.vk * (1 + st / 100))) : '';
+  document.getElementById('lp-gruppe').value = p.gruppe || '';
+  var dl = document.getElementById('lp-gruppen'); dl.innerHTML = ''; var seen = {}; lager.produkte.forEach(function (x) { if (x.gruppe && !seen[x.gruppe]) { seen[x.gruppe] = 1; var o = document.createElement('option'); o.value = x.gruppe; dl.appendChild(o); } });
   document.getElementById('lp-einheit').value = p.einheit || '';
   document.getElementById('lp-min').value = p.min > 0 ? qty(p.min) : '';
   document.getElementById('lp-ek').value = p.ek !== null && p.ek !== undefined && p.ek !== '' ? qty(p.ek) : '';
-  document.getElementById('lp-vk').value = p.vk > 0 ? qty(p.vk) : '';
+  document.getElementById('lp-barcode').value = p.barcode || p.nr || '';
+  document.getElementById('lp-text').value = p.text || '';
+  document.getElementById('lp-konto').value = p.konto || '';
   document.getElementById('lp-lief').value = p.lief || '';
+  document.getElementById('lp-verw').checked = p.verwalten !== false;
   document.getElementById('lp-del').style.display = p.id ? '' : 'none';
+  lpPreview();
   var box = document.getElementById('lp-chbox'), list = document.getElementById('lp-chargen');
   list.innerHTML = '';
+  document.getElementById('lp-stock').style.display = p.id ? 'block' : 'none';
+  document.getElementById('lp-histbox').style.display = p.id ? 'block' : 'none';
   if (p.id) {
+    document.getElementById('lp-stand').textContent = qty(bestand(p.id)) + ' ' + (p.einheit || 'Stk');
     var cs = chargenOf(p.id);
     box.style.display = cs.length ? 'block' : 'none';
     cs.forEach(function (c) {
@@ -4591,20 +4683,48 @@ function openProdukt(id) {
       var inp = mk('input', 'form-control'); inp.type = 'text'; inp.setAttribute('inputmode', 'decimal'); inp.style.cssText = 'width:90px;'; inp.value = qty(c.rest); inp.setAttribute('data-cid', c.id); inp.title = 'Restmenge korrigieren';
       r.appendChild(inp); list.appendChild(r);
     });
+    lpHistN = 10; lpHistory();
   } else box.style.display = 'none';
   openModal('modal-produkt');
 }
+function lpHistory() {
+  var p = curProd; if (!p) return; var tb = document.getElementById('lp-hist'); tb.innerHTML = '';
+  var rows = [];
+  lager.chargen.forEach(function (c) { if (c.pid === p.id) rows.push({ ts: c.datum ? new Date(c.datum + 'T12:00:00').getTime() : 0, grund: 'Einbuchung' + (c.nr ? ' (Charge ' + c.nr + ')' : ''), anz: +c.menge || 0, ek: c.ek }); });
+  lager.verbrauch.forEach(function (v) { if (v.prodId === p.id) { var pt = v.pid ? patients.filter(function (x) { return x.id === v.pid; })[0] : null; rows.push({ ts: v.ts, grund: pt ? 'Behandlung ' + nameKey(pt) : (v.grund || 'Ausbuchung'), anz: -(+v.menge || 0), ek: v.ek }); } });
+  rows.sort(function (a, b) { return b.ts - a.ts; });
+  rows.slice(0, lpHistN).forEach(function (r) { var row = tb.insertRow(); row.insertCell().textContent = r.ts ? fmtD(iso(new Date(r.ts))) : '-'; row.insertCell().textContent = r.grund; var c = row.insertCell(); c.textContent = (r.anz > 0 ? '+' : '') + qty(r.anz) + ' ' + (p.einheit || 'Stk'); c.style.color = r.anz < 0 ? '#b91c1c' : '#166534'; row.insertCell().textContent = r.ek !== null && r.ek !== undefined && r.ek !== '' ? eur(+r.ek) : '-'; });
+  if (!rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = 'Noch keine Buchungen'; ec.style.color = '#94a3b8'; }
+  document.getElementById('lp-histmore').style.display = rows.length > lpHistN ? '' : 'none';
+}
+function lpEinbuchen() { if (!curProd) return; var id = curProd.id; closeModal('modal-produkt'); setTimeout(function () { openWare(); document.getElementById('lw-prod').value = id; wareProdChanged(); }, 80); }
+function lpAusbuchen() {
+  if (!curProd) return; var cs = chargenOf(curProd.id);
+  if (!cs.length) { alert('Es ist keine Charge mit Restmenge vorhanden.'); return; }
+  var sel = document.getElementById('au-ch'); sel.innerHTML = '';
+  cs.forEach(function (c) { var o = mk('option', '', 'Charge ' + (c.nr || '-') + ' · Rest ' + qty(c.rest) + (c.verfall ? ' · bis ' + fmtD(c.verfall) : '')); o.value = c.id; sel.appendChild(o); });
+  document.getElementById('au-menge').value = ''; document.getElementById('au-title').textContent = curProd.name + ' ausbuchen'; openModal('modal-aus');
+}
+function saveAus() {
+  var p = curProd, c = lager.chargen.filter(function (x) { return x.id === document.getElementById('au-ch').value; })[0], m = num(document.getElementById('au-menge').value);
+  if (!p || !c) return; if (m === null || m <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
+  if (m > (+c.rest || 0) + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(c.rest) + ' da.'); return; }
+  c.rest = Math.round(((+c.rest || 0) - m) * 1000) / 1000;
+  lager.verbrauch.push({ id: lid(), ts: Date.now(), pid: null, prodId: p.id, chId: c.id, name: p.name, einheit: p.einheit || '', nr: c.nr || '', verfall: c.verfall || '', menge: m, ek: c.ek, eid: null, grund: document.getElementById('au-grund').value });
+  persist(); closeModal('modal-aus'); openProdukt(p.id); renderLager();
+}
 function saveProdukt() {
   var name = document.getElementById('lp-name').value.trim();
-  if (!name) { alert('Bitte einen Produktnamen eingeben.'); return; }
-  var ekv = document.getElementById('lp-ek').value.trim(), vkv = document.getElementById('lp-vk').value.trim(), mv = document.getElementById('lp-min').value.trim();
-  var ek = ekv === '' ? null : num(ekv), vk = vkv === '' ? 0 : num(vkv), mn = mv === '' ? 0 : num(mv);
-  if ((ekv !== '' && (ek === null || ek < 0)) || vk === null || vk < 0 || mn === null || mn < 0) { alert('Bitte Zahlen für Preise und Mindestmenge prüfen.'); return; }
+  if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
+  var ekv = document.getElementById('lp-ek').value.trim(), bv = document.getElementById('lp-brutto').value.trim(), mv = document.getElementById('lp-min').value.trim(), st = parseInt(document.getElementById('lp-steuer').value, 10) || 0;
+  var ek = ekv === '' ? null : num(ekv), br = bv === '' ? 0 : num(bv), mn = mv === '' ? 0 : num(mv);
+  if ((ekv !== '' && (ek === null || ek < 0)) || br === null || br < 0 || mn === null || mn < 0) { alert('Bitte Zahlen für Preise und Mindestmenge prüfen.'); return; }
   var dup = lager.produkte.filter(function (p) { return p.name.toLowerCase() === name.toLowerCase() && (!curProd || p.id !== curProd.id); })[0];
   if (dup) { alert('Ein Produkt mit diesem Namen gibt es schon.'); return; }
   var p = curProd;
   if (!p) { p = { id: lid() }; lager.produkte.push(p); }
-  p.name = name; p.einheit = document.getElementById('lp-einheit').value.trim(); p.min = mn; p.ek = ek; p.vk = vk; p.lief = document.getElementById('lp-lief').value.trim();
+  p.name = name; p.einheit = document.getElementById('lp-einheit').value.trim(); p.min = mn; p.ek = ek; p.steuer = st; p.vk = br ? r2(br / (1 + st / 100)) : 0; p.lief = document.getElementById('lp-lief').value.trim();
+  p.gruppe = document.getElementById('lp-gruppe').value.trim(); p.barcode = document.getElementById('lp-barcode').value.trim(); p.text = document.getElementById('lp-text').value.trim(); p.konto = document.getElementById('lp-konto').value.trim(); p.verwalten = document.getElementById('lp-verw').checked;
   var bad = false;
   [].slice.call(document.querySelectorAll('#lp-chargen input')).forEach(function (inp) {
     var n = num(inp.value), c = lager.chargen.filter(function (x) { return x.id === inp.getAttribute('data-cid'); })[0];
