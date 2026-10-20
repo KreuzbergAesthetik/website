@@ -121,6 +121,10 @@ textarea.form-control { font-size:15px; }
 .hl { height:48px; font-size:11px; color:#94a3b8; padding:2px 6px 0 0; text-align:right; }
 .dh { text-align:center; font-size:12px; font-weight:600; padding:8px 4px; border-bottom:1px solid #e2e8f0; border-right:1px solid #f1f5f9; color:#475569; }
 .dh.today { color:#0f172a; background:#f1f5f9; }
+.now-line { position:absolute; left:0; right:0; height:0; border-top:2px solid #dc2626; z-index:4; pointer-events:none; }
+.now-line::before { content:''; position:absolute; left:-4px; top:-5px; width:8px; height:8px; border-radius:50%; background:#dc2626; }
+.tc { position:relative; }
+.now-tag { position:absolute; right:2px; transform:translateY(-50%); background:#dc2626; color:#fff; font-size:10.5px; font-weight:700; padding:1px 5px; border-radius:8px; z-index:4; pointer-events:none; }
 .dc { position:relative; border-right:1px solid #f1f5f9; background:repeating-linear-gradient(#e2e8f0 0 1px, transparent 1px 48px); }
 .ev { position:absolute; left:2px; right:2px; min-width:0; background:#fef3c7; border-left:3px solid #d97706; color:#78350f; border-radius:4px; padding:2px 5px; font-size:11px; line-height:1.3; overflow:hidden; }
 .ev.ok { background:#d1fae5; border-left-color:#059669; color:#064e3b; }
@@ -1361,11 +1365,14 @@ function timeGrid(days) {
   });
   html += '</div><div class="tg-row" style="' + cols + '"><div class="tc">';
   for (var h = START; h < END; h++) html += '<div class="hl">' + pad(h) + ':00</div>';
+  var nw = new Date(), nmin = nw.getHours() * 60 + nw.getMinutes(), nowShow = days.some(function (d) { return iso(d) === today; }) && nmin >= START * 60 && nmin < END * 60;
+  if (nowShow) html += '<div class="now-tag" style="top:' + ((nmin - START * 60) * H / 60) + 'px">' + pad(nw.getHours()) + ':' + pad(nw.getMinutes()) + '</div>';
   html += '</div>';
   days.forEach(function (d) {
     var k = iso(d);
     html += '<div class="dc" data-date="' + k + '" style="height:' + (END - START) * H + 'px;cursor:pointer" onclick="slotClick(event,\'' + k + '\')">';
     layoutDay(events.filter(function (e) { return e.date === k; })).forEach(function (x) { html += evBlock(x.e, x.lane, x.lanes); });
+    if (nowShow && k === today) html += '<div class="now-line" style="top:' + ((nmin - START * 60) * H / 60) + 'px"></div>';
     html += '</div>';
   });
   return html + '</div></div>';
@@ -1390,6 +1397,17 @@ function monthGrid() {
   return html + '</div></div>';
 }
 
+/* Marker für die aktuelle Uhrzeit: wird jede halbe Minute nachgezogen */
+function updNow() {
+  var tab = document.getElementById('tab-kalender'); if (!tab || !tab.classList.contains('active') || view === 'monat') return;
+  var n = new Date(), m = n.getHours() * 60 + n.getMinutes(), y = (m - START * 60) * H / 60;
+  var line = document.querySelector('#cal-body .now-line'), tag = document.querySelector('#cal-body .now-tag');
+  var want = m >= START * 60 && m < END * 60 && document.querySelector('#cal-body .dc[data-date="' + iso(n) + '"]');
+  if (!!line !== !!want) { renderCal(); return; }
+  if (!line) return;
+  line.style.top = y + 'px'; if (tag) { tag.style.top = y + 'px'; tag.textContent = pad(n.getHours()) + ':' + pad(n.getMinutes()); }
+}
+setInterval(updNow, 30000);
 function renderCal() {
   fitHours();
   ['tag', 'woche', 'monat'].forEach(function (v) {
