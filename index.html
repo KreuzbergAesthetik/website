@@ -418,6 +418,7 @@ body { overflow-x:clip; }
           <button type="button" class="btn btn-secondary" onclick="goToday()">Heute</button>
         </div>
       </div>
+      <div id="cal-legend" style="margin:0 0 10px;"></div>
       <div class="scroll" id="cal-body"></div>
     </div>
   </div>
@@ -479,6 +480,7 @@ body { overflow-x:clip; }
         <span class="card-title">Leistungen</span>
         <button type="button" class="btn btn-sm" onclick="openLeist(-1)">+ Leistung</button>
       </div>
+      <div id="lk-box" style="margin-bottom:14px;"></div>
       <input type="text" id="ls-filter" class="form-control" placeholder="Leistung suchen..." autocomplete="off" oninput="renderLeist()" style="margin-bottom:12px;">
       <div class="scroll">
         <table class="pt" style="min-width:520px; font-size:14px;">
@@ -673,7 +675,7 @@ body { overflow-x:clip; }
     <div class="tm-link" onclick="document.getElementById('t-notiz').style.display='block'">+ Notiz</div>
     <textarea id="t-notiz" class="form-control" rows="2" style="display:none; margin-bottom:6px;" placeholder="Notiz"></textarea>
     <div class="tm-row"><label>Leistungen</label>
-      <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off" onchange="var b=document.getElementById('t-behandlung');if(!b.value.trim())b.value=this.value">
+      <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off" oninput="terminKatColor()" onchange="var b=document.getElementById('t-behandlung');if(!b.value.trim())b.value=this.value;terminKatColor()">
       <datalist id="t-leistung-list"><option value="Botulinumtoxin"><option value="Hyaluronsäure"><option value="Beratungsgespräch"><option value="Kontrolle"></datalist>
     </div>
     <div class="tm-row" style="grid-template-columns:1fr;">
@@ -851,6 +853,20 @@ body { overflow-x:clip; }
   </div>
 </div>
 
+<!-- MODAL: LEISTUNGSKATEGORIE -->
+<div id="modal-lkat" class="modal-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><strong id="lk-title">Kategorie</strong><button type="button" class="close-btn" onclick="closeModal('modal-lkat')">&times;</button></div>
+    <div class="form-group"><label>Name</label><input type="text" id="lk-name" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Farbe im Kalender</label><input type="color" id="lk-color" value="#2563eb" style="width:100%; height:42px; border:none; padding:0; border-radius:6px; cursor:pointer;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-lkat')">Abbrechen</button>
+      <button type="button" id="lk-del" class="btn btn-del" style="display:none;" onclick="deleteLKat()">Löschen</button>
+      <button type="button" class="btn btn-save" onclick="saveLKat()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: LEISTUNG -->
 <div id="modal-leist" class="modal-overlay">
   <div class="modal-box">
@@ -860,6 +876,7 @@ body { overflow-x:clip; }
       <div class="form-group"><label>Preis brutto in Euro *</label><input type="text" id="ls-price" class="form-control" inputmode="decimal"></div>
       <div class="form-group"><label>MwSt</label><select id="ls-rate" class="form-control"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
     </div>
+    <div class="form-group"><label>Kategorie (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div>
     <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
     <div class="foot-bar">
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-leist')">Abbrechen</button>
@@ -1208,7 +1225,7 @@ body { overflow-x:clip; }
 
 <script>
 var PRAXIS_TABS = ['lager', 'leistungen', 'dokumente', 'nachrichten', 'textbausteine'];
-var TAB_RENDER = { start: 'renderHome', lager: 'renderLager', leistungen: 'renderLeist', dokumente: 'renderTemplates', zahlungen: 'renderZahlungen', todos: 'renderTodos', statistik: 'renderStat', nachrichten: 'renderNachr', textbausteine: 'renderTxt', rechnungen: 'renderInvoices' };
+var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', lager: 'renderLager', leistungen: 'renderLeist', dokumente: 'renderTemplates', zahlungen: 'renderZahlungen', todos: 'renderTodos', statistik: 'renderStat', nachrichten: 'renderNachr', textbausteine: 'renderTxt', rechnungen: 'renderInvoices' };
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
 function errBanner(msg) {
   var b = document.getElementById('err-bar');
@@ -1484,6 +1501,7 @@ function renderCal() {
     title = MN[cur.getMonth()] + ' ' + cur.getFullYear();
     body = monthGrid();
   }
+  calLegend();
   document.getElementById('cal-title').innerText = title;
   document.getElementById('cal-body').innerHTML = body;
 }
@@ -1904,15 +1922,89 @@ function findKat(name) {
   var n = String(name || '').trim().toLowerCase();
   return (settings.katalog || []).filter(function (k) { return k.name.trim().toLowerCase() === n; })[0];
 }
+/* ===== Leistungskategorien (mit Farbe) ===== */
+var DEF_LKATS = [['Botox', '#7c3aed'], ['Hyaluron', '#2563eb'], ['Dermalästhetika', '#0d9488'], ['Lipolyse', '#ea580c'], ['Microneedling', '#db2777'], ['Peeling', '#ca8a04'], ['Sonstiges', '#64748b']];
+function katGuessLeist(name) {
+  var n = String(name || '').toLowerCase();
+  var rules = [['Botox', /neuromodul|botox|botul|tox|hyperhidrosis|bruxismus|masseter|jawline|platysma|nefertiti|zone/], ['Lipolyse', /lipolyse|fett-weg|aqualyx|lemonbottle|pb-serum/], ['Microneedling', /needling|exosom|prp|prf|nctf|mesotherapie/], ['Peeling', /peeling|prx|retinol|rotlicht|led/], ['Hyaluron', /hyaluron filler|filler|lip-flip|lippen|restylane|juvederm|belotero|teosyal/], ['Dermalästhetika', /polynukleotid|profhilo|caha|radiesse|plla|sculptra|ellans|ultracol|hylase|skinbooster|biostim/]];
+  for (var i = 0; i < rules.length; i++) if (rules[i][1].test(n)) return rules[i][0];
+  return 'Sonstiges';
+}
+function ensureLKats() {
+  if (!Array.isArray(settings.leistKats) || !settings.leistKats.length) {
+    settings.leistKats = DEF_LKATS.map(function (k) { return { id: newId(), name: k[0], color: k[1] }; });
+    (settings.katalog || []).forEach(function (l) { if (!l.kat) { var g = settings.leistKats.filter(function (c) { return c.name === katGuessLeist(l.name); })[0]; if (g) l.kat = g.id; } });
+    persist();
+  }
+  return settings.leistKats;
+}
+function lkatOf(l) { ensureLKats(); return settings.leistKats.filter(function (c) { return c.id === (l && l.kat); })[0] || null; }
+function lkatColorFor(leistung) { var l = findKat(leistung); var c = l ? lkatOf(l) : null; return c ? c.color : null; }
 var lsIdx = -1;
+var lkIdx = -1;
+function renderLKats() {
+  var box = document.getElementById('lk-box'); if (!box) return; box.innerHTML = '';
+  var head = mk('div'); head.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;';
+  head.appendChild(mk('div', 'hm-sec', 'Kategorien und Farben'));
+  var bt = mk('div'); bt.style.cssText = 'display:flex; gap:6px;';
+  var rc = mk('button', 'btn btn-sm btn-secondary', 'Termine neu einfärben'); rc.type = 'button'; rc.onclick = recolorEvents; bt.appendChild(rc);
+  var nb = mk('button', 'btn btn-sm btn-secondary', '+ Kategorie'); nb.type = 'button'; nb.onclick = function () { openLKat(-1); }; bt.appendChild(nb);
+  head.appendChild(bt); box.appendChild(head);
+  var row = mk('div'); row.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px;';
+  ensureLKats().forEach(function (c, i) {
+    var n = (settings.katalog || []).filter(function (l) { return l.kat === c.id; }).length;
+    var b = mk('button'); b.type = 'button'; b.onclick = function () { openLKat(i); };
+    b.style.cssText = 'display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #cbd5e1; border-radius:20px; padding:6px 12px; font-size:13.5px; cursor:pointer; color:#0f172a;';
+    var d = mk('span'); d.style.cssText = 'width:12px; height:12px; border-radius:50%; background:' + c.color + '; flex:none;'; b.appendChild(d);
+    b.appendChild(document.createTextNode(c.name + ' (' + n + ')')); row.appendChild(b);
+  });
+  box.appendChild(row);
+}
+function openLKat(i) {
+  lkIdx = i; var c = i >= 0 ? settings.leistKats[i] : null;
+  document.getElementById('lk-title').textContent = c ? 'Kategorie bearbeiten' : 'Neue Kategorie';
+  document.getElementById('lk-name').value = c ? c.name : ''; document.getElementById('lk-color').value = c ? c.color : '#2563eb';
+  document.getElementById('lk-del').style.display = c ? '' : 'none'; openModal('modal-lkat');
+}
+function saveLKat() {
+  var n = document.getElementById('lk-name').value.trim(); if (!n) { alert('Bitte einen Namen eingeben.'); return; }
+  if (settings.leistKats.some(function (c, j) { return j !== lkIdx && c.name.toLowerCase() === n.toLowerCase(); })) { alert('Eine Kategorie mit diesem Namen gibt es schon.'); return; }
+  var col = document.getElementById('lk-color').value;
+  if (lkIdx >= 0) { settings.leistKats[lkIdx].name = n; settings.leistKats[lkIdx].color = col; } else settings.leistKats.push({ id: newId(), name: n, color: col });
+  persist(); closeModal('modal-lkat'); renderLKats(); renderLeist(); if (document.getElementById('tab-kalender').classList.contains('active')) renderCal();
+}
+function deleteLKat() {
+  var c = settings.leistKats[lkIdx]; if (!c) return;
+  var n = (settings.katalog || []).filter(function (l) { return l.kat === c.id; }).length;
+  if (!confirm('Kategorie „' + c.name + '“ löschen?' + (n ? ' ' + n + ' Leistung(en) haben dann keine Kategorie.' : ''))) return;
+  (settings.katalog || []).forEach(function (l) { if (l.kat === c.id) delete l.kat; });
+  settings.leistKats.splice(lkIdx, 1); persist(); closeModal('modal-lkat'); renderLKats(); renderLeist();
+}
+function recolorEvents() {
+  var n = 0; events.forEach(function (e) { var c = lkatColorFor(e.leistung || e.behandlung); if (c && e.color !== c) n++; });
+  if (!n) { alert('Alle Termine mit einer Leistung haben schon die Farbe ihrer Kategorie.'); return; }
+  if (!confirm(n + ' Termin(e) auf die Farbe ihrer Kategorie setzen? Von Hand gewählte Farben werden dabei überschrieben.')) return;
+  events.forEach(function (e) { var c = lkatColorFor(e.leistung || e.behandlung); if (c) e.color = c; });
+  persist(); alert(n + ' Termin(e) umgefärbt.'); if (document.getElementById('tab-kalender').classList.contains('active')) renderCal();
+}
+function terminKatColor() {
+  var c = lkatColorFor(document.getElementById('t-leistung').value); if (c) document.getElementById('t-farbe').value = c;
+}
+function calLegend() {
+  var box = document.getElementById('cal-legend'); if (!box) return; box.innerHTML = '';
+  var kats = ensureLKats(); if (!kats.length) return;
+  kats.forEach(function (c) { var s = mk('span'); s.style.cssText = 'display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#475569; margin-right:12px;'; var d = mk('i'); d.style.cssText = 'width:10px; height:10px; border-radius:3px; background:' + c.color + '; display:inline-block;'; s.appendChild(d); s.appendChild(document.createTextNode(c.name)); box.appendChild(s); });
+}
 function renderLeist() {
   var tb = document.getElementById('ls-table'); if (!tb) return;
   tb.innerHTML = '';
+  renderLKats();
   var q = (document.getElementById('ls-filter').value || '').trim().toLowerCase(), list = settings.katalog || [];
   document.getElementById('ls-empty').style.display = list.length ? 'none' : 'block';
   list.forEach(function (k, i) {
     if (q && k.name.toLowerCase().indexOf(q) < 0) return;
     var row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
+    var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; dt.title = kc.name; c0.appendChild(dt); }
     var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c0.appendChild(b);
     c1.textContent = eur(k.price); c2.textContent = k.rate + ' %'; c3.textContent = eur(k.price / (1 + k.rate / 100));
   });
@@ -1924,6 +2016,9 @@ function openLeist(i) {
   document.getElementById('ls-name').value = k ? k.name : '';
   document.getElementById('ls-price').value = k ? nf(k.price) : '';
   document.getElementById('ls-rate').value = k ? String(k.rate) : '19';
+  var ks = document.getElementById('ls-kat'); ks.innerHTML = ''; var o0 = mk('option', '', 'Keine Kategorie'); o0.value = ''; ks.appendChild(o0);
+  ensureLKats().forEach(function (c) { var o = mk('option', '', c.name); o.value = c.id; ks.appendChild(o); });
+  ks.value = k ? (k.kat || '') : '';
   document.getElementById('ls-del').style.display = k ? '' : 'none';
   var vb = document.getElementById('ls-vorl'); vb.innerHTML = '';
   if (!templates.length) vb.appendChild(mk('div', 'hm-empty', 'Noch keine Vorlagen hochgeladen.'));
@@ -1939,7 +2034,7 @@ function saveLeist() {
   if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
   if (price <= 0) { alert('Bitte einen Preis größer als 0 eingeben.'); return; }
   if (settings.katalog.some(function (k, j) { return j !== lsIdx && k.name.trim().toLowerCase() === name.toLowerCase(); })) { alert('Eine Leistung mit dieser Bezeichnung gibt es schon.'); return; }
-  var k = { name: name, price: price, rate: rate, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
+  var k = { name: name, price: price, rate: rate, kat: document.getElementById('ls-kat').value || undefined, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
   if (lsIdx >= 0) settings.katalog[lsIdx] = k; else settings.katalog.push(k);
   persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
