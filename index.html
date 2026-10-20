@@ -3776,7 +3776,7 @@ function docList(p, list) {
     fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
     var ks = mk('select', 'form-control'); ks.style.cssText = 'flex:1 1 140px; min-width:0; min-height:40px; padding:6px 10px; font-size:14px; background:#fff; border:1px solid #94a3b8;'; fillKatSelect(ks, false); ks.value = katOf(dd);
     ks.onchange = function () { dd.kat = ks.value; refreshFiles(); }; ks.title = 'Kategorie';
-    var x = mk('button', '', '×'); x.type = 'button'; x.title = 'Löschen'; x.setAttribute('aria-label', 'Dokument löschen'); x.style.cssText = 'flex:none; width:36px; height:36px; border:1px solid #fca5a5; border-radius:8px; background:#fef2f2; color:#dc2626; font-size:22px; line-height:1; cursor:pointer;';
+    var x = mk('button', '', '×'); x.type = 'button'; x.title = 'Löschen'; x.setAttribute('aria-label', 'Dokument löschen'); x.style.cssText = 'flex:none; width:28px; height:28px; padding:0; border:1px solid #fca5a5; border-radius:8px; background:#fef2f2; color:#dc2626; font-size:17px; line-height:1; cursor:pointer;';
     x.onclick = function () { if (!confirm('Dokument "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); };
     var sgb = null;
     if (dd.sig) { sgb = mk('span', 'badge badge-green', 'unterschrieben ' + fmtD(iso(new Date(dd.sig.ts)))); sgb.style.flex = 'none'; }
