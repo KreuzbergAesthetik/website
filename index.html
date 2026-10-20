@@ -250,9 +250,34 @@ body.akte-open .a-fab { display:block; }
 .tl-item.tl-verbrauch .tl-label { color:#0891b2; font-weight:600; }
 .tl-item.tl-angelegt .tl-body { border-left-color:#64748b; }
 .tl-item.tl-angelegt .tl-label { color:#64748b; font-weight:600; }
+.tv-top { display:flex; align-items:center; gap:8px; padding:10px 12px; border-left:6px solid var(--tvc,#94a3b8); border-bottom:1px solid #e2e8f0; }
+.tv-when { flex:1; min-width:0; font-size:14px; color:#475569; display:flex; align-items:center; gap:8px; }
+.tv-when svg { width:18px; height:18px; flex:none; color:#64748b; }
+.tv-ib { width:36px; height:34px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; flex:none; }
+.tv-ib svg { width:18px; height:18px; }
+.tv-ib:hover { background:#f1f5f9; }
+.tv-sec { padding:12px 16px; border-bottom:1px solid #eef2f6; font-size:15px; }
+.tv-name { font-size:19px; font-weight:600; color:#4b6590; text-decoration:none; cursor:pointer; overflow-wrap:anywhere; }
+.tv-name:hover { text-decoration:underline; }
+.tv-ct { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:14.5px; }
+.tv-ct svg { width:16px; height:16px; color:#64748b; flex:none; }
+.tv-ct a { color:#4b6590; text-decoration:none; overflow-wrap:anywhere; }
+.tv-cp { border:none; background:none; color:#94a3b8; cursor:pointer; padding:2px; display:inline-flex; }
+.tv-cp svg { width:15px; height:15px; }
+.tv-acts { display:flex; flex-wrap:wrap; gap:6px; padding:10px 16px; border-bottom:1px solid #eef2f6; align-items:center; }
+.tv-acts .tv-ib { width:40px; }
+.tv-btn { height:34px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#334155; font-size:14px; padding:0 12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.tv-btn svg { width:16px; height:16px; }
+.tv-btn:hover { background:#f1f5f9; }
+.tv-status { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px 8px 16px; font-size:14.5px; flex-wrap:wrap; }
+.tv-split { display:inline-flex; }
+.tv-split .tv-btn:first-child { border-radius:6px 0 0 6px; } .tv-split .tv-btn:last-child { border-radius:0 6px 6px 0; border-left:none; padding:0 8px; }
+.tv-foot { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background:#f1f3f5; font-size:13.5px; color:#475569; }
+.tv-del { border:none; background:none; color:#b91c1c; font-size:14px; cursor:pointer; }
+.ev.cancel { opacity:.5; } .ev.cancel b, .ev.cancel { text-decoration:line-through; }
 .tl-plus { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:none; background:#dfe5ec; color:#475569; font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0 0 2px; }
 .tl-plus:hover { background:#cbd5e1; }
-#tl-menu { position:fixed; z-index:45; min-width:230px; top:0; left:0; }
+#tl-menu { position:fixed; z-index:70; min-width:230px; top:0; left:0; }
 .a-pen { width:30px; height:30px; padding:0; border:none; background:none; color:#94a3b8; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
 .a-pen svg { width:16px; height:16px; } .a-pen:hover { background:#f1f5f9; color:#475569; }
 .a-pen.on { width:38px; height:36px; background:#2f9e44; color:#fff; }
@@ -804,14 +829,8 @@ body { overflow-x:clip; }
 
 <!-- MODAL: TERMIN ANSEHEN -->
 <div id="modal-tview" class="modal-overlay">
-  <div class="modal-box" style="max-width:520px;">
-    <div class="modal-header"><strong>Termin</strong><button type="button" class="close-btn" onclick="closeModal('modal-tview')">&times;</button></div>
+  <div class="modal-box tv-box" style="max-width:560px; padding:0; overflow:hidden;">
     <div id="tv-body"></div>
-    <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tview')">Schließen</button>
-      <button type="button" class="btn btn-secondary" id="tv-dok">Dokumentation</button>
-      <button type="button" class="btn btn-save" id="tv-edit">Bearbeiten</button>
-    </div>
   </div>
 </div>
 
@@ -1459,7 +1478,7 @@ function evBlock(e, lane, lanes) {
   var pos = lanes > 1 ? 'left:calc(' + (lane * 100 / lanes) + '% + 2px);right:auto;width:calc(' + (100 / lanes) + '% - 4px);' : '';
   var cats = evKats(e), seg = '', chips = '';
   if (cats.length > 1) { seg = '<span class="evseg">' + cats.map(function (c) { return '<i style="background:' + c.color + '"></i>'; }).join('') + '</span>'; if (h >= 62) chips = '<div class="evchips">' + cats.map(function (c) { return '<i style="background:' + c.color + '">' + esc(c.name) + '</i>'; }).join('') + '</div>'; }
-  return '<div class="ev' + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + '<b>' + e.time + '</b> ' + esc(e.patient) + '<br>' + esc(e.behandlung) + chips + '</div>';
+  return '<div class="ev' + (e.phase === 'Abgesagt' ? ' cancel' : '') + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + '<b>' + e.time + '</b> ' + esc(e.patient) + '<br>' + esc(e.behandlung) + chips + '</div>';
 }
 
 /* Überlappende Termine nebeneinander statt übereinander */
@@ -1678,7 +1697,7 @@ function evUp(e) {
   noClick = true; setTimeout(function () { noClick = false; }, 400);
   if (d.mins !== undefined) {
     for (var i = 0; i < events.length; i++) {
-      if (events[i].id === d.id) { events[i].date = d.cols[d.idx].getAttribute('data-date'); events[i].time = fromMin(d.mins); }
+      if (events[i].id === d.id) { events[i].date = d.cols[d.idx].getAttribute('data-date'); events[i].time = fromMin(d.mins); events[i].mod = Date.now(); }
     }
   }
   persist(); renderCal();
@@ -1823,27 +1842,99 @@ function renderHome() {
   if (op.length) opRows.push(mk('div', 'hm-empty', 'Offen insgesamt: ' + eur(sum)));
   hmFill('hm-open', opRows, 'Keine offenen Rechnungen.');
 }
-/* Terminansicht: erst die Details, die Akte öffnet der Patientenname */
-function openTerminView(id) {
+/* Terminansicht (angelehnt an die Termin-Karte des Altsystems): Details, Schnellaktionen, Ablauf-Status */
+var TV_PH = [['', 'Patient noch nicht erschienen', '#d9edf7', '#31708f', 'Patient im Warteraum'], ['Warteraum', 'Patient im Warteraum', '#fef3c7', '#92400e', 'Behandlung starten'], ['Behandlung', 'Patient in Behandlung', '#d1fae5', '#065f46', 'Abschließen'], ['Fertig', 'Behandlung abgeschlossen', '#e2e8f0', '#334155', 'Wieder öffnen'], ['Abgesagt', 'Termin abgesagt', '#fee2e2', '#991b1b', 'Wieder aktivieren']];
+var TV_I = {
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>', euro: '<path d="M17.5 6.5A7 7 0 107 17.5 7 7 0 0017.5 17.5M4 10.5h9M4 13.5h9"/>', book: '<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h11M9 8h6"/>', pill: '<path d="M10.5 20.5a4.95 4.95 0 01-7-7l10-10a4.95 4.95 0 017 7z"/><path d="M8.5 8.5l7 7"/>',
+  ban: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>', phone: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>', down: '<path d="M6 9l6 6 6-6"/>', pencil2: '<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16z"/>' };
+function tvSvg(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + TV_I[k] + '</svg>'; }
+function tvIcon(k, title, fn) { var b = mk('button', 'tv-ib'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.innerHTML = tvSvg(k); b.onclick = fn; return b; }
+function tvCopy(text, btn) { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { btn.style.color = '#16a34a'; setTimeout(function () { btn.style.color = ''; }, 1200); }, function () { alert(text); }); }
+function tvPhase(e) { var k = e.phase || ''; return TV_PH.filter(function (x) { return x[0] === k; })[0] || TV_PH[0]; }
+function setPhase(id, k) {
+  var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
+  e.phase = k; e.mod = Date.now(); persist(); renderCal(); if (document.getElementById('tab-start').classList.contains('active')) renderHome(); openTerminView(id, true);
+}
+function dupTermin(id) {
+  var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
+  closeModal('modal-tview'); openTermin(e.date, e.time);
+  document.getElementById('t-patient').value = e.patient; document.getElementById('t-behandlung').value = e.behandlung || ''; document.getElementById('t-notiz').value = e.notiz || ''; document.getElementById('t-notiz').style.display = e.notiz ? 'block' : 'none';
+  tLeist = evLeistungen(e).slice(); renderTLeist(); document.getElementById('t-farbe').value = e.color || '#2f9e44';
+  tDur = e.dur; document.getElementById('t-ende').value = fromMin(toMin(e.time) + e.dur); dLabel(e.dur);
+}
+function tvMail(p, vorlName, fallback) {
+  curP = p; openMail();
+  var n = (settings.nachrichten || []).filter(function (x) { return x.name === vorlName; })[0];
+  if (n) { document.getElementById('m-vorl').value = n.id; applyMailVorl(); } else if (fallback) { document.getElementById('m-betreff').value = fallback[0]; document.getElementById('m-text').value = fillPlatzhalter(fallback[1], p); }
+}
+function tvCancel(e, p) {
+  if (!confirm('Termin am ' + fmtD(e.date) + ' um ' + e.time + ' absagen? Er bleibt als abgesagt im Kalender stehen.')) return;
+  e.phase = 'Abgesagt'; e.mod = Date.now(); persist(); renderCal(); closeModal('modal-tview');
+  if (p && p.email && confirm('Absagebestätigung per E-Mail an ' + nameKey(p) + ' vorbereiten?')) { setTimeout(function () { tvMail(p, 'Bestätigung Terminabsage (E-Mail)', ['Bestätigung Deiner Terminabsage', '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wurde erfolgreich abgesagt.\n\nManuel von Kreuzberg Ästhetik']); }, 100); }
+}
+function openTerminView(id, keep) {
   if (noClick) return;
   var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
-  var box = document.getElementById('tv-body'); box.innerHTML = '';
-  var row = function (k, node) { var r = mk('div'); r.style.cssText = 'display:grid; grid-template-columns:110px 1fr; gap:8px; padding:9px 0; border-bottom:1px solid #eef2f6; font-size:15px;'; var l = mk('div', '', k); l.style.cssText = 'color:#64748b; font-size:13px; padding-top:2px;'; r.appendChild(l); if (typeof node === 'string') { var v = mk('div', '', node); v.style.cssText = 'white-space:pre-wrap; overflow-wrap:anywhere;'; r.appendChild(v); } else r.appendChild(node); box.appendChild(r); };
+  var p = patOf(e), box = document.getElementById('tv-body'); box.innerHTML = '';
+  var ls = evLeistungen(e), cats = evKats(e), col = (cats[0] && cats[0].color) || e.color || '#94a3b8';
   var d = new Date(e.date + 'T12:00:00');
-  row('Datum', WDL[d.getDay()] + ', ' + fmtD(e.date));
-  row('Zeit', e.time + ' bis ' + fromMin(toMin(e.time) + e.dur) + ' Uhr (' + e.dur + ' min)');
-  var p = patOf(e), pn;
-  if (p) { pn = mk('a', '', nameKey(p)); pn.href = '#'; pn.style.cssText = 'color:#2563eb; font-weight:700; text-decoration:underline; font-size:16px;'; pn.title = 'Patientenakte öffnen'; pn.onclick = function (ev) { ev.preventDefault(); closeModal('modal-tview'); viewAkte(p); }; }
-  else { pn = mk('div', '', e.patient + ' (keine Akte angelegt)'); }
-  row('Patient', pn);
-  var ls = evLeistungen(e);
-  if (ls.length) { var w = mk('div'); w.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px;'; ls.forEach(function (n, i) { var l = findKat(n), c = l ? lkatOf(l) : null, col = c ? c.color : '#94a3b8'; var ch = mk('span'); ch.style.cssText = 'display:inline-flex; align-items:center; gap:6px; border:1.5px solid ' + col + '; border-radius:16px; padding:2px 10px; font-size:13px;'; var dt = mk('i'); dt.style.cssText = 'width:9px; height:9px; border-radius:50%; background:' + col + ';'; ch.appendChild(dt); ch.appendChild(document.createTextNode(n + (c && c.name !== n ? ' · ' + c.name : ''))); w.appendChild(ch); }); row('Leistungen', w); }
-  if (e.behandlung && ls.indexOf(e.behandlung) < 0) row('Betreff', e.behandlung);
-  if (e.notiz) row('Notiz', e.notiz);
-  if (dokFilled(e)) { var ds = dokSummary(e); ds.onclick = function () { closeModal('modal-tview'); openDok(e.id); }; row('Dokumentation', ds); }
-  document.getElementById('tv-edit').onclick = function () { closeModal('modal-tview'); editTermin(id); };
-  document.getElementById('tv-dok').onclick = function () { closeModal('modal-tview'); openDok(id); };
-  openModal('modal-tview');
+  /* Kopfzeile */
+  var top = mk('div', 'tv-top'); top.style.setProperty('--tvc', col);
+  var when = mk('div', 'tv-when'); when.innerHTML = tvSvg('clock'); var wt = mk('span'); wt.innerHTML = WD[(d.getDay() + 6) % 7] + ', ' + d.getDate() + '. ' + MN[d.getMonth()].slice(0, 3) + '. <b>' + e.time + '</b> bis <b>' + fromMin(toMin(e.time) + e.dur) + '</b> Uhr (' + e.dur + 'min)'; when.appendChild(wt);
+  top.appendChild(when);
+  top.appendChild(tvIcon('copy', 'Termin kopieren', function () { dupTermin(id); }));
+  top.appendChild(tvIcon('pen', 'Bearbeiten', function () { closeModal('modal-tview'); editTermin(id); }));
+  top.appendChild(tvIcon('x', 'Schließen', function () { closeModal('modal-tview'); }));
+  box.appendChild(top);
+  /* Patient */
+  var ps = mk('div', 'tv-sec'), nm = p ? ((p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + String(p.nachname).toUpperCase() + (ageOf(p.dob) !== '' ? ' (' + ageOf(p.dob) + ')' : '')) : e.patient;
+  var nl = mk('a', 'tv-name', nm); nl.href = '#'; nl.title = 'Patientenakte öffnen';
+  if (p) nl.onclick = function (ev) { ev.preventDefault(); closeModal('modal-tview'); viewAkte(p); }; else { nl.removeAttribute('href'); nl.style.cursor = 'default'; nl.style.textDecoration = 'none'; }
+  ps.appendChild(nl); if (!p) ps.appendChild(mk('div', 'hm-empty', 'Keine Patientenakte angelegt'));
+  if (p && p.phone) { var l1 = mk('div', 'tv-ct'); l1.innerHTML = tvSvg('phone'); var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); var c1 = mk('button', 'tv-cp'); c1.type = 'button'; c1.title = 'Kopieren'; c1.innerHTML = tvSvg('copy'); c1.onclick = function () { tvCopy(p.phone, c1); }; l1.appendChild(c1); ps.appendChild(l1); }
+  if (p && p.email) { var l2 = mk('div', 'tv-ct'); l2.innerHTML = tvSvg('mail'); var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); var c2 = mk('button', 'tv-cp'); c2.type = 'button'; c2.title = 'Kopieren'; c2.innerHTML = tvSvg('copy'); c2.onclick = function () { tvCopy(p.email, c2); }; l2.appendChild(c2); ps.appendChild(l2); }
+  box.appendChild(ps);
+  /* Leistungen, Betreff, Notiz, Dokumentation */
+  var bs = mk('div', 'tv-sec');
+  if (ls.length) { var w = mk('div'); w.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;'; ls.forEach(function (n) { var l = findKat(n), c = l ? lkatOf(l) : null, cc = c ? c.color : '#94a3b8'; var ch = mk('span'); ch.style.cssText = 'display:inline-flex; align-items:center; gap:6px; border:1.5px solid ' + cc + '; border-radius:16px; padding:2px 10px; font-size:13px;'; var dt = mk('i'); dt.style.cssText = 'width:9px; height:9px; border-radius:50%; background:' + cc + ';'; ch.appendChild(dt); ch.appendChild(document.createTextNode(n)); w.appendChild(ch); }); bs.appendChild(w); }
+  if (e.behandlung && ls.indexOf(e.behandlung) < 0) bs.appendChild(mk('div', '', e.behandlung));
+  if (e.notiz) { var nt = mk('div', '', e.notiz); nt.style.cssText = 'color:#475569; font-size:14px; margin-top:4px; white-space:pre-wrap;'; bs.appendChild(nt); }
+  if (dokFilled(e)) { var ds = dokSummary(e); ds.style.marginTop = '8px'; ds.onclick = function () { closeModal('modal-tview'); openDok(e.id); }; bs.appendChild(ds); }
+  if (!bs.childNodes.length) bs.appendChild(mk('div', 'hm-empty', 'Keine Leistung eingetragen'));
+  box.appendChild(bs);
+  /* Schnellaktionen */
+  var ac = mk('div', 'tv-acts');
+  if (p) {
+    ac.appendChild(tvIcon('search', 'Patientenakte öffnen', function () { closeModal('modal-tview'); viewAkte(p); }));
+    ac.appendChild(tvIcon('mail', 'E-Mail senden', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; openMail(); }, 80); }));
+    ac.appendChild(tvIcon('euro', 'Rechnung erstellen', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; invFromEvent(e); }, 80); }));
+  }
+  ac.appendChild(tvIcon('book', 'Dokumentation', function () { closeModal('modal-tview'); openDok(id); }));
+  if (p) ac.appendChild(tvIcon('pill', 'Rezept erstellen', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; openRx('e' + e.id); }, 80); }));
+  if (p) {
+    var fb = mk('button', 'tv-btn'); fb.type = 'button'; fb.innerHTML = 'Formulare ' + tvSvg('down');
+    fb.onclick = function (ev) { tlMenu(ev, [
+      ['Anmeldebogen-Link senden', function () { closeModal('modal-tview'); setTimeout(function () { tvMail(p, 'Anmeldebogen Email', ['Dein Termin bei Kreuzberg Ästhetik', '{AnredeInformell},\n\nbitte fülle vor Deinem Termin am {NaechsterTermin} den Anmeldebogen aus:\n{LinkAnmeldung}\n\nManuel - Kreuzberg Ästhetik']); }, 80); }],
+      ['Anamnesebogen-Link senden', function () { closeModal('modal-tview'); setTimeout(function () { tvMail(p, '', ['Anamnesebogen', '{AnredeInformell},\n\nbitte fülle vor Deinem Termin am {NaechsterTermin} den Anamnesebogen aus:\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik']); }, 80); }],
+      ['Unterlagen zum Termin hinzufügen', function () { offerVorlagen(e); }]
+    ]); };
+    ac.appendChild(fb);
+  }
+  var cb = mk('button', 'tv-btn'); cb.type = 'button'; cb.innerHTML = tvSvg('ban') + 'Absagen'; cb.onclick = function () { tvCancel(e, p); }; cb.style.marginLeft = 'auto'; ac.appendChild(cb);
+  box.appendChild(ac);
+  /* Ablauf-Status */
+  var ph = tvPhase(e), st = mk('div', 'tv-status'); st.style.background = ph[2]; st.style.color = ph[3];
+  var stx = mk('span'); stx.innerHTML = '<b>' + ph[1] + '.</b>'; st.appendChild(stx);
+  var nextIdx = Math.min(TV_PH.indexOf(ph) + 1, TV_PH.length - 1), nextKey = ph[0] === 'Abgesagt' ? '' : (ph[0] === 'Fertig' ? '' : TV_PH[nextIdx][0]);
+  var sp = mk('div', 'tv-split'), mb = mk('button', 'tv-btn', ph[4]); mb.type = 'button'; mb.onclick = function () { setPhase(id, nextKey); };
+  var db = mk('button', 'tv-btn'); db.type = 'button'; db.innerHTML = tvSvg('down'); db.title = 'Status wählen'; db.onclick = function (ev) { tlMenu(ev, TV_PH.map(function (x) { return [x[1], function () { setPhase(id, x[0]); }]; })); };
+  sp.appendChild(mb); sp.appendChild(db); st.appendChild(sp); box.appendChild(st);
+  /* Fuß */
+  var ft = mk('div', 'tv-foot'); ft.appendChild(mk('span', '', 'Letzte Änderung: ' + (e.mod ? fmtDT(e.mod) : '–')));
+  var del = mk('button', 'tv-del', 'Löschen'); del.type = 'button'; del.onclick = function () { if (!confirm('Termin wirklich löschen?')) return; events = events.filter(function (x) { return x.id !== id; }); persist(); renderCal(); closeModal('modal-tview'); }; ft.appendChild(del);
+  box.appendChild(ft);
+  if (!keep) openModal('modal-tview');
 }
 function openAkteFromTermin(id) {
   if (noClick) return;
@@ -4886,11 +4977,12 @@ function saveTermin() {
     leistungen: tLeist.slice()
   };
   if (editId) {
-    for (var i = 0; i < events.length; i++) if (events[i].id === editId) { ev.id = editId; ev.doku = events[i].doku; ev.dok = events[i].dok; ev.status = events[i].status; events[i] = ev; }
+    for (var i = 0; i < events.length; i++) if (events[i].id === editId) { ev.id = editId; ev.doku = events[i].doku; ev.dok = events[i].dok; ev.status = events[i].status; ev.phase = events[i].phase; events[i] = ev; }
   } else {
     ev.id = nid++;
     events.push(ev);
   }
+  ev.mod = Date.now();
   var p = datum.split('-'); cur = new Date(+p[0], +p[1] - 1, +p[2]);
   persist(); renderCal();
   closeTermin();
