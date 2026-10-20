@@ -300,6 +300,8 @@ header .nav-btn { min-height:44px; padding:10px 14px; }
 .gs-scope button { width:34px; height:34px; }
 .gs-res { position:fixed; left:8px; right:8px; top:var(--hdh,110px); max-height:60vh; }
 body { overflow-x:clip; }
+.sign-btn svg { flex:none; }
+@media (max-width:640px) { .sign-btn span { display:none; } .sign-btn { padding:6px 12px !important; } }
 .tl-item { min-width:0; } .tl-body { overflow-wrap:anywhere; } .a-tile { overflow-wrap:anywhere; }
 .a-pane, .a-pane .card { min-width:0; }
 @media (max-width:640px) {
@@ -3765,6 +3767,7 @@ function mediaGrid(p, list) {
   });
   return g;
 }
+var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3.5a2.1 2.1 0 013 3L8 17l-4 1 1-4z"/><path d="M3 21h18"/></svg>';
 function docList(p, list) {
   var ul = mk('div');
   list.forEach(function (dd) {
@@ -3773,11 +3776,11 @@ function docList(p, list) {
     fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
     var ks = mk('select', 'form-control'); ks.style.cssText = 'flex:1 1 140px; min-width:0; min-height:40px; padding:6px 10px; font-size:14px; background:#fff; border:1px solid #94a3b8;'; fillKatSelect(ks, false); ks.value = katOf(dd);
     ks.onchange = function () { dd.kat = ks.value; refreshFiles(); }; ks.title = 'Kategorie';
-    var x = mk('button', '', '×'); x.type = 'button'; x.title = 'Löschen'; x.setAttribute('aria-label', 'Dokument löschen'); x.style.cssText = 'flex:none; width:36px; height:36px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#475569; font-size:22px; line-height:1; cursor:pointer;';
+    var x = mk('button', '', '×'); x.type = 'button'; x.title = 'Löschen'; x.setAttribute('aria-label', 'Dokument löschen'); x.style.cssText = 'flex:none; width:36px; height:36px; border:1px solid #fca5a5; border-radius:8px; background:#fef2f2; color:#dc2626; font-size:22px; line-height:1; cursor:pointer;';
     x.onclick = function () { if (!confirm('Dokument "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); };
     var sgb = null;
     if (dd.sig) { sgb = mk('span', 'badge badge-green', 'unterschrieben ' + fmtD(iso(new Date(dd.sig.ts)))); sgb.style.flex = 'none'; }
-    else if (signable(dd)) { sgb = mk('button', 'btn', 'Unterschreiben'); sgb.type = 'button'; sgb.style.cssText = 'flex:none; min-height:40px; padding:6px 14px; font-size:14px; white-space:nowrap;'; sgb.onclick = function () { openSign(p, dd); }; }
+    else if (signable(dd)) { sgb = mk('button', 'btn sign-btn'); sgb.type = 'button'; sgb.title = 'Unterschreiben'; sgb.setAttribute('aria-label', 'Unterschreiben'); sgb.innerHTML = ICON_SIGN + '<span>Unterschreiben</span>'; sgb.style.cssText = 'flex:none; min-height:40px; padding:6px 14px; font-size:14px; white-space:nowrap; display:inline-flex; align-items:center; gap:8px;'; sgb.onclick = function () { openSign(p, dd); }; }
     var top = mk('div'); top.style.cssText = 'display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;';
     top.appendChild(a); top.appendChild(x);
     var ctl = mk('div'); ctl.style.cssText = 'display:flex; align-items:center; gap:8px;';
