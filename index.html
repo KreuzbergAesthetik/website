@@ -127,6 +127,11 @@ textarea.form-control { font-size:15px; }
 .now-tag { position:absolute; right:2px; transform:translateY(-50%); background:#dc2626; color:#fff; font-size:10.5px; font-weight:700; padding:1px 5px; border-radius:8px; z-index:4; pointer-events:none; }
 .dc { position:relative; border-right:1px solid #f1f5f9; background:repeating-linear-gradient(#e2e8f0 0 1px, transparent 1px 48px); }
 .ev { position:absolute; left:2px; right:2px; min-width:0; background:#fef3c7; border-left:3px solid #d97706; color:#78350f; border-radius:4px; padding:2px 5px; font-size:11px; line-height:1.3; overflow:hidden; }
+.ev.multi { border-left-width:0; padding-left:12px; }
+.evseg { position:absolute; left:0; top:0; bottom:0; width:6px; display:flex; flex-direction:column; }
+.evseg i { flex:1; }
+.evchips { display:flex; flex-wrap:wrap; gap:3px; margin-top:3px; }
+.evchips i { font-style:normal; font-size:10px; padding:0 6px; border-radius:8px; color:#fff; line-height:15px; }
 .ev.ok { background:#d1fae5; border-left-color:#059669; color:#064e3b; }
 .mg { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0; }
 .mh { text-align:center; font-size:12px; font-weight:600; padding:6px 0; color:#475569; background:#f8fafc; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; }
@@ -675,7 +680,8 @@ body { overflow-x:clip; }
     <div class="tm-link" onclick="document.getElementById('t-notiz').style.display='block'">+ Notiz</div>
     <textarea id="t-notiz" class="form-control" rows="2" style="display:none; margin-bottom:6px;" placeholder="Notiz"></textarea>
     <div class="tm-row"><label>Leistungen</label>
-      <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off" oninput="terminKatColor()" onchange="var b=document.getElementById('t-behandlung');if(!b.value.trim())b.value=this.value;terminKatColor()">
+      <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off" oninput="terminKatColor()" onchange="tLeistAdd(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();tLeistAdd(this.value);}">
+      <div id="t-lchips" style="grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:6px;"></div>
       <datalist id="t-leistung-list"><option value="Botulinumtoxin"><option value="Hyaluronsäure"><option value="Beratungsgespräch"><option value="Kontrolle"></datalist>
     </div>
     <div class="tm-row" style="grid-template-columns:1fr;">
@@ -1404,7 +1410,9 @@ function evBlock(e, lane, lanes) {
   var p = e.time.split(':'), mins = parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
   var top = (mins - START * 60) * H / 60, h = Math.max(e.dur * H / 60, 20);
   var pos = lanes > 1 ? 'left:calc(' + (lane * 100 / lanes) + '% + 2px);right:auto;width:calc(' + (100 / lanes) + '% - 4px);' : '';
-  return '<div class="ev' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '"><b>' + e.time + '</b> ' + esc(e.patient) + '<br>' + esc(e.behandlung) + '</div>';
+  var cats = evKats(e), seg = '', chips = '';
+  if (cats.length > 1) { seg = '<span class="evseg">' + cats.map(function (c) { return '<i style="background:' + c.color + '"></i>'; }).join('') + '</span>'; if (h >= 62) chips = '<div class="evchips">' + cats.map(function (c) { return '<i style="background:' + c.color + '">' + esc(c.name) + '</i>'; }).join('') + '</div>'; }
+  return '<div class="ev' + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + '<b>' + e.time + '</b> ' + esc(e.patient) + '<br>' + esc(e.behandlung) + chips + '</div>';
 }
 
 /* Überlappende Termine nebeneinander statt übereinander */
@@ -1550,7 +1558,7 @@ function openTermin(k, t, fromAkte) {
   tDur = 60; shiftEnd();
   ['t-behandlung', 't-notiz'].forEach(function (id) { document.getElementById(id).value = ''; });
   document.getElementById('t-notiz').style.display = 'none';
-  document.getElementById('t-leistung').value = '';
+  document.getElementById('t-leistung').value = ''; tLeist = []; renderTLeist();
   document.getElementById('t-ganztag').checked = false; toggleGanztag();
   document.getElementById('t-farbe').value = '#2f9e44';
   openModal('modal-termin');
@@ -1567,7 +1575,7 @@ function editTermin(id, fromAkte) {
   dLabel(e.dur);
   document.getElementById('t-patient').value = e.patient;
   document.getElementById('t-behandlung').value = e.behandlung;
-  document.getElementById('t-leistung').value = e.leistung || '';
+  document.getElementById('t-leistung').value = ''; tLeist = evLeistungen(e).slice(); renderTLeist();
   document.getElementById('t-notiz').value = e.notiz || '';
   document.getElementById('t-notiz').style.display = e.notiz ? 'block' : 'none';
   document.getElementById('t-farbe').value = e.color || '#2f9e44';
@@ -1981,14 +1989,37 @@ function deleteLKat() {
   settings.leistKats.splice(lkIdx, 1); persist(); closeModal('modal-lkat'); renderLKats(); renderLeist();
 }
 function recolorEvents() {
-  var n = 0; events.forEach(function (e) { var c = lkatColorFor(e.leistung || e.behandlung); if (c && e.color !== c) n++; });
+  var n = 0; events.forEach(function (e) { var c = lkatColorFor(evLeistungen(e)[0] || e.behandlung); if (c && e.color !== c) n++; });
   if (!n) { alert('Alle Termine mit einer Leistung haben schon die Farbe ihrer Kategorie.'); return; }
   if (!confirm(n + ' Termin(e) auf die Farbe ihrer Kategorie setzen? Von Hand gewählte Farben werden dabei überschrieben.')) return;
-  events.forEach(function (e) { var c = lkatColorFor(e.leistung || e.behandlung); if (c) e.color = c; });
+  events.forEach(function (e) { var c = lkatColorFor(evLeistungen(e)[0] || e.behandlung); if (c) e.color = c; });
   persist(); alert(n + ' Termin(e) umgefärbt.'); if (document.getElementById('tab-kalender').classList.contains('active')) renderCal();
 }
+/* Termin mit mehreren Leistungen: die erste führt (Farbe), alle Kategorien sind im Kalender sichtbar */
+var tLeist = [];
+function evLeistungen(e) { return Array.isArray(e.leistungen) && e.leistungen.length ? e.leistungen : (e.leistung ? [e.leistung] : []); }
+function evKats(e) { var out = []; evLeistungen(e).forEach(function (n) { var l = findKat(n), c = l ? lkatOf(l) : null; if (c && out.indexOf(c) < 0) out.push(c); }); return out; }
+function renderTLeist() {
+  var box = document.getElementById('t-lchips'); if (!box) return; box.innerHTML = '';
+  tLeist.forEach(function (n, i) {
+    var l = findKat(n), c = l ? lkatOf(l) : null, col = c ? c.color : '#94a3b8';
+    var ch = mk('span'); ch.style.cssText = 'display:inline-flex; align-items:center; gap:6px; background:#fff; border:1.5px solid ' + col + '; border-radius:16px; padding:3px 4px 3px 10px; font-size:13px;';
+    var d = mk('i'); d.style.cssText = 'width:9px; height:9px; border-radius:50%; background:' + col + '; flex:none;'; ch.appendChild(d);
+    var t = mk('span', '', n + (i === 0 && tLeist.length > 1 ? ' ★' : '')); t.title = i === 0 ? 'Führende Leistung (bestimmt die Farbe)' : 'Tippen: als führend setzen'; if (i > 0) { t.style.cursor = 'pointer'; t.onclick = function () { var pv = tLeist[0]; tLeist.unshift(tLeist.splice(i, 1)[0]); syncBetreff(pv); renderTLeist(); terminKatColor(); }; } ch.appendChild(t);
+    var x = mk('button', '', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Leistung entfernen'); x.style.cssText = 'border:none; background:none; color:#64748b; font-size:16px; line-height:1; cursor:pointer; padding:0 6px;'; x.onclick = function () { var pv = tLeist[0]; tLeist.splice(i, 1); syncBetreff(pv); renderTLeist(); terminKatColor(); }; ch.appendChild(x);
+    box.appendChild(ch);
+  });
+}
+function syncBetreff(prev) { var b = document.getElementById('t-behandlung'); if (prev && b.value.trim() === prev) b.value = tLeist[0] || ''; }
+function tLeistAdd(v) {
+  v = String(v || '').trim(); var inp = document.getElementById('t-leistung'); if (!v) return;
+  var k = findKat(v); if (k) v = k.name;
+  if (tLeist.indexOf(v) < 0) tLeist.push(v);
+  inp.value = ''; var b = document.getElementById('t-behandlung'); if (!b.value.trim()) b.value = tLeist[0];
+  renderTLeist(); terminKatColor();
+}
 function terminKatColor() {
-  var c = lkatColorFor(document.getElementById('t-leistung').value); if (c) document.getElementById('t-farbe').value = c;
+  var c = lkatColorFor(tLeist[0] || document.getElementById('t-leistung').value); if (c) document.getElementById('t-farbe').value = c;
 }
 function calLegend() {
   var box = document.getElementById('cal-legend'); if (!box) return; box.innerHTML = '';
@@ -2101,6 +2132,12 @@ function invTerminChanged() {
   var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
   document.getElementById('inv-leistung').value = e.date;
   document.getElementById('inv-doku').value = dokuText(e);
+  var lst = evLeistungen(e).filter(function (n) { return findKat(n); });
+  if (lst.length > 1 || (lst.length === 1 && lst[0] !== e.behandlung)) {
+    var f0 = invRows[0]; if (invRows.length === 1 && f0.type === 'pos' && !f0.text.trim() && !f0.price) invRows = [];
+    lst.forEach(function (n) { if (invRows.some(function (r) { return r.text === n; })) return; var k = findKat(n), r = newRow('pos'); r.text = k.name; r.price = String(k.price).replace('.', ','); r.rate = String(k.rate); invRows.push(r); });
+    renderInvRows(); return;
+  }
   var first = invRows[0];
   if (invRows.length === 1 && first.type === 'pos' && !first.text.trim() && !first.price) { first.text = e.behandlung || 'Beratung'; }
   else if (!invRows.some(function (r) { return r.text === e.behandlung; })) { var r = newRow('pos'); r.text = e.behandlung || 'Beratung'; invRows.push(r); }
@@ -3215,7 +3252,7 @@ function openDok(id) {
   DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin-bottom:4px;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vw.appendChild(l); });
   var vt = dkTa('dk-verwtext', vs.text, 2); vt.placeholder = 'Freitext zur Verwaltung'; vt.style.marginTop = '6px'; vw.appendChild(vt);
   box.appendChild(dkSec('Verwaltung', vw));
-  var lw = mk('div'), lta = dkTa('dk-leist', d.leist || (e.leistung || ''), 2); lw.appendChild(lta);
+  var lw = mk('div'), lta = dkTa('dk-leist', d.leist || evLeistungen(e).join('\n'), 2); lw.appendChild(lta);
   if ((settings.katalog || []).length) {
     var ls = mk('select', 'form-control'); ls.style.cssText = 'width:auto; max-width:100%; min-height:32px; padding:4px 8px; font-size:12.5px; margin-top:6px;';
     var o0 = mk('option', '', 'Leistung aus dem Katalog hinzufügen...'); o0.value = ''; ls.appendChild(o0);
@@ -3600,7 +3637,7 @@ function fillKatSelect(sel, withAll) {
 function hasTpl(p, t) { return (p.dokumente || []).some(function (d) { return d.tid === t.id || String(d.name).toLowerCase() === String(t.name).toLowerCase(); }); }
 function tplsForEvent(e) {
   var out = [];
-  [e.leistung, e.behandlung].forEach(function (n) {
+  evLeistungen(e).concat([e.behandlung]).forEach(function (n) {
     var k = n ? findKat(n) : null;
     (k && k.vorlagen || []).forEach(function (id) { var t = templates.filter(function (x) { return x.id === id; })[0]; if (t && out.indexOf(t) < 0) out.push(t); });
   });
@@ -4677,16 +4714,18 @@ function saveTermin() {
     dur = toMin(ende) - toMin(zeit);
     if (dur <= 0) { alert('Das Ende muss nach dem Beginn liegen.'); return; }
   } else if (!datum) { alert('Bitte Datum angeben.'); return; }
+  if (document.getElementById('t-leistung').value.trim()) tLeistAdd(document.getElementById('t-leistung').value);
   var pname = document.getElementById('t-patient').value.trim().replace(/\s+/g, ' ');
   if (!pname) { alert('Bitte einen Patienten eingeben.'); return; }
   if (!patients.some(function (x) { return nameKey(x) === pname; }) && !confirm('Der Patient "' + pname + '" ist nicht angelegt. Der Termin kann dann keiner Akte zugeordnet werden. Trotzdem speichern?')) return;
   var ev = {
     date: datum, time: zeit, dur: dur,
     patient: pname,
-    behandlung: document.getElementById('t-behandlung').value || document.getElementById('t-leistung').value || 'Beratung',
+    behandlung: document.getElementById('t-behandlung').value || tLeist[0] || 'Beratung',
     notiz: document.getElementById('t-notiz').value,
     color: document.getElementById('t-farbe').value,
-    leistung: document.getElementById('t-leistung').value.trim()
+    leistung: tLeist[0] || '',
+    leistungen: tLeist.slice()
   };
   if (editId) {
     for (var i = 0; i < events.length; i++) if (events[i].id === editId) { ev.id = editId; ev.doku = events[i].doku; ev.dok = events[i].dok; ev.status = events[i].status; events[i] = ev; }
