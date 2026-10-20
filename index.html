@@ -296,6 +296,23 @@ header .nav-btn { min-height:44px; padding:10px 14px; }
 .live-dot { width:8px; height:8px; box-shadow:0 0 0 2px #22c55e33; margin-right:0; }
 .hd-act { gap:4px; flex:none; }
 .ico-btn { min-height:34px; }
+.hero { background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 100%); color:#fff; border:none; box-shadow:0 6px 18px rgba(30,58,138,.35); }
+.hero #hm-date { color:#bfdbfe; font-size:15px; margin-top:2px; }
+.hc { background:var(--bg); border:1px solid var(--bd); border-left:6px solid var(--c); }
+.hc .card-title { color:var(--t); display:flex; align-items:center; gap:10px; }
+.hc-ic { width:30px; height:30px; border-radius:50%; background:var(--c); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none; }
+.hc-ic svg { width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.hc .hm-sec { color:var(--t); }
+.hc .hm-row { background:rgba(255,255,255,.75); border-radius:10px; border-bottom:none; margin-bottom:6px; padding:10px; }
+.hc .hm-row:last-child { margin-bottom:0; }
+.hc .hm-row.next { background:#fff; box-shadow:0 0 0 2px var(--c); }
+.hc-termin { --c:#16a34a; --bg:#f1f9f3; --bd:#cfe8d6; --t:#14532d; }
+.hc-wichtig { --c:#dc2626; --bg:#fff3f1; --bd:#f6cfc9; --t:#991b1b; }
+.hc-bday { --c:#db2777; --bg:#fff1f7; --bd:#f6cfe1; --t:#9d174d; }
+.hc-order { --c:#0d9488; --bg:#eefaf8; --bd:#c6e7e2; --t:#115e59; }
+.hc-week { --c:#2563eb; --bg:#f1f5fe; --bd:#cfdcf7; --t:#1e40af; }
+.hc-fin { --c:#7c3aed; --bg:#fff; --bd:#ddd0f6; --t:#5b21b6; }
+.hc-open { --c:#ea580c; --bg:#fff6ef; --bd:#f6d8c4; --t:#9a3412; }
 .gs-scope { flex:none; }
 .gs-scope button { background:#0f172a; color:#fff; border-color:#0f172a; }
 .gs-scope button { width:34px; height:34px; }
@@ -324,7 +341,7 @@ body { overflow-x:clip; }
     <div class="gs-scope" role="group" aria-label="Neu anlegen">
       <button type="button" id="gs-kal" title="Neuer Termin" aria-label="Neuen Termin anlegen" onclick="hdAdd('termin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg></button>
       <button type="button" id="gs-pat" title="Neuer Patient" aria-label="Neuen Patienten anlegen" onclick="hdAdd('pat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 7v6M16 10h6"/></svg></button>
-      <button type="button" id="gs-rec" title="Neue Rechnung" aria-label="Neue Rechnung anlegen" onclick="hdAdd('rec')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 7A6 6 0 107 15.5 6 6 0 0014.5 15.5M3.5 10.5h8M3.5 13.5h8M19 3v6M16 6h6"/></svg></button>
+      <button type="button" id="gs-rec" title="Neue Rechnung" aria-label="Neue Rechnung anlegen" onclick="hdAdd('rec')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(0 3) scale(.82)"><path d="M4 10h11"/><path d="M4 14h9"/><path d="M18 6.2A7 7 0 0 0 13.4 4.5 7.6 7.6 0 0 0 6 12c0 4.1 3.3 7.5 7.4 7.5 1.9 0 3.6-.7 4.8-1.9"/></g><path d="M19 2.5v6M16 5.5h6"/></svg></button>
     </div>
     <div class="hd-act">
       <span class="live-dot" title="System aktiv" aria-label="System aktiv"></span>
@@ -363,24 +380,19 @@ body { overflow-x:clip; }
   <!-- TAB 1: KALENDER -->
   <!-- TAB 0: START -->
   <div id="tab-start" class="tab-content active">
-    <div class="card">
-      <div style="font-size:26px; font-weight:700;" id="hm-greet"></div>
-      <div style="color:#64748b; margin-bottom:12px;" id="hm-date"></div>
-      <div class="row-actions">
-        <button type="button" class="btn btn-sm" onclick="openTermin()">+ Termin</button>
-        <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')">+ Patient</button>
-        <button type="button" class="btn btn-sm" onclick="openInvoice(null)">+ Rechnung</button>
-      </div>
+    <div class="card hero">
+      <div style="font-size:28px; font-weight:800;" id="hm-greet"></div>
+      <div id="hm-date"></div>
     </div>
-    <div class="card"><div class="card-header"><span class="card-title">Deine Termine</span><span id="hm-tcount" style="font-size:13px; color:#64748b;"></span></div><div id="hm-today"></div></div>
-    <div class="card"><div class="card-header"><span class="card-title">Heute wichtig</span></div><div id="hm-important"></div></div>
+    <div class="card hc hc-termin"><div class="card-header"><span class="card-title"><i class="hc-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></i>Deine Termine</span><span id="hm-tcount" style="font-size:13px; color:#64748b;"></span></div><div id="hm-today"></div></div>
+    <div class="card hc hc-wichtig"><div class="card-header"><span class="card-title"><i class="hc-ic"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></i>Heute wichtig</span></div><div id="hm-important"></div></div>
     <div class="hm-grid">
-      <div class="card"><div class="card-header"><span class="card-title">Geburtstage</span></div><div class="hm-sec">In den nächsten 7 Tagen</div><div id="hm-bday"></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">Bestellungen</span></div><div class="hm-sec">Bald nachbestellen</div><div id="hm-order"></div></div>
+      <div class="card hc hc-bday"><div class="card-header"><span class="card-title"><i class="hc-ic"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11v10M3 15h18M12 11c-2-4-6-3-5-1M12 11c2-4 6-3 5-1"/></svg></i>Geburtstage</span></div><div class="hm-sec">In den nächsten 7 Tagen</div><div id="hm-bday"></div></div>
+      <div class="card hc hc-order"><div class="card-header"><span class="card-title"><i class="hc-ic"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></i>Bestellungen</span></div><div class="hm-sec">Bald nachbestellen</div><div id="hm-order"></div></div>
     </div>
-    <div class="card"><div class="card-header"><span class="card-title">Behandlungsliste diese Woche</span></div><div id="hm-week"></div></div>
-    <div class="card"><div class="card-header"><span class="card-title">Umsatz und Ausgaben</span><button type="button" class="btn btn-secondary btn-sm" onclick="switchTab('statistik')">Statistik</button></div><div class="scroll" id="hm-fin"></div></div>
-    <div class="card"><div class="card-header"><span class="card-title">Offene Punkte</span></div>
+    <div class="card hc hc-week"><div class="card-header"><span class="card-title"><i class="hc-ic"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg></i>Behandlungsliste diese Woche</span></div><div id="hm-week"></div></div>
+    <div class="card hc hc-fin"><div class="card-header"><span class="card-title"><i class="hc-ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></i>Umsatz und Ausgaben</span><button type="button" class="btn btn-secondary btn-sm" onclick="switchTab('statistik')">Statistik</button></div><div class="scroll" id="hm-fin"></div></div>
+    <div class="card hc hc-open"><div class="card-header"><span class="card-title"><i class="hc-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></i>Offene Punkte</span></div>
       <div class="hm-sec">Termine ohne Dokumentation</div><div id="hm-nodoku"></div>
       <div class="hm-sec" style="margin-top:14px;">Offene Rechnungen</div><div id="hm-open"></div>
     </div>
