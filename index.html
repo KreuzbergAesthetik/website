@@ -492,9 +492,9 @@ body.akte-open .a-fab { display:block; }
   <!-- TAB: NACHRICHTENVORLAGEN -->
   <div id="tab-nachrichten" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div>
+      <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="nvDefaults()">Standardvorlagen laden</button><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div></div>
       <div id="nv-list"></div>
-      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Platzhalter: {Anrede} {Vorname} {Nachname} {Name} {Datum} {Termin} {Behandlung}. Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Platzhalter: {Anrede} {Vorname} {Nachname} {Name} {Datum} {DatumWochentag} {Termin} {TerminDatum} {Uhrzeit} {NaechsterTermin} {Behandlung} sowie die fertigen Anreden {AnredeFormell} (Sehr geehrte Frau …), {AnredeInformell} (Liebe …) und {AnredeEnglisch} (Dear Ms. …). Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
     </div>
   </div>
 
@@ -3261,6 +3261,25 @@ function simpleList(boxId, list, fn, sub) {
   list.forEach(function (x, i) { box.appendChild(hmRow(null, x.name, sub(x), function () { fn(i); })); });
   if (!list.length) box.appendChild(mk('div', 'hm-empty', 'Noch nichts angelegt.'));
 }
+var NV_STD = [
+  { name: 'Kostenvoranschlag (E-Mail)', betreff: 'Ihr Kostenvoranschlag', text: '{AnredeFormell},\n\nAnbei finden Sie Ihren Kostenvoranschlag von {DatumWochentag}.' },
+  { name: 'Geburtstagsnachricht', betreff: 'Alles Gute zum Geburtstag', text: '{AnredeInformell},\n\nAlles Gute zu Deinem Geburtstag!\n\nIch hoffe, wir sehen uns bald wieder,\nManuel von Kreuzberg Ästhetik' },
+  { name: 'Bestätigung Terminabsage (E-Mail)', betreff: 'Bestätigung Deiner Terminabsage', text: '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wurde erfolgreich abgesagt.\n\nIch freue mich dennoch, Dich bald wieder zu sehen.\nManuel von Kreuzberg Ästhetik' },
+  { name: 'Befund (E-Mail)', betreff: 'Dein Befund', text: '{AnredeInformell},\n\nAnbei findest Du Deinen Befund.\n\nAlles Liebe,\nManuel von Kreuzberg Ästhetik' },
+  { name: 'Anmeldebogen SMS', betreff: '', text: '{AnredeInformell},\nich würde mich freuen, wenn Du vor Deinem Termin das Formular ausfüllen könntest.\nLiebe Grüße,\n\nManuel von Kreuzberg Ästhetik' },
+  { name: 'Anmeldebogen Email', betreff: 'Dein Termin bei Kreuzberg Ästhetik', text: '{AnredeInformell},\n\nZeit ist kostbar!\n\nDeshalb möchte ich davon so viel wie möglich mit Dir und Deinen Wünschen verbringen anstatt mich mit Papierkram aufzuhalten.\n\nIch würde mich freuen, wenn Du vor Deinem Termin am {NaechsterTermin} den Anmeldebogen ausfüllen könntest.\n\nIch freue mich auf Dich,\nManuel - Kreuzberg Ästhetik\n\n______________________________\n\nDear {Vorname},\n\nTime is precious!\n\nThat\u2019s why I want to spend as much of it as possible with you and your wishes \u2013 not on paperwork.\n\nI\u2019d really appreciate it if you could fill out the form before your appointment.\n\nJust drop by \u2013 I\u2019m looking forward to seeing you!\nManuel - Kreuzberg Ästhetik' },
+  { name: 'Anamnesebogen und Aufklärungsbogen', betreff: 'Anamnesebogen und Aufklärungsbogen', text: '{AnredeInformell},\n\nim Anhang findest Du einen Anamnesebogen, den ich Dich bitten würde auszufüllen.\n\nAußerdem findest Du einen Aufklärungsbogen, diesen einfach durchlesen. Unterschreiben musst Du ihn noch nicht, da ich noch etwas ergänzen werde.\n\nLiebe Grüße\nManuel von Kreuzberg Ästhetik' },
+  { name: 'Anamnesebogen und 2+ Aufklärungsbögen', betreff: 'Anamnesebogen und Aufklärungsbögen', text: '{AnredeInformell},\n\nim Anhang findest Du einen Anamnesebogen, den ich Dich bitten würde auszufüllen und zu unterschreiben.\n\nAußerdem findest Du Aufklärungsbögen, diese einfach durchlesen.\n\nLiebe Grüße\nManuel von Kreuzberg Ästhetik\n\n______________________________\n\n{AnredeEnglisch},\n\nAttached you will find a medical history form, which I would ask you to fill out and sign.\n\nYou will also find information and consent forms, please just read through them.\n\nBest regards,\nManuel from Kreuzberg Ästhetik' }
+];
+function nvDefaults() {
+  settings.nachrichten = settings.nachrichten || [];
+  var have = {}; settings.nachrichten.forEach(function (n) { have[n.name.toLowerCase()] = 1; });
+  var neu = NV_STD.filter(function (n) { return !have[n.name.toLowerCase()]; });
+  if (!neu.length) { alert('Alle Standardvorlagen sind schon vorhanden.'); return; }
+  if (!confirm(neu.length + ' Standardvorlagen hinzufügen? Bereits vorhandene bleiben unverändert.')) return;
+  neu.forEach(function (n) { settings.nachrichten.push({ id: newId(), name: n.name, betreff: n.betreff, text: n.text }); });
+  persist(); renderNachr();
+}
 function renderNachr() { settings.nachrichten = settings.nachrichten || []; simpleList('nv-list', settings.nachrichten, openNachr, function (x) { return (x.betreff || '') + (x.text ? ' · ' + x.text.replace(/\s+/g, ' ').slice(0, 70) : ''); }); }
 function renderTxt() { settings.textbausteine = settings.textbausteine || []; simpleList('tb-list', settings.textbausteine, openTxt, function (x) { return x.text.replace(/\s+/g, ' ').slice(0, 90); }); }
 function openNachr(i) {
@@ -3304,8 +3323,15 @@ function tbPicker(ta) {
 }
 function fillPlatzhalter(text, p) {
   var today = iso(new Date()), nx = events.filter(function (e) { return e.patient === nameKey(p) && e.date >= today; }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); })[0];
-  var map = { Anrede: p.anrede || '', Vorname: p.vorname, Nachname: p.nachname, Name: nameKey(p), Datum: fmtD(today), Termin: nx ? fmtTermin(nx) : '', Behandlung: nx ? (nx.behandlung || '') : '' };
-  return String(text || '').replace(/\{(\w+)\}/g, function (m, k) { return map[k] !== undefined ? map[k] : m; });
+  var an = p.anrede || '', nn = p.nachname || '', vn = p.vorname || '';
+  var wd = function (iso0) { var d = new Date(iso0 + 'T12:00:00'); return WDL[d.getDay()] + ', ' + fmtD(iso0); };
+  var map = { Anrede: an, Vorname: vn, Nachname: nn, Name: nameKey(p), Datum: fmtD(today), Termin: nx ? fmtTermin(nx) : '', Behandlung: nx ? (nx.behandlung || '') : '',
+    AnredeFormell: an === 'Frau' ? 'Sehr geehrte Frau ' + nn : an === 'Herr' ? 'Sehr geehrter Herr ' + nn : 'Guten Tag ' + vn + ' ' + nn,
+    AnredeInformell: an === 'Frau' ? 'Liebe ' + vn : an === 'Herr' ? 'Lieber ' + vn : 'Hallo ' + vn,
+    AnredeEnglisch: an === 'Frau' ? 'Dear Ms. ' + nn : an === 'Herr' ? 'Dear Mr. ' + nn : 'Dear ' + vn + ' ' + nn,
+    DatumWochentag: wd(today), TerminDatum: nx ? wd(nx.date) : '', Uhrzeit: nx ? nx.time : '',
+    NaechsterTermin: nx ? nx.date.slice(8, 10) + '.' + nx.date.slice(5, 7) + '. um ' + nx.time : '' };
+  return String(text || '').replace(/\{([A-Za-z]+)\}/g, function (m, k) { return map[k] !== undefined ? map[k] : m; });
 }
 function applyMailVorl() {
   var id = document.getElementById('m-vorl').value, n = (settings.nachrichten || []).filter(function (x) { return x.id === id; })[0]; if (!n) return;
