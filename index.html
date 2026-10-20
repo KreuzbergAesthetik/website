@@ -297,6 +297,7 @@ header .nav-btn { min-height:44px; padding:10px 14px; }
 .hd-act { gap:4px; flex:none; }
 .ico-btn { min-height:34px; }
 .gs-scope { flex:none; }
+.gs-scope button { background:#0f172a; color:#fff; border-color:#0f172a; }
 .gs-scope button { width:34px; height:34px; }
 .gs-res { position:fixed; left:8px; right:8px; top:var(--hdh,110px); max-height:60vh; }
 body { overflow-x:clip; }
@@ -320,10 +321,10 @@ body { overflow-x:clip; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
       <input type="text" id="gs-in" placeholder="Suchen..." autocomplete="off" oninput="gsRun()" onfocus="gsRun(!!gsOnly)" aria-label="Suche">
     </div>
-    <div class="gs-scope" role="group" aria-label="Suchbereich">
-      <button type="button" id="gs-kal" class="" title="Termine" aria-label="Termine durchsuchen" onclick="gsToggle('kal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
-      <button type="button" id="gs-pat" class="" title="Patienten" aria-label="Patienten durchsuchen" onclick="gsToggle('pat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.3c2 .7 3.5 2.4 3.5 5.7"/></svg></button>
-      <button type="button" id="gs-rec" class="" title="Rechnungen" aria-label="Rechnungen durchsuchen" onclick="gsToggle('rec')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 6.5A7 7 0 107 17.5 7 7 0 0017.5 17.5M4 10.5h9M4 13.5h9"/></svg></button>
+    <div class="gs-scope" role="group" aria-label="Neu anlegen">
+      <button type="button" id="gs-kal" title="Neuer Termin" aria-label="Neuen Termin anlegen" onclick="hdAdd('termin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg></button>
+      <button type="button" id="gs-pat" title="Neuer Patient" aria-label="Neuen Patienten anlegen" onclick="hdAdd('pat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 7v6M16 10h6"/></svg></button>
+      <button type="button" id="gs-rec" title="Neue Rechnung" aria-label="Neue Rechnung anlegen" onclick="hdAdd('rec')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 7A6 6 0 107 15.5 6 6 0 0014.5 15.5M3.5 10.5h8M3.5 13.5h8M19 3v6M16 6h6"/></svg></button>
     </div>
     <div class="hd-act">
       <span class="live-dot" title="System aktiv" aria-label="System aktiv"></span>
@@ -1322,6 +1323,13 @@ function closeModal(id) { document.getElementById(id).classList.remove('active')
 
 /* ===== Globale Suche im Kopfbereich ===== */
 var gsScope = { kal: true, pat: true, rec: true };
+/* Die drei Knöpfe im Header legen Neues an */
+function hdAdd(k) {
+  var inAkte = !!curP && document.getElementById('modal-akte').classList.contains('active');
+  if (k === 'termin') { if (inAkte) aAct('termin'); else openTermin(); }
+  else if (k === 'pat') openModal('modal-patient');
+  else if (k === 'rec') openInvoice(inAkte ? curP : null);
+}
 var gsOnly = null;
 function gsToggle(k) {
   gsOnly = gsOnly === k ? null : k;
