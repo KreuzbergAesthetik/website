@@ -78,31 +78,35 @@ QS.forEach(function (q, qi) {
   if (q.intro) card.appendChild(el('div', { class: 'sub', text: q.intro }));
   if (q.hint && q.items.length === 1) card.appendChild(el('div', { class: 'small', text: q.hint }));
   var u = { items: [], rows: [], follows: [], follow: null };
+  function vis(i) { var d = q.items[i].dep; return d == null || u.items[d].get() === true; }
   q.items.forEach(function (it, ii) {
     var row = el('div', { class: 'row' }), box = el('div', { style: 'flex:1; min-width:0' });
-    var tx = el('div', { class: 't', text: (q.items.length > 1 ? '• ' : '') + it.t }); box.appendChild(tx);
-    var fo = null;
-    if (it.follow) { fo = el('div', { class: 'follow', style: 'display:none' }, [el('label', { text: '→ wenn ja: ' + it.follow }), el('textarea', { rows: 2 })]); box.appendChild(fo); }
+    box.appendChild(el('div', { class: 't', text: (q.items.length > 1 && it.dep == null ? '• ' : '') + it.t }));
+    var hasKids = q.items.some(function (x) { return x.dep === ii; }), fo = null;
+    if (it.follow || hasKids) {
+      fo = el('div', { class: 'follow', style: 'display:none' });
+      if (it.follow) fo.appendChild(el('div', {}, [el('label', { text: '→ wenn ja: ' + it.follow }), el('textarea', { rows: 2 })]));
+    }
     var tg = ynToggle('q' + qi + '_' + ii, function () { refresh(); });
     row.appendChild(box); row.appendChild(tg.node);
-    u.items.push(tg); u.rows.push(row); u.follows.push(fo); card.appendChild(row);
-    if (it.dep != null) row.style.display = 'none';
+    u.items.push(tg); u.rows.push(row); u.follows.push(fo);
+    /* Unterfragen stehen innerhalb des aufklappenden Bereichs der übergeordneten Frage */
+    var holder = it.dep != null ? u.follows[it.dep] : card;
+    if (it.dep != null) row.classList.add('nested');
+    holder.appendChild(row); if (fo) holder.appendChild(fo);
   });
   if (q.hint && q.items.length > 1) card.appendChild(el('div', { class: 'small', text: q.hint }));
   if (q.follow) { u.follow = el('div', { class: 'follow', style: 'display:none' }, [el('label', { text: '→ wenn ja: ' + q.follow }), el('textarea', { rows: 2 })]); card.appendChild(u.follow); }
   function refresh() {
-    q.items.forEach(function (it, ii) {
-      if (it.dep != null) u.rows[ii].style.display = u.items[it.dep].get() === true ? '' : 'none';
-      if (u.follows[ii]) u.follows[ii].style.display = u.items[ii].get() === true ? 'block' : 'none';
-    });
-    if (u.follow) u.follow.style.display = u.items.some(function (t, i) { return t.get() === true && u.rows[i].style.display !== 'none'; }) ? 'block' : 'none';
+    q.items.forEach(function (it, ii) { if (u.follows[ii]) u.follows[ii].style.display = u.items[ii].get() === true ? 'block' : 'none'; });
+    if (u.follow) u.follow.style.display = u.items.some(function (t, i) { return t.get() === true && vis(i); }) ? 'block' : 'none';
   }
-  u.refresh = refresh; u.card = card; ui.push(u); qbox.appendChild(card);
+  u.refresh = refresh; u.vis = vis; u.card = card; ui.push(u); qbox.appendChild(card);
 });
 $('datenschutz').appendChild(datenschutzBlock());
 var sig = makeSig($('sig'));
 $('sig-clear').onclick = function () { sig.clear(); };
-$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); setTimeout(function () { ui.forEach(function (u) { u.refresh(); u.rows.forEach(function (r, i) { if (QS[ui.indexOf(u)].items[i].dep != null) r.style.display = 'none'; }); }); }, 0); });
+$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); setTimeout(function () { ui.forEach(function (u) { u.refresh(); }); }, 0); });
 
 function val(id) { return $(id).value.trim(); }
 function collect() {
@@ -115,7 +119,7 @@ function collect() {
   if (!ok) bad.push($('g-dob')); else d.dob = pad2(+t) + '.' + m + '.' + j;
   d.q = QS.map(function (q, qi) {
     var u = ui[qi], items = q.items.map(function (it, ii) {
-      var visible = u.rows[ii].style.display !== 'none', v = u.items[ii].get();
+      var visible = u.vis(ii), v = u.items[ii].get();
       if (visible && v === null) { u.items[ii].mark(); bad.push(u.items[ii].node); }
       return { t: it.t, visible: visible, ja: visible ? v === true : false, followLabel: it.follow || '', follow: it.follow && v === true ? u.follows[ii].querySelector('textarea').value.trim() : '' };
     });
