@@ -278,8 +278,8 @@ body.akte-open .a-fab { display:block; }
     </div>
     <div class="hd-act">
       <span class="live-dot" title="System aktiv" aria-label="System aktiv"></span>
-      <button type="button" class="ico-btn" title="Sichern" aria-label="Sichern" onclick="exportData()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span class="ico-lbl">Sichern</span></button>
-      <button type="button" class="ico-btn" title="Laden" aria-label="Laden" onclick="document.getElementById('imp-file').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg><span class="ico-lbl">Laden</span></button>
+      <button type="button" class="ico-btn" title="Sichern" aria-label="Sichern" onclick="hdRun(exportData, 'Sichern')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span class="ico-lbl">Sichern</span></button>
+      <button type="button" class="ico-btn" title="Laden" aria-label="Laden" onclick="hdRun(function () { document.getElementById('imp-file').click(); }, 'Laden')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg><span class="ico-lbl">Laden</span></button>
       <input type="file" id="imp-file" multiple style="display:none" onchange="importData(this)">
     </div>
   </div>
@@ -560,6 +560,8 @@ body.akte-open .a-fab { display:block; }
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
         <button type="button" class="btn btn-sm" onclick="openWare()">+ Wareneingang</button>
         <button type="button" class="btn btn-sm" onclick="openProdukt(null)">+ Produkt</button>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('lg-file').click()">Produkte importieren</button>
+        <input type="file" id="lg-file" style="display:none" onchange="lagerImport(this)">
       </div>
       <div id="lg-warn"></div>
       <div class="scroll">
@@ -1144,6 +1146,15 @@ body.akte-open .a-fab { display:block; }
 <script>
 var PRAXIS_TABS = ['lager', 'leistungen', 'dokumente', 'nachrichten', 'textbausteine'];
 var TAB_RENDER = { start: 'renderHome', lager: 'renderLager', leistungen: 'renderLeist', dokumente: 'renderTemplates', zahlungen: 'renderZahlungen', todos: 'renderTodos', statistik: 'renderStat', nachrichten: 'renderNachr', textbausteine: 'renderTxt', rechnungen: 'renderInvoices' };
+/* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
+function errBanner(msg) {
+  var b = document.getElementById('err-bar');
+  if (!b) { b = document.createElement('div'); b.id = 'err-bar'; b.style.cssText = 'position:fixed; left:8px; right:8px; bottom:8px; z-index:99; background:#7f1d1d; color:#fff; padding:10px 14px; border-radius:10px; font-size:13px; line-height:1.4;'; b.onclick = function () { b.style.display = 'none'; }; document.body.appendChild(b); }
+  b.textContent = 'Fehler: ' + msg + ' (zum Schließen tippen)'; b.style.display = 'block';
+}
+window.addEventListener('error', function (ev) { errBanner((ev.message || 'unbekannt') + (ev.lineno ? ' [Zeile ' + ev.lineno + ']' : '')); });
+window.addEventListener('unhandledrejection', function (ev) { errBanner(ev.reason && ev.reason.message ? ev.reason.message : 'Vorgang fehlgeschlagen'); });
+function hdRun(fn, name) { try { fn(); } catch (x) { errBanner(name + ': ' + (x && x.message ? x.message : x)); } }
 function toggleNavMenu(ev) {
   ev.stopPropagation(); var m = document.getElementById('nav-menu');
   if (m.style.display !== 'none') { m.style.display = 'none'; return; }
@@ -3741,6 +3752,59 @@ function aAct(x) {
 }
 
 /* ===== Produktlager ===== */
+/* Produkte importieren: eigene JSON-Datei oder CSV-Export (name; stock; minimum_stock; group; contact; ownCosts; gross; taxRate) */
+function csvRows(t) {
+  var first = t.split(/\r?\n/)[0] || '', d = (first.split(';').length >= first.split('\t').length && first.split(';').length >= first.split(',').length) ? ';' : (first.split('\t').length >= first.split(',').length ? '\t' : ',');
+  var rows = [], row = [], f = '', q = false;
+  for (var i = 0; i < t.length; i++) {
+    var c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === d) { row.push(f); f = ''; }
+    else if (c === '\n') { row.push(f); rows.push(row); row = []; f = ''; }
+    else if (c !== '\r') f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows.filter(function (r) { return r.some(function (x) { return String(x).trim() !== ''; }); });
+}
+function parseLagerFile(t) {
+  t = t.replace(/^\uFEFF/, '').replace(/^ï»¿/, '');
+  if (/Ã[\u0080-\u00BF]/.test(t)) { try { t = decodeURIComponent(escape(t)); } catch (x) {} }
+  if (/^\s*\{/.test(t)) { var j = JSON.parse(t); if (!j || !Array.isArray(j.produkte)) throw new Error('Keine Produktliste gefunden.'); return j.produkte; }
+  var rs = csvRows(t); if (rs.length < 2) throw new Error('Die Datei enthält keine Produktzeilen.');
+  var h = rs[0].map(function (x) { return x.trim().toLowerCase().replace(/[^a-zäöü_]/g, ''); });
+  var col = function () { for (var a = 0; a < arguments.length; a++) { var k = h.indexOf(arguments[a]); if (k >= 0) return k; } return -1; };
+  var ci = { name: col('name', 'produkt', 'bezeichnung'), stock: col('stock', 'bestand'), min: col('minimum_stock', 'minimumstock', 'mindestmenge'), group: col('group', 'gruppe', 'kategorie'), contact: col('contact', 'lieferant'), ek: col('owncosts', 'ek', 'einkaufspreis'), gross: col('gross', 'brutto', 'vk'), tax: col('taxrate', 'mwst', 'steuersatz') };
+  if (ci.name < 0) throw new Error('Spalte "name" nicht gefunden.');
+  var nn = function (v) { if (v === undefined || String(v).trim() === '') return null; var x = parseFloat(String(v).replace(/\s/g, '').replace(',', '.')); return isNaN(x) ? null : x; };
+  return rs.slice(1).map(function (r) {
+    var nm = String(r[ci.name] || '').trim(), m = nm.match(/^(.*?)\s*\((\d+)\)\s*$/), tx = ci.tax >= 0 ? nn(r[ci.tax]) : null, gr = ci.gross >= 0 ? nn(r[ci.gross]) : null;
+    if (tx !== null && tx > 1) tx = tx / 100; if (tx === null) tx = 0.19;
+    return { name: m ? m[1] : nm, nr: m ? m[2] : '', gruppe: ci.group >= 0 ? String(r[ci.group] || '').trim() : '', lief: ci.contact >= 0 ? String(r[ci.contact] || '').trim() : '', min: ci.min >= 0 ? nn(r[ci.min]) || 0 : 0, ek: ci.ek >= 0 ? nn(r[ci.ek]) : null, vk: gr ? Math.round(gr / (1 + tx) * 100) / 100 : 0, bestand: ci.stock >= 0 ? nn(r[ci.stock]) : null };
+  });
+}
+function lagerImport(inp) {
+  var f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+  f.text().then(function (t) {
+    var list; try { list = parseLagerFile(t); } catch (x) { alert('Die Datei konnte nicht gelesen werden: ' + (x && x.message ? x.message : x)); return; }
+    var have = {}; lager.produkte.forEach(function (p) { have[p.name.toLowerCase()] = 1; });
+    var neu = [], skip = 0, neg = 0;
+    list.forEach(function (r) { var n = String(r.name || '').trim(); if (!n || have[n.toLowerCase()]) { skip++; return; } have[n.toLowerCase()] = 1; neu.push(r); if ((+r.bestand || 0) < 0) neg++; });
+    if (!neu.length) { alert('Es gibt nichts Neues zu importieren (' + skip + ' Produkt(e) sind schon im Lager).'); return; }
+    var mitB = neu.filter(function (r) { return (+r.bestand || 0) > 0; }).length;
+    if (!confirm(neu.length + ' neue Produkte importieren' + (skip ? ' (' + skip + ' schon vorhanden, werden übersprungen)' : '') + '?\n' + mitB + ' davon mit Bestand' + (neg ? '. ' + neg + ' mit negativem Bestand werden ohne Bestand angelegt' : '') + '.')) return;
+    var today = iso(new Date());
+    neu.forEach(function (r) {
+      var p = { id: lid(), name: String(r.name).trim(), einheit: r.einheit || '', min: +r.min || 0, ek: r.ek === null || r.ek === undefined || r.ek === '' ? null : +r.ek, vk: +r.vk || 0, lief: r.lief || '', nr: r.nr || '', gruppe: r.gruppe || '' };
+      lager.produkte.push(p);
+      var b = +r.bestand || 0;
+      if (b > 0) lager.chargen.push({ id: lid(), pid: p.id, nr: 'Bestand bei Import', verfall: '', menge: b, rest: b, ek: p.ek, datum: today });
+    });
+    persist(); renderLager();
+    alert(neu.length + ' Produkte importiert. Bitte bei den Chargen später Chargennummer und Verfall ergänzen, sobald du sie brauchst.');
+  });
+}
+
 function lid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function num(v) { var n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
 function qty(n) { return String(Math.round((+n || 0) * 100) / 100).replace('.', ','); }
