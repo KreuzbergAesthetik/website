@@ -71,13 +71,48 @@ var QS = [
   { n: 20, t: 'Frühere Operationen/Wunden', cls: 'amber', intro: 'Kam es bei früheren Operationen/Wunden zu folgenden Komplikationen:', items: [{ t: 'Abszesse/Eiterungen/Fisteln' }, { t: 'Verzögerte Heilung/Wundheilungsstörungen' }, { t: 'Verstärkte Narbenbildung' }, { t: 'Kam es zu sonstigen Besonderheiten?' }], follow: 'Welche?' },
   { n: 21, t: 'Betäubung', cls: 'amber', items: [{ t: 'Wurde schon einmal eine Betäubung durchgeführt?' }, { t: 'Kam es zu Komplikationen?', dep: 0, follow: 'Welche?' }], hint: '(z. B. örtliche Betäubung beim Zahnarzt, Hautarzt, Narkose, Regionalanästhesie, Sedierung)' }
 ];
+var GATE = {
+  5: 'Besteht oder bestand eine Herz-Kreislauf- oder Gefäßerkrankung?',
+  7: 'Besteht oder bestand eine Stoffwechselerkrankung?',
+  8: 'Gibt es eine Gerinnungsstörung oder Bluterkrankung (auch in der Familie)?',
+  9: 'Besteht oder bestand eine Infektionskrankheit?',
+  20: 'Gab es bei früheren Operationen oder Wunden Komplikationen?'
+};
+/* Gruppen, die bei "Nein" in der Sammelfrage automatisch mit Nein beantwortet werden */
+var AUTO = [3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 var qbox = $('fragen'), ui = [];
+var sammel = ynToggle('sammel', function () { applySammel(); });
+(function () {
+  var c = el('div', { class: 'q' });
+  c.appendChild(el('h3', { text: 'Vorerkrankungen und Medikamente' }));
+  var r = el('div', { class: 'row' }, [el('div', { class: 't', text: 'Hast Du Vorerkrankungen oder nimmst Du regelmäßig Medikamente?' }), sammel.node]);
+  c.appendChild(r); c.appendChild(el('div', { class: 'small', text: 'Bei „Nein“ überspringst Du die Fragen 3 und 5 bis 17. Bei „Ja“ gehst Du sie einzeln durch.' }));
+  qbox.appendChild(c);
+})();
+function applySammel() {
+  var off = sammel.get() === false;
+  AUTO.forEach(function (n) { var u = ui[n - 1]; if (u) { u.sammelOff = off; u.card.style.display = off ? 'none' : ''; } });
+}
 QS.forEach(function (q, qi) {
   var card = el('div', { class: 'q ' + (q.cls || '') });
   card.appendChild(el('h3', { text: q.n + '. ' + q.t }));
-  if (q.intro) card.appendChild(el('div', { class: 'sub', text: q.intro }));
-  if (q.hint && q.items.length === 1) card.appendChild(el('div', { class: 'small', text: q.hint }));
-  var u = { items: [], rows: [], follows: [], follow: null };
+  var gt = GATE[q.n], u = { items: [], rows: [], follows: [], follow: null, gate: null, sammelOff: false };
+  /* Knopf: Beispiele bzw. enthaltene Unterpunkte ansehen, ohne etwas zu beantworten */
+  var exTxt = [];
+  if (gt) exTxt.push('Dazu gehören: ' + q.items.filter(function (x) { return x.dep == null; }).map(function (x) { return x.t; }).join('; ') + '.');
+  if (q.hint) exTxt.push(q.hint.replace(/^\(|\)$/g, ''));
+  if (exTxt.length) {
+    var exb = el('button', { type: 'button', class: 'exbtn', text: 'ⓘ Beispiele ansehen' }), exbox = el('div', { class: 'exbox', style: 'display:none', text: exTxt.join(' ') });
+    exb.onclick = function () { var o = exbox.style.display === 'none'; exbox.style.display = o ? 'block' : 'none'; exb.textContent = o ? 'ⓘ Beispiele ausblenden' : 'ⓘ Beispiele ansehen'; };
+    card.appendChild(exb); card.appendChild(exbox);
+  }
+  if (gt) {
+    u.gate = ynToggle('g' + qi, function () { refresh(); });
+    card.appendChild(el('div', { class: 'row gate' }, [el('div', { class: 't', style: 'font-weight:600', text: gt }), u.gate.node]));
+  }
+  var body = el('div', { class: 'gbody' });
+  card.appendChild(body);
+  if (q.intro) body.appendChild(el('div', { class: 'sub', text: q.intro }));
   function vis(i) { var d = q.items[i].dep; return d == null || u.items[d].get() === true; }
   q.items.forEach(function (it, ii) {
     var row = el('div', { class: 'row' }), box = el('div', { style: 'flex:1; min-width:0' });
@@ -91,22 +126,22 @@ QS.forEach(function (q, qi) {
     row.appendChild(box); row.appendChild(tg.node);
     u.items.push(tg); u.rows.push(row); u.follows.push(fo);
     /* Unterfragen stehen innerhalb des aufklappenden Bereichs der übergeordneten Frage */
-    var holder = it.dep != null ? u.follows[it.dep] : card;
+    var holder = it.dep != null ? u.follows[it.dep] : body;
     if (it.dep != null) row.classList.add('nested');
     holder.appendChild(row); if (fo) holder.appendChild(fo);
   });
-  if (q.hint && q.items.length > 1) card.appendChild(el('div', { class: 'small', text: q.hint }));
-  if (q.follow) { u.follow = el('div', { class: 'follow', style: 'display:none' }, [el('label', { text: '→ wenn ja: ' + q.follow }), el('textarea', { rows: 2 })]); card.appendChild(u.follow); }
+  if (q.follow) { u.follow = el('div', { class: 'follow', style: 'display:none' }, [el('label', { text: '→ wenn ja: ' + q.follow }), el('textarea', { rows: 2 })]); body.appendChild(u.follow); }
   function refresh() {
+    if (u.gate) body.style.display = u.gate.get() === true ? '' : 'none';
     q.items.forEach(function (it, ii) { if (u.follows[ii]) u.follows[ii].style.display = u.items[ii].get() === true ? 'block' : 'none'; });
     if (u.follow) u.follow.style.display = u.items.some(function (t, i) { return t.get() === true && vis(i); }) ? 'block' : 'none';
   }
-  u.refresh = refresh; u.vis = vis; u.card = card; ui.push(u); qbox.appendChild(card);
+  u.refresh = refresh; u.vis = vis; u.card = card; ui.push(u); qbox.appendChild(card); refresh();
 });
 $('datenschutz').appendChild(datenschutzBlock());
 var sig = makeSig($('sig'));
 $('sig-clear').onclick = function () { sig.clear(); };
-$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); setTimeout(function () { ui.forEach(function (u) { u.refresh(); }); }, 0); });
+$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); setTimeout(function () { ui.forEach(function (u) { u.items.forEach(function (t) { t.clear(); }); if (u.gate) u.gate.clear(); u.refresh(); }); sammel.clear(); applySammel(); }, 0); });
 
 function val(id) { return $(id).value.trim(); }
 function collect() {
@@ -117,8 +152,12 @@ function collect() {
   var t = val('dob-t'), m = $('dob-m').value, j = val('dob-j'), ok = /^\d{1,2}$/.test(t) && m && /^\d{4}$/.test(j);
   if (ok) { var dt = new Date(+j, +m - 1, +t); ok = dt.getFullYear() === +j && dt.getMonth() === +m - 1 && dt.getDate() === +t && dt < new Date() && +j > 1900; }
   if (!ok) bad.push($('g-dob')); else d.dob = pad2(+t) + '.' + m + '.' + j;
+  if (sammel.get() === null) { sammel.mark(); bad.push(sammel.node); }
   d.q = QS.map(function (q, qi) {
-    var u = ui[qi], items = q.items.map(function (it, ii) {
+    var u = ui[qi], off = u.sammelOff || (u.gate && u.gate.get() === false);
+    if (u.gate && !u.sammelOff && u.gate.get() === null) { u.gate.mark(); bad.push(u.gate.node); }
+    var items = q.items.map(function (it, ii) {
+      if (off) return { t: it.t, visible: true, ja: false, followLabel: it.follow || '', follow: '' };
       var visible = u.vis(ii), v = u.items[ii].get();
       if (visible && v === null) { u.items[ii].mark(); bad.push(u.items[ii].node); }
       return { t: it.t, visible: visible, ja: visible ? v === true : false, followLabel: it.follow || '', follow: it.follow && v === true ? u.follows[ii].querySelector('textarea').value.trim() : '' };
