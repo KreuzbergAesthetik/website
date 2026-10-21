@@ -46,6 +46,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .td-row:last-child { border-bottom:none; } .td-row.done .td-text { text-decoration:line-through; color:#94a3b8; }
 .td-chk { width:22px; height:22px; margin-top:1px; flex:none; accent-color:#0f172a; }
 .td-main { flex:1; min-width:0; cursor:pointer; } .td-text { font-size:14.5px; } .td-sub { font-size:12px; color:#64748b; margin-top:2px; }
+.pidb { background:none; border:none; padding:2px 4px; color:#475569; font-size:13px; font-weight:600; cursor:pointer; border-radius:6px; } .pidb:hover { background:#e2e8f0; }
 .pid { color:#94a3b8; font-size:11px; font-weight:400; margin-right:5px; }
 .row-actions { display:flex; gap:8px; align-items:center; flex-wrap:nowrap; }
 .btn-sm { padding:6px 12px; font-size:13px; min-height:34px; }
@@ -673,6 +674,7 @@ function kaStart() {
       <div class="scroll">
         <table class="pt">
           <thead><tr>
+            <th class="sort" style="width:64px;" onclick="sortBy('id')">ID <span class="sarr" data-k="id"></span></th>
             <th class="sort" onclick="sortBy('name')">Name <span class="sarr" data-k="name"></span></th>
             <th class="sort" style="width:170px;" onclick="sortBy('dob')">Geburtsdatum <span class="sarr" data-k="dob"></span></th>
             <th class="sort" style="width:190px;" onclick="sortBy('erstellt')">Erstellt am <span class="sarr" data-k="erstellt"></span></th>
@@ -1630,6 +1632,20 @@ function ensurePatients() {
   var m = 0;
   patients.forEach(function (p) { if (p.id > m) m = p.id; });
   patients.forEach(function (p) { if (!p.id) p.id = ++m; if (!p.erstellt) p.erstellt = Date.now(); });
+  /* Patientennummer: frei änderbar, getrennt von der internen ID, an der Termine und Rechnungen hängen */
+  var used = {}, mx = 0; patients.forEach(function (p) { if (p.nr > 0) { used[p.nr] = true; if (p.nr > mx) mx = p.nr; } });
+  patients.forEach(function (p) { if (!(p.nr > 0)) { if (!used[p.id]) { p.nr = p.id; used[p.id] = true; if (p.id > mx) mx = p.id; } } });
+  patients.forEach(function (p) { if (!(p.nr > 0)) p.nr = ++mx; });
+}
+function patNr(p) { return p.nr > 0 ? p.nr : p.id; }
+function changePatNr(p) {
+  ensurePatients(); var old = p.nr, mx = 0; patients.forEach(function (q) { if (q.nr > mx) mx = q.nr; });
+  var v = prompt('Neue Nummer für ' + p.vorname + ' ' + p.nachname + ' (jetzt #' + old + '):\nDie Nummern dazwischen rücken automatisch nach.', old);
+  if (v === null) return; var n = parseInt(v, 10);
+  if (!(n >= 1)) { alert('Bitte eine ganze Zahl ab 1 eingeben.'); return; }
+  n = Math.min(n, mx); if (n === old) return;
+  patients.forEach(function (q) { if (q === p) return; if (n < old && q.nr >= n && q.nr < old) q.nr++; else if (n > old && q.nr > old && q.nr <= n) q.nr--; });
+  p.nr = n; persist(); renderPatients(); if (curP === p) renderHead();
 }
 function ageOf(dob) {
   var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec((dob || '').trim());
@@ -1655,6 +1671,7 @@ function mk(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.cla
 function warnIcon(p) { var w = mk('span', 'warn', '!'); w.title = 'Allergie oder Unverträglichkeit hinterlegt'; return w; }
 function sexIcon(p) { var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (!sx) return null; var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; return sp; }
 function renderPatients() {
+  ensurePatients();
   var tb = document.getElementById('patient-table'), dl = document.getElementById('t-patient-list');
   tb.innerHTML = ''; dl.innerHTML = '';
   document.getElementById('p-sortkey').value = pKey; document.getElementById('p-dir').innerHTML = pSort === 'asc' ? '&#9650;' : '&#9660;';
@@ -1662,7 +1679,7 @@ function renderPatients() {
   var q = (document.getElementById('p-filter').value || '').trim().toLowerCase().replace(/^#/, '#');
   var cmp = function (a, b) {
     var d;
-    if (pKey === 'id') d = a.id - b.id;
+    if (pKey === 'id') d = patNr(a) - patNr(b);
     else if (pKey === 'name') d = (String(a.nachname) + ' ' + String(a.vorname)).localeCompare(String(b.nachname) + ' ' + String(b.vorname), 'de', { sensitivity: 'base' });
     else if (pKey === 'dob') { var x = dobNum(a.dob), y = dobNum(b.dob); d = (x === null ? 1e9 : x) - (y === null ? 1e9 : y); }
     else d = (a.erstellt - b.erstellt) || (a.id - b.id);
@@ -1670,9 +1687,9 @@ function renderPatients() {
   };
   patients.slice().sort(cmp).forEach(function (p) {
     var o = document.createElement('option'); o.value = p.vorname + ' ' + p.nachname; dl.appendChild(o);
-    if (q && (nameKey(p) + ' ' + p.nachname + ' ' + (p.phone || '') + ' ' + (p.dob || '') + ' #' + p.id).toLowerCase().indexOf(q) < 0) return;
-    var age = ageOf(p.dob), row = tb.insertRow(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
-    c1.appendChild(mk('span', 'pid', '#' + p.id));
+    if (q && (nameKey(p) + ' ' + p.nachname + ' ' + (p.phone || '') + ' ' + (p.dob || '') + ' #' + patNr(p)).toLowerCase().indexOf(q) < 0) return;
+    var age = ageOf(p.dob), row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
+    var nb0 = mk('button', 'pidb', '#' + patNr(p)); nb0.type = 'button'; nb0.title = 'Nummer ändern'; nb0.onclick = function () { changePatNr(p); }; c0.appendChild(nb0);
     var full = p.vorname + ' ' + String(p.nachname).toUpperCase() + (age !== '' ? ' (' + age + ')' : '');
     var nb = mk('button', 'pn', full); nb.type = 'button'; nb.onclick = function () { viewAkte(p); }; c1.appendChild(nb);
     var sxi = sexIcon(p); if (sxi) c1.appendChild(sxi);
@@ -1682,7 +1699,7 @@ function renderPatients() {
     c2.textContent = p.dob ? p.dob : '-';
     c3.textContent = fmtDT(p.erstellt);
   });
-  if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
+  if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
 }
 var hasEntry = false, silentPop = false;
 function anyOverlay() { return !!document.querySelector('.modal-overlay.active, .akte-page.active') || !document.getElementById('tab-start').classList.contains('active'); }
@@ -1712,7 +1729,7 @@ function recentAdd(id) { try { var l = JSON.parse(kaGet('ka_recent') || '[]').fi
 /* Suche: nur Patienten, die letzten fünf Treffer merkt sich die App */
 function lastSearch() { try { var l = JSON.parse(kaGet('ka_lastsearch') || '[]'); return Array.isArray(l) ? l : []; } catch (x) { return []; } }
 function lastSearchAdd(id) { try { var l = lastSearch().filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_lastsearch', JSON.stringify(l.slice(0, 5))); } catch (x) {} }
-function gsPatRow(box, p) { gsRow(box, '#' + p.id + '  ' + nameKey(p), p.dob || p.phone || '', function () { lastSearchAdd(p.id); viewAkte(p); }); }
+function gsPatRow(box, p) { gsRow(box, '#' + patNr(p) + '  ' + nameKey(p), p.dob || p.phone || '', function () { lastSearchAdd(p.id); viewAkte(p); }); }
 function gsRow(res, title, sub, fn) {
   var b = mk('button', 'gs-r'); b.type = 'button'; b.appendChild(document.createTextNode(title)); if (sub) b.appendChild(mk('small', '', sub));
   b.onclick = function () { document.getElementById('gs-res').style.display = 'none'; document.getElementById('gs-in').value = ''; fn(); }; res.appendChild(b);
@@ -1725,7 +1742,7 @@ function gsRun(hint) {
     return;
   }
   var has = function () { for (var i = 0; i < arguments.length; i++) if (String(arguments[i] == null ? '' : arguments[i]).toLowerCase().indexOf(q) >= 0) return true; return false; };
-  var ps = patients.filter(function (p) { return has(nameKey(p), p.nachname + ' ' + p.vorname, p.nachname + ', ' + p.vorname, p.phone, p.email, p.dob, '#' + p.id); });
+  var ps = patients.filter(function (p) { return has(nameKey(p), p.nachname + ' ' + p.vorname, p.nachname + ', ' + p.vorname, p.phone, p.email, p.dob, '#' + patNr(p)); });
   ps.sort(function (a, b) { var sa = nameKey(a).toLowerCase().indexOf(q) === 0 || (a.nachname || '').toLowerCase().indexOf(q) === 0 ? 0 : 1, sb = nameKey(b).toLowerCase().indexOf(q) === 0 || (b.nachname || '').toLowerCase().indexOf(q) === 0 ? 0 : 1; return sa - sb || (a.nachname || '').localeCompare(b.nachname || '', 'de'); });
   ps.slice(0, 8).forEach(function (p) { gsPatRow(box, p); });
   if (!ps.length) box.appendChild(mk('div', 'hm-empty', 'Kein Patient gefunden'));
@@ -3230,7 +3247,7 @@ function tileSave(key) {
 }
 function renderHead() {
   var p = curP, box = document.getElementById('a-head'), ttl = document.getElementById('a-title'); box.innerHTML = ''; ttl.innerHTML = '';
-  ttl.appendChild(mk('span', 'a-pid', '#' + p.id)); ttl.appendChild(document.createTextNode(p.vorname + ' ' + p.nachname));
+  var pidn = mk('span', 'a-pid', '#' + patNr(p)); pidn.title = 'Nummer ändern'; pidn.style.cursor = 'pointer'; pidn.onclick = function () { changePatNr(p); }; ttl.appendChild(pidn); ttl.appendChild(document.createTextNode(p.vorname + ' ' + p.nachname));
   var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (sx) { var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; ttl.appendChild(sp); }
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
   document.querySelector('.a-fab').style.visibility = stammEdit ? 'hidden' : '';
