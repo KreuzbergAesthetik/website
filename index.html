@@ -63,6 +63,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .logo { width:36px; height:36px; background:#0f172a; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:18px; }
 .title-text h1 { font-size:17px; letter-spacing:.2px; } .title-text p { font-size:12px; color:#64748b; }
 nav { background:#fff; border-bottom:1px solid #e2e8f0; display:flex; overflow-x:auto; }
+nav > :first-child { margin-left:auto; } nav > :last-child { margin-right:auto; }
 .nav-btn { background:none; border:none; padding:12px 16px; font-size:14px; font-weight:500; color:#64748b; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
 .nav-btn.active { color:#0f172a; border-bottom-color:#0f172a; font-weight:600; }
 main { max-width:960px; margin:20px auto; padding:0 16px; }
@@ -218,8 +219,8 @@ body.akte-open main { display:none; }
 .a-tile ul li button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
 @media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:20px; } .a-tabs button { font-size:15px; } }
 @media (max-width:440px) { .a-tiles { grid-template-columns:1fr; } .a-tile { min-height:0; } }
-.a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #c5cfdb; border-radius:14px; padding:8px 12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(15,23,42,.10); }
-.a-sex { font-size:17px; color:#b6bfcb; margin-left:8px; font-weight:400; }
+.a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#d6e4f5; border:1px solid #9db4d1; border-radius:14px; padding:8px 12px; margin-bottom:12px; box-shadow:0 3px 10px rgba(15,23,42,.18); }
+.a-sex { font-size:17px; color:#5b6b82; margin-left:8px; font-weight:400; }
 .a-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:40; width:56px; height:56px; }
 body.akte-open .a-fab { display:block; }
 .akte-page { padding-bottom:90px; }
@@ -376,6 +377,180 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   <div class="al-msg" id="al-msg"></div>
   <button type="submit" class="btn btn-save" style="width:100%; margin-top:6px;">Entsperren</button>
 </form></div>
+<script>
+/* ===== Speicher mit optionaler Verschlüsselung (AES-GCM) und App-Sperre ===== */
+var KA = { enc: false, key: null, mem: {}, q: {}, busy: null, bad: false, booted: false }, KA_ENC = 'enc1:', AL_KEY = 'ka_lock';
+function kaB64(buf) { var a = new Uint8Array(buf), s = ''; for (var i = 0; i < a.length; i += 8192) s += String.fromCharCode.apply(null, a.subarray(i, i + 8192)); return btoa(s); }
+function kaUnB64(t) { var s = atob(t), a = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
+async function kaEncBytes(u8) { var iv = crypto.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, KA.key, u8)), o = new Uint8Array(12 + ct.length); o.set(iv); o.set(ct, 12); return o; }
+async function kaDecBytes(u8) { return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8.subarray(0, 12) }, KA.key, u8.subarray(12))); }
+async function kaEncStr(s) { return KA_ENC + kaB64(await kaEncBytes(new TextEncoder().encode(s))); }
+async function kaDecStr(t) { return t.indexOf(KA_ENC) === 0 ? new TextDecoder().decode(await kaDecBytes(kaUnB64(t.slice(KA_ENC.length)))) : t; }
+function kaOwn(k) { return k.indexOf('ka_') === 0 && k !== AL_KEY; }
+function kaGet(k) { if (KA.enc) return Object.prototype.hasOwnProperty.call(KA.mem, k) ? KA.mem[k] : null; return localStorage.getItem(k); }
+function kaSet(k, v) { if (!KA.enc) { localStorage.setItem(k, v); return; } KA.mem[k] = String(v); KA.q[k] = 1; kaFlushSoon(); }
+function kaFlushSoon() { if (!KA.busy) KA.busy = Promise.resolve().then(kaFlush); }
+async function kaFlush() {
+  var ks = [];
+  try {
+    while (Object.keys(KA.q).length) { ks = Object.keys(KA.q); ks.forEach(function (k) { delete KA.q[k]; }); for (var i = 0; i < ks.length; i++) localStorage.setItem(ks[i], await kaEncStr(KA.mem[ks[i]])); ks = []; }
+  } catch (e) { ks.forEach(function (k) { KA.q[k] = 1; }); if (!KA.bad) { KA.bad = true; alert('Die letzte Änderung konnte nicht gespeichert werden (Speicher voll?). Bitte jetzt sichern.'); } }
+  KA.busy = null; if (Object.keys(KA.q).length && !KA.bad) kaFlushSoon();
+}
+async function kaIdle() { while (KA.busy || Object.keys(KA.q).length) { if (!KA.busy) kaFlushSoon(); await KA.busy; if (KA.bad) throw new Error('Speichern fehlgeschlagen'); } }
+async function kaLoadAll() {
+  var keys = []; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (kaOwn(k)) keys.push(k); }
+  var mem = {}, q = {};
+  for (var j = 0; j < keys.length; j++) { var v = localStorage.getItem(keys[j]); mem[keys[j]] = await kaDecStr(v); if (v.indexOf(KA_ENC) !== 0) q[keys[j]] = 1; }
+  KA.mem = mem; KA.q = q; KA.enc = true; if (Object.keys(q).length) kaFlushSoon();
+}
+window.addEventListener('pagehide', function () { if (KA.enc && Object.keys(KA.q).length) kaFlush(); });
+
+/* Schlüsselverwaltung: Das Passwort schützt einen zufälligen Datenschlüssel (PBKDF2 -> AES-GCM) */
+function alGet() { try { return JSON.parse(localStorage.getItem(AL_KEY) || 'null'); } catch (e) { return null; } }
+function alPut(c) { try { if (c) localStorage.setItem(AL_KEY, JSON.stringify(c)); else localStorage.removeItem(AL_KEY); } catch (e) { alert('Speichern nicht möglich.'); } }
+function alHex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
+function alSaltBytes(h) { return new Uint8Array(h.match(/../g).map(function (x) { return parseInt(x, 16); })); }
+async function alPbk(pw) { return crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits', 'deriveKey']); }
+async function alHash(pw, saltHex) { return alHex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: alSaltBytes(saltHex), iterations: 150000, hash: 'SHA-256' }, await alPbk(pw), 256)); }
+async function alWrapKey(pw, saltHex) { return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: alSaltBytes(saltHex), iterations: 150000, hash: 'SHA-256' }, await alPbk(pw), { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']); }
+async function alWrap(pw, raw, saltHex) { var iv = crypto.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, await alWrapKey(pw, saltHex), raw)), o = new Uint8Array(12 + ct.length); o.set(iv); o.set(ct, 12); return kaB64(o); }
+async function alUnwrap(pw, c) { try { var u = kaUnB64(c.wrap); return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u.subarray(0, 12) }, await alWrapKey(pw, c.salt), u.subarray(12))); } catch (e) { return null; } }
+function alImportKey(raw) { return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']); }
+async function alCheck(pw) { var c = alGet(); if (!c) return true; return c.enc ? !!(await alUnwrap(pw, c)) : (await alHash(pw, c.salt)) === c.hash; }
+
+var alFails = 0, alUntil = 0, alTimer = null, alHiddenAt = 0;
+function alLockNow() {
+  if (!alGet()) return;
+  document.querySelectorAll('.modal-overlay.active').forEach(function (m) { m.dataset.dirty = ''; });
+  document.documentElement.classList.add('locked');
+  document.getElementById('al-pw').value = ''; document.getElementById('al-msg').textContent = '';
+  setTimeout(function () { document.getElementById('al-pw').focus(); }, 50);
+}
+async function alUnlock(ev) {
+  ev.preventDefault(); var msg = document.getElementById('al-msg'), inp = document.getElementById('al-pw'), c = alGet();
+  var wait = Math.ceil((alUntil - Date.now()) / 1000);
+  if (wait > 0) { msg.textContent = 'Bitte ' + wait + ' Sekunden warten.'; return; }
+  var ok = false, raw = null;
+  try { if (c && c.enc) { raw = await alUnwrap(inp.value, c); ok = !!raw; } else ok = await alCheck(inp.value); } catch (e) { msg.textContent = 'Dieser Browser kann die Sperre nicht prüfen.'; return; }
+  if (ok) {
+    if (c && c.enc && !KA.enc) {
+      try { KA.key = await alImportKey(raw); await kaLoadAll(); } catch (e) { KA.key = null; msg.textContent = 'Die Daten konnten nicht gelesen werden.'; return; }
+    }
+    alFails = 0; inp.value = ''; msg.textContent = '';
+    if (!KA.booted) kaBoot(false);
+    document.documentElement.classList.remove('locked'); alArm();
+    if (c && c.enc && c.sweep) kaFilesToEnc().catch(function () {});
+    return;
+  }
+  alFails++; inp.value = ''; msg.textContent = 'Passwort falsch.';
+  if (alFails >= 3) { alUntil = Date.now() + Math.min(60, Math.pow(2, alFails - 2)) * 1000; msg.textContent = 'Passwort falsch. Bitte kurz warten.'; }
+}
+function alArm() {
+  clearTimeout(alTimer); var c = alGet(); if (!c || document.documentElement.classList.contains('locked')) return;
+  if (+c.min > 0) alTimer = setTimeout(alLockNow, c.min * 60000);
+}
+['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { document.addEventListener(t, alArm, { passive: true, capture: true }); });
+document.addEventListener('visibilitychange', function () {
+  var c = alGet(); if (!c || !KA.booted) return;
+  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); }
+  else if (alHiddenAt && Date.now() - alHiddenAt >= c.min * 60000) alLockNow();
+});
+function alUi() {
+  var c = alGet(), e = c && c.enc;
+  document.getElementById('al-info').textContent = !c ? 'Die App-Sperre ist aus. Lege ein Passwort fest, das beim Öffnen und nach der eingestellten Zeit abgefragt wird.'
+    : e ? 'Sperre und Verschlüsselung sind eingeschaltet. Alle Patientendaten, Fotos und Dokumente auf diesem Gerät sind verschlüsselt gespeichert.'
+    : 'Die App-Sperre ist eingeschaltet. Die Daten selbst sind noch nicht verschlüsselt.';
+  document.getElementById('al-curg').style.display = c ? '' : 'none'; document.getElementById('al-off').style.display = c ? '' : 'none';
+  document.getElementById('al-encb').style.display = c && !e ? '' : 'none'; document.getElementById('al-decb').style.display = e ? '' : 'none';
+  document.getElementById('al-warn').textContent = e ? 'Ohne das Passwort lassen sich die Daten nicht wieder herstellen. Es gibt keine „Passwort vergessen“-Funktion. Bitte regelmäßig mit Passwort sichern und das Passwort an einem sicheren Ort aufbewahren.' : 'Die Sperre verdeckt die App. Mit „Daten verschlüsseln“ werden zusätzlich alle Daten auf dem Gerät verschlüsselt. Dann gibt es ohne Passwort keinen Zugriff mehr, auch nicht für mich oder GitHub. Bitte vorher eine Sicherung machen.';
+  document.getElementById('al-min').value = String(c ? c.min : 5);
+  ['al-cur', 'al-new', 'al-new2'].forEach(function (i) { document.getElementById(i).value = ''; });
+  document.getElementById('al-btn').style.display = c ? '' : 'none';
+}
+async function alSet() {
+  var c = alGet(), n = document.getElementById('al-new').value;
+  if (!(window.crypto && crypto.subtle)) { alert('Dieser Browser unterstützt die Sperre nicht (nur über https).'); return; }
+  var cur = document.getElementById('al-cur').value, raw = null;
+  try { if (c) { if (c.enc) raw = await alUnwrap(cur, c); if (c.enc ? !raw : !(await alCheck(cur))) { alert('Das aktuelle Passwort stimmt nicht.'); return; } } } catch (e) { alert('Prüfung nicht möglich.'); return; }
+  if (n.length < 6) { alert('Das neue Passwort braucht mindestens 6 Zeichen.'); return; }
+  if (n !== document.getElementById('al-new2').value) { alert('Die beiden neuen Passwörter sind nicht gleich.'); return; }
+  var salt = alHex(crypto.getRandomValues(new Uint8Array(16))), min = +document.getElementById('al-min').value;
+  if (c && c.enc) alPut({ enc: true, salt: salt, wrap: await alWrap(n, raw, salt), min: min, sweep: c.sweep });
+  else alPut({ salt: salt, hash: await alHash(n, salt), min: min });
+  alUi(); alArm(); alert(c ? 'Das Passwort wurde geändert.' : 'Die App-Sperre ist eingeschaltet.');
+}
+function alSetMin() { var c = alGet(); if (!c) return; c.min = +document.getElementById('al-min').value; alPut(c); alArm(); }
+
+/* Dateien (IndexedDB) zwischen Klartext und verschlüsselt umstellen */
+function kaFileIds() { return fTx('readonly', function (s) { return s.getAllKeys(); }).then(function (r) { return Array.isArray(r) ? r : []; }); }
+async function kaFilesToEnc(onp) {
+  var ids = await kaFileIds();
+  for (var i = 0; i < ids.length; i++) {
+    var r = await fTx('readonly', function (s) { return s.get(ids[i]); });
+    if (r && r !== true && !r.enc && r.blob) { var e = await kaEncBytes(new Uint8Array(await r.blob.arrayBuffer())), m = await kaEncBytes(new TextEncoder().encode(JSON.stringify({ name: r.name, type: r.type || '' }))); if (await fTx('readwrite', function (s) { return s.put({ id: r.id, enc: e.buffer, emeta: m.buffer }); }) === null) throw new Error('Datei konnte nicht gespeichert werden'); }
+    if (onp) onp(i + 1, ids.length);
+  }
+  var c = alGet(); if (c && c.sweep) { delete c.sweep; alPut(c); }
+}
+async function kaFilesToPlain(onp) {
+  var ids = await kaFileIds();
+  for (var i = 0; i < ids.length; i++) {
+    var r = await fTx('readonly', function (s) { return s.get(ids[i]); });
+    if (r && r !== true && r.enc) { var f = await fRec(r); if (!f) throw new Error('Eine Datei lässt sich nicht entschlüsseln'); if (await fTx('readwrite', function (s) { return s.put({ id: f.id, name: f.name, type: f.type, blob: f.blob }); }) === null) throw new Error('Datei konnte nicht gespeichert werden'); }
+    if (onp) onp(i + 1, ids.length);
+  }
+}
+async function alEncryptAll() {
+  var c = alGet(), cur = document.getElementById('al-cur').value;
+  if (!c || c.enc) return;
+  if (!(await alCheck(cur))) { alert('Bitte oben das aktuelle Passwort eingeben.'); return; }
+  if (!confirm('Alle Daten auf diesem Gerät werden jetzt verschlüsselt.\n\nHast Du gerade eine Sicherung gemacht? Ohne das Passwort gibt es danach keinen Zugriff mehr auf die Daten.\n\nJetzt verschlüsseln?')) return;
+  closeModal('modal-settings'); progOpen('Daten werden verschlüsselt');
+  try {
+    var raw = crypto.getRandomValues(new Uint8Array(32)), salt = alHex(crypto.getRandomValues(new Uint8Array(16)));
+    KA.key = await alImportKey(raw);
+    alPut({ enc: true, salt: salt, wrap: await alWrap(cur, raw, salt), min: c.min, sweep: true });
+    progSet(10, 'Daten werden verschlüsselt ...'); await kaLoadAll(); await kaIdle();
+    await kaFilesToEnc(function (i, n) { progSet(15 + 80 * i / Math.max(1, n), 'Datei ' + i + ' von ' + n); });
+    progSet(100, 'Fertig. Die Daten sind jetzt verschlüsselt.'); document.getElementById('pg-close').style.display = ''; alUi();
+  } catch (e) { progClose(true); alert('Das Verschlüsseln wurde unterbrochen: ' + (e && e.message ? e.message : e) + '\n\nDie Daten sind nicht verloren. Beim nächsten Entsperren wird der Rest nachgeholt.'); }
+}
+async function alDecryptAll(silent) {
+  var c = alGet(), cur = document.getElementById('al-cur').value;
+  if (!c || !c.enc) return true;
+  if (!(await alCheck(cur))) { alert('Bitte oben das aktuelle Passwort eingeben.'); return false; }
+  if (!silent && !confirm('Die Verschlüsselung wird aufgehoben. Die Daten liegen danach wieder unverschlüsselt auf dem Gerät. Die App-Sperre bleibt.\n\nFortfahren?')) return false;
+  closeModal('modal-settings'); progOpen('Verschlüsselung wird aufgehoben');
+  try {
+    await kaIdle();
+    Object.keys(KA.mem).forEach(function (k) { localStorage.setItem(k, KA.mem[k]); });
+    await kaFilesToPlain(function (i, n) { progSet(10 + 85 * i / Math.max(1, n), 'Datei ' + i + ' von ' + n); });
+    var salt = alHex(crypto.getRandomValues(new Uint8Array(16)));
+    alPut({ salt: salt, hash: await alHash(cur, salt), min: c.min });
+    KA.enc = false; KA.key = null; KA.mem = {}; KA.q = {};
+    progSet(100, 'Fertig.'); document.getElementById('pg-close').style.display = ''; alUi(); return true;
+  } catch (e) { progClose(true); alert('Das Aufheben wurde unterbrochen: ' + (e && e.message ? e.message : e) + '\n\nDie Daten bleiben verschlüsselt und sind nicht verloren.'); return false; }
+}
+async function alRemove() {
+  var c = alGet(); if (!c) return;
+  if (!(await alCheck(document.getElementById('al-cur').value))) { alert('Bitte das aktuelle Passwort eingeben.'); return; }
+  if (c.enc) { if (!(await alDecryptAll(false))) return; if (!confirm('Verschlüsselung ist aufgehoben. Auch die App-Sperre jetzt entfernen?')) { openSettings(); return; } }
+  else if (!confirm('App-Sperre wirklich entfernen?')) return;
+  alPut(null); clearTimeout(alTimer); alUi();
+}
+/* Start: ohne Verschlüsselung sofort, mit Verschlüsselung erst nach dem Entsperren */
+function kaBoot(lockAfter) {
+  if (KA.booted) return; KA.booted = true;
+  var sc = document.createElement('script'); sc.text = document.getElementById('ka-main').textContent; document.body.appendChild(sc);
+  if (alGet()) { document.getElementById('al-btn').style.display = ''; if (lockAfter) alLockNow(); }
+}
+function kaStart() {
+  var c = alGet();
+  if (c && c.enc) { document.documentElement.classList.add('locked'); setTimeout(function () { document.getElementById('al-pw').focus(); }, 50); }
+  else kaBoot(true);
+}
+</script>
 
 <header>
   <div class="hd-top">
@@ -1133,7 +1308,8 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
     </div>
     <div class="form-group"><label>Automatisch sperren</label><select id="al-min" class="form-control" onchange="alSetMin()"><option value="0">Sobald die App verlassen wird</option><option value="1">Nach 1 Minute</option><option value="5">Nach 5 Minuten</option><option value="15">Nach 15 Minuten</option><option value="30">Nach 30 Minuten</option></select></div>
     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" onclick="alSet()">Passwort festlegen</button><button type="button" class="btn btn-del" id="al-off" onclick="alRemove()">Sperre entfernen</button></div>
-    <div style="font-size:12px; color:#64748b;">Die Sperre verdeckt die App, die Daten selbst werden dadurch nicht verschlüsselt. Den eigentlichen Schutz bringt die Bildschirmsperre des Geräts. Passwort vergessen: Sperre lässt sich nur durch Löschen der App-Daten im Browser aufheben, vorher bitte Sichern.</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" id="al-encb" onclick="alEncryptAll()">Daten verschlüsseln</button><button type="button" class="btn btn-cancel" id="al-decb" onclick="alDecryptAll()">Verschlüsselung aufheben</button></div>
+    <div id="al-warn" style="font-size:12px; color:#64748b;"></div>
     <div class="ak-h">E-Mail-Versand (optional)</div>
     <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
     <div class="form-group"><label>Adresse von sendmail.php</label><input type="text" id="s-mailurl" class="form-control" placeholder="https://www.kreuzberg-aesthetik.de/app/sendmail.php" autocomplete="off"></div>
@@ -1371,7 +1547,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   </div>
 </div>
 
-<script>
+<script type="text/plain" id="ka-main">
 var PRAXIS_TABS = ['lager', 'leistungen', 'dokumente', 'nachrichten', 'textbausteine', 'webformulare', 'zahlungen', 'statistik'];
 var TAB_RENDER = { webformulare: 'renderWebf', kalender: 'renderCal', start: 'renderHome', lager: 'renderLager', leistungen: 'renderLeist', dokumente: 'renderTemplates', zahlungen: 'renderZahlungen', todos: 'renderTodos', statistik: 'renderStat', nachrichten: 'renderNachr', textbausteine: 'renderTxt', rechnungen: 'renderInvoices' };
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
@@ -1394,10 +1570,10 @@ function navGo(id) { document.getElementById('nav-menu').style.display = 'none';
 var lastTab = 'start', lastReady = false;
 function saveLast() {
   if (!lastReady) return;
-  try { localStorage.setItem('ka_last', JSON.stringify({ tab: lastTab, pid: (curP && document.getElementById('modal-akte').classList.contains('active')) ? curP.id : null, akTab: akTab, view: view, cur: iso(cur) })); } catch (x) {}
+  try { kaSet('ka_last', JSON.stringify({ tab: lastTab, pid: (curP && document.getElementById('modal-akte').classList.contains('active')) ? curP.id : null, akTab: akTab, view: view, cur: iso(cur) })); } catch (x) {}
 }
 function restoreLast() {
-  var l = null; try { l = JSON.parse(localStorage.getItem('ka_last')); } catch (x) {} lastReady = true; if (!l) return;
+  var l = null; try { l = JSON.parse(kaGet('ka_last')); } catch (x) {} lastReady = true; if (!l) return;
   try {
     if (l.view) view = l.view;
     if (l.cur) { var q = String(l.cur).split('-'); if (q.length === 3) cur = new Date(+q[0], +q[1] - 1, +q[2]); }
@@ -1423,23 +1599,23 @@ function switchTab(tabId) {
 }
 function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
 var ausgaben = [], todos = [];
-try { var sa = JSON.parse(localStorage.getItem('ka_ausgaben')); if (Array.isArray(sa)) ausgaben = sa; } catch (x) {}
-try { var stt = JSON.parse(localStorage.getItem('ka_todos')); if (Array.isArray(stt)) todos = stt; } catch (x) {}
+try { var sa = JSON.parse(kaGet('ka_ausgaben')); if (Array.isArray(sa)) ausgaben = sa; } catch (x) {}
+try { var stt = JSON.parse(kaGet('ka_todos')); if (Array.isArray(stt)) todos = stt; } catch (x) {}
 var patients = [];
-try { var sp = JSON.parse(localStorage.getItem('ka_patients')); if (Array.isArray(sp)) patients = sp; } catch (x) {}
+try { var sp = JSON.parse(kaGet('ka_patients')); if (Array.isArray(sp)) patients = sp; } catch (x) {}
 ensurePatients();
 var lager = { produkte: [], chargen: [], verbrauch: [] };
-try { var slg = JSON.parse(localStorage.getItem('ka_lager')); if (slg && Array.isArray(slg.produkte)) lager = { produkte: slg.produkte, chargen: Array.isArray(slg.chargen) ? slg.chargen : [], verbrauch: Array.isArray(slg.verbrauch) ? slg.verbrauch : [] }; } catch (x) {}
+try { var slg = JSON.parse(kaGet('ka_lager')); if (slg && Array.isArray(slg.produkte)) lager = { produkte: slg.produkte, chargen: Array.isArray(slg.chargen) ? slg.chargen : [], verbrauch: Array.isArray(slg.verbrauch) ? slg.verbrauch : [] }; } catch (x) {}
 function persist() {
   try {
-    localStorage.setItem('ka_events', JSON.stringify(events));
-    localStorage.setItem('ka_patients', JSON.stringify(patients));
-    localStorage.setItem('ka_templates', JSON.stringify(templates));
-    localStorage.setItem('ka_invoices', JSON.stringify(invoices));
-    localStorage.setItem('ka_settings', JSON.stringify(settings));
-    localStorage.setItem('ka_lager', JSON.stringify(lager));
-    localStorage.setItem('ka_ausgaben', JSON.stringify(ausgaben));
-    localStorage.setItem('ka_todos', JSON.stringify(todos));
+    kaSet('ka_events', JSON.stringify(events));
+    kaSet('ka_patients', JSON.stringify(patients));
+    kaSet('ka_templates', JSON.stringify(templates));
+    kaSet('ka_invoices', JSON.stringify(invoices));
+    kaSet('ka_settings', JSON.stringify(settings));
+    kaSet('ka_lager', JSON.stringify(lager));
+    kaSet('ka_ausgaben', JSON.stringify(ausgaben));
+    kaSet('ka_todos', JSON.stringify(todos));
   } catch (x) { alert('Der Speicher im Browser ist voll. Bitte große Dateien entfernen und eine Sicherung machen.'); }
   try { renderHome(); } catch (x) {}
   try { updateTodoBadge(); } catch (x) {}
@@ -1527,10 +1703,10 @@ function hdAdd(k) {
   if (k === 'termin') openTermin(); else if (k === 'pat') { ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; }); openModal('modal-patient'); }
   else if (k === 'rec') openInvoice(null);
 }
-function recentAdd(id) { try { var l = JSON.parse(localStorage.getItem('ka_recent') || '[]').filter(function (x) { return x !== id; }); l.unshift(id); localStorage.setItem('ka_recent', JSON.stringify(l.slice(0, 12))); } catch (x) {} }
+function recentAdd(id) { try { var l = JSON.parse(kaGet('ka_recent') || '[]').filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_recent', JSON.stringify(l.slice(0, 12))); } catch (x) {} }
 /* Suche: nur Patienten, die letzten fünf Treffer merkt sich die App */
-function lastSearch() { try { var l = JSON.parse(localStorage.getItem('ka_lastsearch') || '[]'); return Array.isArray(l) ? l : []; } catch (x) { return []; } }
-function lastSearchAdd(id) { try { var l = lastSearch().filter(function (x) { return x !== id; }); l.unshift(id); localStorage.setItem('ka_lastsearch', JSON.stringify(l.slice(0, 5))); } catch (x) {} }
+function lastSearch() { try { var l = JSON.parse(kaGet('ka_lastsearch') || '[]'); return Array.isArray(l) ? l : []; } catch (x) { return []; } }
+function lastSearchAdd(id) { try { var l = lastSearch().filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_lastsearch', JSON.stringify(l.slice(0, 5))); } catch (x) {} }
 function gsPatRow(box, p) { gsRow(box, '#' + p.id + '  ' + nameKey(p), p.dob || p.phone || '', function () { lastSearchAdd(p.id); viewAkte(p); }); }
 function gsRow(res, title, sub, fn) {
   var b = mk('button', 'gs-r'); b.type = 'button'; b.appendChild(document.createTextNode(title)); if (sub) b.appendChild(mk('small', '', sub));
@@ -1564,7 +1740,7 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').
 var events = [];
 
 events.forEach(function (e, i) { e.id = i + 1; });
-try { var se = JSON.parse(localStorage.getItem('ka_events')); if (Array.isArray(se)) events = se; } catch (x) {}
+try { var se = JSON.parse(kaGet('ka_events')); if (Array.isArray(se)) events = se; } catch (x) {}
 var nid = events.reduce(function (m, e) { return Math.max(m, e.id || 0); }, 0) + 1, editId = null;
 function col(e) { return e.color ? 'background:' + e.color + '26;border-left-color:' + e.color + ';color:#0f172a' : ''; }
 function evBlock(e, lane, lanes) {
@@ -1891,7 +2067,7 @@ function renderHome() {
     var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(p.dob || ''); if (!m || +m[1] !== now.getDate() || +m[2] !== now.getMonth() + 1) return;
     imp.appendChild(hmRow(null, 'Geburtstag: ' + nameKey(p), 'wird heute ' + (now.getFullYear() - +m[3]), function () { viewAkte(p); }, null, 'next'));
   });
-  var lb = null; try { lb = localStorage.getItem('ka_lastbackup'); } catch (x) {}
+  var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
   var days = lb ? Math.round((new Date(today) - new Date(iso(new Date(lb)))) / 86400000) : null;
   if (lb === null || days >= 2 || (days === 1 && h >= 12) || (days >= 1 && h >= 17)) imp.appendChild(hmImportantRow(lb === null ? 'Noch keine Datensicherung auf diesem Gerät' : days === 1 ? 'Heute noch nicht gesichert' : 'Letzte Datensicherung vor ' + days + ' Tagen', '', function () { exportData(); }, 'Jetzt sichern', function () { exportData(); }));
   if (!imp.children.length) imp.appendChild(mk('div', 'hm-empty', 'Heute nichts Dringendes.'));
@@ -2060,7 +2236,7 @@ var ICON_PEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 var ICON_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
 var HEAD_FIELDS = [['anrede','Anrede'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien']];
 var templates = [];
-try { var stp = JSON.parse(localStorage.getItem('ka_templates')); if (Array.isArray(stp)) templates = stp; } catch (x) {}
+try { var stp = JSON.parse(kaGet('ka_templates')); if (Array.isArray(stp)) templates = stp; } catch (x) {}
 function maskDob(el) {
   var d = el.value.replace(/\D/g, '').slice(0, 8), o = d.slice(0, 2);
   if (d.length > 2) o += '.' + d.slice(2, 4);
@@ -2101,10 +2277,21 @@ function fTx(mode, fn) {
     });
   });
 }
-function fPut(id, name, blob) { return fTx('readwrite', function (s) { return s.put({ id: id, name: name, type: blob.type || '', blob: blob }); }).then(function (r) { return r !== null; }); }
-function fGet(id) { return fTx('readonly', function (s) { return s.get(id); }).then(function (r) { return r && r !== true ? r : null; }); }
+function fPut(id, name, blob) {
+  if (!KA.enc) return fTx('readwrite', function (s) { return s.put({ id: id, name: name, type: blob.type || '', blob: blob }); }).then(function (r) { return r !== null; });
+  return blob.arrayBuffer().then(async function (ab) {
+    var e = await kaEncBytes(new Uint8Array(ab)), m = await kaEncBytes(new TextEncoder().encode(JSON.stringify({ name: name, type: blob.type || '' })));
+    return fTx('readwrite', function (s) { return s.put({ id: id, enc: e.buffer, emeta: m.buffer }); });
+  }).then(function (r) { return r !== null; });
+}
+async function fRec(r) {
+  if (!r.enc) return r; if (!KA.key) return null;
+  var m = JSON.parse(new TextDecoder().decode(await kaDecBytes(new Uint8Array(r.emeta)))), b = await kaDecBytes(new Uint8Array(r.enc));
+  return { id: r.id, name: m.name, type: m.type, blob: new Blob([b], { type: m.type || '' }) };
+}
+function fGet(id) { return fTx('readonly', function (s) { return s.get(id); }).then(function (r) { return r && r !== true ? fRec(r).catch(function () { return null; }) : null; }); }
 function fDel(id) { if (urlCache[id]) { URL.revokeObjectURL(urlCache[id]); delete urlCache[id]; } return fTx('readwrite', function (s) { return s.delete(id); }); }
-function fAll() { return fTx('readonly', function (s) { return s.getAll(); }).then(function (r) { return Array.isArray(r) ? r : []; }); }
+function fAll() { return fTx('readonly', function (s) { return s.getAll(); }).then(function (r) { return Array.isArray(r) ? Promise.all(r.map(fRec)).then(function (l) { return l.filter(Boolean); }) : []; }); }
 function fClear() { Object.keys(urlCache).forEach(function (k) { URL.revokeObjectURL(urlCache[k]); }); urlCache = {}; return fTx('readwrite', function (s) { return s.clear(); }); }
 function dataToBlob(url) { return fetch(url).then(function (r) { return r.blob(); }); }
 function fileURL(rec) {
@@ -2133,12 +2320,12 @@ function editFileDate(rec) {
 }
 /* ===== Rechnungen ===== */
 var invoices = [];
-try { var sinv = JSON.parse(localStorage.getItem('ka_invoices')); if (Array.isArray(sinv)) invoices = sinv; } catch (x) {}
+try { var sinv = JSON.parse(kaGet('ka_invoices')); if (Array.isArray(sinv)) invoices = sinv; } catch (x) {}
 var DEF_IBAN = 'DE42 1007 0397 0073 0317 00', DEF_PAYPAL = 'fellamanuel@gmail.com';
 var QRM = {"pp": ["1111111001110110100001000111001111111", "1000001001001111111111111010101000001", "1011101011011010011111101011001011101", "1011101001000011111000001100101011101", "1011101011111111000001100011001011101", "1000001010100010001111101000101000001", "1111111010101010101010101010101111111", "0000000000110100100111011100000000000", "0100101010100101000011101101010110100", "0010100010010111100100010010001010100", "1101011111110110011110011111110000010", "0011100000000111001011100011110100101", "1110111111000001000110101000011001001", "1000010100110000010000111001110010110", "0101111110101011010101111111101011100", "1101000001000011111011001010111000100", "0011011101001111101110000000011101100", "1110010110111000000110101001100110000", "1010111101110111101011111111010001100", "0000110100011011011101110010010110101", "0101101011110111011111100101011000101", "0100110101101110010000000101010011101", "0111111010000010011011010001101000000", "0110010101011111011011101010110100100", "1001001000001010010001101111001001111", "1000110110000001001000010100010110010", "0001011110110010000010110111110000000", "0010010111110100111101000010001011100", "1111101111010010000100100000111111111", "0000000010101000000111110101100011010", "1111111000111000000010011000101011100", "1000001000110111110010101010100010100", "1011101010000000101100101000111111101", "1011101000110001101110000101001000010", "1011101001101101001010100111101000110", "1000001010101111001001101011010000110", "1111111000011110000100110101010110111"]};
 var DEF_KATALOG = [{"name": "Neuromodulator 1 Zone", "price": 169, "rate": 19}, {"name": "Neuromodulator 2 Zonen", "price": 259, "rate": 19}, {"name": "Neuromodulator 3 Zonen", "price": 349, "rate": 19}, {"name": "Jede weitere Zone", "price": 90, "rate": 19}, {"name": "Hyperhidrosis (Achseln, Hände, ...)", "price": 499, "rate": 19}, {"name": "Bruxismus/Masseter", "price": 299, "rate": 19}, {"name": "Nefertiti komplett (Jawline + Platysma)", "price": 399, "rate": 19}, {"name": "Jawline", "price": 269, "rate": 19}, {"name": "Platysma", "price": 269, "rate": 19}, {"name": "Trap-Tox, Barbie, Botox", "price": 349, "rate": 19}, {"name": "Hyaluron Filler 0,55 ml", "price": 249, "rate": 19}, {"name": "Hyaluron Filler 0,7 ml", "price": 299, "rate": 19}, {"name": "Hyaluron Filler 1 ml", "price": 349, "rate": 19}, {"name": "Hyaluron Filler Hochrisiko", "price": 399, "rate": 19}, {"name": "Polynukleotide 2 ml", "price": 349, "rate": 19}, {"name": "Profhilo® 2 ml", "price": 349, "rate": 19}, {"name": "CaHA (z.B. Radiesse®) 1,5 ml", "price": 449, "rate": 19}, {"name": "PLLA (z.B. Sculptra®) 1 Vial", "price": 599, "rate": 19}, {"name": "Ellansé® 1 ml", "price": 399, "rate": 19}, {"name": "UltraCol®", "price": 399, "rate": 19}, {"name": "Hylase intern", "price": 149, "rate": 19}, {"name": "Hylase extern", "price": 249, "rate": 19}, {"name": "Fett-Weg-Spritze/Lipolyse (PB-Serum®)", "price": 499, "rate": 19}, {"name": "Fett-Weg-Spritze/Lipolyse (traditionell)", "price": 249, "rate": 19}, {"name": "Fett-Weg-Spritze/Lipolyse (Lemonbottle®)", "price": 249, "rate": 19}, {"name": "PRX-T33®-Peeling", "price": 149, "rate": 19}, {"name": "Retinol-Peeling", "price": 199, "rate": 19}, {"name": "PRP", "price": 399, "rate": 19}, {"name": "PRF", "price": 399, "rate": 19}, {"name": "Microneedling", "price": 249, "rate": 19}, {"name": "Microneedling mit Exosomen", "price": 399, "rate": 19}, {"name": "NCTF®-Mesotherapie", "price": 249, "rate": 19}, {"name": "Rotlicht-Therapie (LED)", "price": 20, "rate": 19}, {"name": "NAD+-Infusion 250 mg", "price": 399, "rate": 19}, {"name": "2 x Sculptra® innerhalb von 6 Monaten", "price": 999, "rate": 19}, {"name": "3 x Sculptra® innerhalb eines Jahres", "price": 1399, "rate": 19}, {"name": "4 x Retinol-Peeling innerhalb von 6 Monaten", "price": 699, "rate": 19}, {"name": "4 x PRX-T33®-Peeling innerhalb von 6 Monaten", "price": 499, "rate": 19}, {"name": "2 x Exosomen + Needling", "price": 799, "rate": 19}, {"name": "3 x Exosomen + Needling", "price": 999, "rate": 19}, {"name": "3 x Polynukleotide", "price": 899, "rate": 19}, {"name": "4 x Polynukleotide", "price": 1199, "rate": 19}, {"name": "3 x NAD+-Infusion", "price": 999, "rate": 19}, {"name": "4 x NAD+-Infusion", "price": 1299, "rate": 19}, {"name": "Lip-Flip + 0,7 ml Hyaluron (Abstand 2 Wochen)", "price": 349, "rate": 19}];
 var settings = { steuernr: '', ustid: 'DE370141890', inhaber: 'Manuel Fella', bank: '', bic: 'DEUTDEBBP30', iban: DEF_IBAN, paypal: DEF_PAYPAL, hinweis: '', zahlung: '', katalog: [] };
-try { var sset = JSON.parse(localStorage.getItem('ka_settings')); if (sset && typeof sset === 'object') settings = Object.assign(settings, sset); } catch (x) {}
+try { var sset = JSON.parse(kaGet('ka_settings')); if (sset && typeof sset === 'object') settings = Object.assign(settings, sset); } catch (x) {}
 if (!Array.isArray(settings.katalog)) settings.katalog = [];
 if (!settings.katSeeded) { if (!settings.katalog.length) settings.katalog = DEF_KATALOG.map(function (k) { return { name: k.name, price: k.price, rate: k.rate }; }); settings.katSeeded = true; }
 if (!settings.iban) settings.iban = DEF_IBAN;
@@ -5287,7 +5474,7 @@ async function decryptBackup(obj, pw) {
 function exportData() {
   ['bk-pw', 'bk-pw2'].forEach(function (id) { document.getElementById(id).value = ''; });
   document.getElementById('bk-nopw').checked = false; document.getElementById('bk-newpw').checked = false; bkToggle();
-  var pd = null; try { pd = localStorage.getItem('ka_pwdate'); } catch (x) {}
+  var pd = null; try { pd = kaGet('ka_pwdate'); } catch (x) {}
   var pdays = pd ? Math.floor((Date.now() - new Date(pd)) / 86400000) : null, hint = document.getElementById('bk-pwhint');
   if (pdays === null) { hint.textContent = 'Passwortwechsel: noch nicht vermerkt. Bitte ein neues Passwort vergeben und unten abhaken.'; hint.className = 'hm-warn'; }
   else if (pdays >= 28) { hint.textContent = 'Passwortwechsel fällig: das Passwort ist ' + pdays + ' Tage alt. Bitte ein neues vergeben.'; hint.className = 'hm-warn'; }
@@ -5378,7 +5565,7 @@ async function doExport() {
         var a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = nm; document.body.appendChild(a); a.click(); a.remove();
         if (!b.getAttribute('data-ok')) { b.setAttribute('data-ok', '1'); b.textContent = 'Gespeichert ✓'; got++; bkOpen = total - got; }
         if (got === total) {
-          try { localStorage.setItem('ka_lastbackup', new Date().toISOString()); if (key && newpw) localStorage.setItem('ka_pwdate', new Date().toISOString()); } catch (x) {}
+          try { kaSet('ka_lastbackup', new Date().toISOString()); if (key && newpw) kaSet('ka_pwdate', new Date().toISOString()); } catch (x) {}
           renderHome(); document.getElementById('pg-status').textContent = 'Alle Teile wurden gespeichert.';
         }
       };
@@ -5484,69 +5671,8 @@ renderTemplates();
 migrateFiles();
 restoreLast();
 
-/* ===== App-Sperre (Passwortabfrage, PBKDF2) ===== */
-var AL_KEY = 'ka_lock', alFails = 0, alUntil = 0, alTimer = null, alHiddenAt = 0;
-function alGet() { try { return JSON.parse(localStorage.getItem(AL_KEY) || 'null'); } catch (e) { return null; } }
-function alPut(c) { try { if (c) localStorage.setItem(AL_KEY, JSON.stringify(c)); else localStorage.removeItem(AL_KEY); } catch (e) { alert('Speichern nicht möglich.'); } }
-function alHex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
-async function alHash(pw, saltHex) {
-  var salt = new Uint8Array(saltHex.match(/../g).map(function (h) { return parseInt(h, 16); }));
-  var k = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
-  return alHex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: salt, iterations: 150000, hash: 'SHA-256' }, k, 256));
-}
-async function alCheck(pw) { var c = alGet(); return !c || (await alHash(pw, c.salt)) === c.hash; }
-function alLockNow() {
-  if (!alGet()) return;
-  document.querySelectorAll('.modal-overlay.active').forEach(function (m) { m.dataset.dirty = ''; });
-  document.documentElement.classList.add('locked');
-  document.getElementById('al-pw').value = ''; document.getElementById('al-msg').textContent = '';
-  setTimeout(function () { document.getElementById('al-pw').focus(); }, 50);
-}
-async function alUnlock(ev) {
-  ev.preventDefault(); var msg = document.getElementById('al-msg'), inp = document.getElementById('al-pw');
-  var wait = Math.ceil((alUntil - Date.now()) / 1000);
-  if (wait > 0) { msg.textContent = 'Bitte ' + wait + ' Sekunden warten.'; return; }
-  var ok = false; try { ok = await alCheck(inp.value); } catch (e) { msg.textContent = 'Dieser Browser kann die Sperre nicht prüfen.'; return; }
-  if (ok) { alFails = 0; document.documentElement.classList.remove('locked'); inp.value = ''; msg.textContent = ''; alArm(); return; }
-  alFails++; inp.value = ''; msg.textContent = 'Passwort falsch.';
-  if (alFails >= 3) { alUntil = Date.now() + Math.min(60, Math.pow(2, alFails - 2)) * 1000; msg.textContent = 'Passwort falsch. Bitte kurz warten.'; }
-}
-function alArm() {
-  clearTimeout(alTimer); var c = alGet(); if (!c || document.documentElement.classList.contains('locked')) return;
-  if (+c.min > 0) alTimer = setTimeout(alLockNow, c.min * 60000);
-}
-['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { document.addEventListener(t, alArm, { passive: true, capture: true }); });
-document.addEventListener('visibilitychange', function () {
-  var c = alGet(); if (!c) return;
-  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); }
-  else if (alHiddenAt && Date.now() - alHiddenAt >= c.min * 60000) alLockNow();
-});
-function alUi() {
-  var c = alGet();
-  document.getElementById('al-info').textContent = c ? 'Die App-Sperre ist eingeschaltet. Zum Ändern gib das aktuelle Passwort und das neue ein.' : 'Die App-Sperre ist aus. Lege ein Passwort fest, das beim Öffnen und nach der eingestellten Zeit abgefragt wird.';
-  document.getElementById('al-curg').style.display = c ? '' : 'none'; document.getElementById('al-off').style.display = c ? '' : 'none';
-  document.getElementById('al-min').value = String(c ? c.min : 5);
-  ['al-cur', 'al-new', 'al-new2'].forEach(function (i) { document.getElementById(i).value = ''; });
-  document.getElementById('al-btn').style.display = c ? '' : 'none';
-}
-async function alSet() {
-  var c = alGet(), n = document.getElementById('al-new').value;
-  if (!(window.crypto && crypto.subtle)) { alert('Dieser Browser unterstützt die Sperre nicht (nur über https).'); return; }
-  try { if (c && !(await alCheck(document.getElementById('al-cur').value))) { alert('Das aktuelle Passwort stimmt nicht.'); return; } } catch (e) { alert('Prüfung nicht möglich.'); return; }
-  if (n.length < 6) { alert('Das neue Passwort braucht mindestens 6 Zeichen.'); return; }
-  if (n !== document.getElementById('al-new2').value) { alert('Die beiden neuen Passwörter sind nicht gleich.'); return; }
-  var salt = alHex(crypto.getRandomValues(new Uint8Array(16)));
-  alPut({ salt: salt, hash: await alHash(n, salt), min: +document.getElementById('al-min').value });
-  alUi(); alArm(); alert('Die App-Sperre ist eingeschaltet.');
-}
-async function alRemove() {
-  try { if (!(await alCheck(document.getElementById('al-cur').value))) { alert('Bitte das aktuelle Passwort eingeben.'); return; } } catch (e) { return; }
-  if (!confirm('App-Sperre wirklich entfernen?')) return;
-  alPut(null); clearTimeout(alTimer); alUi();
-}
-function alSetMin() { var c = alGet(); if (!c) return; c.min = +document.getElementById('al-min').value; alPut(c); alArm(); }
-if (alGet()) { document.getElementById('al-btn').style.display = ''; alLockNow(); }
 </script>
+<script>kaStart();</script>
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
 </body>
 </html>
