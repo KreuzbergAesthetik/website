@@ -360,9 +360,22 @@ body { overflow-x:clip; }
   .hd-top { gap:5px; } .gs-scope { gap:3px; } .gs-scope button, .ico-btn { width:32px; height:32px; min-height:32px; padding:0; justify-content:center; } .gs-scope svg { width:17px; height:17px; }
   .gs-box { padding:0 8px; gap:5px; } .gs-box input { font-size:14px; }
 }
+#applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
+html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
+.al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
+.al-box img { width:72px; height:72px; margin-bottom:8px; } .al-box h2 { font-size:17px; margin-bottom:14px; } .al-box input { text-align:center; }
+.al-msg { color:#b91c1c; font-size:13px; min-height:18px; margin-top:8px; }
 </style>
+<script>try { if (localStorage.getItem('ka_lock')) document.documentElement.classList.add('locked'); } catch (e) {}</script>
 </head>
 <body>
+<div id="applock"><form class="al-box" onsubmit="alUnlock(event)" autocomplete="off">
+  <img src="icon-192.png" alt="">
+  <h2>Kreuzberg Ästhetik</h2>
+  <input type="password" id="al-pw" class="form-control" placeholder="Passwort" autocomplete="current-password" aria-label="Passwort">
+  <div class="al-msg" id="al-msg"></div>
+  <button type="submit" class="btn btn-save" style="width:100%; margin-top:6px;">Entsperren</button>
+</form></div>
 
 <header>
   <div class="hd-top">
@@ -378,6 +391,7 @@ body { overflow-x:clip; }
     </div>
     <div class="hd-act">
       <span class="live-dot" title="System aktiv" aria-label="System aktiv"></span>
+      <button type="button" class="ico-btn" id="al-btn" title="Sperren" aria-label="App sperren" style="display:none;" onclick="alLockNow()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
       <button type="button" class="ico-btn" title="Sichern" aria-label="Sichern" onclick="hdRun(exportData, 'Sichern')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span class="ico-lbl">Sichern</span></button>
       <button type="button" class="ico-btn" title="Laden" aria-label="Laden" onclick="hdRun(function () { document.getElementById('imp-file').click(); }, 'Laden')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg><span class="ico-lbl">Laden</span></button>
       <input type="file" id="imp-file" multiple style="display:none" onchange="importData(this)">
@@ -1110,6 +1124,16 @@ body { overflow-x:clip; }
       <div class="form-group"><label>Zahlungsziel in Tagen</label><input type="text" id="s-ziel" class="form-control" inputmode="numeric"></div>
     </div>
     <div class="form-group"><label>Standard-Zahlungshinweis</label><textarea id="s-zahlung" class="form-control" rows="2"></textarea></div>
+    <div class="ak-h">App-Sperre</div>
+    <div id="al-info" style="font-size:12px; color:#64748b; margin-bottom:8px;"></div>
+    <div class="form-group" id="al-curg"><label>Aktuelles Passwort</label><input type="password" id="al-cur" class="form-control" autocomplete="off"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Neues Passwort (mind. 6 Zeichen)</label><input type="password" id="al-new" class="form-control" autocomplete="new-password"></div>
+      <div class="form-group"><label>Wiederholen</label><input type="password" id="al-new2" class="form-control" autocomplete="new-password"></div>
+    </div>
+    <div class="form-group"><label>Automatisch sperren</label><select id="al-min" class="form-control" onchange="alSetMin()"><option value="0">Sobald die App verlassen wird</option><option value="1">Nach 1 Minute</option><option value="5">Nach 5 Minuten</option><option value="15">Nach 15 Minuten</option><option value="30">Nach 30 Minuten</option></select></div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" onclick="alSet()">Passwort festlegen</button><button type="button" class="btn btn-del" id="al-off" onclick="alRemove()">Sperre entfernen</button></div>
+    <div style="font-size:12px; color:#64748b;">Die Sperre verdeckt die App, die Daten selbst werden dadurch nicht verschlüsselt. Den eigentlichen Schutz bringt die Bildschirmsperre des Geräts. Passwort vergessen: Sperre lässt sich nur durch Löschen der App-Daten im Browser aufheben, vorher bitte Sichern.</div>
     <div class="ak-h">E-Mail-Versand (optional)</div>
     <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
     <div class="form-group"><label>Adresse von sendmail.php</label><input type="text" id="s-mailurl" class="form-control" placeholder="https://www.kreuzberg-aesthetik.de/app/sendmail.php" autocomplete="off"></div>
@@ -2333,6 +2357,7 @@ function openSettings() {
   var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-ustva': 'ustva', 's-ziel': 'zahlungsziel', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { document.getElementById(id).value = settings[m[id]] || ''; });
   if (!settings.ustva) document.getElementById('s-ustva').value = 'quartal'; if (!settings.zahlungsziel) document.getElementById('s-ziel').value = '14';
+  alUi();
   openModal('modal-settings');
 }
 function saveSettings() {
@@ -5458,6 +5483,69 @@ renderHome();
 renderTemplates();
 migrateFiles();
 restoreLast();
+
+/* ===== App-Sperre (Passwortabfrage, PBKDF2) ===== */
+var AL_KEY = 'ka_lock', alFails = 0, alUntil = 0, alTimer = null, alHiddenAt = 0;
+function alGet() { try { return JSON.parse(localStorage.getItem(AL_KEY) || 'null'); } catch (e) { return null; } }
+function alPut(c) { try { if (c) localStorage.setItem(AL_KEY, JSON.stringify(c)); else localStorage.removeItem(AL_KEY); } catch (e) { alert('Speichern nicht möglich.'); } }
+function alHex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
+async function alHash(pw, saltHex) {
+  var salt = new Uint8Array(saltHex.match(/../g).map(function (h) { return parseInt(h, 16); }));
+  var k = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+  return alHex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: salt, iterations: 150000, hash: 'SHA-256' }, k, 256));
+}
+async function alCheck(pw) { var c = alGet(); return !c || (await alHash(pw, c.salt)) === c.hash; }
+function alLockNow() {
+  if (!alGet()) return;
+  document.querySelectorAll('.modal-overlay.active').forEach(function (m) { m.dataset.dirty = ''; });
+  document.documentElement.classList.add('locked');
+  document.getElementById('al-pw').value = ''; document.getElementById('al-msg').textContent = '';
+  setTimeout(function () { document.getElementById('al-pw').focus(); }, 50);
+}
+async function alUnlock(ev) {
+  ev.preventDefault(); var msg = document.getElementById('al-msg'), inp = document.getElementById('al-pw');
+  var wait = Math.ceil((alUntil - Date.now()) / 1000);
+  if (wait > 0) { msg.textContent = 'Bitte ' + wait + ' Sekunden warten.'; return; }
+  var ok = false; try { ok = await alCheck(inp.value); } catch (e) { msg.textContent = 'Dieser Browser kann die Sperre nicht prüfen.'; return; }
+  if (ok) { alFails = 0; document.documentElement.classList.remove('locked'); inp.value = ''; msg.textContent = ''; alArm(); return; }
+  alFails++; inp.value = ''; msg.textContent = 'Passwort falsch.';
+  if (alFails >= 3) { alUntil = Date.now() + Math.min(60, Math.pow(2, alFails - 2)) * 1000; msg.textContent = 'Passwort falsch. Bitte kurz warten.'; }
+}
+function alArm() {
+  clearTimeout(alTimer); var c = alGet(); if (!c || document.documentElement.classList.contains('locked')) return;
+  if (+c.min > 0) alTimer = setTimeout(alLockNow, c.min * 60000);
+}
+['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { document.addEventListener(t, alArm, { passive: true, capture: true }); });
+document.addEventListener('visibilitychange', function () {
+  var c = alGet(); if (!c) return;
+  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); }
+  else if (alHiddenAt && Date.now() - alHiddenAt >= c.min * 60000) alLockNow();
+});
+function alUi() {
+  var c = alGet();
+  document.getElementById('al-info').textContent = c ? 'Die App-Sperre ist eingeschaltet. Zum Ändern gib das aktuelle Passwort und das neue ein.' : 'Die App-Sperre ist aus. Lege ein Passwort fest, das beim Öffnen und nach der eingestellten Zeit abgefragt wird.';
+  document.getElementById('al-curg').style.display = c ? '' : 'none'; document.getElementById('al-off').style.display = c ? '' : 'none';
+  document.getElementById('al-min').value = String(c ? c.min : 5);
+  ['al-cur', 'al-new', 'al-new2'].forEach(function (i) { document.getElementById(i).value = ''; });
+  document.getElementById('al-btn').style.display = c ? '' : 'none';
+}
+async function alSet() {
+  var c = alGet(), n = document.getElementById('al-new').value;
+  if (!(window.crypto && crypto.subtle)) { alert('Dieser Browser unterstützt die Sperre nicht (nur über https).'); return; }
+  try { if (c && !(await alCheck(document.getElementById('al-cur').value))) { alert('Das aktuelle Passwort stimmt nicht.'); return; } } catch (e) { alert('Prüfung nicht möglich.'); return; }
+  if (n.length < 6) { alert('Das neue Passwort braucht mindestens 6 Zeichen.'); return; }
+  if (n !== document.getElementById('al-new2').value) { alert('Die beiden neuen Passwörter sind nicht gleich.'); return; }
+  var salt = alHex(crypto.getRandomValues(new Uint8Array(16)));
+  alPut({ salt: salt, hash: await alHash(n, salt), min: +document.getElementById('al-min').value });
+  alUi(); alArm(); alert('Die App-Sperre ist eingeschaltet.');
+}
+async function alRemove() {
+  try { if (!(await alCheck(document.getElementById('al-cur').value))) { alert('Bitte das aktuelle Passwort eingeben.'); return; } } catch (e) { return; }
+  if (!confirm('App-Sperre wirklich entfernen?')) return;
+  alPut(null); clearTimeout(alTimer); alUi();
+}
+function alSetMin() { var c = alGet(); if (!c) return; c.min = +document.getElementById('al-min').value; alPut(c); alArm(); }
+if (alGet()) { document.getElementById('al-btn').style.display = ''; alLockNow(); }
 </script>
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
 </body>
