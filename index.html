@@ -394,13 +394,16 @@ body { overflow-x:clip; }
 .tv-sp { flex:1; }
 .tv-mod { text-align:center; font-size:12px; color:#94a3b8; padding:2px 16px 12px; }
 .tv-cb { background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; padding:0 14px; } .tv-cb:hover { background:#e2e8f0; }
-.tv-tool { position:relative; gap:4px; } .tv-tool .tv-lbl { display:none; font-size:14px; font-weight:600; }
-.tv-menu svg:last-child { width:13px; height:13px; color:#64748b; }
+.tv-tool { position:relative; gap:3px; }
+.tv-tool .tv-ic { display:inline-flex; align-items:center; gap:2px; } .tv-tool .tv-lbl { display:none; font-size:14px; font-weight:600; }
+.tv-acts .tv-tool { flex-direction:column; height:56px; padding:4px 2px; } .tv-acts .tv-tool svg { width:19px; height:19px; }
+.tv-acts .tv-tool .tv-lbl { display:block; font-size:10.5px; line-height:1; color:#475569; }
+.tv-menu .tv-ic svg + svg { width:12px; height:12px; color:#64748b; }
 @media (hover:hover) { .tv-tool[data-tip]:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#0f172a; color:#fff; font-size:12px; font-weight:600; padding:4px 9px; border-radius:7px; white-space:nowrap; z-index:5; pointer-events:none; } }
 @media (min-width:768px) {
   .tv-box { max-width:680px !important; }
-  .tv-tool svg:first-child { display:none; } .tv-tool .tv-lbl { display:inline; } .tv-tool[data-tip]:hover::after { display:none; }
-  .tv-acts .tv-tool { padding:0 10px; } .tv-foot .tv-tool { width:auto; padding:0 14px; }
+  .tv-tool .tv-ic svg:first-child { display:none; } .tv-tool .tv-lbl, .tv-acts .tv-tool .tv-lbl { display:inline; font-size:14px; color:inherit; } .tv-tool[data-tip]:hover::after { display:none; }
+  .tv-acts .tv-tool { flex-direction:row; height:42px; padding:0 10px; } .tv-menu .tv-ic { order:2; } .tv-foot .tv-tool { width:auto; padding:0 14px; }
   .tv-tiles { grid-template-columns:1fr 1fr; } .tv-tile:nth-child(3) { grid-column:1 / 3; }
 }
 .tv-del { width:36px; height:36px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:none; border:none; color:#dc2626; border-radius:9px; cursor:pointer; } .tv-del svg { stroke-width:1.7; } .tv-del:hover { background:#fef2f2; }
@@ -2254,7 +2257,7 @@ var TV_I = {
   ban: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>', phone: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>', down: '<path d="M6 9l6 6 6-6"/>', form: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>', trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', pencil2: '<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16z"/>' };
 function tvSvg(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + TV_I[k] + '</svg>'; }
 function tvIcon(k, title, fn) { var b = mk('button', 'tv-ib'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.innerHTML = tvSvg(k); b.onclick = fn; return b; }
-function tvTool(k, title, label, fn) { var b = mk('button', 'tv-ib tv-tool'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.setAttribute('data-tip', title); b.innerHTML = tvSvg(k) + '<span class="tv-lbl">' + label + '</span>'; b.onclick = fn; return b; }
+function tvTool(k, title, label, fn) { var b = mk('button', 'tv-ib tv-tool'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.setAttribute('data-tip', title); b.innerHTML = '<span class="tv-ic">' + tvSvg(k) + '</span><span class="tv-lbl">' + label + '</span>'; b.onclick = fn; return b; }
 function tvCopy(text, btn) { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { btn.style.color = '#16a34a'; setTimeout(function () { btn.style.color = ''; }, 1200); }, function () { alert(text); }); }
 function tvPhase(e) { var k = e.phase || ''; return TV_PH.filter(function (x) { return x[0] === k; })[0] || TV_PH[0]; }
 function setPhase(id, k) {
@@ -2321,7 +2324,7 @@ function openTerminView(id, keep) {
   if (p) ac.appendChild(tvTool('euro', 'Rechnung erstellen', 'Rechnung', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; invFromEvent(e); }, 80); }));
   if (p) ac.appendChild(tvTool('pill', 'Rezept erstellen', 'Rezept', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; openRx('e' + e.id); }, 80); }));
   if (p) {
-    var fb = tvTool('form', 'Formulare und Unterlagen', 'Formulare', null); fb.classList.add('tv-menu'); fb.insertAdjacentHTML('beforeend', tvSvg('down'));
+    var fb = tvTool('form', 'Formulare und Unterlagen', 'Formulare', null); fb.classList.add('tv-menu'); fb.querySelector('.tv-ic').insertAdjacentHTML('beforeend', tvSvg('down'));
     fb.onclick = function (ev) { tlMenu(ev, [
       ['Anmeldebogen-Link senden', function () { closeModal('modal-tview'); setTimeout(function () { tvMail(p, 'Anmeldebogen Email', ['Dein Termin bei Kreuzberg Ästhetik', '{AnredeInformell},\n\nbitte fülle vor Deinem Termin am {NaechsterTermin} den Anmeldebogen aus:\n{LinkAnmeldung}\n\nManuel - Kreuzberg Ästhetik']); }, 80); }],
       ['Anamnesebogen-Link senden', function () { closeModal('modal-tview'); setTimeout(function () { tvMail(p, '', ['Anamnesebogen', '{AnredeInformell},\n\nbitte fülle vor Deinem Termin am {NaechsterTermin} den Anamnesebogen aus:\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik']); }, 80); }],
@@ -2339,9 +2342,9 @@ function openTerminView(id, keep) {
   var ft = mk('div', 'tv-foot');
   var del = mk('button', 'tv-del'); del.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'; del.title = 'Termin löschen'; del.setAttribute('aria-label', 'Termin löschen'); del.type = 'button'; del.onclick = function () { if (!confirm('Termin wirklich löschen?')) return; events = events.filter(function (x) { return x.id !== id; }); persist(); renderCal(); closeModal('modal-tview'); }; ft.appendChild(del);
   ft.appendChild(del);
+  ft.appendChild(mk('span', 'tv-sp'));
   ft.appendChild(tvTool('pen', 'Bearbeiten', 'Bearbeiten', function () { closeModal('modal-tview'); editTermin(id); }));
   ft.appendChild(tvTool('copy', 'Termin kopieren', 'Kopieren', function () { dupTermin(id); }));
-  ft.appendChild(mk('span', 'tv-sp'));
   if (e.phase !== 'Abgesagt') { var cb = mk('button', 'tv-btn tv-cb'); cb.type = 'button'; cb.innerHTML = tvSvg('ban') + 'Absagen'; cb.onclick = function () { tvCancel(e, p); }; ft.appendChild(cb); }
   box.appendChild(ft);
   if (!keep) openModal('modal-tview');
