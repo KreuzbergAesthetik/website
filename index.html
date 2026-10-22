@@ -1380,6 +1380,7 @@ function kaStart() {
       <button type="button" class="btn btn-secondary" onclick="closeModal('modal-invview')">&lsaquo; Zurück</button>
       <button type="button" class="btn btn-secondary" id="inv-pay-btn" onclick="openPay()">Zahlung erfassen</button>
       <button type="button" class="btn btn-save" onclick="savePdf()">Als PDF speichern</button>
+      <button type="button" class="btn btn-del btn-ico" style="margin-left:auto;" title="Rechnung löschen" aria-label="Rechnung löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
     </div>
     <div id="inv-view"></div>
   </div>
@@ -2949,6 +2950,20 @@ function viewInvoice(id) {
   var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv));
   document.getElementById('inv-pay-btn').style.display = invState(inv).full ? 'none' : 'inline-block';
   openModal('modal-invview');
+}
+function deleteInvoice() {
+  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
+  var paid = paidSum(inv), np = (inv.payments || []).length;
+  var msg = 'Rechnung ' + inv.nr + ' für ' + inv.name + ' (' + eur(inv.total) + ') wirklich löschen?\n\n'
+    + (np ? (np === 1 ? 'Die Zahlung' : 'Die ' + np + ' Zahlungen') + ' (' + eur(paid) + ') dazu ' + (np === 1 ? 'wird' : 'werden') + ' ebenfalls gelöscht und ' + (np === 1 ? 'fehlt' : 'fehlen') + ' dann in Statistik und Zahlungen.\n\n' : '')
+    + 'Bereits versendete Rechnungen müssen aus steuerlichen Gründen aufbewahrt werden. Lösche nur Testrechnungen oder Fehlerfassungen.';
+  if (!confirm(msg)) return;
+  invoices = invoices.filter(function (i) { return i !== inv; });
+  persist(); closeModal('modal-invview'); renderInvoices();
+  if (document.getElementById('tab-zahlungen') && document.getElementById('tab-zahlungen').classList.contains('active')) renderZahlungen();
+  if (document.getElementById('tab-statistik') && document.getElementById('tab-statistik').classList.contains('active')) renderStat();
+  if (document.getElementById('tab-start').classList.contains('active')) renderHome();
+  if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
 }
 function openPay() {
   var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
