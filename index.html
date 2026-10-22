@@ -49,7 +49,9 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .fl { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:6px; vertical-align:middle; line-height:16px; border:none; font-family:inherit; }
 .fl-red { background:#dc2626; color:#fff; } .fl-amb { background:#f59e0b; color:#1f2937; }
 .pt .fl { margin:3px 4px 0 0; }
-.a-flags { display:flex; flex-wrap:wrap; gap:6px; } .a-flags:not(:empty) { margin-top:6px; } .a-flags .fl { margin:0; font-size:12px; padding:2px 10px; } .a-flags button.fl { cursor:pointer; text-align:left; }
+.a-flagcard { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:8px 12px; margin-bottom:12px; } .a-flagcard .fl { margin:0; font-size:12px; padding:3px 10px; cursor:pointer; text-align:left; } .a-fl-t { font-size:12px; font-weight:700; color:#64748b; }
+.a-flagbtn { position:fixed; right:0; top:calc(var(--hdh,112px) + 70px); z-index:41; width:34px; height:42px; border:none; border-radius:12px 0 0 12px; align-items:center; justify-content:center; cursor:pointer; box-shadow:-2px 3px 10px rgba(15,23,42,.3); } .a-flagbtn.red { background:#dc2626; color:#fff; } .a-flagbtn.amb { background:#f59e0b; color:#1f2937; }
+.a-flagpop { position:fixed; right:8px; top:calc(var(--hdh,112px) + 118px); z-index:41; width:min(340px,calc(100vw - 16px)); background:#fff; border:1px solid #cbd5e1; border-radius:12px; box-shadow:0 12px 30px rgba(15,23,42,.28); padding:8px; } .a-flagpop .fl { display:block; width:100%; margin:0 0 6px; padding:8px 10px; font-size:13px; border-radius:8px; text-align:left; cursor:pointer; } .a-flagpop .fl:last-child { margin-bottom:0; }
 .evfl { position:absolute; top:2px; right:2px; width:14px; height:14px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:800; text-align:center; line-height:14px; }
 .pidb { background:none; border:none; padding:2px 4px; color:#475569; font-size:13px; font-weight:600; cursor:pointer; border-radius:6px; } .pidb:hover { background:#e2e8f0; }
 .pid { color:#94a3b8; font-size:11px; font-weight:400; margin-right:5px; }
@@ -958,9 +960,10 @@ function kaStart() {
 <div id="modal-akte" class="akte-page">
   <div class="a-top">
     <button type="button" class="btn btn-secondary icon-btn" title="Zurück" aria-label="Zurück" onclick="closeModal('modal-akte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-    <div style="flex:1; min-width:0;"><div id="a-title" class="a-title"></div><div id="a-flags" class="a-flags"></div></div>
+    <div id="a-title" class="a-title"></div>
     <button type="button" id="a-edit" class="a-pen" title="Stammdaten bearbeiten" aria-label="Stammdaten bearbeiten" onclick="toggleStamm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
   </div>
+  <div id="a-flagcard" class="card a-flagcard" style="display:none;"></div>
   <div class="card">
     <input type="file" id="a-img-in" accept="image/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addImages(this)">
     <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'dokumente')">
@@ -1028,7 +1031,9 @@ function kaStart() {
 </div>
 
 <!-- Schwebender Aktionsknopf der Akte (eigene Ebene, verschiebt das Layout nicht) -->
-  <div class="a-fab">
+  <button type="button" id="a-flagbtn" class="a-flagbtn amb" style="display:none;" title="Offene Hinweise zu diesem Patienten" aria-label="Offene Hinweise anzeigen" onclick="fpToggle()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+<div id="a-flagpop" class="a-flagpop" style="display:none;"></div>
+<div class="a-fab">
   <div id="a-menu" class="a-menu" style="display:none;">
     <button type="button" onclick="aAct('doku')">Dokumentation erstellen</button>
     <button type="button" onclick="aAct('termin')">Termin erstellen</button>
@@ -1658,21 +1663,47 @@ function flagPills(p) {
   if (f.unb.length) { var b = mk('span', 'fl fl-amb', 'Rechnung offen'); b.title = 'Vergangene Termine ohne Rechnung: ' + f.unb.length; out.push(b); }
   return out;
 }
-function renderFlags() {
-  var box = document.getElementById('a-flags'); if (!box) return; box.innerHTML = '';
-  if (!curP) return;
-  var p = curP, f = flagsMap().get(p);
-  f.todos.slice(0, 3).forEach(function (t) {
-    var b = mk('button', 'fl fl-red', 'To-Do: ' + (t.text.length > 44 ? t.text.slice(0, 43) + '…' : t.text) + (t.due ? ' · fällig ' + fmtD(t.due) : '')); b.type = 'button'; b.title = 'To-Do öffnen'; b.onclick = function () { openTodo(t.id); }; box.appendChild(b);
+function flagItems(p) {
+  var f = flagsMap().get(p), out = [];
+  f.todos.slice(0, 5).forEach(function (t) { out.push({ cls: 'fl-red', label: 'To-Do: ' + (t.text.length > 60 ? t.text.slice(0, 59) + '…' : t.text) + (t.due ? ' · fällig ' + fmtD(t.due) : ''), fn: function () { openTodo(t.id); } }); });
+  if (f.todos.length > 5) out.push({ cls: 'fl-red', label: '+' + (f.todos.length - 5) + ' weitere To-Dos', fn: function () { switchTab('todos'); closeModal('modal-akte'); } });
+  f.unb.slice(0, 5).forEach(function (e) {
+    var d = e.date.split('-');
+    out.push({ cls: 'fl-amb', label: 'Rechnung offen: ' + d[2] + '.' + d[1] + '. ' + (e.behandlung || 'Termin'), menu: [['Rechnung erstellen', function () { openInvoice(p); document.getElementById('inv-termin').value = String(e.id); invTerminChanged(); }], ['Keine Rechnung nötig', function () { e.keineRechnung = true; persist(); }]] });
   });
-  if (f.todos.length > 3) box.appendChild(mk('span', 'fl fl-red', '+' + (f.todos.length - 3) + ' weitere To-Dos'));
-  f.unb.slice(0, 3).forEach(function (e) {
-    var d = e.date.split('-'), b = mk('button', 'fl fl-amb', 'Rechnung offen: ' + d[2] + '.' + d[1] + '. ' + (e.behandlung || 'Termin')); b.type = 'button'; b.title = 'Für diesen vergangenen Termin gibt es noch keine Rechnung';
-    b.onclick = function (ev) { tlMenu(ev, [['Rechnung erstellen', function () { openInvoice(p); document.getElementById('inv-termin').value = String(e.id); invTerminChanged(); }], ['Keine Rechnung nötig', function () { e.keineRechnung = true; persist(); }]]); };
-    box.appendChild(b);
-  });
-  if (f.unb.length > 3) box.appendChild(mk('span', 'fl fl-amb', '+' + (f.unb.length - 3) + ' weitere Termine ohne Rechnung'));
+  if (f.unb.length > 5) out.push({ cls: 'fl-amb', label: '+' + (f.unb.length - 5) + ' weitere Termine ohne Rechnung' });
+  return out;
 }
+function flagBtn(it) {
+  var b = mk('button', 'fl ' + it.cls, it.label); b.type = 'button';
+  b.onclick = function (ev) { ev.stopPropagation(); if (it.menu) tlMenu(ev, it.menu); else if (it.fn) { fpClose(); it.fn(); } };
+  return b;
+}
+function renderFlags() {
+  var card = document.getElementById('a-flagcard'), fb = document.getElementById('a-flagbtn'); if (!card) return;
+  card.innerHTML = ''; fpClose();
+  var items = curP ? flagItems(curP) : [];
+  card.style.display = items.length ? '' : 'none';
+  if (items.length) {
+    card.appendChild(mk('span', 'a-fl-t', 'Offen:'));
+    items.forEach(function (it) { card.appendChild(flagBtn(it)); });
+  }
+  fb.className = 'a-flagbtn ' + (items.some(function (i) { return i.cls === 'fl-red'; }) ? 'red' : 'amb'); fb.dataset.n = items.length;
+  flagScroll();
+}
+function flagScroll() {
+  var card = document.getElementById('a-flagcard'), fb = document.getElementById('a-flagbtn'); if (!card || !fb) return;
+  var show = document.body.classList.contains('akte-open') && card.style.display !== 'none' && card.getBoundingClientRect().bottom < (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hdh'), 10) || 110) + 50;
+  fb.style.display = show ? 'flex' : 'none'; if (!show) fpClose();
+}
+function fpClose() { var p = document.getElementById('a-flagpop'); if (p) p.style.display = 'none'; }
+function fpToggle() {
+  var pop = document.getElementById('a-flagpop'); if (pop.style.display === 'block') { fpClose(); return; }
+  pop.innerHTML = ''; (curP ? flagItems(curP) : []).forEach(function (it) { pop.appendChild(flagBtn(it)); });
+  pop.style.display = 'block';
+}
+window.addEventListener('scroll', function () { requestAnimationFrame(flagScroll); }, { passive: true });
+document.addEventListener('click', function (ev) { if (!ev.target.closest('#a-flagpop, #a-flagbtn, #tl-menu')) fpClose(); });
 function ensurePatients() {
   var m = 0;
   patients.forEach(function (p) { if (p.id > m) m = p.id; });
