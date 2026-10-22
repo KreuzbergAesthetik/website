@@ -2476,7 +2476,8 @@ var DEF_LKATS = [['Botox', '#7c3aed'], ['Hyaluron', '#2563eb'], ['Dermalästheti
 function katGuessLeist(name) {
   var n = String(name || '').toLowerCase();
   var rules = [['Botox', /neuromodul|botox|botul|tox|hyperhidrosis|bruxismus|masseter|jawline|platysma|nefertiti|zone/], ['Lipolyse', /lipolyse|fett-weg|aqualyx|lemonbottle|pb-serum/], ['Microneedling', /needling|exosom|prp|prf|nctf|mesotherapie/], ['Peeling', /peeling|prx|retinol|rotlicht|led/], ['Hyaluron', /hyaluron filler|filler|lip-flip|lippen|restylane|juvederm|belotero|teosyal/], ['Dermalästhetika', /polynukleotid|profhilo|caha|radiesse|plla|sculptra|ellans|ultracol|hylase|skinbooster|biostim/]];
-  for (var i = 0; i < rules.length; i++) if (rules[i][1].test(n)) return rules[i][0];
+  var n2 = n.replace(/[\s-]/g, '');
+  for (var i = 0; i < rules.length; i++) if (rules[i][1].test(n) || rules[i][1].test(n2)) return rules[i][0];
   return 'Sonstiges';
 }
 function ensureLKats() {
@@ -2493,12 +2494,16 @@ function lkatForText(t) {
   t = String(t || '').trim(); if (!t) return null;
   var l = findKat(t), c = l ? lkatOf(l) : null; if (c) return c;
   var ks = ensureLKats(), kn = ks.filter(function (k) { return k.name.toLowerCase() === t.toLowerCase(); })[0]; if (kn) return kn;
+  /* Betreff enthält den Namen einer Leistung aus der Liste (längster Treffer gewinnt) */
+  var tl = t.toLowerCase(), best = null;
+  (settings.katalog || []).forEach(function (k) { var n = String(k.name || '').trim().toLowerCase(); if (n.length >= 4 && tl.indexOf(n) >= 0 && (!best || n.length > best.name.length)) best = { name: n, k: k }; });
+  if (best) { var bc = lkatOf(best.k); if (bc) return bc; }
   var g = katGuessLeist(l ? l.name : t); if (g === 'Sonstiges' && !l) return null;
   return ks.filter(function (k) { return k.name === g; })[0] || null;
 }
 function lkatColorFor(leistung) { var c = lkatForText(leistung); return c ? c.color : null; }
 /* Anzeigefarbe eines Termins: Farbe der Kategorie hat Vorrang, sonst die gespeicherte Farbe */
-function evColor(e) { var c = lkatColorFor(evLeistungen(e)[0] || e.behandlung); return c || e.color || ''; }
+function evColor(e) { var ls = evLeistungen(e).concat(e.behandlung ? [e.behandlung] : []), c = null; for (var i = 0; i < ls.length && !c; i++) c = lkatColorFor(ls[i]); return c || e.color || ''; }
 var lsIdx = -1;
 var lkIdx = -1;
 function renderLKats() {
@@ -2539,16 +2544,16 @@ function deleteLKat() {
   settings.leistKats.splice(lkIdx, 1); persist(); closeModal('modal-lkat'); renderLKats(); renderLeist();
 }
 function recolorEvents() {
-  var n = 0; events.forEach(function (e) { var c = lkatColorFor(evLeistungen(e)[0] || e.behandlung); if (c && e.color !== c) n++; });
+  var n = 0; events.forEach(function (e) { var c = evKats(e)[0]; if (c && e.color !== c.color) n++; });
   if (!n) { alert('Alle Termine mit einer Leistung haben schon die Farbe ihrer Kategorie.'); return; }
   if (!confirm(n + ' Termin(e) auf die Farbe ihrer Kategorie setzen? Von Hand gewählte Farben werden dabei überschrieben.')) return;
-  events.forEach(function (e) { var c = lkatColorFor(evLeistungen(e)[0] || e.behandlung); if (c) e.color = c; });
+  events.forEach(function (e) { var c = evKats(e)[0]; if (c) e.color = c.color; });
   persist(); alert(n + ' Termin(e) umgefärbt.'); if (document.getElementById('tab-kalender').classList.contains('active')) renderCal();
 }
 /* Termin mit mehreren Leistungen: die erste führt (Farbe), alle Kategorien sind im Kalender sichtbar */
 var tLeist = [];
 function evLeistungen(e) { return Array.isArray(e.leistungen) && e.leistungen.length ? e.leistungen : (e.leistung ? [e.leistung] : []); }
-function evKats(e) { var out = []; var ls = evLeistungen(e); if (!ls.length && e.behandlung) ls = [e.behandlung]; ls.forEach(function (n) { var c = lkatForText(n); if (c && out.indexOf(c) < 0) out.push(c); }); return out; }
+function evKats(e) { var out = []; var ls = evLeistungen(e); if (!ls.length && e.behandlung) ls = [e.behandlung]; ls.forEach(function (n) { var c = lkatForText(n); if (c && out.indexOf(c) < 0) out.push(c); }); if (!out.length && e.behandlung) { var cb = lkatForText(e.behandlung); if (cb) out.push(cb); } return out; }
 function renderTLeist() {
   var box = document.getElementById('t-lchips'); if (!box) return; box.innerHTML = '';
   tLeist.forEach(function (n, i) {
