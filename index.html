@@ -1841,7 +1841,7 @@ var events = [];
 events.forEach(function (e, i) { e.id = i + 1; });
 try { var se = JSON.parse(kaGet('ka_events')); if (Array.isArray(se)) events = se; } catch (x) {}
 var nid = events.reduce(function (m, e) { return Math.max(m, e.id || 0); }, 0) + 1, editId = null;
-function col(e) { return e.color ? 'background:' + e.color + '26;border-left-color:' + e.color + ';color:#0f172a' : ''; }
+function col(e) { var cc = evColor(e); return cc ? 'background:' + cc + '26;border-left-color:' + cc + ';color:#0f172a' : ''; }
 function evBlock(e, lane, lanes) {
   var p = e.time.split(':'), mins = parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
   var top = (mins - START * 60) * H / 60, h = Math.max(e.dur * H / 60, 20);
@@ -2488,7 +2488,17 @@ function ensureLKats() {
   return settings.leistKats;
 }
 function lkatOf(l) { ensureLKats(); return settings.leistKats.filter(function (c) { return c.id === (l && l.kat); })[0] || null; }
-function lkatColorFor(leistung) { var l = findKat(leistung); var c = l ? lkatOf(l) : null; return c ? c.color : null; }
+/* Kategorie zu einem Text: Leistung aus der Liste, sonst Kategoriename oder Stichwort (z. B. Betreff "Botox") */
+function lkatForText(t) {
+  t = String(t || '').trim(); if (!t) return null;
+  var l = findKat(t), c = l ? lkatOf(l) : null; if (c) return c;
+  var ks = ensureLKats(), kn = ks.filter(function (k) { return k.name.toLowerCase() === t.toLowerCase(); })[0]; if (kn) return kn;
+  var g = katGuessLeist(l ? l.name : t); if (g === 'Sonstiges' && !l) return null;
+  return ks.filter(function (k) { return k.name === g; })[0] || null;
+}
+function lkatColorFor(leistung) { var c = lkatForText(leistung); return c ? c.color : null; }
+/* Anzeigefarbe eines Termins: Farbe der Kategorie hat Vorrang, sonst die gespeicherte Farbe */
+function evColor(e) { var c = lkatColorFor(evLeistungen(e)[0] || e.behandlung); return c || e.color || ''; }
 var lsIdx = -1;
 var lkIdx = -1;
 function renderLKats() {
@@ -2538,7 +2548,7 @@ function recolorEvents() {
 /* Termin mit mehreren Leistungen: die erste führt (Farbe), alle Kategorien sind im Kalender sichtbar */
 var tLeist = [];
 function evLeistungen(e) { return Array.isArray(e.leistungen) && e.leistungen.length ? e.leistungen : (e.leistung ? [e.leistung] : []); }
-function evKats(e) { var out = []; evLeistungen(e).forEach(function (n) { var l = findKat(n), c = l ? lkatOf(l) : null; if (c && out.indexOf(c) < 0) out.push(c); }); return out; }
+function evKats(e) { var out = []; var ls = evLeistungen(e); if (!ls.length && e.behandlung) ls = [e.behandlung]; ls.forEach(function (n) { var c = lkatForText(n); if (c && out.indexOf(c) < 0) out.push(c); }); return out; }
 function renderTLeist() {
   var box = document.getElementById('t-lchips'); if (!box) return; box.innerHTML = '';
   tLeist.forEach(function (n, i) {
@@ -2630,7 +2640,7 @@ function saveLeist() {
   if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
   if (price <= 0) { alert('Bitte einen Preis größer als 0 eingeben.'); return; }
   if (settings.katalog.some(function (k, j) { return j !== lsIdx && k.name.trim().toLowerCase() === name.toLowerCase(); })) { alert('Eine Leistung mit dieser Bezeichnung gibt es schon.'); return; }
-  var k = { name: name, price: price, rate: rate, kat: document.getElementById('ls-kat').value || undefined, dauer: parseInt(document.getElementById('ls-dauer').value, 10) || undefined, id: lsIdx >= 0 ? settings.katalog[lsIdx].id : 0, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
+  var k = { name: name, price: price, rate: rate, kat: document.getElementById('ls-kat').value || (function () { var g = katGuessLeist(name), c = ensureLKats().filter(function (x) { return x.name === g; })[0]; return c ? c.id : undefined; })(), dauer: parseInt(document.getElementById('ls-dauer').value, 10) || undefined, id: lsIdx >= 0 ? settings.katalog[lsIdx].id : 0, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
   if (lsIdx >= 0) settings.katalog[lsIdx] = k; else settings.katalog.push(k);
   lsEnsureIds(); persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
