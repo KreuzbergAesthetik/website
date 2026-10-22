@@ -411,6 +411,31 @@ body { overflow-x:clip; }
 .btn.btn-ico, .foot-bar .btn.btn-ico { flex:0 0 38px; width:38px; min-width:38px; height:36px; min-height:0; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:9px; background:none; color:#dc2626; border:none; }
 .btn.btn-ico svg { stroke-width:1.7; } .btn.btn-ico:hover { background:#fef2f2; color:#b91c1c; }
 .foot-bar .btn.btn-ico { order:-1; margin-right:auto; }
+/* ===== Einheitliches Design ===== */
+:root { --navy:#1e3a8a; --line:#dbe2ea; --soft:#eef2f6; }
+/* Karten und Seitenköpfe: Streifen in der Farbe des Bereichs, wie auf der Startseite */
+.card { border-color:var(--line); box-shadow:0 2px 8px rgba(15,23,42,.08); }
+.card-title { font-size:17px; font-weight:800; color:#0f172a; }
+.tab-content > .card:not(.hc):not(.hero) { border-left:6px solid var(--tc,#94a3b8); }
+#tab-kalender { --tc:#7c3aed; } #tab-patienten { --tc:#1e3a8a; } #tab-rechnungen { --tc:#2563eb; } #tab-todos { --tc:#ea580c; }
+#tab-lager { --tc:#0d9488; } #tab-leistungen { --tc:#db2777; } #tab-dokumente { --tc:#64748b; } #tab-nachrichten { --tc:#0ea5e9; }
+#tab-textbausteine { --tc:#8b5cf6; } #tab-webformulare { --tc:#f59e0b; } #tab-zahlungen { --tc:#16a34a; } #tab-statistik { --tc:#2563eb; }
+/* Tabellen: leicht, nur feine Linien zwischen den Zeilen */
+.pt { font-size:14.5px; }
+.pt th { background:#fff; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#64748b; padding:10px 12px; border:none; border-bottom:2px solid var(--line); }
+.pt td { background:none; padding:12px; border:none; border-bottom:1px solid var(--soft); color:#0f172a; }
+.pt tbody tr:hover td { background:#f8fafc; }
+.pt tbody tr:last-child td { border-bottom:none; }
+/* Masken: weißer Kopf mit Streifen, Schließen-Symbol, ruhige Fußzeile */
+.modal-box { border:none; border-radius:18px; box-shadow:0 18px 50px rgba(15,23,42,.35); }
+.modal-header { background:#fff; border-bottom:1px solid var(--soft); border-radius:18px 18px 0 0; padding:15px 18px 15px 28px; position:relative; }
+.modal-header::before { content:''; position:absolute; left:14px; top:50%; width:5px; height:24px; margin-top:-12px; border-radius:3px; background:var(--navy); }
+.modal-header strong { font-size:18px; font-weight:800; color:#0f172a; }
+.close-btn { background:#f1f5f9; color:#334155; border-radius:10px; min-width:36px; min-height:36px; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; font-size:22px; line-height:1; padding:0; }
+.close-btn:hover { background:#e2e8f0; }
+.form-control:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(30,58,138,.18); }
+.foot-bar { border-top:1px solid var(--soft); }
+.btn { border-radius:10px; }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -2657,7 +2682,7 @@ function renderLeist() {
   for (var p = 1; p <= pages; p++) (function (p) { var b = mk('button', '', String(p)); b.type = 'button'; b.className = p === lsPage ? 'on' : ''; b.onclick = function () { lsPage = p; renderLeist(); }; pg.appendChild(b); })(p);
 }
 var LS_I = { copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>' };
-function lsAct(k, title, fn, cls) { var b = mk('button', 'tv-ib' + (cls ? ' ' + cls : '')); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.style.cssText = 'width:32px; height:30px; margin-right:4px;' + (cls === 'del' ? 'border-color:#fca5a5; background:#fef2f2; color:#dc2626;' : ''); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">' + LS_I[k] + '</svg>'; b.onclick = fn; return b; }
+function lsAct(k, title, fn, cls) { var b = mk('button', 'tv-ib' + (cls ? ' ' + cls : '')); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.style.cssText = 'width:32px; height:30px; margin-right:4px;' + (cls === 'del' ? 'border-color:transparent; background:none; color:#dc2626;' : ''); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">' + LS_I[k] + '</svg>'; b.onclick = fn; return b; }
 function lsCopy(i) { var k = settings.katalog[i]; if (!k) return; var n = Object.assign({}, k, { id: 0, name: k.name + ' (Kopie)', vorlagen: (k.vorlagen || []).slice() }); settings.katalog.push(n); lsEnsureIds(); persist(); refreshLeistungen(); renderLeist(); }
 function lsDelete(i) { var k = settings.katalog[i]; if (!k || !confirm('Leistung "' + k.name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return; settings.katalog.splice(i, 1); persist(); refreshLeistungen(); renderLeist(); }
 function lsExport() {
