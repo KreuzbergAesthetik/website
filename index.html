@@ -390,7 +390,7 @@ body { overflow-x:clip; }
 .tv-btn { height:38px; font-weight:600; } .tv-ib { height:38px; width:40px; }
 .tv-ib:hover, .tv-btn:hover { background:#e2e8f0; }
 .tv-acts { display:flex; padding:12px 16px; gap:8px; border-bottom:1px solid #eef2f6; } .tv-acts .tv-ib { flex:1; width:auto; min-width:0; height:42px; }
-.tv-foot { display:flex; align-items:center; gap:8px; background:#fff; border-top:none; padding:12px 16px 6px; }
+.tv-foot { display:flex; align-items:center; gap:8px; background:#fff; border-top:none; padding:12px 16px 16px; }
 .tv-sp { flex:1; }
 .tv-mod { text-align:center; font-size:12px; color:#94a3b8; padding:2px 16px 12px; }
 .tv-cb { background:#fff7ed; border:1px solid #fed7aa; color:#c2410c; padding:0 14px; } .tv-cb:hover { background:#ffedd5; }
@@ -2335,7 +2335,6 @@ function openTerminView(id, keep) {
   ft.appendChild(mk('span', 'tv-sp'));
   if (e.phase !== 'Abgesagt') { var cb = mk('button', 'tv-btn tv-cb'); cb.type = 'button'; cb.innerHTML = tvSvg('ban') + 'Absagen'; cb.onclick = function () { tvCancel(e, p); }; ft.appendChild(cb); }
   box.appendChild(ft);
-  box.appendChild(mk('div', 'tv-mod', 'Letzte Änderung: ' + (e.mod ? fmtDT(e.mod) : '–')));
   if (!keep) openModal('modal-tview');
 }
 function openAkteFromTermin(id) {
