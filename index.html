@@ -462,6 +462,8 @@ body { overflow-x:clip; }
 @media (max-width:520px) { #tab-rechnungen .hm-l { display:none; } #tab-rechnungen .hm-s { display:inline; } #tab-rechnungen .pt { min-width:0; font-size:12.5px; } #tab-rechnungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-rechnungen .pt th, #tab-rechnungen .pt td { padding-left:4px; padding-right:4px; } #tab-rechnungen .pt .pn { font-size:12.5px; } .pt td.nw { white-space:nowrap; }
   #tab-patienten .hm-l { display:none; } #tab-patienten .hm-s { display:inline; } #tab-patienten .pt { min-width:0; } #tab-patienten .pt .pl a { overflow-wrap:anywhere; } .pt .pc-er { display:none; } .pt th[style*="width"] { width:auto !important; } .pt th, .pt td { padding-left:8px; padding-right:8px; } }
 .badge-gray { background:#e2e8f0; color:#475569; }
+.pt thead th:not([onclick]) { cursor:pointer; user-select:none; }
+.pt th[data-sd="1"]::after { content:' \25B2'; font-size:9px; } .pt th[data-sd="-1"]::after { content:' \25BC'; font-size:9px; }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -2956,6 +2958,41 @@ function renderInvoices() {
     var st = invState(i), bd = mk('span', 'badge ' + st.cls); bd.innerHTML = '<span class="hm-l">' + st.txt + '</span><span class="hm-s">' + (st.txt === 'Teilzahlung' ? 'Teil' : st.txt) + '</span>'; c4.appendChild(bd);
   });
 }
+/* ===== Alle Tabellen: Klick auf die Spaltenüberschrift sortiert (Zahlen, Beträge, Daten, Monate, Text) ===== */
+var TS_MON = ['jan', 'feb', 'mär', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dez'], tsState = new WeakMap(), tsTimers = new WeakMap();
+function tsKey(txt) {
+  var t = String(txt).replace(/\s+/g, ' ').trim();
+  if (!t || t === '-' || t === '–') return { e: true };
+  var m = t.length < 30 && /(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?:,?\s*(\d{1,2}):(\d{2}))?/.exec(t);
+  if (m) { var y = +m[3]; if (y < 100) y += 2000; return { n: y * 1e8 + (+m[2]) * 1e6 + (+m[1]) * 1e4 + (+(m[4] || 0)) * 100 + (+(m[5] || 0)) }; }
+  var mo = TS_MON.indexOf(t.toLowerCase().replace('.', '')); if (mo >= 0 && t.length <= 4) return { n: mo };
+  var t2 = t.replace(/[€%\s#]|min$|Stk$/g, '');
+  if (/^-?\d{1,3}(\.\d{3})*(,\d+)?$/.test(t2) || /^-?\d+(,\d+)?$/.test(t2)) return { n: parseFloat(t2.replace(/\./g, '').replace(',', '.')) };
+  return { s: t };
+}
+function tsSort(table) {
+  var st = tsState.get(table), tb = table.tBodies[0]; if (!st || !tb) return;
+  var rows = [].slice.call(tb.rows); if (rows.length < 2 || rows.some(function (r) { return r.cells.length < 2; })) return;
+  var keyed = rows.map(function (r, i) { return { r: r, i: i, k: tsKey(r.cells[st.col] ? r.cells[st.col].textContent : '') }; });
+  keyed.sort(function (a, b) {
+    if (a.k.e !== b.k.e) return a.k.e ? 1 : -1; if (a.k.e) return a.i - b.i;
+    var d; if (a.k.n != null && b.k.n != null) d = a.k.n - b.k.n; else if (a.k.n != null) d = -1; else if (b.k.n != null) d = 1; else d = String(a.k.s).localeCompare(String(b.k.s), 'de', { numeric: true, sensitivity: 'base' });
+    return (d * st.dir) || (a.i - b.i);
+  });
+  var ob = tsTimers.get(table); if (ob) ob.disconnect();
+  keyed.forEach(function (x) { tb.appendChild(x.r); });
+  if (ob) ob.observe(tb, { childList: true });
+  [].forEach.call(table.querySelectorAll('thead th'), function (th, i) { if (!th.hasAttribute('onclick')) th.removeAttribute('data-sd'); if (i === st.col) th.setAttribute('data-sd', String(st.dir)); });
+}
+document.addEventListener('click', function (ev) {
+  var th = ev.target.closest && ev.target.closest('table.pt thead th');
+  if (!th || th.hasAttribute('onclick') || ev.target.closest('button, a, input, select')) return;
+  var table = th.closest('table'), st = tsState.get(table), col = th.cellIndex;
+  if (st && st.col === col) st.dir = -st.dir; else tsState.set(table, st = { col: col, dir: 1 });
+  var tb = table.tBodies[0];
+  if (tb && !tsTimers.get(table)) { var tm = null, ob = new MutationObserver(function () { clearTimeout(tm); tm = setTimeout(function () { tsSort(table); }, 0); }); tsTimers.set(table, ob); ob.observe(tb, { childList: true }); }
+  tsSort(table);
+});
 /* Alle Rechnungen auf Auffälligkeiten prüfen */
 function invCheck() {
   var box = document.getElementById('ichk-body'); box.innerHTML = '';
