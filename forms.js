@@ -1,5 +1,5 @@
 /* Gemeinsame Bausteine der Webformulare: Unterschrift, PDF, Versand */
-var PRAXIS_F = { name: 'Kreuzberg Ästhetik', arzt: 'Manuel Fella', mail: 'manuel.fella@kreuzberg-aesthetik.de', strasse: 'Neuenburger Str. 24', ort: '10969 Berlin' };
+var PRAXIS_F = { name: 'Kreuzberg Ästhetik', arzt: 'Manuel Fella', mail: 'info@kreuzberg-aesthetik.de', strasse: 'Neuenburger Str. 24', ort: '10969 Berlin' };
 /* Adresse des Empfangsskripts auf dem Webspace der Praxis (siehe formular-empfang.php und LIESMICH.txt).
    Solange sie leer ist, bekommt der Patient das PDF zum Teilen oder Herunterladen. */
 var ENDPOINT = '';
@@ -138,10 +138,14 @@ async function deliver(typ, label, who, data, pdfBytes, hp) {
     var fd = new FormData();
     fd.append('typ', typ); fd.append('name', who); fd.append('website', hp || ''); fd.append('pdf', blob, fname);
     fd.append('daten', new Blob([JSON.stringify(data)], { type: 'application/json' }), fname.replace(/\.pdf$/, '.json'));
-    var r = await fetch(ENDPOINT, { method: 'POST', body: fd });
-    var j = null; try { j = await r.json(); } catch (x) {}
-    if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || ('Fehler ' + r.status));
-    return { sent: true, blob: blob, fname: fname, who: who };
+    /* Klappt der Empfang nicht (Seite nicht erreichbar, Fehler), geht es mit dem E-Mail-Weg weiter */
+    try {
+      var r = await fetch(ENDPOINT, { method: 'POST', body: fd });
+      var j = null; try { j = await r.json(); } catch (x) {}
+      if (r.ok && j && j.ok) return { sent: true, blob: blob, fname: fname, who: who };
+      console.warn('Formularempfang:', (j && j.error) || ('Fehler ' + r.status));
+    } catch (x) { console.warn('Formularempfang nicht erreichbar', x); }
+    return { sent: false, blob: blob, fname: fname, who: who };
   }
   return { sent: false, blob: blob, fname: fname, who: who };
 }
