@@ -1864,7 +1864,6 @@ function renderPatients() {
     var sxi = sexIcon(p); if (sxi) c1.appendChild(sxi);
     var mks = mk('span', 'pt-marks');
     flagPills(p).forEach(function (x) { mks.appendChild(x); });
-    if (hasWarn(p)) mks.appendChild(warnIcon(p));
     if (mks.childNodes.length) c1.appendChild(mks);
     if (p.phone) { var l1 = mk('div', 'pl'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); c1.appendChild(l1); }
     if (p.email) { var l2 = mk('div', 'pl'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); c1.appendChild(l2); }
