@@ -879,7 +879,7 @@ function kaStart() {
         </div>
         <div id="zl-arts" class="za-seg"></div>
       </div>
-      <div id="zl-sum" style="display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;"></div>
+      <div id="zl-sum" style="display:none;"></div>
       <div class="ak-h" id="zl-open-h">Offene Posten</div>
       <div id="zl-open"></div>
       <div class="ak-h">Einnahmen</div>
@@ -4281,7 +4281,7 @@ function renderZahlungen() {
   var sumIn = 0, byArt = {};
   pays.forEach(function (p) { sumIn += p.amount; byArt[p.art] = (byArt[p.art] || 0) + p.amount; });
   var sm = document.getElementById('zl-sum'); sm.innerHTML = '';
-  sm.appendChild(statBox('Einnahmen', eur(sumIn)));
+
   /* Zahlart-Auswahl: jede Art ist direkt antippbar und filtert die Tabelle */
   var zs = document.getElementById('zl-arts'); zs.innerHTML = '';
   var allSum = {}; allP.forEach(function (p) { allSum[p.art] = (allSum[p.art] || 0) + p.amount; });
@@ -4293,7 +4293,7 @@ function renderZahlungen() {
     b.onclick = function () { zArt = ((zArt || '') === key) ? '' : key; renderZahlungen(); }; zs.appendChild(b);
   };
   segBtn('', null, 'Alle', tot);
-  Object.keys(allSum).sort().forEach(function (k) { segBtn(k, ZA_COL[k] || '#94a3b8', k, allSum[k]); });
+  ['Bar', 'Karte', 'Überweisung', 'PayPal'].concat(Object.keys(allSum).filter(function (k) { return ['Bar', 'Karte', 'Überweisung', 'PayPal'].indexOf(k) < 0; }).sort()).forEach(function (k) { segBtn(k, ZA_COL[k] || '#94a3b8', k, allSum[k] || 0); });
   tin.innerHTML = '';
   pays.forEach(function (p) {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
