@@ -779,6 +779,8 @@ function kaStart() {
         <div class="row-actions">
           <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('pimp-file').click()">Import</button>
           <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('form-file').click()">Formulare einlesen</button>
+          <input type="file" id="form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)">
           <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')">+ Patient</button>
         </div>
       </div>
@@ -919,9 +921,9 @@ function kaStart() {
       <div class="ak-h">So kommen ausgefüllte Formulare in die App</div>
       <div style="font-size:14px; color:#334155;">
         <p style="margin-bottom:6px;">1. Das ausgefüllte PDF kommt per E-Mail an (sobald der Empfang auf deiner Website eingerichtet ist, siehe LIESMICH) oder der Patient schickt das PDF selbst.</p>
-        <p style="margin-bottom:6px;">2. Speichere den Anhang (das PDF genügt, die Daten stecken darin) und wähle unter Patienten den Knopf <b>Import</b>.</p>
+        <p style="margin-bottom:6px;">2. Speichere den Anhang (das PDF genügt, die Daten stecken darin) und wähle unter Patienten den Knopf <b>Formulare einlesen</b>.</p>
         <p style="margin-bottom:6px;">3. Die Anmeldung legt den Patienten an oder ergänzt ihn. Die Terminerinnerung trägt E-Mail und Einwilligung ein.</p>
-        <p><b>Anamnese ohne Namen:</b> Der Bogen läuft nur über einen persönlichen Code (Link mit <b>?c=Code</b>). Der Link mit dem richtigen Code wird in Nachrichten mit dem Platzhalter {LinkAnamnese} automatisch für den jeweiligen Patienten eingesetzt. Beim Import ordnet die App die Anamnese über den Code zu, füllt Allergien, Medikation und Diagnosen und hängt das PDF an die Akte. Die Unterschrift kommt vor Ort auf das PDF.</p>
+        <p><b>Anamnese ohne Namen:</b> Der Bogen läuft nur über einen persönlichen Code (Link mit <b>?c=Code</b>). Der Link mit dem richtigen Code wird in Nachrichten mit dem Platzhalter {LinkAnamnese} automatisch für den jeweiligen Patienten eingesetzt (oder über die Schaltfläche „Anamnese senden“ in der Akte). Schicke ihn erst, wenn die Anmeldung da ist. Beim Einlesen ordnet die App die Anamnese über den Code zu (bei einem neuen Code legt sie auf Wunsch einen neuen Patienten an oder ordnet den Code einem vorhandenen zu), füllt Allergien, Medikation und Diagnosen und hängt das PDF an die Akte. Die Unterschrift kommt vor Ort auf das PDF.</p>
       </div>
     </div>
   </div>
@@ -4436,7 +4438,7 @@ var NV_STD = [
   { name: 'Befund (E-Mail)', betreff: 'Dein Befund', text: '{AnredeInformell},\n\nAnbei findest Du Deinen Befund.\n\nAlles Liebe,\nManuel von Kreuzberg Ästhetik' },
   { name: 'Anmeldebogen SMS', betreff: '', text: '{AnredeInformell},\nich würde mich freuen, wenn Du vor Deinem Termin das Formular ausfüllen könntest: {LinkAnmeldung}\nLiebe Grüße,\n\nManuel von Kreuzberg Ästhetik' },
   { name: 'Anmeldebogen Email', betreff: 'Dein Termin bei Kreuzberg Ästhetik', text: '{AnredeInformell},\n\nZeit ist kostbar!\n\nDeshalb möchte ich davon so viel wie möglich mit Dir und Deinen Wünschen verbringen anstatt mich mit Papierkram aufzuhalten.\n\nIch würde mich freuen, wenn Du vor Deinem Termin am {NaechsterTermin} den Anmeldebogen ausfüllen könntest:\n{LinkAnmeldung}\n\nIch freue mich auf Dich,\nManuel - Kreuzberg Ästhetik\n\n______________________________\n\nDear {Vorname},\n\nTime is precious!\n\nThat\u2019s why I want to spend as much of it as possible with you and your wishes \u2013 not on paperwork.\n\nI\u2019d really appreciate it if you could fill out the form before your appointment:\n{LinkAnmeldung}\n\nJust drop by \u2013 I\u2019m looking forward to seeing you!\nManuel - Kreuzberg Ästhetik' },
-  { name: 'Online-Formulare Anmeldung und Anamnese', betreff: 'Bitte vor Deinem Termin ausfüllen', text: '{AnredeInformell},\n\nbitte fülle vor Deinem Termin am {NaechsterTermin} diese beiden Formulare aus:\n\n1. Patientenanmeldung: {LinkAnmeldung}\n2. Anamnesebogen: {LinkAnamnese}\n\nDas geht bequem am Handy und dauert nur wenige Minuten.\n\nIch freue mich auf Dich,\nManuel - Kreuzberg Ästhetik' },
+  { name: 'Online-Formulare Anmeldung und Terminerinnerung', betreff: 'Bitte vor Deinem Termin ausfüllen', text: '{AnredeInformell},\n\nbitte fülle vor Deinem Termin am {NaechsterTermin} diese Formulare aus:\n\n1. Patientenanmeldung: {LinkAnmeldung}\n2. Terminerinnerung (freiwillig): {LinkErinnerung}\n\nDas geht bequem am Handy und dauert nur wenige Minuten. Den Anamnesebogen schicke ich Dir danach separat.\n\nIch freue mich auf Dich,\nManuel - Kreuzberg Ästhetik' },
   { name: 'Anamnesebogen und Aufklärungsbogen', betreff: 'Anamnesebogen und Aufklärungsbogen', text: '{AnredeInformell},\n\nim Anhang findest Du einen Anamnesebogen, den ich Dich bitten würde auszufüllen.\n\nAußerdem findest Du einen Aufklärungsbogen, diesen einfach durchlesen. Unterschreiben musst Du ihn noch nicht, da ich noch etwas ergänzen werde.\n\nLiebe Grüße\nManuel von Kreuzberg Ästhetik' },
   { name: 'Anamnesebogen und 2+ Aufklärungsbögen', betreff: 'Anamnesebogen und Aufklärungsbögen', text: '{AnredeInformell},\n\nim Anhang findest Du einen Anamnesebogen, den ich Dich bitten würde auszufüllen und zu unterschreiben.\n\nAußerdem findest Du Aufklärungsbögen, diese einfach durchlesen.\n\nLiebe Grüße\nManuel von Kreuzberg Ästhetik\n\n______________________________\n\n{AnredeEnglisch},\n\nAttached you will find a medical history form, which I would ask you to fill out and sign.\n\nYou will also find information and consent forms, please just read through them.\n\nBest regards,\nManuel from Kreuzberg Ästhetik' }
 ];
@@ -5071,7 +5073,18 @@ async function formularImport(entries) {
     var p, created = false;
     if (d.typ === 'anamnese') {
       p = patients.filter(function (x) { return x.code && x.code === q.code; })[0];
-      if (!p) { out.push('Übersprungen: Anamnese mit Code ' + q.code + ' (kein Patient mit diesem Code)'); continue; }
+      if (!p) {
+        if (confirm('Der Code ' + q.code + ' ist noch keinem Patienten zugeordnet.\n\nOK = neuen Patienten anlegen\nAbbrechen = einem vorhandenen Patienten zuordnen')) {
+          p = { anrede: '', vorname: 'Neuer Patient', nachname: q.code, dob: '', phone: '', email: '', adresse: '', allergien: '', notizen: '', medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: today, code: q.code };
+          patients.push(p); ensurePatients(); created = true;
+        } else {
+          var nmq = (prompt('Name des vorhandenen Patienten (Teil des Namens genügt):') || '').trim().toLowerCase();
+          var hit = nmq ? patients.filter(function (x) { return nameKey(x).toLowerCase().indexOf(nmq) >= 0; }) : [];
+          if (hit.length !== 1) { out.push('Übersprungen: Code ' + q.code + (hit.length ? ' (mehrere Treffer, bitte genauer eingeben)' : ' (kein Patient gefunden)')); continue; }
+          p = hit[0]; if (p.code && !confirm('Dieser Patient hat schon den Code ' + p.code + '. Durch ' + q.code + ' ersetzen?')) { out.push('Übersprungen: Code ' + q.code); continue; }
+          p.code = q.code;
+        }
+      }
     } else p = patients.filter(function (x) { return nameKey(x).toLowerCase() === nm && (!q.dob || !x.dob || fIsDob(x.dob, q.dob)); })[0];
     if (!p) {
       if (d.typ !== 'anmeldung' && !confirm('Für „' + q.vorname + ' ' + q.nachname + '“ gibt es noch keinen Patienten. Jetzt anlegen?')) { out.push('Übersprungen: ' + q.vorname + ' ' + q.nachname); continue; }

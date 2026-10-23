@@ -25,7 +25,7 @@ Sicherung
 Mit Passwort sind Daten und Dateien verschlüsselt (AES-256). Ohne das Passwort lässt sich die Sicherung nicht öffnen.
 
 Webformulare (Patientenanmeldung und Anamnese)
-Dateien: anmeldung.html, anamnese.html (nur mit ?c=Code, ohne Namen), erinnerung.html, forms.css, forms.js (zusammen mit icon-192.png und pdf-lib.min.js im selben Ordner).
+Dateien: anmeldung.html, anamnese.html (ohne Namen, nur mit ?c=Code), erinnerung.html, forms.css, forms.js (zusammen mit icon-192.png und pdf-lib.min.js im selben Ordner).
 Die Links stehen in der App unter Praxis, Webformulare und lassen sich in Nachrichtenvorlagen mit {LinkAnmeldung} und {LinkAnamnese} einsetzen.
 Der Patient füllt das Formular am Handy aus und unterschreibt mit dem Finger. Das PDF entsteht im Browser des Patienten.
 Das PDF geht direkt an den Empfang der Praxis. Klappt das nicht, sieht der Patient eine Fehlermeldung und kann es erneut versuchen.
