@@ -3672,9 +3672,16 @@ function tileSave(key) {
   curP[key] = v; if (key === 'notizen' && changed && v) logAdd('notiz', v);
   tileEdit = ''; persist(); renderHead(); renderVerlauf(); renderPatients();
 }
+/* Akademische Titel im Namen (z. B. „Alexander Dip. Ing“) gehören nicht in die Namensleiste, sondern als Notiz in die Akte */
+var TITEL_RE = /^(Prof\.?|Dr\.?|med\.?|dent\.?|rer\.?|nat\.?|phil\.?|Dipl\.?(-\w+\.?)?|Dip\.?|Ing\.?|Mag\.?|MSc|BSc|M\.Sc\.|B\.Sc\.)$/i;
+function splitTitel(p) {
+  var ti = [], nm = (String(p.vorname || '') + ' ' + String(p.nachname || '')).split(/\s+/).filter(function (w) { if (w && TITEL_RE.test(w)) { ti.push(w); return false; } return !!w; });
+  return { name: nm.join(' ') || nameKey(p), titel: ti.join(' ') };
+}
 function renderHead() {
   var p = curP, box = document.getElementById('a-head'), ttl = document.getElementById('a-title'); box.innerHTML = ''; ttl.innerHTML = '';
-  var pidn = mk('span', 'a-pid', '#' + patNr(p)); pidn.title = 'Nummer ändern'; pidn.style.cursor = 'pointer'; pidn.onclick = function () { changePatNr(p); }; ttl.appendChild(pidn); ttl.appendChild(document.createTextNode(p.vorname + ' ' + p.nachname));
+  var pidn = mk('span', 'a-pid', '#' + patNr(p)); pidn.title = 'Nummer ändern'; pidn.style.cursor = 'pointer'; pidn.onclick = function () { changePatNr(p); }; ttl.appendChild(pidn); var tn = splitTitel(p); ttl.appendChild(document.createTextNode(tn.name));
+  if (tn.titel && String(p.notizen || '').indexOf('Titel:') < 0) { p.notizen = (p.notizen ? p.notizen + '\n' : '') + 'Titel: ' + tn.titel; persist(); }
   var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (sx) { var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; ttl.appendChild(sp); }
   renderFlags();
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
