@@ -14,26 +14,12 @@
     <h1>Anamnese</h1>
     <div class="intro"><p>Bitte beantworte die folgenden Fragen zur gesundheitlichen Vorgeschichte. Alle Fragen sind mit <b>Ja</b> oder <b>Nein</b> zu beantworten. Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p></div>
 
-    <div class="card">
-      <div class="grid2">
-        <div><label class="l">Vorname <span class="req">*</span></label><input type="text" id="vorname" autocomplete="given-name"></div>
-        <div><label class="l">Nachname <span class="req">*</span></label><input type="text" id="nachname" autocomplete="family-name"></div>
-      </div>
-      <label class="l">Geburtsdatum <span class="req">*</span></label>
-      <div class="grid3" id="g-dob">
-        <input type="text" id="dob-t" inputmode="numeric" maxlength="2" placeholder="Tag" aria-label="Tag" autocomplete="bday-day">
-        <select id="dob-m" aria-label="Monat" autocomplete="bday-month"><option value="">Monat</option><option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option><option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">August</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option></select>
-        <input type="text" id="dob-j" inputmode="numeric" maxlength="4" placeholder="Jahr" aria-label="Jahr" autocomplete="bday-year">
-      </div>
-    </div>
+    <div class="card" id="codebox"></div>
 
     <div id="fragen"></div>
 
     <div class="card" style="margin-top:20px">
       <label class="chk" id="g-ok"><input type="checkbox" id="ok"><span>Die Fragen zu den Vorerkrankungen habe ich nach bestem Wissen und Gewissen beantwortet. <span style="color:#dc2626">*</span></span></label>
-      <label class="l" style="margin-top:14px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
-      <canvas id="sig" class="sigbox"></canvas>
-      <div class="sigbar"><span>Unterschrift der Patientin / des Patienten</span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
       <div id="datenschutz" style="margin-top:12px"></div>
     </div>
 
@@ -139,19 +125,19 @@ QS.forEach(function (q, qi) {
   u.refresh = refresh; u.vis = vis; u.card = card; ui.push(u); qbox.appendChild(card); refresh();
 });
 $('datenschutz').appendChild(datenschutzBlock());
-var sig = makeSig($('sig'));
-$('sig-clear').onclick = function () { sig.clear(); };
-$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); setTimeout(function () { ui.forEach(function (u) { u.items.forEach(function (t) { t.clear(); }); if (u.gate) u.gate.clear(); u.refresh(); }); sammel.clear(); applySammel(); }, 0); });
+var CODE = (new URLSearchParams(location.search).get('c') || '').toUpperCase().trim();
+if (!/^[A-Z2-9]{6}$/.test(CODE)) CODE = '';
+$('codebox').innerHTML = CODE
+  ? '<div class="l" style="margin-top:0">Dein persönlicher Code</div><div style="font-size:26px;font-weight:700;letter-spacing:4px">' + CODE + '</div><p style="margin:8px 0 0;color:#475569;font-size:14px">Wir fragen hier bewusst weder Namen noch Geburtsdatum ab. Deine Angaben werden nur über diesen Code Dir zugeordnet. Bitte trage auch in den Textfeldern keine Namen ein. Die Unterschrift leistest Du bei uns in der Praxis.</p>'
+  : '<div class="msg err" style="display:block;margin:0">Bitte öffne diesen Bogen über den persönlichen Link, den Du von der Praxis bekommen hast.</div>';
+if (!CODE) { $('go').disabled = true; }
+$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } setTimeout(function () { ui.forEach(function (u) { u.items.forEach(function (t) { t.clear(); }); if (u.gate) u.gate.clear(); u.refresh(); }); sammel.clear(); applySammel(); }, 0); });
 
 function val(id) { return $(id).value.trim(); }
 function collect() {
   document.querySelectorAll('.invalid').forEach(function (n) { n.classList.remove('invalid'); });
   document.querySelectorAll('.seg.err').forEach(function (n) { n.classList.remove('err'); });
-  var bad = [], d = { vorname: val('vorname'), nachname: val('nachname') };
-  if (!d.vorname) bad.push($('vorname')); if (!d.nachname) bad.push($('nachname'));
-  var t = val('dob-t'), m = $('dob-m').value, j = val('dob-j'), ok = /^\d{1,2}$/.test(t) && m && /^\d{4}$/.test(j);
-  if (ok) { var dt = new Date(+j, +m - 1, +t); ok = dt.getFullYear() === +j && dt.getMonth() === +m - 1 && dt.getDate() === +t && dt < new Date() && +j > 1900; }
-  if (!ok) bad.push($('g-dob')); else d.dob = pad2(+t) + '.' + m + '.' + j;
+  var bad = [], d = { code: CODE };
   if (sammel.get() === null) { sammel.mark(); bad.push(sammel.node); }
   d.q = QS.map(function (q, qi) {
     var u = ui[qi], off = u.sammelOff || (u.gate && u.gate.get() === false);
@@ -166,14 +152,12 @@ function collect() {
     return { n: q.n, t: q.t, intro: q.intro || '', hint: q.hint || '', followLabel: q.follow || '', items: items, follow: q.follow && any ? u.follow.querySelector('textarea').value.trim() : '', any: any };
   });
   if (!$('ok').checked) bad.push($('g-ok'));
-  if (sig.isEmpty()) bad.push($('sig'));
   return { d: d, bad: bad };
 }
 
 async function buildAnamnese(d, data) {
-  var who = d.nachname + ', ' + d.vorname + ' (geb. ' + d.dob + ')';
-  var P = await newPdf('Anamnese', who);
-  P.text('Patient/in: ' + d.vorname + ' ' + d.nachname + '      Geburtsdatum: ' + d.dob, { size: 10.5, bold: true, gap: 4 });
+  var P = await newPdf('Anamnese', 'Code ' + d.code);
+  P.text('Patientencode: ' + d.code, { size: 10.5, bold: true, gap: 4 });
   P.text('J = Ja | N = Nein', { size: 8.5, color: P.gray, gap: 6 });
   var xYn = P.W - P.M - 46;
   d.q.forEach(function (q) {
@@ -196,7 +180,10 @@ async function buildAnamnese(d, data) {
   var y0 = P.y; P.page.drawRectangle({ x: P.M, y: y0 - 10, width: 10, height: 10, borderColor: P.black, borderWidth: 1 });
   P.page.drawLine({ start: { x: P.M + 2, y: y0 - 8 }, end: { x: P.M + 8, y: y0 - 2 }, thickness: 1.4, color: P.black }); P.page.drawLine({ start: { x: P.M + 2, y: y0 - 2 }, end: { x: P.M + 8, y: y0 - 8 }, thickness: 1.4, color: P.black });
   P.text('Die Fragen zu den Vorerkrankungen habe ich nach bestem Wissen und Gewissen beantwortet.', { x: P.M + 18, size: 9.5, gap: 8 });
-  await P.sign(sig.png(), 'Unterschrift der Patientin / des Patienten', d.vorname + ' ' + d.nachname);
+  P.ensure(110); P.y -= 40;
+  P.page.drawLine({ start: { x: P.M, y: P.y }, end: { x: P.M + 220, y: P.y }, thickness: 0.7, color: P.black }); P.y -= 11;
+  P.page.drawText('Unterschrift der Patientin / des Patienten (in der Praxis)', { x: P.M, y: P.y, size: 8.5, font: P.f, color: P.gray }); P.y -= 12;
+  P.page.drawText('Datum: ____________________', { x: P.M, y: P.y, size: 8.5, font: P.f, color: P.gray }); P.y -= 12;
   return await P.finish(data);
 }
 
@@ -222,9 +209,9 @@ $('f').addEventListener('submit', async function (ev) {
   var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
   try {
     var d = r.d;
-    var data = { format: 'ka-formular', version: 1, typ: 'anamnese', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob }, antworten: d.q, zusammenfassung: summary(d) };
+    var data = { format: 'ka-formular', version: 1, typ: 'anamnese', erstellt: new Date().toISOString(), patient: { code: d.code }, antworten: d.q, zusammenfassung: summary(d) };
     var pdf = await buildAnamnese(d, data);
-    var res = await deliver('anamnese', 'Anamnese', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
+    var res = await deliver('anamnese', 'Anamnese', d.code, data, pdf, $('website').value);
     showDone(res, 'Anamnesebogen');
   } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
 });

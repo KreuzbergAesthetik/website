@@ -58,20 +58,10 @@
       <input type="text" id="notfall">
     </div>
 
-    <h2>Weitere Angaben</h2>
+    <h2>Noch eine Frage</h2>
     <div class="card" id="weitere"></div>
 
-    <h2>Terminerinnerungen</h2>
-    <div class="card">
-      <label class="l">Terminerinnerungen <span class="req">*</span></label>
-      <select id="erinnerung"><option value="">Bitte auswählen</option><option>SMS</option><option>E-Mail</option><option>Keine Erinnerung</option></select>
-      <label class="l" style="margin-top:16px">Ich erkläre mich mit der unten beschriebenen Verarbeitung meiner Daten, zum Zweck des Versands einer Terminerinnerung per SMS oder E-Mail, einverstanden. <span class="req">*</span></label>
-      <div class="radios" id="g-einw">
-        <label><input type="radio" name="einw" value="ja"> ja</label>
-        <label><input type="radio" name="einw" value="nein"> nein</label>
-      </div>
-      <div id="datenschutz"></div>
-    </div>
+    <div class="card"><div id="datenschutz"></div></div>
 
     <label class="l" style="margin-top:20px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
     <canvas id="sig" class="sigbox"></canvas>
@@ -87,20 +77,7 @@
 </div>
 <script src="forms.js"></script>
 <script>
-var weitere = $('weitere'), yn = {};
-function ynBlock(key, title, ask, followLabel) {
-  var wrap = el('div', { style: 'margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid #eef2f6;' });
-  wrap.appendChild(el('label', { class: 'l', html: ask + ' <span class="req">*</span>' }));
-  var follow = el('div', { class: 'follow', style: 'display:none' }), ta = el('input', { type: 'text', id: key + '-t', placeholder: followLabel });
-  follow.appendChild(ta);
-  var t = ynToggle(key, function (v) { follow.style.display = v ? 'block' : 'none'; });
-  yn[key] = t; wrap.appendChild(t.node); wrap.appendChild(follow); weitere.appendChild(wrap);
-}
-ynBlock('allergien', 'Allergien', 'Sind Allergien (<b>insbesondere Bienen-/Wespengift, Lidocain, Fisch, Krustentiere</b>) bekannt?', 'Welche?');
-ynBlock('vorbeh', 'Vorbehandlungen', 'Hattest Du bereits vorher ästhetische Behandlungen (<u>Injectables:</u> z.B <b>Botox, Hyaluron</b>)?', 'Welche und wann?');
-ynBlock('ops', 'Operationen', 'Hattest Du schon <b>Operationen</b> insbesondere im <u>Gesichtsbereich</u>?', 'Welche und wann?');
-weitere.appendChild(el('label', { class: 'l', text: 'Chronische Erkrankungen' })); weitere.appendChild(el('input', { type: 'text', id: 'chronisch' }));
-weitere.appendChild(el('label', { class: 'l', text: 'Medikamente' })); weitere.appendChild(el('input', { type: 'text', id: 'medikamente' }));
+var weitere = $('weitere');
 weitere.appendChild(el('label', { class: 'l', text: 'Wie bist Du auf die Praxis aufmerksam geworden?' }));
 var q = el('select', { id: 'quelle' }); ['Bitte auswählen (freiwillige Angabe)', 'Persönliche Empfehlung', 'Instagram', 'Google', 'Website', 'Sonstiges'].forEach(function (o, i) { var op = el('option', { text: o }); op.value = i ? o : ''; q.appendChild(op); }); weitere.appendChild(q);
 $('datenschutz').appendChild(datenschutzBlock());
@@ -125,13 +102,7 @@ function collect() {
   var ph = val('phone').replace(/[^\d+]/g, ''); if (ph.length < 6) bad.push($('phone')); else d.phone = ph.charAt(0) === '+' ? ph : '+49' + ph.replace(/^0+/, '');
   d.email = val('email'); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) bad.push($('email'));
   d.notfall = val('notfall');
-  d.fragen = {};
-  [['allergien', 'Allergien bekannt'], ['vorbeh', 'Frühere ästhetische Behandlungen'], ['ops', 'Operationen, insbesondere im Gesichtsbereich']].forEach(function (k) {
-    var v = yn[k[0]].get(); if (v === null) { yn[k[0]].mark(); bad.push(yn[k[0]].node); } else d.fragen[k[0]] = { frage: k[1], ja: v, text: v ? val(k[0] + '-t') : '' };
-  });
-  d.chronisch = val('chronisch'); d.medikamente = val('medikamente'); d.quelle = $('quelle').value;
-  d.erinnerung = $('erinnerung').value; if (!d.erinnerung) bad.push($('erinnerung'));
-  d.einwilligung = (document.querySelector('input[name=einw]:checked') || {}).value || ''; if (!d.einwilligung) bad.push($('g-einw'));
+  d.quelle = $('quelle').value;
   if (sig.isEmpty()) bad.push($('sig'));
   return { d: d, bad: bad };
 }
@@ -150,11 +121,7 @@ async function buildAnmeldung(d, data) {
   kv('Name', who); kv('Geschlecht', { Frau: 'weiblich', Herr: 'männlich', Divers: 'nicht binär' }[d.geschlecht]); kv('Geburtsdatum', d.dob);
   kv('Anschrift', d.strasse + ' ' + d.nr + '\n' + d.plz + ' ' + d.stadt); kv('Telefon', d.phone); kv('E-Mail', d.email); kv('Notfallkontakt', d.notfall);
   sec('Weitere Angaben');
-  Object.keys(d.fragen).forEach(function (k) { var f = d.fragen[k]; kv(f.frage, f.ja ? 'Ja' + (f.text ? ': ' + f.text : '') : 'Nein'); });
-  kv('Chronische Erkrankungen', d.chronisch); kv('Medikamente', d.medikamente); kv('Aufmerksam geworden durch', d.quelle);
-  sec('Terminerinnerungen');
-  kv('Gewünschte Erinnerung', d.erinnerung);
-  kv('Einwilligung', d.einwilligung === 'ja' ? 'Ja, ich bin mit der Verarbeitung meiner Daten zum Versand von Terminerinnerungen einverstanden.' : 'Nein');
+  kv('Aufmerksam geworden durch', d.quelle);
   P.y -= 6; P.text('Mit meiner Unterschrift bestätige ich die Richtigkeit meiner Angaben und habe die Datenschutzhinweise zur Kenntnis genommen.', { size: 9, italic: true, color: P.gray, gap: 8 });
   await P.sign(sig.png(), 'Unterschrift', who);
   return await P.finish(data);
@@ -167,7 +134,7 @@ $('f').addEventListener('submit', async function (ev) {
   var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
   try {
     var d = r.d;
-    var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: new Date().toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { fragen: d.fragen, chronisch: d.chronisch, medikamente: d.medikamente, quelle: d.quelle }, erinnerung: d.erinnerung, einwilligung: d.einwilligung };
+    var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: new Date().toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { quelle: d.quelle } };
     var pdf = await buildAnmeldung(d, data);
     var res = await deliver('anmeldung', 'Patientenanmeldung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
     showDone(res, 'Anmeldebogen');
