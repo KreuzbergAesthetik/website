@@ -436,16 +436,22 @@ body { overflow-x:clip; }
 .form-control:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(30,58,138,.18); }
 .foot-bar { border-top:1px solid var(--soft); }
 .btn { border-radius:10px; }
-.tm-box { padding:0 !important; overflow:hidden; max-width:480px; }
-.tm-head { display:flex; align-items:center; gap:10px; padding:16px 14px 14px 22px; border-left:6px solid var(--tmc,#94a3b8); background:color-mix(in srgb, var(--tmc,#94a3b8) 13%, #fff); }
-.tm-title { font-size:21px; font-weight:800; color:#0f172a; line-height:1.15; } .tm-sub { font-size:13.5px; color:#475569; margin-top:3px; min-height:18px; overflow-wrap:anywhere; }
-.tm-head .close-btn { background:rgba(255,255,255,.7); }
-.tm-body { padding:6px 18px 18px; max-height:calc(90vh - 80px); overflow-y:auto; }
-.tm-lbl { display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin:14px 0 6px; } .tm-lbl em { font-style:normal; text-transform:none; letter-spacing:0; font-weight:600; }
-.tm-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } .tm-chips:empty { display:none; }
-.tm-times { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
-.tm-durs { display:flex; gap:6px; margin-top:8px; } .tm-durs button { flex:1; padding:8px 0; border-radius:9px; background:#fff; border:1px solid #cbd5e1; font-size:13.5px; font-weight:600; color:#334155; cursor:pointer; font-family:inherit; } .tm-durs button.on { background:#0f172a; color:#fff; border-color:#0f172a; }
-.tm-color { margin-top:10px; font-size:13px; } .tm-color a { color:#1e3a8a; font-weight:600; text-decoration:none; } .tm-color input { width:100%; height:38px; border:none; padding:0; border-radius:8px; cursor:pointer; }
+.tm-box { padding:0 !important; overflow:hidden; max-width:440px; }
+.tm-head { display:flex; align-items:center; gap:10px; padding:12px 12px 10px 26px; border-bottom:1px solid #eef2f6; position:relative; }
+.tm-head::before { content:''; position:absolute; left:12px; top:12px; bottom:12px; width:5px; border-radius:3px; background:var(--tmc,#94a3b8); }
+.tm-title { font-size:18px; font-weight:800; color:#0f172a; line-height:1.15; } .tm-sub { font-size:12.5px; color:#64748b; margin-top:2px; min-height:16px; overflow-wrap:anywhere; }
+.tm-body { padding:10px 14px 14px; max-height:calc(90vh - 70px); overflow-y:auto; }
+.tm-tile { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:12px; padding:8px 10px 10px; margin-bottom:8px; }
+.tm-tile .form-control { min-height:38px; padding:7px 10px; background:#fff; }
+.tm-lbl { display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:0 0 5px; } .tm-lbl em { font-style:normal; text-transform:none; letter-spacing:0; font-weight:600; }
+.tm-dr { display:flex; gap:8px; align-items:center; } .tm-dr .form-control { flex:1; min-width:0; }
+.tm-sw { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#334155; cursor:pointer; flex:none; } .tm-sw input { display:none; }
+.tm-sw i { width:34px; height:20px; border-radius:10px; background:#cbd5e1; position:relative; transition:background .15s; } .tm-sw i::after { content:''; position:absolute; left:2px; top:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .15s; }
+.tm-sw input:checked + i { background:#0f172a; } .tm-sw input:checked + i::after { left:16px; }
+.tm-times { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:13px; color:#64748b; } .tm-times .form-control { flex:1; min-width:0; }
+.tm-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; } .tm-chips:empty { display:none; }
+.tm-color { margin:2px 2px 0; font-size:12.5px; } .tm-color a { color:#1e3a8a; font-weight:600; text-decoration:none; } .tm-color input { width:100%; height:34px; border:none; padding:0; border-radius:8px; cursor:pointer; }
+.tm-body .foot-bar { margin-top:10px; padding-top:12px; }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -1000,25 +1006,30 @@ function kaStart() {
       <button type="button" class="close-btn" onclick="closeTermin()">&times;</button>
     </div>
     <div class="tm-body">
-      <span class="tm-lbl">Patient</span>
-      <input type="text" id="t-patient" class="form-control" list="t-patient-list" placeholder="Name eingeben..." autocomplete="off">
-      <datalist id="t-patient-list"></datalist>
-      <span class="tm-lbl">Leistung</span>
-      <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off" oninput="terminKatColor()" onchange="tLeistAdd(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();tLeistAdd(this.value);}">
-      <div id="t-lchips" class="tm-chips"></div>
-      <datalist id="t-leistung-list"><option value="Botulinumtoxin"><option value="Hyaluronsäure"><option value="Beratungsgespräch"><option value="Kontrolle"></datalist>
-      <span class="tm-lbl">Datum und Zeit <em id="t-dlabel">(60min)</em></span>
-      <input type="date" id="t-datum" class="form-control" oninput="tmSub()">
-      <div class="tm-times">
-        <input type="time" id="t-zeit" step="900" class="form-control" onchange="shiftEnd(); tmSub()">
-        <input type="time" id="t-ende" step="900" class="form-control" onchange="updDur(); tmSub()">
+      <div class="tm-tile">
+        <span class="tm-lbl">Wann <em id="t-dlabel">(60 min)</em></span>
+        <div class="tm-dr"><input type="date" id="t-datum" class="form-control" oninput="tmSub()"><label class="tm-sw" title="Ganztägig"><input type="checkbox" id="t-ganztag" onchange="toggleGanztag()"><i></i><span>Ganztag</span></label></div>
+        <div class="tm-times">
+          <input type="time" id="t-zeit" step="900" class="form-control" onchange="shiftEnd(); tmSub()">
+          <span>bis</span>
+          <input type="time" id="t-ende" step="900" class="form-control" onchange="updDur(); tmSub()">
+        </div>
       </div>
-      <div class="tm-durs" id="tm-durs">
-        <button type="button" onclick="tmDur(30)">30</button><button type="button" onclick="tmDur(45)">45</button><button type="button" onclick="tmDur(60)">60</button><button type="button" onclick="tmDur(90)">90</button><button type="button" id="tm-ganz" onclick="tmGanz()">Ganztag</button>
+      <div class="tm-tile">
+        <span class="tm-lbl">Patient</span>
+        <input type="text" id="t-patient" class="form-control" list="t-patient-list" placeholder="Name eingeben..." autocomplete="off">
+        <datalist id="t-patient-list"></datalist>
       </div>
-      <input type="checkbox" id="t-ganztag" style="display:none;" onchange="toggleGanztag()">
-      <span class="tm-lbl">Notiz</span>
-      <textarea id="t-notiz" class="form-control" rows="3" placeholder="Notiz"></textarea>
+      <div class="tm-tile">
+        <span class="tm-lbl">Leistung</span>
+        <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off" oninput="terminKatColor()" onchange="tLeistAdd(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();tLeistAdd(this.value);}">
+        <div id="t-lchips" class="tm-chips"></div>
+        <datalist id="t-leistung-list"><option value="Botulinumtoxin"><option value="Hyaluronsäure"><option value="Beratungsgespräch"><option value="Kontrolle"></datalist>
+      </div>
+      <div class="tm-tile">
+        <span class="tm-lbl">Notiz</span>
+        <textarea id="t-notiz" class="form-control" rows="2" placeholder="Notiz"></textarea>
+      </div>
       <div class="tm-color"><a href="#" onclick="event.preventDefault(); document.getElementById('t-farbe').style.display = 'block'; this.style.display = 'none';">Farbe ändern</a><input type="color" id="t-farbe" value="#2f9e44" style="display:none;" oninput="tmSub()"></div>
       <div class="foot-bar">
         <button type="button" class="btn btn-cancel" onclick="closeTermin()">Abbrechen</button>
@@ -2045,12 +2056,7 @@ function tmSub() {
   if (g) parts.push('ganztägig'); else if (z) parts.push(z + (en ? ' – ' + en : '') + ' Uhr');
   if (tLeist.length) parts.push(tLeist.join(', '));
   document.getElementById('t-sub').textContent = parts.join(' · ');
-  [].forEach.call(document.querySelectorAll('#tm-durs button'), function (b) { b.classList.remove('on'); });
-  if (g) document.getElementById('tm-ganz').classList.add('on');
-  else [].forEach.call(document.querySelectorAll('#tm-durs button'), function (b) { if (b.textContent === String(tDur)) b.classList.add('on'); });
 }
-function tmDur(n) { document.getElementById('t-ganztag').checked = false; toggleGanztag(); tDur = n; shiftEnd(); tmSub(); }
-function tmGanz() { var c = document.getElementById('t-ganztag'); c.checked = !c.checked; toggleGanztag(); tmSub(); }
 function shiftEnd() {
   var z = document.getElementById('t-zeit').value;
   if (!z) return;
