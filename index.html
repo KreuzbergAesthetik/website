@@ -459,7 +459,8 @@ body { overflow-x:clip; }
 @media (max-width:520px) { .pt-marks { display:flex; margin:2px 0 0; } }
 .pt td .fl, .pt td .warn { height:18px; box-sizing:border-box; margin:4px 4px 0 0; vertical-align:middle; } .pt td .fl { line-height:18px; padding:0 7px; font-size:10.5px; }
 .pt td .fl-ico { padding:0 5px; } .pt td .warn { width:18px; margin-left:0; font-size:10.5px; }
-@media (max-width:520px) { #tab-patienten .hm-l { display:none; } #tab-patienten .hm-s { display:inline; } #tab-patienten .pt { min-width:0; } #tab-patienten .pt .pl a { overflow-wrap:anywhere; } .pt .pc-er { display:none; } .pt th[style*="width"] { width:auto !important; } .pt th, .pt td { padding-left:8px; padding-right:8px; } }
+@media (max-width:520px) { #tab-rechnungen .hm-l { display:none; } #tab-rechnungen .hm-s { display:inline; } #tab-rechnungen .pt { min-width:0; font-size:12.5px; } #tab-rechnungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-rechnungen .pt th, #tab-rechnungen .pt td { padding-left:4px; padding-right:4px; } #tab-rechnungen .pt .pn { font-size:12.5px; } .pt td.nw { white-space:nowrap; }
+  #tab-patienten .hm-l { display:none; } #tab-patienten .hm-s { display:inline; } #tab-patienten .pt { min-width:0; } #tab-patienten .pt .pl a { overflow-wrap:anywhere; } .pt .pc-er { display:none; } .pt th[style*="width"] { width:auto !important; } .pt th, .pt td { padding-left:8px; padding-right:8px; } }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -2927,8 +2928,8 @@ function renderInvoices() {
     var row = tb.insertRow();
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
-    c1.textContent = fmtD(i.date); c2.textContent = i.name; c3.textContent = eur(i.total);
-    var st = invState(i); c4.appendChild(mk('span', 'badge ' + st.cls, st.txt));
+    var fd = fmtD(i.date); c1.innerHTML = '<span class="hm-l">' + fd + '</span><span class="hm-s">' + fd.slice(0, 5) + '</span>'; c2.textContent = i.name; c3.textContent = eur(i.total); c3.className = 'nw'; c0.className = 'nw'; c4.className = 'nw';
+    var st = invState(i), bd = mk('span', 'badge ' + st.cls); bd.innerHTML = '<span class="hm-l">' + st.txt + '</span><span class="hm-s">' + (st.txt === 'Teilzahlung' ? 'Teil' : st.txt) + '</span>'; c4.appendChild(bd);
   });
 }
 
