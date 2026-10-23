@@ -464,6 +464,17 @@ body { overflow-x:clip; }
 .badge-gray { background:#e2e8f0; color:#475569; }
 .pt thead th:not([onclick]) { cursor:pointer; user-select:none; }
 .pt th[data-sd="1"]::after { content:' \25B2'; font-size:9px; } .pt th[data-sd="-1"]::after { content:' \25BC'; font-size:9px; }
+.open-box { display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#fff7ed; border:1px solid #fed7aa; border-left:6px solid #ea580c; border-radius:12px; padding:10px 14px; margin:0 0 12px; } .open-box.late { background:#fef2f2; border-color:#fecaca; border-left-color:#dc2626; }
+.open-box .ob-l { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#9a3412; } .open-box b { font-size:22px; color:#9a3412; } .open-box.late .ob-l, .open-box.late b { color:#991b1b; } .open-box .ob-t { font-size:13.5px; color:#475569; flex:1; min-width:180px; }
+.pt tr.t-open td { background:#fffaf5; } .pt tr.t-late td { background:#fef2f2; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
+.badge-red { background:#fee2e2; color:#991b1b; font-weight:700; }
+.ak-h-open { color:#9a3412; border-bottom-color:#fed7aa; }
+.hm-openp { background:#fffaf5 !important; border-left:4px solid #ea580c; } .hm-late { background:#fef2f2 !important; border-left:4px solid #dc2626; }
+.za-row { flex:1 1 100%; display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; background:#f8fafc; border:1px solid #eef2f6; border-radius:10px; padding:8px 12px; }
+.za-t { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; } .za { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:#334155; } .za i, .zart i { width:9px; height:9px; border-radius:50%; flex:none; } .za b { color:#0f172a; }
+.zart { display:inline-flex; align-items:center; gap:7px; }
+.row-actions .btn { white-space:nowrap; }
+@media (max-width:520px) { #tab-zahlungen .pt { min-width:0 !important; font-size:13px !important; } #tab-zahlungen .pt th, #tab-zahlungen .pt td { padding:8px 5px; } #tab-zahlungen .pt .pn { white-space:nowrap; font-size:13px; } #tab-rechnungen .card-header { flex-wrap:wrap; } }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -794,6 +805,7 @@ function kaStart() {
           <button type="button" class="btn btn-sm" onclick="openInvoice(null)">+ Rechnung</button>
         </div>
       </div>
+      <div id="inv-open"></div>
       <div class="scroll">
         <table class="pt" style="min-width:560px; font-size:14px;">
           <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th><th class="sort" onclick="invSortBy('status')">Status <span class="sarr" data-ik="status"></span></th></tr></thead>
@@ -858,7 +870,6 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Zahlungen</span>
-        <button type="button" class="btn btn-sm" onclick="openAusgabe(null)">+ Ausgabe</button>
       </div>
       <div class="cal-bar" style="margin-bottom:8px;">
         <div class="row-actions">
@@ -870,12 +881,10 @@ function kaStart() {
         </select>
       </div>
       <div id="zl-sum" style="display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;"></div>
+      <div class="ak-h" id="zl-open-h">Offene Posten</div>
+      <div id="zl-open"></div>
       <div class="ak-h">Einnahmen</div>
       <div class="scroll"><table class="pt" style="min-width:460px; font-size:14px;"><thead><tr><th>Datum</th><th>Patient</th><th>Rechnung</th><th>Art</th><th>Betrag</th></tr></thead><tbody id="zl-in"></tbody></table></div>
-      <div class="ak-h">Offene Rechnungen</div>
-      <div id="zl-open"></div>
-      <div class="ak-h">Ausgaben</div>
-      <div class="scroll"><table class="pt" style="min-width:460px; font-size:14px;"><thead><tr><th>Datum</th><th>Beschreibung</th><th>Kategorie</th><th>Betrag</th></tr></thead><tbody id="zl-out"></tbody></table></div>
     </div>
   </div>
 
@@ -2934,6 +2943,22 @@ function saveInvoice() {
   renderInvoices(); if (curP === p) { renderHead(); renderVerlauf(); }
   viewInvoice(inv.id);
 }
+/* Offene Posten: Summe, Anzahl und überfällige (nach Zahlungsziel) */
+function invDaysOld(i) { return Math.round((new Date(iso(new Date())) - new Date(i.date)) / 86400000); }
+function invLate(i) { return invDaysOld(i) > (parseInt(settings.zahlungsziel, 10) || 14); }
+function invOpenInfo() {
+  var l = invoices.filter(function (i) { return !invState(i).full; }), sum = 0, lateN = 0, lateSum = 0;
+  l.forEach(function (i) { var o = r2(i.total - paidSum(i)); sum += o; if (invLate(i)) { lateN++; lateSum += o; } });
+  return { list: l, sum: r2(sum), lateN: lateN, lateSum: r2(lateSum) };
+}
+function openBox() {
+  var o = invOpenInfo(); if (!o.list.length) return null;
+  var b = mk('div', 'open-box' + (o.lateN ? ' late' : '')), a = mk('div');
+  a.appendChild(mk('div', 'ob-l', 'Offene Posten')); a.appendChild(mk('b', '', eur(o.sum)));
+  b.appendChild(a);
+  var t = mk('div', 'ob-t', o.list.length + (o.list.length === 1 ? ' offene Rechnung' : ' offene Rechnungen') + (o.lateN ? ' · davon ' + o.lateN + ' überfällig (' + eur(o.lateSum) + ')' : ''));
+  b.appendChild(t); return b;
+}
 var invSort = { k: 'nr', dir: -1 };
 function invSortBy(k) { if (invSort.k === k) invSort.dir = -invSort.dir; else { invSort.k = k; invSort.dir = k === 'name' || k === 'status' ? 1 : -1; } renderInvoices(); }
 function invCmp(a, b) {
@@ -2950,12 +2975,13 @@ function renderInvoices() {
   tb.innerHTML = '';
   [].forEach.call(document.querySelectorAll('[data-ik]'), function (e) { e.innerHTML = e.getAttribute('data-ik') === invSort.k ? (invSort.dir > 0 ? '&#9650;' : '&#9660;') : ''; });
   document.getElementById('inv-empty').style.display = invoices.length ? 'none' : 'block';
-  invoices.slice().sort(invCmp).forEach(function (i) {
-    var row = tb.insertRow();
+  var ob = document.getElementById('inv-open'); if (ob) { ob.innerHTML = ''; var bx = openBox(); if (bx) ob.appendChild(bx); }
+  invoices.slice().sort(function (a, b) { var oa = invState(a).full ? 1 : 0, ob2 = invState(b).full ? 1 : 0; return (oa - ob2) || invCmp(a, b); }).forEach(function (i) {
+    var row = tb.insertRow(); if (!invState(i).full) row.className = invLate(i) ? 't-late' : 't-open';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
     var fd = fmtD(i.date); c1.innerHTML = '<span class="hm-l">' + fd + '</span><span class="hm-s">' + fd.slice(0, 5) + '</span>'; c2.textContent = i.name; c3.textContent = eur(i.total); c3.className = 'nw'; c0.className = 'nw'; c4.className = 'nw';
-    var st = invState(i), bd = mk('span', 'badge ' + st.cls); bd.innerHTML = '<span class="hm-l">' + st.txt + '</span><span class="hm-s">' + (st.txt === 'Teilzahlung' ? 'Teil' : st.txt) + '</span>'; c4.appendChild(bd);
+    var st = invState(i), late = !st.full && invLate(i), bd = mk('span', 'badge ' + (late ? 'badge-red' : st.cls)); bd.innerHTML = '<span class="hm-l">' + (late ? 'Überfällig' : st.txt) + '</span><span class="hm-s">' + (late ? 'Überf.' : st.txt === 'Teilzahlung' ? 'Teil' : st.txt) + '</span>'; c4.appendChild(bd);
   });
 }
 /* ===== Alle Tabellen: Klick auf die Spaltenüberschrift sortiert (Zahlen, Beträge, Daten, Monate, Text) ===== */
@@ -4247,41 +4273,38 @@ function statBox(label, val, color) {
   var d = mk('div', 'hm-stat'); d.style.minWidth = '120px'; var l = mk('span', '', label); l.style.cssText = 'font-size:12px; color:#64748b;'; d.appendChild(l);
   var b = mk('b', '', val); if (color) b.style.color = color; d.appendChild(b); return d;
 }
+var ZA_COL = { Karte: '#2563eb', Bar: '#16a34a', 'Überweisung': '#7c3aed', PayPal: '#0ea5e9', Gutschein: '#db2777' };
 function renderZahlungen() {
   var tin = document.getElementById('zl-in'); if (!tin) return;
   document.getElementById('zl-month').value = zMonth; document.getElementById('zl-art').value = zArt;
   var inM = function (d) { return !zMonth || String(d).slice(0, 7) === zMonth; };
   var pays = allPayments().filter(function (p) { return inM(p.date) && (!zArt || p.art === zArt); }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
-  var outs = allAusgaben().filter(function (a) { return inM(a.date); }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
-  var sumIn = 0, sumOut = 0, byArt = {};
+  var sumIn = 0, byArt = {};
   pays.forEach(function (p) { sumIn += p.amount; byArt[p.art] = (byArt[p.art] || 0) + p.amount; });
-  outs.forEach(function (a) { sumOut += a.betrag; });
   var sm = document.getElementById('zl-sum'); sm.innerHTML = '';
-  sm.appendChild(statBox('Einnahmen', eur(sumIn))); sm.appendChild(statBox('Ausgaben', eur(sumOut))); sm.appendChild(statBox('Saldo', eur(sumIn - sumOut), sumIn - sumOut < 0 ? '#b91c1c' : ''));
-  Object.keys(byArt).forEach(function (k) { var c = mk('span', 'badge badge-amber', k + ': ' + eur(byArt[k])); c.style.alignSelf = 'center'; sm.appendChild(c); });
+  sm.appendChild(statBox('Einnahmen', eur(sumIn)));
+  if (Object.keys(byArt).length) {
+    var za = mk('div', 'za-row'); za.appendChild(mk('span', 'za-t', 'Nach Zahlart'));
+    Object.keys(byArt).sort().forEach(function (k) { var it = mk('span', 'za'), dot = mk('i'); dot.style.background = ZA_COL[k] || '#94a3b8'; it.appendChild(dot); it.appendChild(document.createTextNode(k + ' ')); it.appendChild(mk('b', '', eur(byArt[k]))); za.appendChild(it); });
+    sm.appendChild(za);
+  }
   tin.innerHTML = '';
   pays.forEach(function (p) {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
     c0.textContent = fmtD(p.date); c1.textContent = p.inv.name;
     var b = mk('button', 'pn', p.inv.nr); b.type = 'button'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
-    c3.textContent = p.art; c4.textContent = eur(p.amount);
+    var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar); c4.textContent = eur(p.amount);
   });
   if (!pays.length) { var er = tin.insertRow(), ec = er.insertCell(); ec.colSpan = 5; ec.textContent = 'Keine Zahlungen im Zeitraum'; ec.style.color = '#94a3b8'; }
   var op = document.getElementById('zl-open'); op.innerHTML = '';
-  var open = invoices.filter(function (i) { return !invState(i).full; }).sort(function (a, b) { return a.date.localeCompare(b.date); });
+  var oi = invOpenInfo(), open = oi.list.sort(function (a, b) { return a.date.localeCompare(b.date); });
+  var oh = document.getElementById('zl-open-h'); oh.textContent = open.length ? 'Offene Posten (' + open.length + ') · ' + eur(oi.sum) : 'Offene Posten'; oh.className = 'ak-h' + (open.length ? ' ak-h-open' : '');
   open.forEach(function (i) {
     var b = mk('button', 'btn btn-secondary btn-sm', 'Zahlung'); b.type = 'button'; b.onclick = function (ev) { ev.stopPropagation(); viewInvId = i.id; openPay(); };
-    op.appendChild(hmRow(fmtD(i.date), i.name, i.nr + ' · offen ' + eur(i.total - paidSum(i)), function () { viewInvoice(i.id); }, b));
+    var late = invLate(i), d = invDaysOld(i), row = hmRow(fmtD(i.date), i.name, i.nr + ' · offen ' + eur(i.total - paidSum(i)) + (late ? ' · seit ' + d + ' Tagen überfällig' : ''), function () { viewInvoice(i.id); }, b);
+    row.classList.add(late ? 'hm-late' : 'hm-openp'); op.appendChild(row);
   });
-  if (!open.length) op.appendChild(mk('div', 'hm-empty', 'Keine offenen Rechnungen.'));
-  var tout = document.getElementById('zl-out'); tout.innerHTML = '';
-  outs.forEach(function (a) {
-    var row = tout.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
-    c0.textContent = a.date ? fmtD(a.date) : '-';
-    if (a.auto) c1.textContent = a.text; else { var b = mk('button', 'pn', a.text || '(ohne Beschreibung)'); b.type = 'button'; b.onclick = function () { openAusgabe(a.id); }; c1.appendChild(b); }
-    c2.textContent = a.kat; c3.textContent = eur(a.betrag);
-  });
-  if (!outs.length) { var er2 = tout.insertRow(), ec2 = er2.insertCell(); ec2.colSpan = 4; ec2.textContent = 'Keine Ausgaben im Zeitraum'; ec2.style.color = '#94a3b8'; }
+  if (!open.length) op.appendChild(mk('div', 'hm-empty', 'Keine offenen Rechnungen. Alles bezahlt.'));
 }
 function openAusgabe(id) {
   agCur = id ? ausgaben.filter(function (a) { return a.id === id; })[0] : null;
