@@ -455,6 +455,11 @@ body { overflow-x:clip; }
 .hc.hc-empty { padding-top:12px; padding-bottom:12px; } .hc.hc-empty .card-header { margin-bottom:2px; } .hc.hc-empty .hm-sec { display:none; } .hc.hc-empty .hm-empty { padding:2px 0 0; font-size:13px; }
 .hm-s { display:none; }
 @media (max-width:520px) { #hm-fin table th, #hm-fin table td { padding:8px 6px; font-size:12.5px; } #hm-fin .hm-l { display:none; } #hm-fin .hm-s { display:inline; } }
+.pt-marks { display:inline-flex; align-items:center; white-space:nowrap; margin-left:6px; }
+@media (max-width:520px) { .pt-marks { display:flex; margin:2px 0 0; } }
+.pt td .fl, .pt td .warn { height:18px; box-sizing:border-box; margin:4px 4px 0 0; vertical-align:middle; } .pt td .fl { line-height:18px; padding:0 7px; font-size:10.5px; }
+.pt td .fl-ico { padding:0 5px; } .pt td .warn { width:18px; margin-left:0; font-size:10.5px; }
+@media (max-width:520px) { #tab-patienten .hm-l { display:none; } #tab-patienten .hm-s { display:inline; } #tab-patienten .pt { min-width:0; } #tab-patienten .pt .pl a { overflow-wrap:anywhere; } .pt .pc-er { display:none; } .pt th[style*="width"] { width:auto !important; } .pt th, .pt td { padding-left:8px; padding-right:8px; } }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -764,8 +769,8 @@ function kaStart() {
           <thead><tr>
             <th class="sort" style="width:64px;" onclick="sortBy('id')">ID <span class="sarr" data-k="id"></span></th>
             <th class="sort" onclick="sortBy('name')">Name <span class="sarr" data-k="name"></span></th>
-            <th class="sort" style="width:170px;" onclick="sortBy('dob')">Geburtsdatum <span class="sarr" data-k="dob"></span></th>
-            <th class="sort" style="width:190px;" onclick="sortBy('erstellt')">Erstellt am <span class="sarr" data-k="erstellt"></span></th>
+            <th class="sort" style="width:170px;" onclick="sortBy('dob')"><span class="hm-l">Geburtsdatum</span><span class="hm-s">Geboren</span> <span class="sarr" data-k="dob"></span></th>
+            <th class="sort pc-er" style="width:190px;" onclick="sortBy('erstellt')">Erstellt am <span class="sarr" data-k="erstellt"></span></th>
           </tr></thead>
           <tbody id="patient-table"></tbody>
         </table>
@@ -1857,12 +1862,14 @@ function renderPatients() {
     var full = p.vorname + ' ' + String(p.nachname).toUpperCase() + (age !== '' ? ' (' + age + ')' : '');
     var nb = mk('button', 'pn', full); nb.type = 'button'; nb.onclick = function () { viewAkte(p); }; c1.appendChild(nb);
     var sxi = sexIcon(p); if (sxi) c1.appendChild(sxi);
-    flagPills(p).forEach(function (x) { c1.appendChild(x); });
-    if (hasWarn(p)) c1.appendChild(warnIcon(p));
+    var mks = mk('span', 'pt-marks');
+    flagPills(p).forEach(function (x) { mks.appendChild(x); });
+    if (hasWarn(p)) mks.appendChild(warnIcon(p));
+    if (mks.childNodes.length) c1.appendChild(mks);
     if (p.phone) { var l1 = mk('div', 'pl'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); c1.appendChild(l1); }
     if (p.email) { var l2 = mk('div', 'pl'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); c1.appendChild(l2); }
     c2.textContent = p.dob ? p.dob : '-';
-    c3.textContent = fmtDT(p.erstellt);
+    c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
   });
   if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
 }
