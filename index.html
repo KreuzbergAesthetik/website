@@ -787,7 +787,7 @@ function kaStart() {
         <span class="card-title">Rechnungen</span>
         <div class="row-actions">
           <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('rimp-file').click()">Import</button>
-          <input type="file" id="rimp-file" accept="application/pdf,.pdf" multiple style="display:none" onchange="rechnungenImport(this)">
+          <input type="file" id="rimp-file" accept="application/pdf,.pdf,application/zip,.zip" multiple style="display:none" onchange="rechnungenImport(this)">
           <button type="button" class="btn btn-sm" onclick="openInvoice(null)">+ Rechnung</button>
         </div>
       </div>
@@ -5012,8 +5012,16 @@ function riFind(name) {
   return patients.filter(function (p) { return strip(p) === n; })[0] || patients.filter(function (p) { var a = strip(p); return n && (a.indexOf(n) >= 0 || n.indexOf(a) >= 0); })[0] || null;
 }
 async function rechnungenImport(inp) {
-  var fl = [].slice.call(inp.files || []).filter(function (f) { return /\.pdf$/i.test(f.name); }); inp.value = '';
-  if (!fl.length) { alert('Bitte die Rechnungen als PDF auswählen.'); return; }
+  var sel = [].slice.call(inp.files || []).filter(function (f) { return /\.(pdf|zip)$/i.test(f.name); }); inp.value = '';
+  var fl = [];
+  for (var z = 0; z < sel.length; z++) {
+    if (!/\.zip$/i.test(sel[z].name)) { fl.push(sel[z]); continue; }
+    try {
+      var zm = await readZipBlob(sel[z]);
+      Object.keys(zm).sort().forEach(function (k) { var bn = k.split('/').pop(); if (/\.pdf$/i.test(bn) && !/^(\._|__MACOSX)/.test(k) && !/^\._/.test(bn)) fl.push(new File([zm[k]], bn, { type: 'application/pdf' })); });
+    } catch (x) { alert('Die ZIP-Datei ' + sel[z].name + ' konnte nicht gelesen werden.'); }
+  }
+  if (!fl.length) { alert('Bitte die Rechnungen als PDF oder als ZIP mit PDFs auswählen.'); return; }
   riList = [];
   var errs = [];
   for (var i = 0; i < fl.length; i++) {
