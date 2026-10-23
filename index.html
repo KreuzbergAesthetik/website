@@ -437,9 +437,9 @@ body { overflow-x:clip; }
 .foot-bar { border-top:1px solid var(--soft); }
 .btn { border-radius:10px; }
 .tm-box { padding:0 !important; overflow:hidden; max-width:440px; }
-.tm-head { display:flex; align-items:center; gap:10px; padding:12px 12px 10px 26px; border-bottom:1px solid #eef2f6; position:relative; }
-.tm-head::before { content:''; position:absolute; left:12px; top:12px; bottom:12px; width:5px; border-radius:3px; background:var(--tmc,#94a3b8); }
-.tm-title { font-size:18px; font-weight:800; color:#0f172a; line-height:1.15; } .tm-sub { font-size:12.5px; color:#64748b; margin-top:2px; min-height:16px; overflow-wrap:anywhere; }
+.tm-head { display:flex; align-items:center; gap:10px; padding:7px 10px 7px 26px; border-bottom:1px solid #eef2f6; position:relative; }
+.tm-head::before { content:''; position:absolute; left:12px; top:9px; bottom:9px; width:5px; border-radius:3px; background:var(--tmc,#94a3b8); }
+.tm-title { font-size:17px; font-weight:800; color:#0f172a; line-height:1.15; } .tm-sub { font-size:12.5px; color:#64748b; margin-top:2px; min-height:16px; overflow-wrap:anywhere; }
 .tm-body { padding:10px 14px 14px; max-height:calc(90vh - 70px); overflow-y:auto; }
 .tm-tile { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:12px; padding:8px 10px 10px; margin-bottom:8px; }
 .tm-tile .form-control { min-height:38px; padding:7px 10px; background:#fff; }
@@ -1002,7 +1002,7 @@ function kaStart() {
 <div id="modal-termin" class="modal-overlay">
   <div class="modal-box tm-box">
     <div class="tm-head" id="tm-head">
-      <div style="flex:1; min-width:0;"><div id="t-title" class="tm-title">Neuer Termin</div><div id="t-sub" class="tm-sub"></div></div>
+      <div style="flex:1; min-width:0;"><div id="t-title" class="tm-title">Neuer Termin</div></div>
       <button type="button" class="close-btn" onclick="closeTermin()">&times;</button>
     </div>
     <div class="tm-body">
@@ -2055,7 +2055,6 @@ function tmSub() {
   if (dt) { var d = new Date(dt + 'T12:00:00'); parts.push(WD[(d.getDay() + 6) % 7] + ', ' + d.getDate() + '. ' + MN[d.getMonth()].slice(0, 3) + '.'); }
   if (g) parts.push('ganztägig'); else if (z) parts.push(z + (en ? ' – ' + en : '') + ' Uhr');
   if (tLeist.length) parts.push(tLeist.join(', '));
-  document.getElementById('t-sub').textContent = parts.join(' · ');
 }
 function shiftEnd() {
   var z = document.getElementById('t-zeit').value;
@@ -2368,7 +2367,7 @@ function openTerminView(id, keep) {
   var t1 = mk('div', 'tv-tile'); t1.appendChild(mk('small', '', 'Leistung'));
   var bs = mk('div');
   if (ls.length) { var w = mk('div'); w.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;'; ls.forEach(function (n) { var l = findKat(n), c = l ? lkatOf(l) : null, cc = c ? c.color : '#94a3b8'; var ch = mk('span'); ch.style.cssText = 'display:inline-flex; align-items:center; gap:6px; border:1.5px solid ' + cc + '; border-radius:16px; padding:2px 10px; font-size:13px;'; var dt = mk('i'); dt.style.cssText = 'width:9px; height:9px; border-radius:50%; background:' + cc + ';'; ch.appendChild(dt); ch.appendChild(document.createTextNode(n)); w.appendChild(ch); }); bs.appendChild(w); }
-  if (e.behandlung && ls.indexOf(e.behandlung) < 0) bs.appendChild(mk('div', '', e.behandlung));
+  if (e.behandlung && ls.indexOf(e.behandlung) < 0 && e.behandlung !== ls.join(', ')) bs.appendChild(mk('div', '', e.behandlung));
   if (!bs.childNodes.length) bs.appendChild(mk('div', 'hm-empty', 'Keine Leistung eingetragen'));
   t1.appendChild(bs); tl.appendChild(t1);
   if (e.notiz) { var t2 = mk('div', 'tv-tile'); t2.appendChild(mk('small', '', 'Notiz')); var nt = mk('div', '', e.notiz); nt.style.cssText = 'font-size:14.5px; white-space:pre-wrap;'; t2.appendChild(nt); tl.appendChild(t2); }
