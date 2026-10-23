@@ -61,17 +61,7 @@
     <h2>Weitere Angaben</h2>
     <div class="card" id="weitere"></div>
 
-    <h2>Terminerinnerungen</h2>
-    <div class="card">
-      <label class="l">Terminerinnerungen <span class="req">*</span></label>
-      <select id="erinnerung"><option value="">Bitte auswählen</option><option>SMS</option><option>E-Mail</option><option>Keine Erinnerung</option></select>
-      <label class="l" style="margin-top:16px">Ich erkläre mich mit der unten beschriebenen Verarbeitung meiner Daten, zum Zweck des Versands einer Terminerinnerung per SMS oder E-Mail, einverstanden. <span class="req">*</span></label>
-      <div class="radios" id="g-einw">
-        <label><input type="radio" name="einw" value="ja"> ja</label>
-        <label><input type="radio" name="einw" value="nein"> nein</label>
-      </div>
-      <div id="datenschutz"></div>
-    </div>
+    <div class="card"><div id="datenschutz"></div></div>
 
     <label class="l" style="margin-top:20px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
     <canvas id="sig" class="sigbox"></canvas>
@@ -130,8 +120,6 @@ function collect() {
     var v = yn[k[0]].get(); if (v === null) { yn[k[0]].mark(); bad.push(yn[k[0]].node); } else d.fragen[k[0]] = { frage: k[1], ja: v, text: v ? val(k[0] + '-t') : '' };
   });
   d.chronisch = val('chronisch'); d.medikamente = val('medikamente'); d.quelle = $('quelle').value;
-  d.erinnerung = $('erinnerung').value; if (!d.erinnerung) bad.push($('erinnerung'));
-  d.einwilligung = (document.querySelector('input[name=einw]:checked') || {}).value || ''; if (!d.einwilligung) bad.push($('g-einw'));
   if (sig.isEmpty()) bad.push($('sig'));
   return { d: d, bad: bad };
 }
@@ -152,9 +140,6 @@ async function buildAnmeldung(d, data) {
   sec('Weitere Angaben');
   Object.keys(d.fragen).forEach(function (k) { var f = d.fragen[k]; kv(f.frage, f.ja ? 'Ja' + (f.text ? ': ' + f.text : '') : 'Nein'); });
   kv('Chronische Erkrankungen', d.chronisch); kv('Medikamente', d.medikamente); kv('Aufmerksam geworden durch', d.quelle);
-  sec('Terminerinnerungen');
-  kv('Gewünschte Erinnerung', d.erinnerung);
-  kv('Einwilligung', d.einwilligung === 'ja' ? 'Ja, ich bin mit der Verarbeitung meiner Daten zum Versand von Terminerinnerungen einverstanden.' : 'Nein');
   P.y -= 6; P.text('Mit meiner Unterschrift bestätige ich die Richtigkeit meiner Angaben und habe die Datenschutzhinweise zur Kenntnis genommen.', { size: 9, italic: true, color: P.gray, gap: 8 });
   await P.sign(sig.png(), 'Unterschrift', who);
   return await P.finish(data);
@@ -167,7 +152,7 @@ $('f').addEventListener('submit', async function (ev) {
   var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
   try {
     var d = r.d;
-    var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: new Date().toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { fragen: d.fragen, chronisch: d.chronisch, medikamente: d.medikamente, quelle: d.quelle }, erinnerung: d.erinnerung, einwilligung: d.einwilligung };
+    var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: new Date().toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { fragen: d.fragen, chronisch: d.chronisch, medikamente: d.medikamente, quelle: d.quelle } };
     var pdf = await buildAnmeldung(d, data);
     var res = await deliver('anmeldung', 'Patientenanmeldung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
     showDone(res, 'Anmeldebogen');

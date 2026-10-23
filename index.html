@@ -906,7 +906,7 @@ function kaStart() {
     <div class="card">
       <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="nvDefaults()">Standardvorlagen laden</button><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div></div>
       <div id="nv-list"></div>
-      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Platzhalter: {Anrede} {Vorname} {Nachname} {Name} {Datum} {DatumWochentag} {Termin} {TerminDatum} {Uhrzeit} {NaechsterTermin} {Behandlung} sowie die fertigen Anreden {AnredeFormell} (Sehr geehrte Frau …), {AnredeInformell} (Liebe …) und {AnredeEnglisch} (Dear Ms. …) sowie {LinkAnmeldung} und {LinkAnamnese} für die Webformulare. Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Platzhalter: {Anrede} {Vorname} {Nachname} {Name} {Datum} {DatumWochentag} {Termin} {TerminDatum} {Uhrzeit} {NaechsterTermin} {Behandlung} sowie die fertigen Anreden {AnredeFormell} (Sehr geehrte Frau …), {AnredeInformell} (Liebe …) und {AnredeEnglisch} (Dear Ms. …) sowie {LinkAnmeldung}, {LinkAnamnese} und {LinkErinnerung} für die Webformulare. Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
     </div>
   </div>
 
@@ -914,7 +914,7 @@ function kaStart() {
   <div id="tab-webformulare" class="tab-content">
     <div class="card">
       <div class="card-header"><span class="card-title">Webformulare</span></div>
-      <div style="font-size:14px; color:#475569; margin-bottom:12px;">Patienten füllen die Formulare am Handy aus und unterschreiben mit dem Finger. Daraus entsteht ein PDF. Schicke ihnen den Link, zum Beispiel über eine Nachrichtenvorlage mit den Platzhaltern <b>{LinkAnmeldung}</b> und <b>{LinkAnamnese}</b>.</div>
+      <div style="font-size:14px; color:#475569; margin-bottom:12px;">Patienten füllen die Formulare am Handy aus und unterschreiben mit dem Finger. Daraus entsteht ein PDF. Schicke ihnen den Link, zum Beispiel über eine Nachrichtenvorlage mit den Platzhaltern <b>{LinkAnmeldung}</b>, <b>{LinkAnamnese}</b> und <b>{LinkErinnerung}</b>.</div>
       <div id="wf-list"></div>
       <div class="ak-h">So kommen ausgefüllte Formulare in die App</div>
       <div style="font-size:14px; color:#334155;">
@@ -4505,7 +4505,7 @@ function fillPlatzhalter(text, p) {
     AnredeInformell: an === 'Frau' ? 'Liebe ' + vn : an === 'Herr' ? 'Lieber ' + vn : 'Hallo ' + vn,
     AnredeEnglisch: an === 'Frau' ? 'Dear Ms. ' + nn : an === 'Herr' ? 'Dear Mr. ' + nn : 'Dear ' + vn + ' ' + nn,
     DatumWochentag: wd(today), TerminDatum: nx ? wd(nx.date) : '', Uhrzeit: nx ? nx.time : '',
-    LinkAnmeldung: webfUrl('anmeldung.html'), LinkAnamnese: webfUrl('anamnese.html'),
+    LinkAnmeldung: webfUrl('anmeldung.html'), LinkAnamnese: webfUrl('anamnese.html'), LinkErinnerung: webfUrl('erinnerung.html'),
     NaechsterTermin: nx ? nx.date.slice(8, 10) + '.' + nx.date.slice(5, 7) + '. um ' + nx.time : '' };
   return String(text || '').replace(/\{([A-Za-z]+)\}/g, function (m, k) { return map[k] !== undefined ? map[k] : m; });
 }
@@ -5018,7 +5018,7 @@ function aAct(x) {
 }
 
 /* ===== Webformulare ===== */
-var WEBF = [['Patientenanmeldung', 'anmeldung.html'], ['Anamnesebogen', 'anamnese.html']];
+var WEBF = [['Patientenanmeldung', 'anmeldung.html'], ['Anamnesebogen', 'anamnese.html'], ['Terminerinnerung', 'erinnerung.html']];
 function webfUrl(f) { try { return new URL(f, location.href).href; } catch (x) { return f; } }
 function renderWebf() {
   var box = document.getElementById('wf-list'); if (!box) return; box.innerHTML = '';
@@ -5040,7 +5040,7 @@ async function formularImport(entries) {
     var q = d.patient, nm = (q.vorname + ' ' + q.nachname).trim().toLowerCase();
     var p = patients.filter(function (x) { return nameKey(x).toLowerCase() === nm && (!q.dob || !x.dob || fIsDob(x.dob, q.dob)); })[0], created = false;
     if (!p) {
-      if (d.typ === 'anamnese' && !confirm('Für „' + q.vorname + ' ' + q.nachname + '“ gibt es noch keinen Patienten. Jetzt anlegen?')) { out.push('Übersprungen: ' + q.vorname + ' ' + q.nachname); continue; }
+      if (d.typ !== 'anmeldung' && !confirm('Für „' + q.vorname + ' ' + q.nachname + '“ gibt es noch keinen Patienten. Jetzt anlegen?')) { out.push('Übersprungen: ' + q.vorname + ' ' + q.nachname); continue; }
       p = { anrede: '', vorname: q.vorname, nachname: q.nachname, dob: q.dob || '', phone: '', email: '', adresse: '', allergien: '', notizen: '', medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: today };
       patients.push(p); ensurePatients(); created = true;
     }
@@ -5056,11 +5056,14 @@ async function formularImport(entries) {
       if (a.chronisch) addDiag(a.chronisch);
       if (a.medikamente) String(a.medikamente).split(/[,;]+/).map(function (x) { return x.trim(); }).filter(Boolean).forEach(function (m) { if (p.medikation.indexOf(m) < 0) p.medikation.push(m); });
       if (a.quelle) addNote('Zu uns gekommen durch: ' + a.quelle);
-      if (d.erinnerung) addNote('Terminerinnerungen: ' + d.erinnerung + (d.einwilligung === 'ja' ? '' : ' (ohne Einwilligung)'));
       if (q.notfall) addNote('Notfallkontakt: ' + q.notfall);
       if (f.vorbeh && f.vorbeh.ja) addNote('Frühere ästhetische Behandlungen: ' + (f.vorbeh.text || 'ja'));
       if (f.ops && f.ops.ja) addNote('Operationen: ' + (f.ops.text || 'ja'));
       p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anmeldeformular übernommen' + (created ? ' (Patient angelegt)' : '') });
+    } else if (d.typ === 'erinnerung') {
+      setIf('email', q.email);
+      addNote(d.einwilligung === 'ja' ? 'Terminerinnerung per E-Mail: Einwilligung erteilt am ' + new Date().toLocaleDateString('de-DE') : 'Terminerinnerung: keine Einwilligung (' + new Date().toLocaleDateString('de-DE') + ')');
+      p.log.push({ ts: Date.now(), type: 'notiz', text: 'Einwilligung Terminerinnerung übernommen' + (created ? ' (Patient angelegt)' : '') });
     } else if (d.typ === 'anamnese') {
       var z = d.zusammenfassung || {};
       setIf('allergien', z.allergien);
@@ -5073,7 +5076,7 @@ async function formularImport(entries) {
       var id = newId(); await fPut(id, pdf.name, pdf);
       p.dokumente.push({ id: id, ts: Date.now(), name: pdf.name, kat: 'Aufnahme und Anamnese' });
     }
-    out.push((d.typ === 'anamnese' ? 'Anamnese' : 'Anmeldung') + ': ' + nameKey(p) + (created ? ' (neu angelegt)' : '') + (pdf ? ', PDF angehängt' : ', ohne PDF'));
+    out.push(({ anamnese: 'Anamnese', erinnerung: 'Terminerinnerung' }[d.typ] || 'Anmeldung') + ': ' + nameKey(p) + (created ? ' (neu angelegt)' : '') + (pdf ? ', PDF angehängt' : ', ohne PDF'));
   }
   if (!out.length) return;
   persist(); renderPatients(); if (curP && document.getElementById('modal-akte').classList.contains('active')) viewAkte(curP);

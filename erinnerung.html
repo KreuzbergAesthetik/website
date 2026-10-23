@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Terminerinnerung Kreuzberg Ästhetik</title>
+<link rel="stylesheet" href="forms.css">
+</head>
+<body>
+<div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
+<div class="wrap" id="formbox">
+  <form id="f" novalidate autocomplete="on">
+    <h1>Terminerinnerung</h1>
+    <div class="intro"><p>Wenn Du möchtest, erinnern wir Dich per E-Mail an Deine Termine. Das ist freiwillig. Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p></div>
+
+    <div class="card">
+      <div class="grid2">
+        <div><label class="l">Vorname <span class="req">*</span></label><input type="text" id="vorname" autocomplete="given-name"></div>
+        <div><label class="l">Nachname <span class="req">*</span></label><input type="text" id="nachname" autocomplete="family-name"></div>
+      </div>
+      <label class="l">Geburtsdatum <span class="req">*</span></label>
+      <div class="grid3" id="g-dob">
+        <input type="text" id="dob-t" inputmode="numeric" maxlength="2" placeholder="Tag" aria-label="Tag" autocomplete="bday-day">
+        <select id="dob-m" aria-label="Monat" autocomplete="bday-month"><option value="">Monat</option><option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option><option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">August</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option></select>
+        <input type="text" id="dob-j" inputmode="numeric" maxlength="4" placeholder="Jahr" aria-label="Jahr" autocomplete="bday-year">
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="l">E-Mail-Adresse <span class="req">*</span></label>
+      <input type="email" id="email" autocomplete="email">
+      <label class="l" style="margin-top:16px">Ich erkläre mich damit einverstanden, dass die Praxis meine Daten (Name, Geburtsdatum, E-Mail-Adresse, Termindaten) verarbeitet, um mir Terminerinnerungen per E-Mail zu senden. Die Einwilligung ist freiwillig und kann jederzeit mit Wirkung für die Zukunft widerrufen werden. <span class="req">*</span></label>
+      <div class="radios" id="g-einw">
+        <label><input type="radio" name="einw" value="ja"> ja</label>
+        <label><input type="radio" name="einw" value="nein"> nein</label>
+      </div>
+      <div id="datenschutz"></div>
+    </div>
+
+    <label class="l" style="margin-top:20px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
+    <canvas id="sig" class="sigbox"></canvas>
+    <div class="sigbar"><span>Unterschrift</span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
+
+    <div class="hp"><label>Website <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
+    <div id="errmsg" class="msg err" style="display:none"></div>
+    <div class="actions">
+      <button type="reset" class="btn" id="reset">Zurücksetzen</button>
+      <button type="submit" class="btn primary" id="go">Absenden</button>
+    </div>
+  </form>
+</div>
+<script src="forms.js"></script>
+<script>
+$('datenschutz').appendChild(datenschutzBlock());
+var sig = makeSig($('sig'));
+$('sig-clear').onclick = function () { sig.clear(); };
+$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); });
+
+function val(id) { return $(id).value.trim(); }
+function collect() {
+  document.querySelectorAll('.invalid').forEach(function (n) { n.classList.remove('invalid'); });
+  var bad = [], d = {};
+  d.vorname = val('vorname'); if (!d.vorname) bad.push($('vorname'));
+  d.nachname = val('nachname'); if (!d.nachname) bad.push($('nachname'));
+  var t = val('dob-t'), m = $('dob-m').value, j = val('dob-j'), ok = /^\d{1,2}$/.test(t) && m && /^\d{4}$/.test(j);
+  if (ok) { var dt = new Date(+j, +m - 1, +t); ok = dt.getFullYear() === +j && dt.getMonth() === +m - 1 && dt.getDate() === +t && dt < new Date() && +j > 1900; }
+  if (!ok) bad.push($('g-dob')); else d.dob = pad2(+t) + '.' + m + '.' + j;
+  d.email = val('email'); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) bad.push($('email'));
+  d.einwilligung = (document.querySelector('input[name=einw]:checked') || {}).value || ''; if (!d.einwilligung) bad.push($('g-einw'));
+  if (sig.isEmpty()) bad.push($('sig'));
+  return { d: d, bad: bad };
+}
+
+async function buildErinnerung(d) {
+  var who = d.vorname + ' ' + d.nachname;
+  var P = await newPdf('Einwilligung Terminerinnerung', d.nachname + ', ' + d.vorname + ' (geb. ' + d.dob + ')');
+  function kv(k, v) {
+    var lines = P.wrap(v || '-', P.f, 10.5, P.W - P.M * 2 - 180), lh = 14; P.ensure(lh * lines.length + 4);
+    P.page.drawText(k, { x: P.M, y: P.y - 10, size: 9.5, font: P.f, color: P.gray });
+    lines.forEach(function (l, i) { P.page.drawText(l, { x: P.M + 180, y: P.y - 10 - i * lh, size: 10.5, font: P.f, color: P.black }); });
+    P.y -= lh * lines.length + 4;
+  }
+  P.text('PERSÖNLICHE ANGABEN', { size: 10.5, bold: true, gap: 2 }); P.rule(8);
+  kv('Name', who); kv('Geburtsdatum', d.dob); kv('E-Mail', d.email);
+  P.y -= 8; P.text('EINWILLIGUNG', { size: 10.5, bold: true, gap: 2 }); P.rule(8);
+  kv('Terminerinnerung per E-Mail', d.einwilligung === 'ja' ? 'Ja, ich bin mit der Verarbeitung meiner Daten zum Versand von Terminerinnerungen per E-Mail einverstanden. Ich kann diese Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.' : 'Nein, ich wünsche keine Terminerinnerung.');
+  P.y -= 6; P.text('Mit meiner Unterschrift bestätige ich die Richtigkeit meiner Angaben und habe die Datenschutzhinweise zur Kenntnis genommen.', { size: 9, italic: true, color: P.gray, gap: 8 });
+  await P.sign(sig.png(), 'Unterschrift', who);
+  return await P.finish({ format: 'ka-formular', version: 1, typ: 'erinnerung', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob, email: d.email }, einwilligung: d.einwilligung });
+}
+
+$('f').addEventListener('submit', async function (ev) {
+  ev.preventDefault(); $('errmsg').style.display = 'none';
+  var r = collect();
+  if (r.bad.length) { r.bad.forEach(function (n) { if (n.classList) n.classList.add('invalid'); }); r.bad[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); errBox('Bitte fülle alle mit * markierten Felder aus (rot umrandet).'); return; }
+  var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
+  try {
+    var d = r.d, data = { format: 'ka-formular', version: 1, typ: 'erinnerung', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob, email: d.email }, einwilligung: d.einwilligung };
+    var pdf = await buildErinnerung(d);
+    var res = await deliver('erinnerung', 'Terminerinnerung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
+    showDone(res, 'Formular');
+  } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
+});
+</script>
+</body>
+</html>
