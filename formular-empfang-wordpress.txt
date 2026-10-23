@@ -1,0 +1,53 @@
+/*
+ * Empfang für die Webformulare von Kreuzberg Ästhetik (WordPress-Variante).
+ * Dieses Stück Code kommt als PHP-Snippet in das Plugin "WPCode" (siehe LIESMICH.txt).
+ *
+ * Nimmt das ausgefüllte PDF entgegen und schickt es per E-Mail an die Praxis. Es wird nichts gespeichert.
+ * Adresse zum Eintragen in forms.js (ENDPOINT):
+ *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/formular
+ */
+add_action('rest_api_init', function () {
+    register_rest_route('ka/v1', '/formular', array(
+        'methods' => 'POST',
+        'permission_callback' => '__return_true',
+        'callback' => function ($req) {
+            $EMPFAENGER = 'info@kreuzberg-aesthetik.de';          // Hierhin gehen die Formulare
+            $ERLAUBT    = array('https://fellamanuel-arch.github.io'); // Seiten, die senden dürfen
+            $MAX_BYTES  = 8 * 1024 * 1024;                          // größtes erlaubtes PDF
+            $fail = function ($code, $msg) { return new WP_REST_Response(array('ok' => false, 'error' => $msg), $code); };
+
+            $origin = (string) $req->get_header('origin');
+            if ($origin && !in_array($origin, $ERLAUBT, true)) return $fail(403, 'Nicht erlaubt.');
+            if ((string) $req->get_param('website') !== '') return new WP_REST_Response(array('ok' => true), 200);   // Spam-Falle
+
+            /* höchstens 10 Formulare pro Stunde und Verbindung */
+            $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'x';
+            $key = 'ka_form_' . md5($ip); $n = (int) get_transient($key);
+            if ($n >= 10) return $fail(429, 'Zu viele Anfragen. Bitte später noch einmal versuchen.');
+            set_transient($key, $n + 1, HOUR_IN_SECONDS);
+
+            $labels = array('anmeldung' => 'Patientenanmeldung', 'anamnese' => 'Anamnese');
+            $typ = (string) $req->get_param('typ');
+            if (!isset($labels[$typ])) return $fail(400, 'Unbekanntes Formular.');
+            $files = $req->get_file_params();
+            if (empty($files['pdf']) || $files['pdf']['error'] !== UPLOAD_ERR_OK) return $fail(400, 'Das PDF fehlt.');
+            if ($files['pdf']['size'] > $MAX_BYTES) return $fail(413, 'Das PDF ist zu groß.');
+            $pdf = file_get_contents($files['pdf']['tmp_name']);
+            if (substr($pdf, 0, 4) !== '%PDF') return $fail(400, 'Das ist kein PDF.');
+
+            $name = trim(preg_replace('/[^\p{L}\p{N} ._,\-]/u', '', (string) $req->get_param('name')));
+            if ($name === '') $name = 'ohne Namen';
+            $fname = preg_replace('/[^A-Za-z0-9._\-]/', '_', $files['pdf']['name'] ? $files['pdf']['name'] : 'formular.pdf');
+            $betreff = 'Neues Formular: ' . $labels[$typ] . ' - ' . $name;
+            $text = "Über die Website wurde ein Formular ausgefüllt:\n\n" . $labels[$typ] . "\nPatient: " . $name . "\nZeitpunkt: " . current_time('d.m.Y H:i') . "\n\n"
+                  . "Das PDF hängt an. Zum Übernehmen in die Praxis-App: PDF speichern, in der App unter Patienten auf Import tippen und die Datei wählen.\n";
+
+            $tmp = get_temp_dir() . uniqid('form_', true) . '_' . $fname;
+            file_put_contents($tmp, $pdf);
+            $ok = wp_mail($EMPFAENGER, $betreff, $text, array('Content-Type: text/plain; charset=UTF-8'), array($tmp));
+            @unlink($tmp);
+            if (!$ok) return $fail(500, 'Die E-Mail konnte nicht gesendet werden.');
+            return new WP_REST_Response(array('ok' => true), 200);
+        },
+    ));
+});
