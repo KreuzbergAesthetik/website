@@ -126,12 +126,11 @@ QS.forEach(function (q, qi) {
 });
 $('datenschutz').appendChild(datenschutzBlock());
 var CODE = (new URLSearchParams(location.search).get('c') || '').toUpperCase().trim();
-if (!/^[A-Z2-9]{6}$/.test(CODE)) {
-  /* Link ohne Code (z. B. Neupatient): zufälligen Code erzeugen, die Praxis ordnet ihn beim Einlesen zu */
-  var AL = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', rb = new Uint8Array(6); crypto.getRandomValues(rb);
-  CODE = Array.prototype.map.call(rb, function (x) { return AL.charAt(x % AL.length); }).join('');
-}
-$('codebox').innerHTML = '<div class="l" style="margin-top:0">Dein persönlicher Code</div><div style="font-size:26px;font-weight:700;letter-spacing:4px">' + CODE + '</div><p style="margin:8px 0 0;color:#475569;font-size:14px">Wir fragen hier bewusst weder Namen noch Geburtsdatum ab. Deine Angaben werden nur über diesen Code Dir zugeordnet. Bitte trage auch in den Textfeldern keine Namen ein. Die Unterschrift leistest Du bei uns in der Praxis.</p>';
+if (!/^[A-Z2-9]{6}$/.test(CODE)) CODE = '';
+$('codebox').innerHTML = CODE
+  ? '<div class="l" style="margin-top:0">Dein persönlicher Code</div><div style="font-size:26px;font-weight:700;letter-spacing:4px">' + CODE + '</div><p style="margin:8px 0 0;color:#475569;font-size:14px">Wir fragen hier bewusst weder Namen noch Geburtsdatum ab. Deine Angaben werden nur über diesen Code Dir zugeordnet. Bitte trage auch in den Textfeldern keine Namen ein. Die Unterschrift leistest Du bei uns in der Praxis.</p>'
+  : '<div class="msg err" style="display:block;margin:0">Bitte öffne diesen Bogen über den persönlichen Link, den Du von der Praxis bekommen hast.</div>';
+if (!CODE) { $('go').disabled = true; }
 $('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } setTimeout(function () { ui.forEach(function (u) { u.items.forEach(function (t) { t.clear(); }); if (u.gate) u.gate.clear(); u.refresh(); }); sammel.clear(); applySammel(); }, 0); });
 
 function val(id) { return $(id).value.trim(); }
