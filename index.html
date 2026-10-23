@@ -1165,6 +1165,7 @@ function kaStart() {
     <button type="button" onclick="aAct('dokument')">Dokument hinzufügen</button>
     <button type="button" onclick="aAct('produkt')">Produkt verwenden</button>
     <button type="button" onclick="aAct('rechnung')">Rechnung erstellen</button>
+    <button type="button" onclick="aAct('anamlink')">Anamnese-Link kopieren</button>
     <button type="button" onclick="aAct('auto')">Dateien automatisch Terminen zuordnen</button>
   </div>
   <button type="button" class="plus-btn fab" onclick="toggleAMenu(event)" aria-label="Aktionen">+</button>
@@ -5025,6 +5026,10 @@ function aAct(x) {
   else if (x === 'produkt') openVb(null);
   else if (x === 'rechnung') openInvoice(curP);
   else if (x === 'rezept') openRx(null);
+  else if (x === 'anamlink') {
+    var url = webfUrl('anamnese.html') + '?c=' + pCode(curP);
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, function () { prompt('Link zum Kopieren:', url); });
+  }
   else if (x === 'auto') autoZu();
 }
 
