@@ -478,6 +478,7 @@ body { overflow-x:clip; }
 .row-actions .btn { white-space:nowrap; } .pc-ds { display:none; color:#94a3b8; font-size:11px; margin-top:1px; }
 @media (max-width:520px) { #tab-zahlungen .hm-l { display:none; } #tab-zahlungen .hm-s { display:inline; } #tab-zahlungen .pt { min-width:0 !important; font-size:12.5px !important; } #tab-zahlungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-zahlungen .pt th, #tab-zahlungen .pt td { padding:8px 4px; } #tab-zahlungen .pt .pn { white-space:nowrap; font-size:12.5px; } #tab-rechnungen .card-header { flex-wrap:wrap; } }
 #st-kpi { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; } @media (min-width:600px) { #st-kpi { grid-template-columns:repeat(3,1fr); } }
+.inv-rb { border:1px dashed #cbd5e1; background:#fff; color:#334155; border-radius:16px; padding:4px 12px; font-size:13px; cursor:pointer; font-family:inherit; } .inv-rb:hover { background:#f1f5f9; }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -832,6 +833,7 @@ function kaStart() {
         </div>
       </div>
       <div id="lk-box" style="margin-bottom:14px;"></div>
+      <div id="rab-box" style="margin-bottom:14px;"></div>
       <div class="cal-bar" style="margin-bottom:10px;">
         <input type="text" id="ls-filter" class="form-control" placeholder="Leistungsname..." autocomplete="off" oninput="lsPage = 1; renderLeist()" style="flex:1 1 200px;">
         <select id="ls-fkat" class="form-control" style="width:auto; max-width:240px;" onchange="lsPage = 1; renderLeist()" aria-label="Gruppe"></select>
@@ -1235,7 +1237,7 @@ function kaStart() {
       <div class="add-row" style="flex:1;" onclick="addInvRow('rabatt')">+ Rabatt in %</div>
     </div>
     <div id="inv-0info" style="display:none; font-size:12px; margin:6px 0; padding:8px 10px; border-radius:8px; background:#fef3c7; color:#92400e;"></div>
-    <div class="add-row" onclick="addErstRabatt()">+ 20 % Rabatt Erstbehandlung (auf alle Positionen darüber)</div>
+    <div id="inv-rab" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:2px 0 4px;"></div>
     <div style="text-align:right; font-weight:700; margin:10px 0;">Gesamt: <span id="inv-total">€ 0,00</span></div>
     <div class="ak-h">Zahlung</div>
     <div class="seg" id="inv-payseg" role="group" aria-label="Zahlung" style="flex-wrap:wrap;">
@@ -1256,6 +1258,19 @@ function kaStart() {
 </div>
 
 <!-- MODAL: LEISTUNGSKATEGORIE -->
+<div id="modal-rab" class="modal-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><strong id="rb-title">Rabatt</strong><button type="button" class="close-btn" onclick="closeModal('modal-rab')">&times;</button></div>
+    <div class="form-group"><label>Bezeichnung (steht auf der Rechnung)</label><input type="text" id="rb-name" class="form-control" autocomplete="off" placeholder="z. B. Erstkunde"></div>
+    <div class="form-group"><label>Rabatt in Prozent</label><input type="text" id="rb-pct" class="form-control" inputmode="decimal" placeholder="20"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-rab')">Abbrechen</button>
+      <button type="button" id="rb-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteRab()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-save" onclick="saveRab()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <div id="modal-lkat" class="modal-overlay">
   <div class="modal-box" style="max-width:420px;">
     <div class="modal-header"><strong id="lk-title">Kategorie</strong><button type="button" class="close-btn" onclick="closeModal('modal-lkat')">&times;</button></div>
@@ -2645,6 +2660,7 @@ function evColor(e) { var ls = evLeistungen(e).concat(e.behandlung ? [e.behandlu
 var lsIdx = -1;
 var lkIdx = -1;
 function renderLKats() {
+  renderRabatte();
   var box = document.getElementById('lk-box'); if (!box) return; box.innerHTML = '';
   var head = mk('div'); head.style.cssText = 'display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:8px; flex-wrap:wrap;';
   head.appendChild(mk('div', 'hm-sec', 'Kategorien und Farben'));
@@ -2868,9 +2884,47 @@ function invPatientChanged() {
   var p = patients.filter(function (x) { return nameKey(x) === v; })[0];
   if (p) { invP = p; if (p.adresse) document.getElementById('inv-adresse').value = p.adresse; fillTermine(p); }
 }
+/* Gespeicherte Rabatte (Praxis → Leistungen) */
+function ensureRabatte() {
+  if (!Array.isArray(settings.rabatte)) settings.rabatte = [];
+  if (!settings.rabSeeded) { settings.rabSeeded = true; if (!settings.rabatte.length) settings.rabatte = [{ id: newId(), name: 'Erstkunde', pct: 20 }, { id: newId(), name: 'Home Treatment', pct: 10 }]; persist(); }
+  return settings.rabatte;
+}
+var rbIdx = -1;
+function renderRabatte() {
+  var box = document.getElementById('rab-box'); if (!box) return; box.innerHTML = '';
+  box.appendChild(mk('div', 'hm-sec', 'Rabatte für Rechnungen'));
+  var row = mk('div'); row.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;';
+  var chip = 'display:inline-flex; align-items:center; gap:7px; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:3px 11px; font-size:13px; cursor:pointer; color:#0f172a; min-height:28px;';
+  ensureRabatte().forEach(function (r, i) { var b = mk('button', '', r.name + ' -' + String(r.pct).replace('.', ',') + ' %'); b.type = 'button'; b.style.cssText = chip; b.onclick = function () { openRab(i); }; row.appendChild(b); });
+  var nb = mk('button', '', '+ Rabatt'); nb.type = 'button'; nb.style.cssText = chip + 'border-style:dashed; color:#64748b; background:none;'; nb.onclick = function () { openRab(-1); }; row.appendChild(nb);
+  box.appendChild(row);
+}
+function openRab(i) {
+  rbIdx = i; var r = i >= 0 ? settings.rabatte[i] : null;
+  document.getElementById('rb-title').textContent = r ? 'Rabatt bearbeiten' : 'Neuer Rabatt';
+  document.getElementById('rb-name').value = r ? r.name : ''; document.getElementById('rb-pct').value = r ? String(r.pct).replace('.', ',') : '';
+  document.getElementById('rb-del').style.display = r ? '' : 'none'; openModal('modal-rab');
+}
+function saveRab() {
+  var n = document.getElementById('rb-name').value.trim(), p = numIn(document.getElementById('rb-pct').value);
+  if (!n) { alert('Bitte eine Bezeichnung eingeben.'); return; }
+  if (!(p > 0 && p <= 100)) { alert('Bitte einen Prozentwert zwischen 0 und 100 eingeben.'); return; }
+  ensureRabatte(); if (rbIdx >= 0) { settings.rabatte[rbIdx].name = n; settings.rabatte[rbIdx].pct = p; } else settings.rabatte.push({ id: newId(), name: n, pct: p });
+  persist(); closeModal('modal-rab'); renderRabatte(); renderInvRab();
+}
+function deleteRab() { if (rbIdx < 0 || !confirm('Rabatt "' + settings.rabatte[rbIdx].name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return; settings.rabatte.splice(rbIdx, 1); persist(); closeModal('modal-rab'); renderRabatte(); renderInvRab(); }
+function renderInvRab() {
+  var box = document.getElementById('inv-rab'); if (!box) return; box.innerHTML = '';
+  ensureRabatte().forEach(function (r) {
+    var b = mk('button', 'inv-rb', '+ ' + r.name + ' -' + String(r.pct).replace('.', ',') + ' %'); b.type = 'button'; b.title = 'Rabatt auf alle Positionen darüber';
+    b.onclick = function () { var x = newRow('rabatt'); x.text = r.name; x.pct = String(r.pct).replace('.', ','); invRows.push(x); renderInvRows(); }; box.appendChild(b);
+  });
+}
 function addErstRabatt() { var r = newRow('rabatt'); r.text = 'Rabatt Erstbehandlung'; r.pct = '20'; invRows.push(r); renderInvRows(); }
 function addInvRow(type) { invRows.push(newRow(type)); renderInvRows(); }
 function renderInvRows() {
+  renderInvRab();
   var box = document.getElementById('inv-pos'); box.innerHTML = '';
   invRows.forEach(function (r, i) {
     var row = mk('div', 'inv-row');
