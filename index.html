@@ -786,6 +786,7 @@ function kaStart() {
       <div class="card-header">
         <span class="card-title">Rechnungen</span>
         <div class="row-actions">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="invCheck()">Prüfen</button>
           <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('rimp-file').click()">Import</button>
           <input type="file" id="rimp-file" accept="application/pdf,.pdf,application/zip,.zip" multiple style="display:none" onchange="rechnungenImport(this)">
           <button type="button" class="btn btn-sm" onclick="openInvoice(null)">+ Rechnung</button>
@@ -793,7 +794,7 @@ function kaStart() {
       </div>
       <div class="scroll">
         <table class="pt" style="min-width:560px; font-size:14px;">
-          <thead><tr><th>Nr.</th><th>Datum</th><th>Patient</th><th>Betrag</th><th>Status</th></tr></thead>
+          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th><th class="sort" onclick="invSortBy('status')">Status <span class="sarr" data-ik="status"></span></th></tr></thead>
           <tbody id="inv-table"></tbody>
         </table>
       </div>
@@ -1427,6 +1428,15 @@ function kaStart() {
     <div class="form-group"><label>Zugangscode</label><input type="password" id="s-mailtoken" class="form-control" autocomplete="off"></div>
     <div style="font-size:12px; color:#64748b; margin-top:6px;">Die Leistungen mit Preisen pflegst Du jetzt im Reiter Leistungen.</div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-settings')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveSettings()">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: RECHNUNGEN PRÜFEN -->
+<div id="modal-invchk" class="modal-overlay">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header"><strong>Rechnungen prüfen</strong><button type="button" class="close-btn" onclick="closeModal('modal-invchk')">&times;</button></div>
+    <div id="ichk-body"></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-invchk')">Schließen</button></div>
   </div>
 </div>
 
@@ -2922,17 +2932,60 @@ function saveInvoice() {
   renderInvoices(); if (curP === p) { renderHead(); renderVerlauf(); }
   viewInvoice(inv.id);
 }
+var invSort = { k: 'nr', dir: -1 };
+function invSortBy(k) { if (invSort.k === k) invSort.dir = -invSort.dir; else { invSort.k = k; invSort.dir = k === 'name' || k === 'status' ? 1 : -1; } renderInvoices(); }
+function invCmp(a, b) {
+  var k = invSort.k, d;
+  if (k === 'nr') d = String(a.nr).localeCompare(String(b.nr), 'de', { numeric: true });
+  else if (k === 'date') d = String(a.date).localeCompare(String(b.date)) || String(a.nr).localeCompare(String(b.nr), 'de', { numeric: true });
+  else if (k === 'name') d = String(a.name).localeCompare(String(b.name), 'de', { sensitivity: 'base' });
+  else if (k === 'total') d = a.total - b.total;
+  else d = invState(a).txt.localeCompare(invState(b).txt, 'de');
+  return d * invSort.dir;
+}
 function renderInvoices() {
   var tb = document.getElementById('inv-table'); if (!tb) return;
   tb.innerHTML = '';
+  [].forEach.call(document.querySelectorAll('[data-ik]'), function (e) { e.innerHTML = e.getAttribute('data-ik') === invSort.k ? (invSort.dir > 0 ? '&#9650;' : '&#9660;') : ''; });
   document.getElementById('inv-empty').style.display = invoices.length ? 'none' : 'block';
-  invoices.slice().sort(function (a, b) { return b.created - a.created; }).forEach(function (i) {
+  invoices.slice().sort(invCmp).forEach(function (i) {
     var row = tb.insertRow();
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
     var fd = fmtD(i.date); c1.innerHTML = '<span class="hm-l">' + fd + '</span><span class="hm-s">' + fd.slice(0, 5) + '</span>'; c2.textContent = i.name; c3.textContent = eur(i.total); c3.className = 'nw'; c0.className = 'nw'; c4.className = 'nw';
     var st = invState(i), bd = mk('span', 'badge ' + st.cls); bd.innerHTML = '<span class="hm-l">' + st.txt + '</span><span class="hm-s">' + (st.txt === 'Teilzahlung' ? 'Teil' : st.txt) + '</span>'; c4.appendChild(bd);
   });
+}
+/* Alle Rechnungen auf Auffälligkeiten prüfen */
+function invCheck() {
+  var box = document.getElementById('ichk-body'); box.innerHTML = '';
+  var groups = [], byNr = {}, num = {};
+  invoices.forEach(function (i) { (byNr[i.nr] = byNr[i.nr] || []).push(i); var m = /^(\d{4})-(\d+)$/.exec(i.nr); if (m) (num[m[1]] = num[m[1]] || {})[parseInt(m[2], 10)] = 1; });
+  var g1 = []; Object.keys(byNr).forEach(function (k) { if (byNr[k].length > 1) byNr[k].forEach(function (i) { g1.push({ i: i, t: 'Nummer ' + k + ' kommt ' + byNr[k].length + '× vor' }); }); });
+  groups.push(['Doppelte Rechnungsnummern', g1]);
+  var seen = {}, g2 = []; invoices.forEach(function (i) { if (i.storniert || i.total <= 0) return; var k = i.pid + '|' + i.date + '|' + i.total; (seen[k] = seen[k] || []).push(i); });
+  Object.keys(seen).forEach(function (k) { var l = seen[k].filter(function (i) { return seen[k].some(function (x) { return x !== i && x.nr !== i.nr; }); }); l.forEach(function (i) { g2.push({ i: i, t: 'Gleicher Patient, Datum und Betrag wie ' + seen[k].filter(function (x) { return x !== i && x.nr !== i.nr; }).map(function (x) { return x.nr; }).join(', ') }); }); });
+  groups.push(['Mögliche Doppelte (gleicher Patient, Datum und Betrag)', g2]);
+  var g3 = []; Object.keys(num).forEach(function (y) { var mx = 0; Object.keys(num[y]).forEach(function (n) { if (+n > mx) mx = +n; }); var miss = []; for (var n = 1; n <= mx; n++) if (!num[y][n]) miss.push(y + '-' + ('00000' + n).slice(-5)); if (miss.length) g3.push({ t: 'Fehlende Nummern in ' + y + ': ' + miss.slice(0, 20).join(', ') + (miss.length > 20 ? ' … (' + miss.length + ' insgesamt)' : '') }); });
+  groups.push(['Lücken in der Nummernfolge', g3]);
+  var g4 = []; invoices.forEach(function (i) {
+    if (i.storniert) return; var paid = paidSum(i), sum = r2((i.items || []).reduce(function (a, x) { return a + (x.amount || 0); }, 0));
+    if (paid > i.total + 0.015) g4.push({ i: i, t: 'Zahlungen (' + eur(paid) + ') sind höher als der Betrag (' + eur(i.total) + ')' });
+    if ((i.items || []).length && Math.abs(sum - i.total) > 0.015) g4.push({ i: i, t: 'Positionen (' + eur(sum) + ') ergeben nicht den Betrag (' + eur(i.total) + ')' });
+  });
+  groups.push(['Beträge, die nicht passen', g4]);
+  var total = groups.reduce(function (a, g) { return a + g[1].length; }, 0);
+  var head = mk('div', '', invoices.length + ' Rechnungen geprüft. ' + (total ? total + ' Auffälligkeit(en).' : 'Keine Auffälligkeiten.')); head.style.cssText = 'font-size:14px; margin-bottom:10px; color:' + (total ? '#b45309' : '#166534') + '; font-weight:600;'; box.appendChild(head);
+  groups.forEach(function (g) {
+    var h = mk('div', 'ak-h', g[0] + ' (' + g[1].length + ')'); box.appendChild(h);
+    if (!g[1].length) { var ok = mk('div', 'hm-empty', 'In Ordnung.'); box.appendChild(ok); return; }
+    g[1].forEach(function (x) {
+      var row = mk('div'); row.style.cssText = 'display:flex; flex-wrap:wrap; gap:2px 10px; align-items:center; padding:8px 0; border-bottom:1px solid #eef2f6; font-size:13.5px;';
+      if (x.i) { var b = mk('button', 'pn', x.i.nr); b.type = 'button'; b.style.flex = 'none'; b.onclick = function () { closeModal('modal-invchk'); viewInvoice(x.i.id); }; row.appendChild(b); row.appendChild(mk('span', '', fmtD(x.i.date) + ' · ' + x.i.name)); }
+      var t = mk('span', '', x.t); t.style.cssText = 'color:#64748b; flex:1 1 100%; font-size:12.5px;'; row.appendChild(t); box.appendChild(row);
+    });
+  });
+  openModal('modal-invchk');
 }
 
 /* Rechnungsansicht nach Vorbild der Praxisrechnung */
