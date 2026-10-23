@@ -138,10 +138,14 @@ async function deliver(typ, label, who, data, pdfBytes, hp) {
     var fd = new FormData();
     fd.append('typ', typ); fd.append('name', who); fd.append('website', hp || ''); fd.append('pdf', blob, fname);
     fd.append('daten', new Blob([JSON.stringify(data)], { type: 'application/json' }), fname.replace(/\.pdf$/, '.json'));
-    var r = await fetch(ENDPOINT, { method: 'POST', body: fd });
-    var j = null; try { j = await r.json(); } catch (x) {}
-    if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || ('Fehler ' + r.status));
-    return { sent: true, blob: blob, fname: fname, who: who };
+    /* Klappt der Empfang nicht (Seite nicht erreichbar, Fehler), geht es mit dem E-Mail-Weg weiter */
+    try {
+      var r = await fetch(ENDPOINT, { method: 'POST', body: fd });
+      var j = null; try { j = await r.json(); } catch (x) {}
+      if (r.ok && j && j.ok) return { sent: true, blob: blob, fname: fname, who: who };
+      console.warn('Formularempfang:', (j && j.error) || ('Fehler ' + r.status));
+    } catch (x) { console.warn('Formularempfang nicht erreichbar', x); }
+    return { sent: false, blob: blob, fname: fname, who: who };
   }
   return { sent: false, blob: blob, fname: fname, who: who };
 }
