@@ -470,11 +470,12 @@ body { overflow-x:clip; }
 .badge-red { background:#fee2e2; color:#991b1b; font-weight:700; }
 .ak-h-open { color:#9a3412; border-bottom-color:#fed7aa; }
 .hm-openp { background:#fffaf5 !important; border-left:4px solid #ea580c; } .hm-late { background:#fef2f2 !important; border-left:4px solid #dc2626; }
+.za-seg { display:flex; flex-wrap:wrap; gap:6px; } .za-b { display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 12px; border-radius:10px; border:1px solid #cbd5e1; background:#fff; color:#334155; font-size:13.5px; cursor:pointer; font-family:inherit; } .za-b b { color:#0f172a; font-weight:700; } .za-b i { width:9px; height:9px; border-radius:50%; flex:none; } .za-b.on { background:#0f172a; border-color:#0f172a; color:#cbd5e1; } .za-b.on b { color:#fff; }
 .za-row { flex:1 1 100%; display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; background:#f8fafc; border:1px solid #eef2f6; border-radius:10px; padding:8px 12px; }
 .za-t { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; } .za { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:#334155; } .za i, .zart i { width:9px; height:9px; border-radius:50%; flex:none; } .za b { color:#0f172a; }
 .zart { display:inline-flex; align-items:center; gap:7px; }
 .row-actions .btn { white-space:nowrap; }
-@media (max-width:520px) { #tab-zahlungen .pt { min-width:0 !important; font-size:13px !important; } #tab-zahlungen .pt th, #tab-zahlungen .pt td { padding:8px 5px; } #tab-zahlungen .pt .pn { white-space:nowrap; font-size:13px; } #tab-rechnungen .card-header { flex-wrap:wrap; } }
+@media (max-width:520px) { #tab-zahlungen .hm-l { display:none; } #tab-zahlungen .hm-s { display:inline; } #tab-zahlungen .pt { min-width:0 !important; font-size:12.5px !important; } #tab-zahlungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-zahlungen .pt th, #tab-zahlungen .pt td { padding:8px 4px; } #tab-zahlungen .pt .pn { white-space:nowrap; font-size:12.5px; } #tab-rechnungen .card-header { flex-wrap:wrap; } }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -876,9 +877,7 @@ function kaStart() {
           <input type="month" id="zl-month" class="form-control" style="width:auto;" onchange="zMonth = this.value; renderZahlungen()" aria-label="Monat">
           <button type="button" class="btn btn-secondary btn-sm" onclick="zMonth = ''; renderZahlungen()">Alle</button>
         </div>
-        <select id="zl-art" class="form-control" style="width:auto;" onchange="zArt = this.value; renderZahlungen()" aria-label="Zahlart">
-          <option value="">Alle Zahlarten</option><option>Karte</option><option>Bar</option><option>Überweisung</option><option>PayPal</option>
-        </select>
+        <div id="zl-arts" class="za-seg"></div>
       </div>
       <div id="zl-sum" style="display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;"></div>
       <div class="ak-h" id="zl-open-h">Offene Posten</div>
@@ -4276,22 +4275,29 @@ function statBox(label, val, color) {
 var ZA_COL = { Karte: '#2563eb', Bar: '#16a34a', 'Überweisung': '#7c3aed', PayPal: '#0ea5e9', Gutschein: '#db2777' };
 function renderZahlungen() {
   var tin = document.getElementById('zl-in'); if (!tin) return;
-  document.getElementById('zl-month').value = zMonth; document.getElementById('zl-art').value = zArt;
+  document.getElementById('zl-month').value = zMonth;
   var inM = function (d) { return !zMonth || String(d).slice(0, 7) === zMonth; };
-  var pays = allPayments().filter(function (p) { return inM(p.date) && (!zArt || p.art === zArt); }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+  var allP = allPayments().filter(function (p) { return inM(p.date); }), pays = allP.filter(function (p) { return !zArt || p.art === zArt; }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
   var sumIn = 0, byArt = {};
   pays.forEach(function (p) { sumIn += p.amount; byArt[p.art] = (byArt[p.art] || 0) + p.amount; });
   var sm = document.getElementById('zl-sum'); sm.innerHTML = '';
   sm.appendChild(statBox('Einnahmen', eur(sumIn)));
-  if (Object.keys(byArt).length) {
-    var za = mk('div', 'za-row'); za.appendChild(mk('span', 'za-t', 'Nach Zahlart'));
-    Object.keys(byArt).sort().forEach(function (k) { var it = mk('span', 'za'), dot = mk('i'); dot.style.background = ZA_COL[k] || '#94a3b8'; it.appendChild(dot); it.appendChild(document.createTextNode(k + ' ')); it.appendChild(mk('b', '', eur(byArt[k]))); za.appendChild(it); });
-    sm.appendChild(za);
-  }
+  /* Zahlart-Auswahl: jede Art ist direkt antippbar und filtert die Tabelle */
+  var zs = document.getElementById('zl-arts'); zs.innerHTML = '';
+  var allSum = {}; allP.forEach(function (p) { allSum[p.art] = (allSum[p.art] || 0) + p.amount; });
+  var tot = allP.reduce(function (a, p) { return a + p.amount; }, 0);
+  var segBtn = function (key, dot, label, sum) {
+    var b = mk('button', 'za-b' + ((zArt || '') === key ? ' on' : '')); b.type = 'button';
+    if (dot) { var d = mk('i'); d.style.background = dot; b.appendChild(d); }
+    b.appendChild(document.createTextNode(label + ' ')); b.appendChild(mk('b', '', eur(sum)));
+    b.onclick = function () { zArt = ((zArt || '') === key) ? '' : key; renderZahlungen(); }; zs.appendChild(b);
+  };
+  segBtn('', null, 'Alle', tot);
+  Object.keys(allSum).sort().forEach(function (k) { segBtn(k, ZA_COL[k] || '#94a3b8', k, allSum[k]); });
   tin.innerHTML = '';
   pays.forEach(function (p) {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
-    c0.textContent = fmtD(p.date); c1.textContent = p.inv.name;
+    var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 5) + '</span>'; c0.className = 'nw'; c1.textContent = p.inv.name; c4.className = 'nw';
     var b = mk('button', 'pn', p.inv.nr); b.type = 'button'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar); c4.textContent = eur(p.amount);
   });
