@@ -920,7 +920,8 @@ function kaStart() {
       <div style="font-size:14px; color:#334155;">
         <p style="margin-bottom:6px;">1. Das ausgefüllte PDF kommt per E-Mail an (sobald der Empfang auf deiner Website eingerichtet ist, siehe LIESMICH) oder der Patient schickt das PDF selbst.</p>
         <p style="margin-bottom:6px;">2. Speichere den Anhang (das PDF genügt, die Daten stecken darin) und wähle unter Patienten den Knopf <b>Import</b>.</p>
-        <p>3. Die Anmeldung legt den Patienten an oder ergänzt ihn. Die Anamnese füllt Allergien, Medikation und Diagnosen und hängt das PDF an die Akte.</p>
+        <p style="margin-bottom:6px;">3. Die Anmeldung legt den Patienten an oder ergänzt ihn. Die Terminerinnerung trägt E-Mail und Einwilligung ein.</p>
+        <p><b>Anamnese ohne Namen:</b> Der Bogen läuft nur über einen persönlichen Code (Link mit <b>?c=Code</b>). Der Link mit dem richtigen Code wird in Nachrichten mit dem Platzhalter {LinkAnamnese} automatisch für den jeweiligen Patienten eingesetzt. Beim Import ordnet die App die Anamnese über den Code zu, füllt Allergien, Medikation und Diagnosen und hängt das PDF an die Akte. Die Unterschrift kommt vor Ort auf das PDF.</p>
       </div>
     </div>
   </div>
@@ -4496,6 +4497,16 @@ function tbPicker(ta) {
   };
   return sel;
 }
+/* Zufälliger Patientencode für die Anamnese (ohne Klarnamen im Netz); Zeichen ohne Verwechslungen */
+function pCode(p) {
+  if (!p.code) {
+    var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', c;
+    do { var b = new Uint8Array(6); crypto.getRandomValues(b); c = Array.prototype.map.call(b, function (x) { return A.charAt(x % A.length); }).join(''); }
+    while (patients.some(function (x) { return x.code === c; }));
+    p.code = c; persist();
+  }
+  return p.code;
+}
 function fillPlatzhalter(text, p) {
   var today = iso(new Date()), nx = events.filter(function (e) { return e.patient === nameKey(p) && e.date >= today; }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); })[0];
   var an = p.anrede || '', nn = p.nachname || '', vn = p.vorname || '';
@@ -4505,7 +4516,7 @@ function fillPlatzhalter(text, p) {
     AnredeInformell: an === 'Frau' ? 'Liebe ' + vn : an === 'Herr' ? 'Lieber ' + vn : 'Hallo ' + vn,
     AnredeEnglisch: an === 'Frau' ? 'Dear Ms. ' + nn : an === 'Herr' ? 'Dear Mr. ' + nn : 'Dear ' + vn + ' ' + nn,
     DatumWochentag: wd(today), TerminDatum: nx ? wd(nx.date) : '', Uhrzeit: nx ? nx.time : '',
-    LinkAnmeldung: webfUrl('anmeldung.html'), LinkAnamnese: webfUrl('anamnese.html'), LinkErinnerung: webfUrl('erinnerung.html'),
+    LinkAnmeldung: webfUrl('anmeldung.html'), LinkAnamnese: webfUrl('anamnese.html') + '?c=' + pCode(p), LinkErinnerung: webfUrl('erinnerung.html'),
     NaechsterTermin: nx ? nx.date.slice(8, 10) + '.' + nx.date.slice(5, 7) + '. um ' + nx.time : '' };
   return String(text || '').replace(/\{([A-Za-z]+)\}/g, function (m, k) { return map[k] !== undefined ? map[k] : m; });
 }
@@ -5037,8 +5048,12 @@ async function formularImport(entries) {
   var out = [], today = Date.now();
   for (var i = 0; i < entries.length; i++) {
     var d = entries[i].d, pdf = entries[i].pdf;
-    var q = d.patient, nm = (q.vorname + ' ' + q.nachname).trim().toLowerCase();
-    var p = patients.filter(function (x) { return nameKey(x).toLowerCase() === nm && (!q.dob || !x.dob || fIsDob(x.dob, q.dob)); })[0], created = false;
+    var q = d.patient, nm = ((q.vorname || '') + ' ' + (q.nachname || '')).trim().toLowerCase();
+    var p, created = false;
+    if (d.typ === 'anamnese') {
+      p = patients.filter(function (x) { return x.code && x.code === q.code; })[0];
+      if (!p) { out.push('Übersprungen: Anamnese mit Code ' + q.code + ' (kein Patient mit diesem Code)'); continue; }
+    } else p = patients.filter(function (x) { return nameKey(x).toLowerCase() === nm && (!q.dob || !x.dob || fIsDob(x.dob, q.dob)); })[0];
     if (!p) {
       if (d.typ !== 'anmeldung' && !confirm('Für „' + q.vorname + ' ' + q.nachname + '“ gibt es noch keinen Patienten. Jetzt anlegen?')) { out.push('Übersprungen: ' + q.vorname + ' ' + q.nachname); continue; }
       p = { anrede: '', vorname: q.vorname, nachname: q.nachname, dob: q.dob || '', phone: '', email: '', adresse: '', allergien: '', notizen: '', medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: today };
@@ -5070,7 +5085,7 @@ async function formularImport(entries) {
       String(z.medikamente || '').split(/[,;]+/).map(function (x) { return x.trim(); }).filter(Boolean).forEach(function (m) { if (p.medikation.indexOf(m) < 0) p.medikation.push(m); });
       (z.diagnosen || []).forEach(addDiag);
       var hw = (z.hinweise || []); if (hw.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese, Hinweise:\n' + hw.join('\n') });
-      p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnesebogen übernommen' + (created ? ' (Patient angelegt)' : '') });
+      p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnesebogen übernommen (Unterschrift vor Ort noch nötig)' + (created ? ' (Patient angelegt)' : '') });
     }
     if (pdf) {
       var id = newId(); await fPut(id, pdf.name, pdf);
