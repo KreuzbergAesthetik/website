@@ -452,6 +452,9 @@ body { overflow-x:clip; }
 .tm-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; } .tm-chips:empty { display:none; }
 .tm-dot { width:26px; height:26px; padding:0; border:2px solid #fff; border-radius:50%; box-shadow:0 0 0 1px #cbd5e1; cursor:pointer; background:none; flex:none; -webkit-appearance:none; appearance:none; overflow:hidden; } .tm-dot::-webkit-color-swatch-wrapper { padding:0; } .tm-dot::-webkit-color-swatch { border:none; border-radius:50%; } .tm-dot::-moz-color-swatch { border:none; border-radius:50%; }
 .tm-body .foot-bar { margin-top:10px; padding-top:12px; }
+.hc.hc-empty { padding-top:12px; padding-bottom:12px; } .hc.hc-empty .card-header { margin-bottom:2px; } .hc.hc-empty .hm-sec { display:none; } .hc.hc-empty .hm-empty { padding:2px 0 0; font-size:13px; }
+.hm-s { display:none; }
+@media (max-width:520px) { #hm-fin table th, #hm-fin table td { padding:8px 6px; font-size:12.5px; } #hm-fin .hm-l { display:none; } #hm-fin .hm-s { display:inline; } }
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -2189,6 +2192,7 @@ function hmRow(time, main, sub, onclick, extra, cls) {
 function hmFill(id, rows, emptyTxt) {
   var b = document.getElementById(id); b.innerHTML = '';
   if (!rows.length) b.appendChild(mk('div', 'hm-empty', emptyTxt)); else rows.forEach(function (r) { b.appendChild(r); });
+  if (id === 'hm-bday' || id === 'hm-order') { var cd = b.closest('.hc'); if (cd) cd.classList.toggle('hc-empty', !rows.length); }
 }
 /* Umsatzsteuer-Voranmeldung: Frist ist der 10. nach Ende des Zeitraums */
 function ustvaInfo(now) {
@@ -2288,7 +2292,7 @@ function renderHome() {
   /* Umsatz und Ausgaben des Jahres */
   var ms = monthSeries(now.getFullYear()), fin = document.getElementById('hm-fin'); fin.innerHTML = '';
   var tb = mk('table', 'pt'); tb.style.cssText = 'min-width:0; font-size:13.5px; white-space:nowrap;';
-  var hd = tb.createTHead().insertRow(); ['Monat', 'Umsatz', 'Ausgaben', 'Umsatz kum.'].forEach(function (t) { hd.appendChild(mk('th', '', t)); });
+  var hd = tb.createTHead().insertRow(); ['Monat', 'Umsatz', 'Ausgaben', 'Umsatz kum.'].forEach(function (t) { var th = mk('th'); th.innerHTML = t === 'Umsatz kum.' ? '<span class="hm-l">Umsatz kum.</span><span class="hm-s">Kum.</span>' : t; hd.appendChild(th); });
   var bo = tb.createTBody(), cum = 0;
   for (var mi = 0; mi <= now.getMonth(); mi++) { cum += ms.rev[mi]; var r = bo.insertRow(); r.insertCell().textContent = MN3[mi]; r.insertCell().textContent = eurShort(ms.rev[mi]); r.insertCell().textContent = eurShort(ms.out[mi]); r.insertCell().textContent = eurShort(cum); }
   fin.appendChild(tb);
