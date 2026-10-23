@@ -28,7 +28,7 @@ Webformulare (Patientenanmeldung und Anamnese)
 Dateien: anmeldung.html, anamnese.html, forms.css, forms.js (zusammen mit icon-192.png und pdf-lib.min.js im selben Ordner).
 Die Links stehen in der App unter Praxis, Webformulare und lassen sich in Nachrichtenvorlagen mit {LinkAnmeldung} und {LinkAnamnese} einsetzen.
 Der Patient füllt das Formular am Handy aus und unterschreibt mit dem Finger. Das PDF entsteht im Browser des Patienten.
-Ohne Empfang bekommt er das PDF zum Teilen oder Herunterladen und schickt es selbst an die Praxis.
+Das PDF geht direkt an den Empfang der Praxis. Klappt das nicht, sieht der Patient eine Fehlermeldung und kann es erneut versuchen.
 Empfang per Website (empfohlen): formular-empfang.php in den Hauptordner der Praxis-Website legen (bei WordPress neben wp-config.php).
 Darin EMPFAENGER und ERLAUBT prüfen. Dann in forms.js bei ENDPOINT die Adresse der Datei eintragen.
 Das ausgefüllte PDF kommt als E-Mail-Anhang bei der Praxis an.

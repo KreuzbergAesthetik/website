@@ -226,7 +226,7 @@ $('f').addEventListener('submit', async function (ev) {
     var pdf = await buildAnamnese(d, data);
     var res = await deliver('anamnese', 'Anamnese', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
     showDone(res, 'Anamnesebogen');
-  } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox('Das hat leider nicht geklappt: ' + (x && x.message ? x.message : x) + ' Bitte versuche es noch einmal.'); }
+  } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
 });
 </script>
 </body>

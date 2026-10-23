@@ -1,7 +1,6 @@
 /* Gemeinsame Bausteine der Webformulare: Unterschrift, PDF, Versand */
 var PRAXIS_F = { name: 'Kreuzberg Ästhetik', arzt: 'Manuel Fella', mail: 'info@kreuzberg-aesthetik.de', strasse: 'Neuenburger Str. 24', ort: '10969 Berlin' };
-/* Adresse des Empfangsskripts auf dem Webspace der Praxis (siehe formular-empfang.php und LIESMICH.txt).
-   Solange sie leer ist, bekommt der Patient das PDF zum Teilen oder Herunterladen. */
+/* Adresse des Empfangsskripts auf dem Webspace der Praxis (siehe formular-empfang-wordpress.txt und LIESMICH.txt). */
 var ENDPOINT = 'https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/formular';
 
 function $(id) { return document.getElementById(id); }
@@ -131,58 +130,25 @@ async function newPdf(title, who) {
 function bytesToBlob(b) { return new Blob([b], { type: 'application/pdf' }); }
 function slug(t) { return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
 
-/* Versand: an das Empfangsskript der Praxis oder, solange keins eingerichtet ist, PDF zum Teilen/Herunterladen */
+/* Versand an den Empfang der Praxis; schlägt er fehl, bleibt das Formular stehen und der Patient kann es erneut versuchen */
 async function deliver(typ, label, who, data, pdfBytes, hp) {
   var blob = bytesToBlob(pdfBytes), fname = label + '_' + slug(who) + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
-  if (ENDPOINT) {
-    var fd = new FormData();
-    fd.append('typ', typ); fd.append('name', who); fd.append('website', hp || ''); fd.append('pdf', blob, fname);
-    fd.append('daten', new Blob([JSON.stringify(data)], { type: 'application/json' }), fname.replace(/\.pdf$/, '.json'));
-    /* Klappt der Empfang nicht (Seite nicht erreichbar, Fehler), geht es mit dem E-Mail-Weg weiter */
-    try {
-      var r = await fetch(ENDPOINT, { method: 'POST', body: fd });
-      var j = null; try { j = await r.json(); } catch (x) {}
-      if (r.ok && j && j.ok) return { sent: true, blob: blob, fname: fname, who: who };
-      console.warn('Formularempfang:', (j && j.error) || ('Fehler ' + r.status));
-    } catch (x) { console.warn('Formularempfang nicht erreichbar', x); }
-    return { sent: false, blob: blob, fname: fname, who: who };
-  }
-  return { sent: false, blob: blob, fname: fname, who: who };
+  var fd = new FormData();
+  fd.append('typ', typ); fd.append('name', who); fd.append('website', hp || ''); fd.append('pdf', blob, fname);
+  fd.append('daten', new Blob([JSON.stringify(data)], { type: 'application/json' }), fname.replace(/\.pdf$/, '.json'));
+  var r;
+  try { r = await fetch(ENDPOINT, { method: 'POST', body: fd }); }
+  catch (x) { throw new Error('Die Verbindung zur Praxis ist nicht möglich. Prüfe Deine Internetverbindung oder fülle das Formular in der Praxis aus.'); }
+  var j = null; try { j = await r.json(); } catch (x) {}
+  if (!(r.ok && j && j.ok)) throw new Error('Das Formular konnte nicht an die Praxis gesendet werden. Bitte versuche es später noch einmal oder fülle es in der Praxis aus.');
+  return { sent: true, who: who };
 }
-/* Ohne Empfangsserver: das E-Mail-Programm des Geräts mit PDF im Anhang öffnen (Teilen-Menü), sonst mailto ohne Anhang */
-function shareData(res, label) {
-  var file = null; try { file = new File([res.blob], res.fname, { type: 'application/pdf' }); } catch (x) {}
-  if (!file || !navigator.canShare || !navigator.canShare({ files: [file] })) return null;
-  return { files: [file], title: label + (res.who ? ' – ' + res.who.replace(/_/g, ' ') : ''), text: 'An: ' + PRAXIS_F.mail + '\n\nHallo, anbei mein ' + label + ' als PDF.\n' + (res.who || '').replace(/_/g, ' ') };
-}
-function mailtoUrl(res, label) { return 'mailto:' + PRAXIS_F.mail + '?subject=' + encodeURIComponent(label + (res.who ? ' – ' + res.who.replace(/_/g, ' ') : '')) + '&body=' + encodeURIComponent('Hallo, anbei mein ' + label + ' als PDF.\n\n(Bitte das heruntergeladene PDF an diese E-Mail anhängen.)\n' + (res.who || '').replace(/_/g, ' ')); }
 function showDone(res, label) {
   var box = $('formbox'); box.innerHTML = '';
   var d = el('div', { class: 'done' });
   d.appendChild(el('div', { html: '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l3 3 5-6"/></svg>' }));
-  if (res.sent) {
-    d.appendChild(el('h1', { text: 'Vielen Dank' }));
-    d.appendChild(el('p', { text: 'Dein ' + label + ' ist bei uns angekommen. Wir freuen uns auf Dich.' }));
-  } else {
-    d.appendChild(el('h1', { text: 'Fast geschafft' }));
-    d.appendChild(el('p', { text: 'Dein ' + label + ' ist als PDF erstellt. Das PDF muss jetzt noch per E-Mail zu uns.' }));
-    var b = el('div', { class: 'btns' }), sd = shareData(res, label), url = URL.createObjectURL(res.blob);
-    if (sd) {
-      var sh = el('button', { class: 'btn primary', type: 'button', text: 'E-Mail mit PDF öffnen' });
-      sh.onclick = function () { navigator.share(sd).catch(function () {}); };
-      b.appendChild(sh);
-      d.appendChild(b);
-      d.appendChild(el('p', { class: 'hint', text: 'Wähle im Menü Dein E-Mail-Programm. Das PDF hängt schon an. Die Adresse der Praxis steht im Text: ' + PRAXIS_F.mail }));
-      var b2 = el('div', { class: 'btns' }); b2.appendChild(el('a', { class: 'btn', href: url, download: res.fname, text: 'PDF herunterladen' })); d.appendChild(b2);
-      /* gleich beim Absenden das Teilen-Menü anbieten, solange der Tipp noch frisch ist */
-      try { navigator.share(sd).catch(function () {}); } catch (x) {}
-    } else {
-      b.appendChild(el('a', { class: 'btn primary', href: url, download: res.fname, text: 'PDF herunterladen' }));
-      b.appendChild(el('a', { class: 'btn', href: mailtoUrl(res, label), text: 'E-Mail an die Praxis öffnen' }));
-      d.appendChild(b);
-      d.appendChild(el('p', { class: 'hint', text: 'Lade zuerst das PDF herunter und hänge es dann an die E-Mail an.' }));
-    }
-  }
+  d.appendChild(el('h1', { text: 'Vielen Dank' }));
+  d.appendChild(el('p', { text: 'Dein ' + label + ' ist bei uns angekommen. Wir freuen uns auf Dich.' }));
   box.appendChild(d); window.scrollTo(0, 0);
 }
 function errBox(msg) { var m = $('errmsg'); m.textContent = msg; m.style.display = 'block'; m.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
