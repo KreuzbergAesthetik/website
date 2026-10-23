@@ -10,7 +10,7 @@
  * Es wird nichts gespeichert. Das PDF geht direkt als Anhang per Mail weiter.
  */
 
-$EMPFAENGER = 'manuel.fella@kreuzberg-aesthetik.de';           // Hierhin gehen die Formulare
+$EMPFAENGER = 'info@kreuzberg-aesthetik.de';           // Hierhin gehen die Formulare
 $ERLAUBT    = ['https://fellamanuel-arch.github.io'];            // Seiten, die senden dürfen (Adresse der Formulare)
 $MAX_BYTES  = 8 * 1024 * 1024;                                   // größtes erlaubtes PDF
 
