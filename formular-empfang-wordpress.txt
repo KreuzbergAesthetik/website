@@ -40,7 +40,7 @@ add_action('rest_api_init', function () {
             $fname = preg_replace('/[^A-Za-z0-9._\-]/', '_', $files['pdf']['name'] ? $files['pdf']['name'] : 'formular.pdf');
             $betreff = 'Neues Formular: ' . $labels[$typ] . ' - ' . $name;
             $text = "Über die Website wurde ein Formular ausgefüllt:\n\n" . $labels[$typ] . "\nPatient: " . $name . "\nZeitpunkt: " . current_time('d.m.Y H:i') . "\n\n"
-                  . "Das PDF hängt an. Zum Übernehmen in die Praxis-App: PDF speichern, in der App unter Patienten auf „Formulare einlesen“ tippen und die Datei wählen.\n";
+                  . "Das PDF hängt an. Zum Übernehmen in die Praxis-App: PDF speichern, in der App unter Patienten auf „Import“ tippen und die Datei wählen.\n";
 
             $tmp = get_temp_dir() . uniqid('form_', true) . '_' . $fname;
             file_put_contents($tmp, $pdf);

@@ -54,6 +54,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .a-flagpop { position:fixed; right:8px; top:calc(var(--hdh,112px) + 118px); z-index:41; width:min(340px,calc(100vw - 16px)); background:#fff; border:1px solid #cbd5e1; border-radius:12px; box-shadow:0 12px 30px rgba(15,23,42,.28); padding:8px; } .a-flagpop .fl { display:block; width:100%; margin:0 0 6px; padding:8px 10px; font-size:13px; border-radius:8px; text-align:left; cursor:pointer; } .a-flagpop .fl:last-child { margin-bottom:0; }
 .evfl { position:absolute; top:2px; right:2px; width:14px; height:14px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:800; text-align:center; line-height:14px; }
 .pidb { background:none; border:none; padding:2px 4px; color:#475569; font-size:13px; font-weight:600; cursor:pointer; border-radius:6px; } .pidb:hover { background:#e2e8f0; }
+.pt .pidb { margin-left:-4px; }
 .pid { color:#94a3b8; font-size:11px; font-weight:400; margin-right:5px; }
 .row-actions { display:flex; gap:8px; align-items:center; flex-wrap:nowrap; }
 .btn-sm { padding:6px 12px; font-size:13px; min-height:34px; }
@@ -374,7 +375,7 @@ body { overflow-x:clip; }
 .a-top .a-title { color:#0f172a; } .a-top .icon-btn, .a-top .a-pen { background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; }
 .a-top .icon-btn:hover, .a-top .a-pen:hover { background:#e2e8f0; }
 .a-top .a-pen.on { background:#2f9e44; }
-#tab-patienten > .card > .card-header { flex-wrap:wrap; } #tab-patienten .card-header .row-actions { flex-wrap:wrap; }
+#tab-patienten > .card > .card-header .btn { flex:none; white-space:nowrap; }
 .a-top .icon-btn { width:28px; min-width:0; height:28px; min-height:0; padding:0; background:none; border:none; color:#8b98a9; } .a-top .icon-btn svg { width:18px; height:18px; } .a-top .icon-btn:hover { background:#f1f5f9; color:#475569; }
 .a-top #a-edit.a-pen { width:24px; height:24px; background:none; border:none; color:#b4bfcc; } .a-top #a-edit.a-pen svg { width:13px; height:13px; } .a-top #a-edit.a-pen:hover { background:#f1f5f9; color:#64748b; }
 /* Terminansicht: heller Kopf in Kategoriefarbe, Kacheln */
@@ -780,13 +781,7 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Patientenverwaltung</span>
-        <div class="row-actions">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('pimp-file').click()">Import</button>
-          <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('form-file').click()">Formulare einlesen</button>
-          <input type="file" id="form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)">
-          <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')">+ Patient</button>
-        </div>
+        <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')">+ Patient</button>
       </div>
       <div class="cal-bar" style="margin-bottom:10px;">
         <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="flex:1 1 200px;">
@@ -795,6 +790,8 @@ function kaStart() {
             <option value="name">Name</option><option value="id">ID</option><option value="dob">Geburtsdatum</option><option value="erstellt">Erstellt am</option>
           </select>
           <button type="button" class="btn btn-secondary btn-sm" id="p-dir" onclick="togglePDir()" title="Sortierrichtung" aria-label="Sortierrichtung">&#9650;</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('pimp-file').click()" title="Patienten, Rechnungen oder ausgefüllte Formulare einlesen">Import</button>
+          <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
         </div>
       </div>
       <div class="scroll">
@@ -925,9 +922,9 @@ function kaStart() {
       <div class="ak-h">So kommen ausgefüllte Formulare in die App</div>
       <div style="font-size:14px; color:#334155;">
         <p style="margin-bottom:6px;">1. Das ausgefüllte PDF kommt per E-Mail an (sobald der Empfang auf deiner Website eingerichtet ist, siehe LIESMICH) oder der Patient schickt das PDF selbst.</p>
-        <p style="margin-bottom:6px;">2. Speichere den Anhang (das PDF genügt, die Daten stecken darin) und wähle unter Patienten den Knopf <b>Formulare einlesen</b>.</p>
+        <p style="margin-bottom:6px;">2. Speichere den Anhang (das PDF genügt, die Daten stecken darin) und wähle unter Patienten den Knopf <b>Import</b>.</p>
         <p style="margin-bottom:6px;">3. Die Anmeldung legt den Patienten an oder ergänzt ihn. Die Terminerinnerung trägt E-Mail und Einwilligung ein.</p>
-        <p><b>Anamnese ohne Namen:</b> Der Bogen läuft nur über einen persönlichen Code (Link mit <b>?c=Code</b>). Der Link mit dem richtigen Code wird in Nachrichten mit dem Platzhalter {LinkAnamnese} automatisch für den jeweiligen Patienten eingesetzt (oder über die Schaltfläche „Anamnese senden“ in der Akte). Schicke ihn erst, wenn die Anmeldung da ist. Beim Einlesen ordnet die App die Anamnese über den Code zu (bei einem neuen Code legt sie auf Wunsch einen neuen Patienten an oder ordnet den Code einem vorhandenen zu), füllt Allergien, Medikation und Diagnosen und hängt das PDF an die Akte. Die Unterschrift kommt vor Ort auf das PDF.</p>
+        <p><b>Anamnese ohne Namen:</b> Der Bogen läuft nur über einen persönlichen Code (Link mit <b>?c=Code</b>). Der Link mit dem richtigen Code wird in Nachrichten mit dem Platzhalter {LinkAnamnese} automatisch für den jeweiligen Patienten eingesetzt (oder über die Schaltfläche „Anamnese senden“ in der Akte). Schicke ihn erst, wenn die Anmeldung da ist. Beim Import ordnet die App die Anamnese über den Code zu (bei einem neuen Code legt sie auf Wunsch einen neuen Patienten an oder ordnet den Code einem vorhandenen zu), füllt Allergien, Medikation und Diagnosen und hängt das PDF an die Akte. Die Unterschrift kommt vor Ort auf das PDF.</p>
       </div>
     </div>
   </div>
