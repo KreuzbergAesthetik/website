@@ -375,7 +375,8 @@ body { overflow-x:clip; }
 .a-top .a-title { color:#0f172a; } .a-top .icon-btn, .a-top .a-pen { background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; }
 .a-top .icon-btn:hover, .a-top .a-pen:hover { background:#e2e8f0; }
 .a-top .a-pen.on { background:#2f9e44; }
-#tab-patienten > .card > .card-header .btn { flex:none; white-space:nowrap; }
+#tab-patienten > .card > .card-header .btn { flex:none; white-space:nowrap; } .np-ic { display:none; vertical-align:middle; }
+@media (max-width:520px) { .np-t { display:none; } .np-ic { display:inline-block; } #tab-patienten > .card > .card-header .btn { padding:8px 12px; } }
 .a-top .icon-btn { width:28px; min-width:0; height:28px; min-height:0; padding:0; background:none; border:none; color:#8b98a9; } .a-top .icon-btn svg { width:18px; height:18px; } .a-top .icon-btn:hover { background:#f1f5f9; color:#475569; }
 .a-top #a-edit.a-pen { width:24px; height:24px; background:none; border:none; color:#b4bfcc; } .a-top #a-edit.a-pen svg { width:13px; height:13px; } .a-top #a-edit.a-pen:hover { background:#f1f5f9; color:#64748b; }
 /* Terminansicht: heller Kopf in Kategoriefarbe, Kacheln */
@@ -781,7 +782,7 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Patientenverwaltung</span>
-        <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')">+ Patient</button>
+        <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
       <div class="cal-bar" style="margin-bottom:10px;">
         <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="flex:1 1 200px;">
@@ -1788,7 +1789,7 @@ function persist() {
   try { renderHome(); } catch (x) {}
   try { updateTodoBadge(); } catch (x) {}
 }
-var pSort = 'desc', pKey = 'erstellt';
+var pSort = 'desc', pKey = 'id';
 /* ===== Hinweise an Patienten: offene To-Dos und Termine ohne Rechnung ===== */
 var FLC = null, FLT = 0;
 function flagsMap() {
@@ -1887,8 +1888,8 @@ function fmtDT(ts) {
   return WD[(d.getDay() + 6) % 7] + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2) + ', ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 function hasWarn(p) { var a = (p.allergien || '').trim().toLowerCase(); return a !== '' && a !== 'keine' && a !== '-' && a !== 'nein'; }
-function setPSort(k) { pKey = k; pSort = (k === 'erstellt') ? 'desc' : 'asc'; renderPatients(); }
-function sortBy(k) { if (pKey === k) pSort = pSort === 'asc' ? 'desc' : 'asc'; else { pKey = k; pSort = (k === 'erstellt') ? 'desc' : 'asc'; } renderPatients(); }
+function setPSort(k) { pKey = k; pSort = (k === 'erstellt' || k === 'id') ? 'desc' : 'asc'; renderPatients(); }
+function sortBy(k) { if (pKey === k) pSort = pSort === 'asc' ? 'desc' : 'asc'; else { pKey = k; pSort = (k === 'erstellt' || k === 'id') ? 'desc' : 'asc'; } renderPatients(); }
 function togglePDir() { pSort = pSort === 'asc' ? 'desc' : 'asc'; renderPatients(); }
 function dobNum(d) { var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(String(d || '').trim()); return m ? +m[3] * 10000 + +m[2] * 100 + +m[1] : null; }
 var ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>';
