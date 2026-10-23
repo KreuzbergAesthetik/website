@@ -4262,7 +4262,7 @@ function renderStat() {
   var tb = document.getElementById('st-table'); tb.innerHTML = ''; var cr = 0, co = 0;
   for (var i = 0; i < 12; i++) { cr += ms.rev[i]; co += ms.out[i]; var r = tb.insertRow(); [MN[i], eur(ms.rev[i]), eur(ms.out[i]), eur(ms.rev[i] - ms.out[i]), eur(cr), eur(co)].forEach(function (t) { r.insertCell().textContent = t; }); }
   var tr = tb.insertRow(); [['Summe', eur(rev), eur(out), eur(rev - out), '', '']][0].forEach(function (t) { var c = tr.insertCell(); c.textContent = t; c.style.fontWeight = '700'; });
-  var by = {}; invoices.forEach(function (i) { if (String(i.date).slice(0, 4) !== String(stYear)) return; (i.items || []).forEach(function (it) { if (it.rabatt) return; var k = String(it.text).trim(); by[k] = by[k] || { n: 0, sum: 0 }; by[k].n += it.qty || 1; by[k].sum += it.amount != null ? it.amount : r2(it.qty * it.price); }); });
+  var by = {}; invoices.forEach(function (i) { if (String(i.date).slice(0, 4) !== String(stYear)) return; (i.items || []).forEach(function (it) { if (it.rabatt) return; var k = String(it.text).split(' – ')[0].trim(); by[k] = by[k] || { n: 0, sum: 0 }; by[k].n += it.qty || 1; by[k].sum += it.amount != null ? it.amount : r2(it.qty * it.price); }); });
   var tt = document.getElementById('st-top'); tt.innerHTML = '';
   Object.keys(by).sort(function (a, b) { return by[b].sum - by[a].sum; }).slice(0, 10).forEach(function (k) { var r2r = tt.insertRow(); r2r.insertCell().textContent = k; r2r.insertCell().textContent = String(by[k].n).replace('.', ','); r2r.insertCell().textContent = eur(by[k].sum); });
   if (!tt.rows.length) { var er = tt.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = 'Keine Rechnungen in diesem Jahr'; ec.style.color = '#94a3b8'; }
@@ -5064,7 +5064,7 @@ function riParseNeu(lines, r) {
     else if (x.x >= xS - 12 && x.x < xB - 40 && /^\d+\s*%$/.test(t)) rates.push({ y: x.y, v: parseInt(t, 10) });
     else if (x.x < xP - 4 && /^\d{2}\.\d{2}\.\d{4}$/.test(t)) dats.push({ y: x.y, v: t });
     else if (x.x < xP - 4 && /^\d+(?:[.,]\d+)?$/.test(t)) qtys.push({ y: x.y, v: parseFloat(t.replace(',', '.')) });
-    else if (x.x >= xP - 4 && x.x < xS - 12 || x.x >= xB - 40) txts.push({ y: x.y, x: x.x, v: t });
+    else if (x.x >= xP - 4 && x.x < xS - 12 && !/^€\s*-?\d{1,3}(?:\.\d{3})*,\d{2}$/.test(t)) txts.push({ y: x.y, x: x.x, v: t });
   });
   if (!amts.length) throw new Error('Keine Positionen gefunden');
   amts.sort(function (p, q) { return q.y - p.y; });
@@ -5199,6 +5199,7 @@ async function rechnungenSave() {
       patients.push(p); ensurePatients(); r.pat = p; neu++;
     }
     var items = r.items.map(function (x) { var o = { text: x.text, qty: x.qty, price: x.price, amount: x.amount, rate: x.rate }; if (x.rabatt) { o.rabatt = true; o.pct = x.pct; } return o; });
+    if (p.log && p.log.some(function (l) { return /importierten Rechnung angelegt/.test(l.text || ''); })) { var ts0 = new Date(r.date + 'T12:00:00').getTime(); if (ts0 < p.erstellt) p.erstellt = ts0; }
     var inv = { id: newId(), nr: r.nr, date: r.date, leistung: r.leistung, pid: p.id, name: (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname, adresse: r.adresse || p.adresse || '', items: items, doku: '', eid: null,
       hinweis: items.some(function (x) { return x.rate === 0; }) ? (settings.hinweis || '').trim() : '', zahlung: settings.zahlung || '', vortext: '', total: r.total, payments: [], created: Date.now(), imported: true };
     if (r.storno) { inv.storniert = true; inv.stornoRef = r.stornoRef || ''; }
@@ -6138,6 +6139,18 @@ refreshLeistungen();
 renderHome();
 renderTemplates();
 migrateFiles();
+/* Einmalige Reparatur für schon importierte Rechnungen: Anlagedatum der Patienten und Zusatztexte in Positionen */
+function fixImported() {
+  if (settings.fixImp1) return; var ch = 0, first = {};
+  invoices.forEach(function (i) {
+    if (!i.imported) return;
+    var t = new Date(i.date + 'T12:00:00').getTime(); if (first[i.pid] == null || t < first[i.pid]) first[i.pid] = t;
+    (i.items || []).forEach(function (x) { var n = String(x.text || '').replace(/\s*–?\s*\(\d+(?:[.,]\d+)?x\s*€[^)]*\)/g, '').replace(/\s+€\s*\d{1,3}(?:\.\d{3})*,\d{2}(?=\s+–|$)/g, ''); if (n !== x.text) { x.text = n; ch++; } });
+  });
+  patients.forEach(function (p) { if (first[p.id] != null && first[p.id] < p.erstellt && (p.log || []).some(function (l) { return /importierten Rechnung angelegt/.test(l.text || ''); })) { p.erstellt = first[p.id]; ch++; } });
+  settings.fixImp1 = true; persist();
+}
+fixImported();
 restoreLast();
 
 </script>
