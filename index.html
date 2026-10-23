@@ -807,6 +807,8 @@ function kaStart() {
         </div>
       </div>
       <div id="inv-open"></div>
+      <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
+      <div id="inv-seg" class="za-seg" style="margin-bottom:10px;"></div>
       <div class="scroll">
         <table class="pt" style="min-width:560px; font-size:14px;">
           <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th><th class="sort" onclick="invSortBy('status')">Status <span class="sarr" data-ik="status"></span></th></tr></thead>
@@ -2958,7 +2960,8 @@ function openBox() {
   var t = mk('div', 'ob-t', o.list.length + (o.list.length === 1 ? ' offene Rechnung' : ' offene Rechnungen') + (o.lateN ? ' · davon ' + o.lateN + ' überfällig (' + eur(o.lateSum) + ')' : ''));
   b.appendChild(t); return b;
 }
-var invSort = { k: 'nr', dir: -1 };
+var invSort = { k: 'nr', dir: -1 }, invF = '';
+function invKind(i) { return i.storniert ? 'storno' : invState(i).full ? 'bezahlt' : (invLate(i) ? 'ueberfaellig' : 'offen'); }
 function invSortBy(k) { if (invSort.k === k) invSort.dir = -invSort.dir; else { invSort.k = k; invSort.dir = k === 'name' || k === 'status' ? 1 : -1; } renderInvoices(); }
 function invCmp(a, b) {
   var k = invSort.k, d;
@@ -2975,12 +2978,27 @@ function renderInvoices() {
   [].forEach.call(document.querySelectorAll('[data-ik]'), function (e) { e.innerHTML = e.getAttribute('data-ik') === invSort.k ? (invSort.dir > 0 ? '&#9650;' : '&#9660;') : ''; });
   document.getElementById('inv-empty').style.display = invoices.length ? 'none' : 'block';
   var ob = document.getElementById('inv-open'); if (ob) { ob.innerHTML = ''; var bx = openBox(); if (bx) ob.appendChild(bx); }
-  invoices.slice().sort(function (a, b) { var oa = invState(a).full ? 1 : 0, ob2 = invState(b).full ? 1 : 0; return (oa - ob2) || invCmp(a, b); }).forEach(function (i) {
+  /* Filter und Suche */
+  var cnt = { '': invoices.length, offen: 0, ueberfaellig: 0, bezahlt: 0, storno: 0 };
+  invoices.forEach(function (i) { var k = invKind(i); cnt[k]++; if (k === 'ueberfaellig') cnt.offen++; });
+  var sg = document.getElementById('inv-seg'); sg.innerHTML = '';
+  [['', 'Alle'], ['offen', 'Offen'], ['ueberfaellig', 'Überfällig'], ['bezahlt', 'Bezahlt'], ['storno', 'Storniert']].forEach(function (f) {
+    var bt = mk('button', 'za-b' + (invF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(cnt[f[0]])));
+    bt.onclick = function () { invF = (invF === f[0]) ? '' : f[0]; renderInvoices(); }; sg.appendChild(bt);
+  });
+  var q = (document.getElementById('inv-q').value || '').trim().toLowerCase();
+  var shown = invoices.filter(function (i) {
+    var k = invKind(i);
+    if (invF === 'offen' && k !== 'offen' && k !== 'ueberfaellig') return false; if (invF && invF !== 'offen' && k !== invF) return false;
+    return !q || (i.nr + ' ' + i.name + ' ' + eur(i.total) + ' ' + fmtD(i.date) + ' ' + String(i.total).replace('.', ',')).toLowerCase().indexOf(q) >= 0;
+  });
+  if (!shown.length && invoices.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 5; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
+  shown.sort(function (a, b) { var oa = invState(a).full ? 1 : 0, ob2 = invState(b).full ? 1 : 0; return (oa - ob2) || invCmp(a, b); }).forEach(function (i) {
     var row = tb.insertRow(); if (!invState(i).full) row.className = invLate(i) ? 't-late' : 't-open';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
     var fd = fmtD(i.date); c1.innerHTML = '<span class="hm-l">' + fd + '</span><span class="hm-s">' + fd.slice(0, 5) + '</span>'; c2.textContent = i.name; c3.textContent = eur(i.total); c3.className = 'nw'; c0.className = 'nw'; c4.className = 'nw';
-    var st = invState(i), late = !st.full && invLate(i), bd = mk('span', 'badge ' + (late ? 'badge-red' : st.cls)); bd.innerHTML = '<span class="hm-l">' + (late ? 'Überfällig' : st.txt) + '</span><span class="hm-s">' + (late ? 'Überf.' : st.txt === 'Teilzahlung' ? 'Teil' : st.txt) + '</span>'; c4.appendChild(bd);
+    var st = invState(i), late = !st.full && invLate(i), bd = mk('span', 'badge ' + (late ? 'badge-red' : st.cls)); bd.innerHTML = '<span class="hm-l">' + (late ? 'Überfällig' : st.txt) + '</span><span class="hm-s">' + (late ? 'Überf.' : st.txt === 'Teilzahlung' ? 'Teil' : st.txt === 'Storniert' ? 'Storno' : st.txt) + '</span>'; c4.appendChild(bd);
   });
 }
 /* ===== Alle Tabellen: Klick auf die Spaltenüberschrift sortiert (Zahlen, Beträge, Daten, Monate, Text) ===== */
