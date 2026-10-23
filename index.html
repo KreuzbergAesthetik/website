@@ -479,6 +479,14 @@ body { overflow-x:clip; }
 @media (max-width:520px) { #tab-zahlungen .hm-l { display:none; } #tab-zahlungen .hm-s { display:inline; } #tab-zahlungen .pt { min-width:0 !important; font-size:12.5px !important; } #tab-zahlungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-zahlungen .pt th, #tab-zahlungen .pt td { padding:8px 4px; } #tab-zahlungen .pt .pn { white-space:nowrap; font-size:12.5px; } #tab-rechnungen .card-header { flex-wrap:wrap; } }
 #st-kpi { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; } @media (min-width:600px) { #st-kpi { grid-template-columns:repeat(3,1fr); } }
 .inv-rb { border:1px dashed #cbd5e1; background:#fff; color:#334155; border-radius:16px; padding:4px 12px; font-size:13px; cursor:pointer; font-family:inherit; } .inv-rb:hover { background:#f1f5f9; }
+@media (max-width:520px) {
+  #tab-leistungen .pt { min-width:0 !important; }
+  #tab-leistungen .pt th:nth-child(1), #tab-leistungen .pt td:nth-child(1), #tab-leistungen .pt th:nth-child(5), #tab-leistungen .pt td:nth-child(5), #tab-leistungen .pt th:nth-child(6), #tab-leistungen .pt td:nth-child(6), #tab-leistungen .pt th:nth-child(7), #tab-leistungen .pt td:nth-child(7) { display:none; }
+  #tab-leistungen .pt th:nth-child(3) { width:44px !important; font-size:0; } #tab-leistungen .pt th:nth-child(3)::after { content:'Gr.'; font-size:10.5px; }
+  #tab-leistungen .pt th:nth-child(4) { width:auto !important; } #tab-leistungen .ls-gn { display:none; } #tab-leistungen .pt td:nth-child(3) { text-align:center; } #tab-leistungen .pt td:nth-child(3) span:first-child { margin-right:0 !important; }
+  #tab-leistungen .pt td:nth-child(4) { white-space:nowrap; text-align:right; } #tab-leistungen .pt th:nth-child(4) { text-align:right; }
+  #tab-leistungen .pt th, #tab-leistungen .pt td { padding-left:6px; padding-right:6px; }
+}
 #applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
 html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
@@ -1295,6 +1303,7 @@ function kaStart() {
     </div>
     <div class="grid-2"><div class="form-group"><label>Gruppe (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div><div class="form-group"><label>Dauer in Minuten</label><input type="text" id="ls-dauer" class="form-control" inputmode="numeric" placeholder="z.B. 30"></div></div>
     <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
+    <a href="#" id="ls-cp" style="display:none; font-size:13px; font-weight:600; color:#1e3a8a; text-decoration:none;" onclick="event.preventDefault(); var i = lsIdx; closeModal('modal-leist'); lsCopy(i);">Diese Leistung kopieren</a>
     <div class="foot-bar">
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-leist')">Abbrechen</button>
       <button type="button" id="ls-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteLeist()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
@@ -2756,7 +2765,7 @@ function renderLeist() {
     var i = all.indexOf(k), row = tb.insertRow(), c = [0, 1, 2, 3, 4, 5, 6].map(function () { return row.insertCell(); });
     c[0].textContent = k.id; c[0].style.color = '#64748b';
     var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c[1].appendChild(b);
-    c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); c[2].appendChild(document.createTextNode(kc.name)); } else c[2].textContent = '-';
+    c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); var gn = mk('span', 'ls-gn', kc.name); c[2].appendChild(gn); } else c[2].textContent = '-';
     c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %'; c[5].textContent = k.dauer ? k.dauer + ' min' : '-';
     c[6].style.cssText = 'white-space:nowrap;';
     c[6].appendChild(lsAct('copy', 'Kopieren', function () { lsCopy(i); }, ''));
@@ -2785,7 +2794,7 @@ function openLeist(i) {
   var ks = document.getElementById('ls-kat'); ks.innerHTML = ''; var o0 = mk('option', '', 'Keine Kategorie'); o0.value = ''; ks.appendChild(o0);
   ensureLKats().forEach(function (c) { var o = mk('option', '', c.name); o.value = c.id; ks.appendChild(o); });
   ks.value = k ? (k.kat || '') : ''; document.getElementById('ls-dauer').value = k && k.dauer ? k.dauer : '';
-  document.getElementById('ls-del').style.display = k ? '' : 'none';
+  document.getElementById('ls-del').style.display = k ? '' : 'none'; document.getElementById('ls-cp').style.display = k ? 'inline-block' : 'none';
   var vb = document.getElementById('ls-vorl'); vb.innerHTML = '';
   if (!templates.length) vb.appendChild(mk('div', 'hm-empty', 'Noch keine Vorlagen hochgeladen.'));
   templates.forEach(function (t) {
