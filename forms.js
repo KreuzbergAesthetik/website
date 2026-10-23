@@ -141,10 +141,17 @@ async function deliver(typ, label, who, data, pdfBytes, hp) {
     var r = await fetch(ENDPOINT, { method: 'POST', body: fd });
     var j = null; try { j = await r.json(); } catch (x) {}
     if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || ('Fehler ' + r.status));
-    return { sent: true, blob: blob, fname: fname };
+    return { sent: true, blob: blob, fname: fname, who: who };
   }
-  return { sent: false, blob: blob, fname: fname };
+  return { sent: false, blob: blob, fname: fname, who: who };
 }
+/* Ohne Empfangsserver: das E-Mail-Programm des Geräts mit PDF im Anhang öffnen (Teilen-Menü), sonst mailto ohne Anhang */
+function shareData(res, label) {
+  var file = null; try { file = new File([res.blob], res.fname, { type: 'application/pdf' }); } catch (x) {}
+  if (!file || !navigator.canShare || !navigator.canShare({ files: [file] })) return null;
+  return { files: [file], title: label + (res.who ? ' – ' + res.who.replace(/_/g, ' ') : ''), text: 'An: ' + PRAXIS_F.mail + '\n\nHallo, anbei mein ' + label + ' als PDF.\n' + (res.who || '').replace(/_/g, ' ') };
+}
+function mailtoUrl(res, label) { return 'mailto:' + PRAXIS_F.mail + '?subject=' + encodeURIComponent(label + (res.who ? ' – ' + res.who.replace(/_/g, ' ') : '')) + '&body=' + encodeURIComponent('Hallo, anbei mein ' + label + ' als PDF.\n\n(Bitte das heruntergeladene PDF an diese E-Mail anhängen.)\n' + (res.who || '').replace(/_/g, ' ')); }
 function showDone(res, label) {
   var box = $('formbox'); box.innerHTML = '';
   var d = el('div', { class: 'done' });
@@ -154,19 +161,23 @@ function showDone(res, label) {
     d.appendChild(el('p', { text: 'Dein ' + label + ' ist bei uns angekommen. Wir freuen uns auf Dich.' }));
   } else {
     d.appendChild(el('h1', { text: 'Fast geschafft' }));
-    d.appendChild(el('p', { text: 'Dein ' + label + ' ist als PDF erstellt. Bitte schicke es jetzt an die Praxis.' }));
-    var b = el('div', { class: 'btns' });
-    var url = URL.createObjectURL(res.blob), file = null;
-    try { file = new File([res.blob], res.fname, { type: 'application/pdf' }); } catch (x) {}
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-      var sh = el('button', { class: 'btn primary', type: 'button', text: 'PDF an die Praxis senden' });
-      sh.onclick = function () { navigator.share({ files: [file], title: label + ' ' + PRAXIS_F.name, text: 'Mein ' + label + ' für ' + PRAXIS_F.name }).catch(function () {}); };
+    d.appendChild(el('p', { text: 'Dein ' + label + ' ist als PDF erstellt. Das PDF muss jetzt noch per E-Mail zu uns.' }));
+    var b = el('div', { class: 'btns' }), sd = shareData(res, label), url = URL.createObjectURL(res.blob);
+    if (sd) {
+      var sh = el('button', { class: 'btn primary', type: 'button', text: 'E-Mail mit PDF öffnen' });
+      sh.onclick = function () { navigator.share(sd).catch(function () {}); };
       b.appendChild(sh);
+      d.appendChild(b);
+      d.appendChild(el('p', { class: 'hint', text: 'Wähle im Menü Dein E-Mail-Programm. Das PDF hängt schon an. Die Adresse der Praxis steht im Text: ' + PRAXIS_F.mail }));
+      var b2 = el('div', { class: 'btns' }); b2.appendChild(el('a', { class: 'btn', href: url, download: res.fname, text: 'PDF herunterladen' })); d.appendChild(b2);
+      /* gleich beim Absenden das Teilen-Menü anbieten, solange der Tipp noch frisch ist */
+      try { navigator.share(sd).catch(function () {}); } catch (x) {}
+    } else {
+      b.appendChild(el('a', { class: 'btn primary', href: url, download: res.fname, text: 'PDF herunterladen' }));
+      b.appendChild(el('a', { class: 'btn', href: mailtoUrl(res, label), text: 'E-Mail an die Praxis öffnen' }));
+      d.appendChild(b);
+      d.appendChild(el('p', { class: 'hint', text: 'Lade zuerst das PDF herunter und hänge es dann an die E-Mail an.' }));
     }
-    var a = el('a', { class: 'btn', href: url, download: res.fname, text: 'PDF herunterladen' }); b.appendChild(a);
-    b.appendChild(el('a', { class: 'btn', href: 'mailto:' + PRAXIS_F.mail + '?subject=' + encodeURIComponent(label) + '&body=' + encodeURIComponent('Anbei mein ' + label + ' als PDF.'), text: 'E-Mail an die Praxis öffnen' }));
-    d.appendChild(b);
-    d.appendChild(el('p', { class: 'hint', text: 'Hänge das heruntergeladene PDF an die E-Mail an.' }));
   }
   box.appendChild(d); window.scrollTo(0, 0);
 }
