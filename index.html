@@ -1267,7 +1267,7 @@ function kaStart() {
       <div class="form-group"><label>Betrag in Euro</label><input type="text" id="inv-paybetrag" class="form-control" inputmode="decimal" oninput="invPayAuto = false"></div>
       <div class="form-group"><label>Zahlungsdatum</label><input type="date" id="inv-paydatum" class="form-control"></div>
     </div>
-    <div class="form-group"><label>Dokumentation zum Termin (wird auf der Rechnung gedruckt)</label><textarea id="inv-doku" class="form-control" rows="3"></textarea></div>
+    <div class="form-group"><label>Text zur Behandlung (optional, wird auf der Rechnung gedruckt)</label><textarea id="inv-doku" class="form-control" rows="3"></textarea><button type="button" id="inv-doku-btn" class="btn btn-secondary btn-sm" style="display:none; margin-top:6px;" onclick="invDokuEinfuegen()">Text aus der Dokumentation einfügen</button></div>
     <div class="form-group"><label>Zahlungshinweis (wird bei offenen Rechnungen gedruckt)</label><textarea id="inv-zahlung" class="form-control" rows="2"></textarea></div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-inv')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveInvoice()">Rechnung erstellen</button></div>
   </div>
@@ -2867,7 +2867,7 @@ function openInvoice(p) {
   document.getElementById('inv-paydatum').value = ''; document.getElementById('inv-paybetrag').value = ''; setInvPay('');
   document.getElementById('inv-zahlung').value = settings.zahlung || '';
   invRows = [newRow('pos')];
-  document.getElementById('inv-doku').value = '';
+  document.getElementById('inv-doku').value = ''; invDokEv = null; document.getElementById('inv-doku-btn').style.display = 'none';
   fillTermine(p);
   renderInvRows();
   openModal('modal-inv');
@@ -2880,11 +2880,18 @@ function fillTermine(p) {
     .sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
     .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Doku' : '')); o.value = String(e.id); sel.appendChild(o); });
 }
+var invDokEv = null;
+function invDokuEinfuegen() {
+  var e = invDokEv; if (!e || !e.dok || !String(e.dok.rechnung || '').trim()) return;
+  var ta = document.getElementById('inv-doku'), t = String(e.dok.rechnung).trim();
+  if (ta.value.indexOf(t) < 0) ta.value = (ta.value.trim() ? ta.value.trim() + '\n' : '') + t;
+}
 function invTerminChanged() {
   var id = parseInt(document.getElementById('inv-termin').value, 10);
-  var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
+  var e = events.filter(function (x) { return x.id === id; })[0];
+  if (!e) { invDokEv = null; document.getElementById('inv-doku-btn').style.display = 'none'; return; }
   document.getElementById('inv-leistung').value = e.date;
-  document.getElementById('inv-doku').value = dokuText(e);
+  invDokEv = e; var rb = document.getElementById('inv-doku-btn'); if (rb) rb.style.display = e.dok && String(e.dok.rechnung || '').trim() ? '' : 'none';
   var lst = evLeistungen(e).filter(function (n) { return findKat(n); });
   if (lst.length > 1 || (lst.length === 1 && lst[0] !== e.behandlung)) {
     var f0 = invRows[0]; if (invRows.length === 1 && f0.type === 'pos' && !f0.text.trim() && !f0.price) invRows = [];
@@ -4110,7 +4117,7 @@ function addDocs(inp, key) {
 /* ===== Dokumentation eines Termins (strukturiert) und To-Dos ===== */
 var DK_TEXT = [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung']];
 var DK_VERW = [['aufkl', 'Aufklärung'], ['dok', 'Dokumente'], ['anam', 'Anamnesebogen'], ['honorar', 'Honorarvertrag']];
-var DK_FIELDS = ['anamnese', 'befund', 'behandlung', 'leist', 'produkte', 'ausblick'];
+var DK_FIELDS = ['anamnese', 'befund', 'behandlung', 'leist', 'produkte', 'ausblick', 'rechnung'];
 var dkEv = null, dkTodos = [], tdPrio = '', tdStat = 'offen', toCur = null;
 function dokOf(e) { return e.dok || { anamnese: '', befund: '', behandlung: e.doku || '', verw: {}, leist: '', produkte: '', ausblick: '' }; }
 function dokFilled(e) {
@@ -4191,6 +4198,7 @@ function openDok(id) {
   var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Weitere Produkte oder Anmerkungen'; pw.appendChild(pta);
   box.appendChild(dkSec('Verwendete Produkte', pw));
   box.appendChild(dkTextSec('dk-ausblick', 'Ausblick und Procedere', d.ausblick));
+  var rs = dkTextSec('dk-rechnung', 'Text für die Rechnung', d.rechnung, 3); rs.appendChild(mk('div', 'hm-empty', 'Wird nicht automatisch übertragen. In der Rechnung kannst Du diesen Text bei Bedarf einfügen.')); box.appendChild(rs);
   var tw = mk('div'); var tl = mk('div'); tl.id = 'dk-todos'; tw.appendChild(tl);
   var ta2 = mk('div', 'add-row', '+ To-Do hinzufügen'); ta2.onclick = function () { dkTodos.push({ id: newId(), text: '', prio: 'mittel', due: '', done: false, created: Date.now() }); dkRenderTodos(); var ins = document.querySelectorAll('#dk-todos input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); }; tw.appendChild(ta2);
   box.appendChild(dkSec('To-Do', tw));
@@ -4200,7 +4208,7 @@ function saveDok() {
   var e = dkEv; if (!e) return;
   var g = function (id) { return (document.getElementById(id).value || '').trim(); };
   var verw = { text: g('dk-verwtext') }; DK_VERW.forEach(function (v) { verw[v[0]] = document.getElementById('dk-v-' + v[0]).checked; });
-  e.dok = { anamnese: g('dk-anamnese'), befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick') };
+  e.dok = { anamnese: g('dk-anamnese'), befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
   e.doku = dokuText(e);
   var p = patOf(e);
   todos = todos.filter(function (t) { return t.eid !== e.id; }).concat(dkTodos.filter(function (t) { return String(t.text).trim(); }).map(function (t) { t.eid = e.id; t.pid = p ? p.id : undefined; t.text = String(t.text).trim(); return t; }));
