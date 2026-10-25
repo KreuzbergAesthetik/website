@@ -534,7 +534,8 @@ body { overflow-x:clip; }
 .pt-dots { position:absolute; left:-5px; top:17px; display:flex; flex-direction:column; gap:3px; }
 .addr-block { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; } .addr-str { grid-column:1 / 3; } .addr-nr { grid-column:3; } .addr-plz { grid-column:1; } .addr-ort { grid-column:2 / 4; }
 .pt-tit { font-size:12px; color:#64748b; margin-left:8px; white-space:nowrap; flex:none; }
-.pt-acts { display:flex; gap:6px; margin-top:8px; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
+.pt-dr { display:flex; justify-content:space-between; align-items:baseline; gap:8px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
+.pt-acts { display:flex; gap:6px; margin-top:8px; } .pt-acts .pt-ib { flex:1 1 0; width:auto; max-width:64px; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
 .pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; }
 .pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
@@ -1820,7 +1821,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-27-v';
+var KA_V = '2026-10-27-w';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2114,6 +2115,14 @@ function renderPatients() {
     else d = (a.erstellt - b.erstellt) || (a.id - b.id);
     return pSort === 'desc' ? -d : d;
   };
+  /* nächster (sonst letzter) Termin je Patient */
+  var nowT = Date.now(), evMap = {};
+  events.forEach(function (e) {
+    if (e.phase === 'Abgesagt') return; var t = new Date(e.date + 'T' + e.time).getTime(); if (!t) return;
+    var m = evMap[e.patient] = evMap[e.patient] || { next: null, last: null };
+    if (t >= nowT) { if (!m.next || t < m.next) m.next = t; } else if (!m.last || t > m.last) m.last = t;
+  });
+  var fmtS = function (t) { var d = new Date(t); return WD[(d.getDay() + 6) % 7] + ' ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + (d.getFullYear() === new Date().getFullYear() ? '' : String(d.getFullYear()).slice(2)) + (t >= nowT ? ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) : ''); };
   patients.slice().sort(cmp).forEach(function (p) {
     var o = document.createElement('option'); o.value = p.vorname + ' ' + p.nachname; dl.appendChild(o);
     if (q && (nameKey(p) + ' ' + p.nachname + ' ' + (p.phone || '') + ' ' + (p.dob || '') + ' #' + patNr(p)).toLowerCase().indexOf(q) < 0) return;
@@ -2132,7 +2141,12 @@ function renderPatients() {
     if (p.titel) nrow.appendChild(mk('span', 'pt-tit', p.titel));
     c1.appendChild(nrow);
     var sub = [p.dob ? 'geb. ' + p.dob + (age !== '' ? ' (' + age + ')' : '') : '', { Frau: '♀', Herr: '♂', Divers: '⚧' }[p.anrede] || ''].filter(Boolean).join(' · ');
-    if (sub) c1.appendChild(mk('div', 'pt-dob', sub));
+    var em = evMap[nameKey(p)], et = em ? (em.next ? { t: em.next, l: 'Nächster Termin: ' } : em.last ? { t: em.last, l: 'Letzter Termin: ' } : null) : null;
+    if (sub || et) {
+      var dr = mk('div', 'pt-dr'); dr.appendChild(mk('span', 'pt-dob', sub));
+      if (et) { var ev = mk('span', 'pt-ev' + (et.l[0] === 'N' ? ' next' : ''), fmtS(et.t)); ev.title = et.l + fmtDT(et.t); dr.appendChild(ev); }
+      c1.appendChild(dr);
+    }
     /* Schnellaktionen */
     var acts = mk('div', 'pt-acts');
     var ib = function (k, t, fn) { var b = mk('button', 'pt-ib'); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k); b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
