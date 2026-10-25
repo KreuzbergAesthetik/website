@@ -253,9 +253,10 @@ body.akte-open main { display:none; }
 .a-sex { font-size:17px; color:#64748b; margin-left:8px; font-weight:400; }
 .a-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:40; }
 body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
-.a-cats { display:flex; gap:6px; } .a-cat { width:42px; height:42px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
-.a-cat.c0, .am-tile.c0 { --ac:#2563eb; --ab:#eff4ff; } .a-cat.c1, .am-tile.c1 { --ac:#15803d; --ab:#effaf2; } .a-cat.c2, .am-tile.c2 { --ac:#7c3aed; --ab:#f5f1ff; } .a-cat.c3, .am-tile.c3 { --ac:#0f766e; --ab:#ecfaf8; }
-.a-cat[class*=" c"] { color:var(--ac); border-color:color-mix(in srgb, var(--ac) 35%, #fff); background:var(--ab); }
+.a-cats { display:flex; gap:5px; } .a-cat { width:38px; height:38px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
+.am-tile.c0 { --ac:#2563eb; --ab:#eff4ff; } .am-tile.c1 { --ac:#15803d; --ab:#effaf2; } .am-tile.c2 { --ac:#7c3aed; --ab:#f5f1ff; } .am-tile.c3 { --ac:#0f766e; --ab:#ecfaf8; }
+.a-cat.d0 { --ac:#2563eb; --ab:#eff4ff; } .a-cat.d1 { --ac:#15803d; --ab:#effaf2; } .a-cat.d2 { --ac:#1e3a8a; --ab:#eef1fa; } .a-cat.d3 { --ac:#b45309; --ab:#fdf5ea; } .a-cat.d4 { --ac:#7c3aed; --ab:#f5f1ff; } .a-cat.d5 { --ac:#0f766e; --ab:#ecfaf8; }
+.a-cat[class*=" d"] { color:var(--ac); border-color:color-mix(in srgb, var(--ac) 35%, #fff); background:var(--ab); }
 .a-menu .am-tile[class*=" c"] svg { color:var(--ac); } .a-menu .am-tile[class*=" c"] { background:var(--ab); border-color:color-mix(in srgb, var(--ac) 22%, #fff); }
 .a-fab .a-menu { top:auto; bottom:calc(100% + 10px); right:0; width:min(372px, calc(100vw - 24px)); max-height:70vh; overflow-y:auto; padding:8px 10px 10px; border-radius:14px; }
 .am-h { font-size:11px; font-weight:800; color:#64748b; letter-spacing:.06em; text-transform:uppercase; padding:8px 4px 6px; } .am-h:first-child { padding-top:2px; }
@@ -5420,11 +5421,13 @@ var AM_GROUPS = [
   { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamwa', 'wa', 'Anamnese WhatsApp'], ['anamlink', 'link', 'Anamnese-Link']] },
   { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] }
 ];
+/* Symbolleiste: Termin, Rechnung und Rezept (häufigste Aktionen) starten direkt, die anderen öffnen ihre Kategorie */
+var AM_DOCK = [{ t: 'Dokumentieren', ic: 'book', g: 0, c: 'd0' }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Rezept', ic: 'rx', act: 'rezept', c: 'd3' }, { t: 'Nachrichten', ic: 'mail', g: 2, c: 'd4' }, { t: 'Dateien', ic: 'img', g: 3, c: 'd5' }];
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
-  AM_GROUPS.forEach(function (g, i) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat c' + i; b.title = g.t; b.setAttribute('aria-label', g.t); b.innerHTML = tvSvg(g.ic);
-    b.onclick = function (ev) { toggleAMenu(ev, i); }; box.appendChild(b);
+  AM_DOCK.forEach(function (d) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c; b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
+    b.onclick = function (ev) { if (d.act) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); } else toggleAMenu(ev, d.g); }; box.appendChild(b);
   });
 })();
 function toggleAMenu(ev, gi) {
