@@ -39,7 +39,8 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .viz-wrap { position:relative; } .viz-wrap svg { display:block; width:100%; height:auto; }
 .viz-legend { display:flex; gap:16px; font-size:13px; color:#334155; margin-bottom:6px; flex-wrap:wrap; } .viz-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; }
 .viz-tip { position:absolute; pointer-events:none; background:#0f172a; color:#fff; font-size:12px; padding:6px 9px; border-radius:6px; z-index:5; white-space:nowrap; display:none; line-height:1.5; }
-.dk-sec { margin-bottom:14px; } .dk-h { font-size:13px; font-weight:700; color:#334155; margin-bottom:4px; }
+.dk-sec { margin-bottom:14px; } .dk-hrow { display:flex; justify-content:space-between; align-items:center; } .dk-tb { width:26px; height:26px; border:none; border-radius:8px; background:#eef2f7; color:#64748b; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; margin:-4px 0 0; } .dk-tb:hover { background:#e2e8f0; color:#334155; }
+.dk-grow { resize:none; overflow:hidden; min-height:38px; } .dk-vgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-bottom:8px; } .dk-h { font-size:13px; font-weight:700; color:#334155; margin-bottom:4px; }
 .prio { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; }
 .prio-hoch { background:#fee2e2; color:#b91c1c; } .prio-mittel { background:#fef3c7; color:#92400e; } .prio-niedrig { background:#e2e8f0; color:#475569; }
 .td-row { display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid #f1f5f9; }
@@ -1811,7 +1812,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-27-r';
+var KA_V = '2026-10-27-s';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4401,8 +4402,24 @@ function dokSummary(e) {
 }
 function dkSec(label, node) { var s2 = mk('div', 'dk-sec'); s2.appendChild(mk('div', 'dk-h', label)); s2.appendChild(node); return s2; }
 function dkTa(id, val, rows) { var ta = mk('textarea', 'form-control'); ta.id = id; ta.rows = rows || 3; ta.value = val || ''; return ta; }
-function dkTextSec(id, label, val, rows) {
-  var w = mk('div'), ta = dkTa(id, val, rows); w.appendChild(ta); var tp = tbPicker(ta); if (tp) w.appendChild(tp); return dkSec(label, w);
+/* Textfeld, das mit dem Inhalt wächst: beginnt mit einer Zeile */
+function autoGrow(ta) { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; }
+var TB_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/></svg>';
+function dkTextSec(id, label, val, rows, grow) {
+  var w = mk('div'), ta = dkTa(id, val, grow ? 1 : rows); w.appendChild(ta);
+  if (grow) { ta.classList.add('dk-grow'); ta.addEventListener('input', function () { autoGrow(ta); }); }
+  var s2 = dkSec(label, w), list = settings.textbausteine || [];
+  if (list.length) {
+    var h = s2.firstChild; h.classList.add('dk-hrow');
+    var bt = mk('button', 'dk-tb'); bt.type = 'button'; bt.innerHTML = TB_ICON; bt.title = 'Textbaustein einfügen'; bt.setAttribute('aria-label', 'Textbaustein einfügen');
+    bt.onclick = function (ev) { tlMenu(ev, list.map(function (t) { return [t.name, function () {
+      var a = ta.selectionStart == null ? ta.value.length : ta.selectionStart, b = ta.selectionEnd == null ? a : ta.selectionEnd;
+      var pre = (a > 0 && !/\s$/.test(ta.value.slice(0, a))) ? '\n' : '', ins = pre + t.text;
+      ta.value = ta.value.slice(0, a) + ins + ta.value.slice(b); ta.focus(); ta.selectionStart = ta.selectionEnd = a + ins.length; ta.dispatchEvent(new Event('input'));
+    }]; })); };
+    h.appendChild(bt);
+  }
+  return s2;
 }
 function dkRenderProd() {
   var box = document.getElementById('dk-prod'); if (!box || !dkEv) return; box.innerHTML = '';
@@ -4427,9 +4444,9 @@ function openDok(id) {
   dkEv = e; var d = dokOf(e), box = document.getElementById('dk-body'); box.innerHTML = '';
   document.getElementById('dk-title').textContent = 'Dokumentation · ' + e.patient + ' · ' + fmtTermin(e);
   dkTodos = todos.filter(function (t) { return t.eid === e.id; }).map(function (t) { return Object.assign({}, t); });
-  DK_TEXT.forEach(function (k) { box.appendChild(dkTextSec('dk-' + k[0], k[1], d[k[0]])); });
-  var vw = mk('div'), vs = d.verw || {};
-  DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin-bottom:4px;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vw.appendChild(l); });
+  DK_TEXT.forEach(function (k) { box.appendChild(dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true)); });
+  var vw = mk('div'), vs = d.verw || {}, vg = mk('div', 'dk-vgrid'); vw.appendChild(vg);
+  DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vg.appendChild(l); });
   var vt = dkTa('dk-verwtext', vs.text, 2); vt.placeholder = 'Freitext zur Verwaltung'; vt.style.marginTop = '6px'; vw.appendChild(vt);
   box.appendChild(dkSec('Verwaltung', vw));
   var lw = mk('div'), lta = dkTa('dk-leist', d.leist || evLeistungen(e).join('\n'), 2); lw.appendChild(lta);
@@ -4451,6 +4468,7 @@ function openDok(id) {
   var ta2 = mk('div', 'add-row', '+ To-Do hinzufügen'); ta2.onclick = function () { dkTodos.push({ id: newId(), text: '', prio: 'mittel', due: '', done: false, created: Date.now() }); dkRenderTodos(); var ins = document.querySelectorAll('#dk-todos input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); }; tw.appendChild(ta2);
   box.appendChild(dkSec('To-Do', tw));
   dkRenderProd(); dkRenderTodos(); openModal('modal-dok');
+  [].slice.call(box.querySelectorAll('.dk-grow')).forEach(autoGrow);
 }
 function saveDok() {
   var e = dkEv; if (!e) return;
