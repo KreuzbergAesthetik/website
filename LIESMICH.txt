@@ -34,3 +34,6 @@ Darin EMPFAENGER und ERLAUBT prüfen. Dann in forms.js bei ENDPOINT die Adresse 
 Das ausgefüllte PDF kommt als E-Mail-Anhang bei der Praxis an.
 In die App übernehmen: PDF speichern, unter Patienten auf Import tippen und das PDF wählen. Die Formulardaten stecken im PDF.
 Der Datenschutztext in forms.js (DATENSCHUTZ) ist ein Entwurf und sollte durch den eigenen, geprüften Text ersetzt werden.
+
+Update-Bestätigung: Die App lädt eine neue Version im Hintergrund, wechselt aber erst nach Tipp auf "Jetzt aktualisieren" (Hinweisleiste unten).
+Beim Veröffentlichen einer neuen Version muss in sw.js die Zeile mit V (Versionsstand) geändert werden, sonst erkennt das Gerät keine neue Version.
