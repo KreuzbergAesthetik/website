@@ -40,6 +40,13 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .viz-legend { display:flex; gap:16px; font-size:13px; color:#334155; margin-bottom:6px; flex-wrap:wrap; } .viz-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; }
 .viz-tip { position:absolute; pointer-events:none; background:#0f172a; color:#fff; font-size:12px; padding:6px 9px; border-radius:6px; z-index:5; white-space:nowrap; display:none; line-height:1.5; }
 .dk-sec { margin-bottom:14px; } .dk-hrow { display:flex; justify-content:space-between; align-items:center; } .dk-tb { width:26px; height:26px; border:none; border-radius:8px; background:#eef2f7; color:#64748b; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; margin:-4px 0 0; } .dk-tb:hover { background:#e2e8f0; color:#334155; }
+.dk-fold .dk-fh { cursor:pointer; display:flex; align-items:center; gap:8px; } .dk-fold .dk-fh::after { content:'›'; margin-left:auto; color:#94a3b8; font-size:18px; line-height:1; transform:rotate(90deg); } .dk-fold.closed .dk-fh::after { transform:none; }
+.dk-fold.closed > :not(.dk-h) { display:none; } .dk-fold.closed .dk-tb { display:none; } .dk-fold .dk-tb { order:3; } .dk-sum { font-weight:400; font-size:12px; color:#94a3b8; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .dk-fold:not(.closed) .dk-sum { display:none; }
+.dk-fold { border-top:1px solid #eef2f6; padding-top:8px; }
+.dk-lwrap input { font-size:14px; padding-left:10px; padding-right:8px; } .dk-lrow { display:flex; gap:8px; align-items:center; } .dk-lwrap { position:relative; flex:1; min-width:0; } .dk-pb { flex:none; white-space:nowrap; }
+.dk-dd { display:none; position:absolute; left:0; right:0; top:100%; margin-top:4px; z-index:60; background:#fff; border:1px solid #cbd5e1; border-radius:10px; box-shadow:0 8px 24px rgba(15,23,42,.15); max-height:240px; overflow:auto; }
+.dk-ddi { display:block; width:100%; text-align:left; border:none; background:none; padding:9px 12px; font-size:14px; color:#0f172a; cursor:pointer; } .dk-ddi:hover { background:#f1f5f9; } .dk-own { color:#2563eb; border-top:1px solid #eef2f6; }
+.dk-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } .dk-chips:empty { display:none; } .dk-chip { display:inline-flex; align-items:center; gap:4px; background:#eef2f7; color:#334155; border-radius:999px; padding:4px 6px 4px 10px; font-size:13px; } .dk-chx { border:none; background:none; color:#94a3b8; font-size:16px; line-height:1; cursor:pointer; padding:0 4px; } .dk-chx:hover { color:#dc2626; }
 .dk-grow { resize:none; overflow:hidden; min-height:38px; } .dk-vgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-bottom:8px; } .dk-h { font-size:13px; font-weight:700; color:#334155; margin-bottom:4px; }
 .prio { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; }
 .prio-hoch { background:#fee2e2; color:#b91c1c; } .prio-mittel { background:#fef3c7; color:#92400e; } .prio-niedrig { background:#e2e8f0; color:#475569; }
@@ -1812,7 +1819,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-27-s';
+var KA_V = '2026-10-27-t';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4421,6 +4428,14 @@ function dkTextSec(id, label, val, rows, grow) {
   }
   return s2;
 }
+/* Einklappbarer Abschnitt: geschlossen, solange nichts drinsteht; Tipp auf die Überschrift öffnet ihn */
+function dkFold(sec, content) {
+  var h = sec.firstChild, filled = String(content || '').trim(), sum = mk('span', 'dk-sum', filled ? filled.replace(/\s+/g, ' ').slice(0, 34) + (filled.length > 34 ? '…' : '') : '');
+  sec.classList.add('dk-fold'); if (!filled) sec.classList.add('closed');
+  h.insertBefore(sum, h.firstChild.nextSibling); h.classList.add('dk-fh');
+  h.onclick = function (ev) { if (ev.target.closest('.dk-tb')) return; sec.classList.toggle('closed'); var ta = sec.querySelector('textarea'); if (ta && !sec.classList.contains('closed')) ta.focus(); };
+  return sec;
+}
 function dkRenderProd() {
   var box = document.getElementById('dk-prod'); if (!box || !dkEv) return; box.innerHTML = '';
   var used = lager.verbrauch.filter(function (v) { return v.eid === dkEv.id; });
@@ -4449,24 +4464,39 @@ function openDok(id) {
   DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vg.appendChild(l); });
   var vt = dkTa('dk-verwtext', vs.text, 2); vt.placeholder = 'Freitext zur Verwaltung'; vt.style.marginTop = '6px'; vw.appendChild(vt);
   box.appendChild(dkSec('Verwaltung', vw));
-  var lw = mk('div'), lta = dkTa('dk-leist', d.leist || evLeistungen(e).join('\n'), 2); lw.appendChild(lta);
-  if ((settings.katalog || []).length) {
-    var ls = mk('select', 'form-control'); ls.style.cssText = 'width:auto; max-width:100%; min-height:32px; padding:4px 8px; font-size:12.5px; margin-top:6px;';
-    var o0 = mk('option', '', 'Leistung aus dem Katalog hinzufügen...'); o0.value = ''; ls.appendChild(o0);
-    settings.katalog.forEach(function (k, i) { var o = mk('option', '', k.name); o.value = String(i); ls.appendChild(o); });
-    ls.onchange = function () { var k = settings.katalog[+ls.value]; ls.value = ''; if (!k) return; lta.value = (lta.value.trim() ? lta.value.trim() + '\n' : '') + k.name; };
-    lw.appendChild(ls);
-  }
-  box.appendChild(dkSec('Leistungen', lw));
-  var pw = mk('div'); var pl = mk('div'); pl.id = 'dk-prod'; pw.appendChild(pl);
-  var pb = mk('button', 'btn btn-secondary btn-sm', '+ Produkt verwenden'); pb.type = 'button'; pb.style.margin = '4px 0 8px'; pb.onclick = function () { openVb(e.id); }; pw.appendChild(pb);
-  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Weitere Produkte oder Anmerkungen'; pw.appendChild(pta);
-  box.appendChild(dkSec('Verwendete Produkte', pw));
-  box.appendChild(dkTextSec('dk-ausblick', 'Ausblick und Procedere', d.ausblick));
-  var rs = dkTextSec('dk-rechnung', 'Text für die Rechnung', d.rechnung, 3); rs.appendChild(mk('div', 'hm-empty', 'Wird nicht automatisch übertragen. In der Rechnung kannst Du diesen Text bei Bedarf einfügen.')); box.appendChild(rs);
+  /* Leistungen und Produkte: eine Leiste zum Tippen oder Auswählen, darunter die gewählten Leistungen und die abgebuchten Produkte */
+  var lw = mk('div'), lta = dkTa('dk-leist', d.leist || evLeistungen(e).join('\n'), 2); lta.style.display = 'none'; lw.appendChild(lta);
+  var lrow = mk('div', 'dk-lrow'), lwrap = mk('div', 'dk-lwrap'), lin = mk('input', 'form-control'); lin.type = 'text'; lin.placeholder = 'Leistung eintippen oder wählen'; lin.autocomplete = 'off'; lin.setAttribute('aria-label', 'Leistung');
+  var dd = mk('div', 'dk-dd'), chips = mk('div', 'dk-chips');
+  var lget = function () { return lta.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean); };
+  var lset = function (a) { lta.value = a.join('\n'); lta.dispatchEvent(new Event('input')); drawChips(); };
+  var drawChips = function () {
+    chips.innerHTML = ''; lget().forEach(function (n, k) {
+      var c = mk('span', 'dk-chip', n), x = mk('button', 'dk-chx', '×'); x.type = 'button'; x.setAttribute('aria-label', n + ' entfernen');
+      x.onclick = function () { var a = lget(); a.splice(k, 1); lset(a); }; c.appendChild(x); chips.appendChild(c);
+    });
+  };
+  var addL = function (n) { n = String(n || '').trim(); if (!n) return; var a = lget(); if (a.indexOf(n) < 0) a.push(n); lset(a); lin.value = ''; dd.style.display = 'none'; };
+  var showDd = function () {
+    var q = lin.value.trim().toLowerCase(), cat = (settings.katalog || []).filter(function (k) { return !q || k.name.toLowerCase().indexOf(q) >= 0; }).slice(0, 12);
+    dd.innerHTML = '';
+    cat.forEach(function (k) { var b = mk('button', 'dk-ddi', k.name); b.type = 'button'; b.onmousedown = function (ev) { ev.preventDefault(); addL(k.name); }; dd.appendChild(b); });
+    var raw = lin.value.trim(); if (raw && !cat.some(function (k) { return k.name.toLowerCase() === raw.toLowerCase(); })) { var o = mk('button', 'dk-ddi dk-own', '„' + raw + '“ so übernehmen'); o.type = 'button'; o.onmousedown = function (ev) { ev.preventDefault(); addL(raw); }; dd.appendChild(o); }
+    dd.style.display = dd.children.length ? 'block' : 'none';
+  };
+  lin.addEventListener('input', showDd); lin.addEventListener('focus', showDd); lin.addEventListener('blur', function () { dd.style.display = 'none'; });
+  lin.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); var q = lin.value.trim().toLowerCase(), hit = (settings.katalog || []).filter(function (k) { return k.name.toLowerCase().indexOf(q) >= 0; }); addL(q && hit.length === 1 ? hit[0].name : lin.value); } });
+  lwrap.appendChild(lin); lwrap.appendChild(dd); lrow.appendChild(lwrap);
+  var pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); }; lrow.appendChild(pb);
+  lw.appendChild(lrow); lw.appendChild(chips); drawChips();
+  var pl = mk('div'); pl.id = 'dk-prod'; lw.appendChild(pl);
+  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; lw.appendChild(pta);
+  box.appendChild(dkSec('Leistungen und Produkte', lw));
+  box.appendChild(dkFold(dkTextSec('dk-ausblick', 'Ausblick und Procedere', d.ausblick), d.ausblick));
+  var rs = dkTextSec('dk-rechnung', 'Text für die Rechnung', d.rechnung, 3); rs.appendChild(mk('div', 'hm-empty', 'Wird nicht automatisch übertragen. In der Rechnung kannst Du diesen Text bei Bedarf einfügen.')); box.appendChild(dkFold(rs, d.rechnung));
   var tw = mk('div'); var tl = mk('div'); tl.id = 'dk-todos'; tw.appendChild(tl);
   var ta2 = mk('div', 'add-row', '+ To-Do hinzufügen'); ta2.onclick = function () { dkTodos.push({ id: newId(), text: '', prio: 'mittel', due: '', done: false, created: Date.now() }); dkRenderTodos(); var ins = document.querySelectorAll('#dk-todos input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); }; tw.appendChild(ta2);
-  box.appendChild(dkSec('To-Do', tw));
+  box.appendChild(dkFold(dkSec('To-Do', tw), dkTodos.length ? dkTodos.length + ' offen' : ''));
   dkRenderProd(); dkRenderTodos(); openModal('modal-dok');
   [].slice.call(box.querySelectorAll('.dk-grow')).forEach(autoGrow);
 }
