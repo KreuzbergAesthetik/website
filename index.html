@@ -965,6 +965,9 @@ function kaStart() {
     <div class="form-group"><label>Adresse von sendmail.php</label><input type="text" id="s-mailurl" class="form-control" placeholder="https://www.kreuzberg-aesthetik.de/app/sendmail.php" autocomplete="off"></div>
     <div class="form-group"><label>Zugangscode</label><input type="password" id="s-mailtoken" class="form-control" autocomplete="off"></div>
     <div style="font-size:12px; color:#64748b; margin-top:6px;">Die Leistungen mit Preisen pflegst Du jetzt im Reiter Leistungen.</div>
+      <div class="ak-h">Titel in den Namen</div>
+      <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Akademische Titel stehen im eigenen Feld „Titel“, nicht mehr im Namen. Falls die Umstellung etwas durcheinandergebracht hat, kannst Du sie hier zurücknehmen.</div>
+      <button type="button" class="btn btn-cancel" onclick="titelRueckgaengig()">Umstellung rückgängig machen</button>
       <div class="foot-bar"><button type="button" class="btn btn-save" id="s-save" onclick="saveSettings()">Speichern</button></div>
     </div>
   </div>
@@ -1827,6 +1830,9 @@ function splitTitel(p) {
   var ti = [], nm = (String(p.vorname || '') + ' ' + String(p.nachname || '')).split(/\s+/).filter(function (w) { if (w && TITEL_RE.test(w)) { ti.push(w); return false; } return !!w; });
   return { name: nm.join(' ') || nameKey(p), titel: ti.join(' ') };
 }
+/* Name ohne akademische Titel, klein geschrieben: zum Vergleichen von Namen aus Rechnungen und Formularen */
+function nameNorm(t) { return String(t || '').split(/\s+/).filter(function (w) { return w && !TITEL_RE.test(w); }).join(' ').toLowerCase(); }
+function noTitel(t) { return String(t || '').split(/\s+/).filter(function (w) { return w && !TITEL_RE.test(w); }).join(' '); }
 try { var sp = JSON.parse(kaGet('ka_patients')); if (Array.isArray(sp)) patients = sp; } catch (x) {}
 ensurePatients();
 var lager = { produkte: [], chargen: [], verbrauch: [] };
@@ -1941,6 +1947,10 @@ function ensurePatients() {
   var used = {}, mx = 0; patients.forEach(function (p) { if (p.nr > 0) { used[p.nr] = true; if (p.nr > mx) mx = p.nr; } });
   patients.forEach(function (p) { if (!(p.nr > 0)) { if (!used[p.id]) { p.nr = p.id; used[p.id] = true; if (p.id > mx) mx = p.id; } } });
   patients.forEach(function (p) { if (!(p.nr > 0)) p.nr = ++mx; });
+  if (typeof settings === 'object' && settings && settings.titelMig && Array.isArray(events)) patients.forEach(function (p) {
+    var v = noTitel(p.vorname), n = noTitel(p.nachname), k = nameKey(p);
+    if ((v !== p.vorname || n !== p.nachname) && (v || n) && !events.some(function (e) { return e.patient === k; })) { if (!p.titel) p.titel = splitTitel(p).titel; p.vorname = v; p.nachname = n; }
+  });
   patients.forEach(function (p) {
     /* Titel als eigenes Feld: aus dem Namen und aus Notizzeilen „Titel: …“ übernehmen, der Name bleibt unverändert */
     if (!p.titel) {
@@ -1954,6 +1964,40 @@ function ensurePatients() {
     if (p.formSt) { Object.keys(p.formSt).forEach(function (k) { ['sent', 'got'].forEach(function (art) { if (p.formSt[k][art]) (p.best = p.best || []).push({ k: k, art: art, ts: p.formSt[k][art] }); }); }); delete p.formSt; }
     if (p.anamneseBest) { (p.best = p.best || []).push({ k: 'anamnese', art: 'vorOrt', ts: p.anamneseBest }); delete p.anamneseBest; }
   });
+}
+/* Einmalig: akademische Titel aus Vor- und Nachname lösen. Termine hängen über den Namen am Patienten und werden mitgeändert.
+   Die alten Namen merkt sich ka_bak_titel, damit sich die Umstellung rückgängig machen lässt. */
+function titelMigration() {
+  if (settings.titelMig) return;
+  settings.titelMig = 1;
+  var keys = {}, map = [], skipped = [];
+  patients.forEach(function (p) { var k = nameKey(p); keys[k] = (keys[k] || 0) + 1; });
+  patients.forEach(function (p) {
+    var v = noTitel(p.vorname), n = noTitel(p.nachname);
+    if ((v === p.vorname && n === p.nachname) || (!v && !n)) return;
+    var old = nameKey(p), nk = v + ' ' + n;
+    if (keys[nk]) { skipped.push(old); return; }
+    if (!p.titel) p.titel = splitTitel(p).titel;
+    map.push({ id: p.id, oldV: p.vorname, oldN: p.nachname, oldKey: old, newKey: nk });
+    p.vorname = v; p.nachname = n; keys[old]--; keys[nk] = 1;
+    events.forEach(function (e) { if (e.patient === old) e.patient = nk; });
+  });
+  try {
+    if (map.length) kaSet('ka_bak_titel', JSON.stringify({ ts: Date.now(), map: map }));
+    kaSet('ka_patients', JSON.stringify(patients)); kaSet('ka_events', JSON.stringify(events)); kaSet('ka_settings', JSON.stringify(settings));
+  } catch (x) {}
+  if (map.length || skipped.length) setTimeout(function () { alert('Titel aus den Namen gelöst: ' + map.length + ' Patient(en).' + (skipped.length ? '\n\nNicht geändert, weil der Name sonst doppelt vorkäme: ' + skipped.join(', ') : '') + '\n\nRückgängig machen: Praxis → Praxisdaten.'); }, 600);
+}
+function titelRueckgaengig() {
+  var b = null; try { b = JSON.parse(kaGet('ka_bak_titel') || 'null'); } catch (x) {}
+  if (!b || !b.map || !b.map.length) { alert('Es gibt nichts rückgängig zu machen.'); return; }
+  if (!confirm(b.map.length + ' Patient(en) bekommen ihren Titel wieder in den Namen. Fortfahren?')) return;
+  b.map.forEach(function (m) {
+    var p = patients.filter(function (x) { return x.id === m.id; })[0]; if (!p || nameKey(p) !== m.newKey) return;
+    p.vorname = m.oldV; p.nachname = m.oldN;
+    events.forEach(function (e) { if (e.patient === m.newKey) e.patient = m.oldKey; });
+  });
+  kaSet('ka_bak_titel', 'null'); persist(); renderPatients(); alert('Erledigt.');
 }
 function patNr(p) { return p.nr > 0 ? p.nr : p.id; }
 function changePatNr(p) {
@@ -2702,6 +2746,7 @@ if (!settings.iban) settings.iban = DEF_IBAN;
 if (!settings.paypal) settings.paypal = DEF_PAYPAL;
 if (!settings.inhaber) settings.inhaber = 'Manuel Fella';
 if (!settings.bic && ibanKey(settings.iban) === ibanKey(DEF_IBAN)) settings.bic = 'DEUTDEBBP30';
+titelMigration();
 var PRAXIS = { kopf: 'Kreuzberg Ästhetik - Manuel Fella', titel: 'Arzt für ästhetische Medizin', strasse: 'Neuenburger Str. 24', ort: '10969 Berlin', tel: '+49 173 2874413', mail: 'manuel.fella@kreuzberg-aesthetik.de', web: 'www.kreuzberg-aesthetik.de' };
 var invRows = [], invP = null, viewInvId = null;
 function nf(n) { return (Math.round(n * 100) / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -5324,7 +5369,7 @@ async function formularImport(entries) {
           p.code = q.code;
         }
       }
-    } else p = patients.filter(function (x) { return nameKey(x).toLowerCase() === nm && (!q.dob || !x.dob || fIsDob(x.dob, q.dob)); })[0];
+    } else p = patients.filter(function (x) { return nameNorm(nameKey(x)) === nameNorm(nm) && (!q.dob || !x.dob || fIsDob(x.dob, q.dob)); })[0];
     if (!p) {
       if (d.typ !== 'anmeldung' && !confirm('Für „' + q.vorname + ' ' + q.nachname + '“ gibt es noch keinen Patienten. Jetzt anlegen?')) { out.push('Übersprungen: ' + q.vorname + ' ' + q.nachname); continue; }
       p = { anrede: '', vorname: q.vorname, nachname: q.nachname, dob: q.dob || '', phone: '', email: '', adresse: '', allergien: '', notizen: '', medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: today };
@@ -5499,8 +5544,8 @@ function parseRechnung(items) {
   return r;
 }
 function riFind(name) {
-  var n = String(name || '').toLowerCase().replace(/\b(dr|prof|med|dipl)\.?\s*/g, '').replace(/\s+/g, ' ').trim();
-  var strip = function (p) { return nameKey(p).toLowerCase().replace(/\b(dr|prof|med|dipl)\.?\s*/g, '').replace(/\s+/g, ' ').trim(); };
+  var n = nameNorm(name);
+  var strip = function (p) { return nameNorm(nameKey(p)); };
   return patients.filter(function (p) { return strip(p) === n; })[0] || patients.filter(function (p) { var a = strip(p); return n && (a.indexOf(n) >= 0 || n.indexOf(a) >= 0); })[0] || null;
 }
 async function rechnungenImport(inp) {
