@@ -203,6 +203,7 @@ textarea.form-control { font-size:15px; }
 .un-pk { border:1px solid #dbe2ea; border-left:5px solid #2f9e44; border-radius:12px; padding:12px; margin-bottom:8px; } .un-pk b { display:block; }
 .md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
 .md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:#0f172a; border-color:#0f172a; color:#fff; }
+.md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .md-seg { display:flex; margin:10px 0 2px; } .md-seg button { flex:1; }
 .md-mon { font-weight:800; font-size:15px; margin:18px 0 8px; } .md-mon:first-child { margin-top:10px; }
 .md-item { margin-bottom:10px; } .md-gh { display:flex; align-items:center; gap:6px; } .md-gt { font-size:12.5px; color:#64748b; } .md-zu { font-size:12px; color:#047857; margin:2px 0 4px; }
 .md-strip { grid-template-columns:repeat(auto-fill,minmax(62px,68px)) !important; margin:4px 0 6px !important; }
@@ -1191,13 +1192,14 @@ function kaStart() {
     <div class="card-header" style="margin-bottom:6px;">
       <div class="ak-h" style="margin:0; border:none; padding:0;">Medien und Dokumente</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="zuNext = null; document.getElementById('a-img-in').click()">+ Foto</button>
-        <button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="zuNext = null; document.getElementById('a-doc-in').click()">+ Dokument</button>
+        <button type="button" id="md-addf" class="btn btn-secondary" style="padding:6px 10px;" onclick="zuNext = null; document.getElementById('a-img-in').click()">+ Foto</button>
+        <button type="button" id="md-addd" class="btn btn-secondary" style="padding:6px 10px;" onclick="zuNext = null; document.getElementById('a-doc-in').click()">+ Dokument</button>
       </div>
     </div>
     <div class="cal-bar">
       <input type="text" id="md-filter" class="form-control" placeholder="Dateiname suchen..." autocomplete="off" oninput="medLimit = 30; renderMedien()" style="flex:1 1 200px;">
     </div>
+    <div class="seg md-seg" id="md-seg"><button type="button" id="md-bild" onclick="setMedFilter('bild')"></button><button type="button" id="md-dok" onclick="setMedFilter('dok')"></button></div>
     <div id="md-chips" class="md-chips"></div>
     <div id="md-list"></div>
   </div>
@@ -5069,7 +5071,7 @@ function addTemplates(inp) {
   });
 }
 /* ===== Medien: Gruppen, Galerie, Zuordnung ===== */
-var zuNext = null, gal = null, zuCtx = null, medFilter = 'alle', medKat = '', medLimit = 30;
+var zuNext = null, gal = null, zuCtx = null, medFilter = 'dok', medKat = '', medLimit = 30;
 function validZu(p) {
   var v = {}, n = nameKey(p);
   events.forEach(function (e) { if (e.patient === n) v['e' + e.id] = 1; });
@@ -5233,35 +5235,35 @@ function medDocRow(p, dd) {
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
   akTabs();
+  var nb = (curP.bilder || []).length, nd = (curP.dokumente || []).length;
+  document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dokumente (' + nd + ')';
+  document.getElementById('md-bild').className = medFilter === 'bild' ? 'on' : ''; document.getElementById('md-dok').className = medFilter === 'dok' ? 'on' : '';
+  document.getElementById('md-addf').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addd').style.display = medFilter === 'dok' ? '' : 'none';
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
   var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
   var kats = []; (curP.dokumente || []).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });
   kats.sort(function (a, b) { return KATS.indexOf(a) - KATS.indexOf(b); });
-  if (medFilter === 'dok' && medKat && kats.indexOf(medKat) < 0) { medFilter = 'alle'; medKat = ''; }
-  [['Alle', 'alle', ''], ['Bilder', 'bild', '']].concat(kats.map(function (k) { return [k, 'dok', k]; })).forEach(function (c) {
-    var b = mk('button', 'md-chip' + (medFilter === c[1] && medKat === c[2] ? ' on' : ''), c[0]); b.type = 'button'; b.onclick = function () { setMedFilter(c[1], c[2]); }; chips.appendChild(b);
+  if (medKat && kats.indexOf(medKat) < 0) medKat = '';
+  if (medFilter === 'dok' && kats.length > 1) [''].concat(kats).forEach(function (k) {
+    var bt = mk('button', 'md-chip' + (medKat === k ? ' on' : ''), k || 'Alle'); bt.type = 'button'; bt.onclick = function () { setMedFilter('dok', k); }; chips.appendChild(bt);
   });
   var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), items = [];
-  (medFilter === 'alle' ? ['bild', 'dok'] : [medFilter === 'bild' ? 'bild' : 'dok']).forEach(function (k) {
-    fileGroups(curP, k).forEach(function (g) {
-      var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat && k === 'dok') || kc(x) === medKat); });
-      if (!l.length) return; items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
-    });
+  fileGroups(curP, medFilter).forEach(function (g) {
+    var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat && medFilter === 'dok') || kc(x) === medKat); });
+    if (l.length) items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
   });
   items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = '';
-  if (!items.length) { box.appendChild(mk('div', 'hm-empty', (q || medKat || medFilter !== 'alle') ? 'Keine Datei gefunden' : 'Noch keine Fotos oder Dokumente')); return; }
-  var lastMon = '';
+  if (!items.length) { box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dokumente')); return; }
   items.slice(0, medLimit).forEach(function (it) {
-    var g = it.g, d = new Date(it.k), mon = d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-    if (mon !== lastMon) { box.appendChild(mk('div', 'md-mon', mon)); lastMon = mon; }
+    var g = it.g, d = new Date(it.k);
     var c = mk('div', 'md-item'), zl = g.zu ? mk('div', 'md-zu', zuLabel(g.p, g.zu)) : null;
     if (g.kind === 'bild') {
-      var h = mk('div', 'md-gh'), t = mk('div', 'md-gt', pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '. · ' + g.list.length + (g.list.length === 1 ? ' Bild' : ' Bilder'));
+      var h = mk('div', 'md-gh'), t = mk('div', 'md-day', pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + d.getFullYear() + ' · ' + g.list.length + (g.list.length === 1 ? ' Bild' : ' Bilder'));
       h.appendChild(t); h.appendChild(mk('div', 'sp'));
       h.appendChild(medDots([['Zuordnen', function () { openZu(g.p, g.list); }], ['Datum ändern', function () { editGroupDate(g.list); renderMedien(); }]]));
       c.appendChild(h); if (zl) c.appendChild(zl);
-      var gr = mediaGrid(g.p, g.list); gr.classList.add('md-strip'); c.appendChild(gr);
+      c.appendChild(mediaGrid(g.p, g.list));
     } else {
       if (zl) c.appendChild(zl);
       g.list.forEach(function (dd) { c.appendChild(medDocRow(g.p, dd)); });
