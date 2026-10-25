@@ -485,7 +485,7 @@ body { overflow-x:clip; }
 .pt-dots { position:absolute; left:-5px; top:17px; display:flex; flex-direction:column; gap:3px; }
 .pt-tit { font-size:12px; color:#64748b; margin-left:8px; white-space:nowrap; flex:none; }
 .pt-acts { display:flex; gap:6px; margin-top:8px; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
-.pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#ea580c; } .pt-dot.d-anam { background:#d4a017; }
+.pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; }
 .pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
 #tab-patienten .pt { border-collapse:separate; border-spacing:0 8px; }
@@ -814,7 +814,7 @@ function kaStart() {
           <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
         </div>
       </div>
-      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#ea580c"></i>Rechnung offen</span><span><i style="background:#d4a017"></i>Anamnese</span></div>
+      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span></div>
       <div class="scroll">
         <table class="pt">
           <thead><tr>
@@ -2063,7 +2063,7 @@ function renderPatients() {
     var nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
     if (p.titel) nrow.appendChild(mk('span', 'pt-tit', p.titel));
     c1.appendChild(nrow);
-    var sub = [p.dob ? 'geb. ' + p.dob + (age !== '' ? ' (' + age + ')' : '') : '', { Frau: 'weiblich', Herr: 'männlich', Divers: 'divers' }[p.anrede] || ''].filter(Boolean).join(' · ');
+    var sub = [p.dob ? 'geb. ' + p.dob + (age !== '' ? ' (' + age + ')' : '') : '', { Frau: '♀', Herr: '♂', Divers: '⚧' }[p.anrede] || ''].filter(Boolean).join(' · ');
     if (sub) c1.appendChild(mk('div', 'pt-dob', sub));
     /* Schnellaktionen */
     var acts = mk('div', 'pt-acts');
