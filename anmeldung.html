@@ -94,13 +94,11 @@ function collect() {
   var bad = [], d = {};
   d.geschlecht = (document.querySelector('input[name=geschlecht]:checked') || {}).value || '';
   if (!d.geschlecht) bad.push($('g-geschlecht'));
-  var t = val('dob-t'), m = $('dob-m').value, j = val('dob-j'), ok = /^\d{1,2}$/.test(t) && m && /^\d{4}$/.test(j);
-  if (ok) { var dt = new Date(+j, +m - 1, +t); ok = dt.getFullYear() === +j && dt.getMonth() === +m - 1 && dt.getDate() === +t && dt < new Date() && +j > 1900; }
-  if (!ok) bad.push($('g-dob')); else d.dob = pad2(+t) + '.' + m + '.' + j;
+  d.dob = dobFromParts(val('dob-t'), $('dob-m').value, val('dob-j')); if (!d.dob) bad.push($('g-dob'));
   [['vorname', 'vorname'], ['nachname', 'nachname'], ['strasse', 'strasse'], ['nr', 'nr'], ['plz', 'plz'], ['stadt', 'stadt']].forEach(function (k) { d[k[0]] = val(k[1]); if (!d[k[0]]) bad.push($(k[1])); });
   d.titel = val('titel');
   var ph = val('phone').replace(/[^\d+]/g, ''); if (ph.length < 6) bad.push($('phone')); else d.phone = ph.charAt(0) === '+' ? ph : '+49' + ph.replace(/^0+/, '');
-  d.email = val('email'); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) bad.push($('email'));
+  d.email = val('email'); if (!isEmail(d.email)) bad.push($('email'));
   d.notfall = val('notfall');
   d.quelle = $('quelle').value;
   if (sig.isEmpty()) bad.push($('sig'));

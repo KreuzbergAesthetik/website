@@ -63,10 +63,8 @@ function collect() {
   var bad = [], d = {};
   d.vorname = val('vorname'); if (!d.vorname) bad.push($('vorname'));
   d.nachname = val('nachname'); if (!d.nachname) bad.push($('nachname'));
-  var t = val('dob-t'), m = $('dob-m').value, j = val('dob-j'), ok = /^\d{1,2}$/.test(t) && m && /^\d{4}$/.test(j);
-  if (ok) { var dt = new Date(+j, +m - 1, +t); ok = dt.getFullYear() === +j && dt.getMonth() === +m - 1 && dt.getDate() === +t && dt < new Date() && +j > 1900; }
-  if (!ok) bad.push($('g-dob')); else d.dob = pad2(+t) + '.' + m + '.' + j;
-  d.email = val('email'); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) bad.push($('email'));
+  d.dob = dobFromParts(val('dob-t'), $('dob-m').value, val('dob-j')); if (!d.dob) bad.push($('g-dob'));
+  d.email = val('email'); if (!isEmail(d.email)) bad.push($('email'));
   d.einwilligung = (document.querySelector('input[name=einw]:checked') || {}).value || ''; if (!d.einwilligung) bad.push($('g-einw'));
   if (sig.isEmpty()) bad.push($('sig'));
   return { d: d, bad: bad };

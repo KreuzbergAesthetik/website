@@ -10,6 +10,13 @@ function el(tag, attrs, kids) {
   (kids || []).forEach(function (c) { if (c) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
   return e;
 }
+function isEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
+/* Geburtsdatum aus Tag, Monat (01-12) und Jahr prüfen; liefert TT.MM.JJJJ oder '' */
+function dobFromParts(t, m, j) {
+  if (!(/^\d{1,2}$/.test(t) && m && /^\d{4}$/.test(j))) return '';
+  var dt = new Date(+j, +m - 1, +t);
+  return dt.getFullYear() === +j && dt.getMonth() === +m - 1 && dt.getDate() === +t && dt < new Date() && +j > 1900 ? pad2(+t) + '.' + m + '.' + j : '';
+}
 function pad2(n) { return ('0' + n).slice(-2); }
 function today() { var d = new Date(); return pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + d.getFullYear(); }
 
