@@ -480,6 +480,7 @@ body { overflow-x:clip; }
 .hm-s { display:none; }
 @media (max-width:520px) { #hm-fin table th, #hm-fin table td { padding:8px 6px; font-size:12.5px; } #hm-fin .hm-l { display:none; } #hm-fin .hm-s { display:inline; } }
 .pt td.pc-er { white-space:nowrap; }
+.pt-dot { position:absolute; left:-2px; top:22px; width:8px; height:8px; border-radius:50%; background:#dc2626; display:none; } .pt-dot.on { display:block; } @media (max-width:520px) { .pt-dot { top:18px; left:-3px; } }
 .pn-row { display:flex; align-items:center; gap:2px; min-width:0; } .pn-nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto; } .pn-row .pt-marks { flex:none; } .pt-dob { font-size:12.5px; color:#64748b; margin-top:1px; }
 .pt-marks { display:inline-flex; align-items:center; white-space:nowrap; margin-left:6px; }
 @media (max-width:520px) { .pt-marks { display:flex; margin:0 0 0 4px; } }
@@ -1860,9 +1861,9 @@ function anamConfirm(p) {
   FLT = 0; persist(); renderUnterlagen(); if (curP === p) { renderHead(); renderVerlauf(); }
 }
 function evFlag(e) { var m = flagsMap(), p = m.byName[e.patient]; return p && m.get(p).todos.length ? '<span class="evfl" title="Offenes To-Do">!</span>' : ''; }
-function flagPills(p) {
+function flagPills(p, noTodo) {
   var f = flagsMap().get(p), out = [];
-  if (f.todos.length) { var a = mk('span', 'fl fl-red', 'To-Do' + (f.todos.length > 1 ? ' ×' + f.todos.length : '')); a.title = f.todos.map(function (t) { return t.text; }).join('\n'); out.push(a); }
+  if (f.todos.length && !noTodo) { var a = mk('span', 'fl fl-red', 'To-Do' + (f.todos.length > 1 ? ' ×' + f.todos.length : '')); a.title = f.todos.map(function (t) { return t.text; }).join('\n'); out.push(a); }
   if (f.unb.length) { var b = mk('span', 'fl fl-amb fl-ico'); b.innerHTML = tvSvg('euro'); b.title = 'Rechnung offen: vergangene Termine ohne Rechnung (' + f.unb.length + ')'; b.setAttribute('aria-label', 'Rechnung offen'); out.push(b); }
   if (f.anam) { var c = mk('span', 'fl fl-amb', 'Anamnese'); c.title = anamText(f.anam.info) + ' · Termin ' + fmtTermin(f.anam.e); out.push(c); }
   return out;
@@ -1970,13 +1971,14 @@ function renderPatients() {
     var o = document.createElement('option'); o.value = p.vorname + ' ' + p.nachname; dl.appendChild(o);
     if (q && (nameKey(p) + ' ' + p.nachname + ' ' + (p.phone || '') + ' ' + (p.dob || '') + ' #' + patNr(p)).toLowerCase().indexOf(q) < 0) return;
     var age = ageOf(p.dob), row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c3 = row.insertCell();
-    c1.style.cssText = 'max-width:0; width:100%;';
+    c1.style.cssText = 'max-width:0; width:100%; position:relative;';
     var nb0 = mk('button', 'pidb', '#' + patNr(p)); nb0.type = 'button'; nb0.title = 'Nummer ändern'; nb0.onclick = function () { changePatNr(p); }; c0.appendChild(nb0);
     var noT = function (t) { return String(t || '').split(/\s+/).filter(function (w) { return w && !TITEL_RE.test(w); }).join(' '); };
     var full = noT(p.vorname) + ' ' + noT(p.nachname).toUpperCase();
-    var nrow = mk('div', 'pn-row'), nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
+    var nrow = mk('div', 'pn-row'), fl0 = flagsMap().get(p), dot = mk('span', 'pt-dot'); if (fl0.todos.length) { dot.classList.add('on'); dot.title = 'Offene To-Dos: ' + fl0.todos.map(function (t) { return t.text; }).join(', '); } nrow.appendChild(dot);
+    var nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
     var mks = mk('span', 'pt-marks');
-    flagPills(p).forEach(function (x) { mks.appendChild(x); });
+    flagPills(p, true).forEach(function (x) { mks.appendChild(x); });
     if (mks.childNodes.length) nrow.appendChild(mks);
     c1.appendChild(nrow);
     if (p.dob) c1.appendChild(mk('div', 'pt-dob', p.dob + (age !== '' ? ' · ' + age + ' Jahre' : '')));
