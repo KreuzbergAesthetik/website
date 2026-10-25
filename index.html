@@ -252,9 +252,12 @@ body.akte-open main { display:none; }
 .a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; color:#0f172a; border:1px solid #dbe2ea; border-left:6px solid #1e3a8a; border-radius:14px; padding:8px 12px; margin-bottom:12px; box-shadow:0 3px 10px rgba(15,23,42,.12); }
 .a-sex { font-size:17px; color:#64748b; margin-left:8px; font-weight:400; }
 .a-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:40; }
-body.akte-open .a-fab { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
-.a-cats { display:flex; flex-direction:column; gap:6px; } .a-cat { width:42px; height:42px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
-.a-fab .a-menu { top:auto; bottom:0; right:calc(100% + 10px); width:min(372px, calc(100vw - 96px)); max-height:80vh; overflow-y:auto; padding:8px 10px 10px; border-radius:14px; }
+body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
+.a-cats { display:flex; gap:6px; } .a-cat { width:42px; height:42px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
+.a-cat.c0, .am-tile.c0 { --ac:#2563eb; --ab:#eff4ff; } .a-cat.c1, .am-tile.c1 { --ac:#15803d; --ab:#effaf2; } .a-cat.c2, .am-tile.c2 { --ac:#7c3aed; --ab:#f5f1ff; } .a-cat.c3, .am-tile.c3 { --ac:#0f766e; --ab:#ecfaf8; }
+.a-cat[class*=" c"] { color:var(--ac); border-color:color-mix(in srgb, var(--ac) 35%, #fff); background:var(--ab); }
+.a-menu .am-tile[class*=" c"] svg { color:var(--ac); } .a-menu .am-tile[class*=" c"] { background:var(--ab); border-color:color-mix(in srgb, var(--ac) 22%, #fff); }
+.a-fab .a-menu { top:auto; bottom:calc(100% + 10px); right:0; width:min(372px, calc(100vw - 24px)); max-height:70vh; overflow-y:auto; padding:8px 10px 10px; border-radius:14px; }
 .am-h { font-size:11px; font-weight:800; color:#64748b; letter-spacing:.06em; text-transform:uppercase; padding:8px 4px 6px; } .am-h:first-child { padding-top:2px; }
 .am-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
 .a-menu .am-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; width:auto; min-height:70px; padding:10px 4px 8px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:11.5px; font-weight:600; color:#334155; text-align:center; line-height:1.15; } .am-tile svg { width:22px; height:22px; } .a-menu .am-tile:hover { background:#eef2f7; }
@@ -487,6 +490,7 @@ body { overflow-x:clip; }
 @media (max-width:520px) { #hm-fin table th, #hm-fin table td { padding:8px 6px; font-size:12.5px; } #hm-fin .hm-l { display:none; } #hm-fin .hm-s { display:inline; } }
 .pt td.pc-er { white-space:nowrap; }
 .pt-dots { position:absolute; left:-5px; top:17px; display:flex; flex-direction:column; gap:3px; }
+.addr-block { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; } .addr-str { grid-column:1 / 3; } .addr-nr { grid-column:3; } .addr-plz { grid-column:1; } .addr-ort { grid-column:2 / 4; }
 .pt-tit { font-size:12px; color:#64748b; margin-left:8px; white-space:nowrap; flex:none; }
 .pt-acts { display:flex; gap:6px; margin-top:8px; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
 .pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; }
@@ -1105,6 +1109,7 @@ function kaStart() {
       <div class="form-group"><label>Telefon</label><input type="text" id="p-phone" placeholder="+49..." class="form-control"></div>
     </div>
     <div class="form-group"><label>E-Mail</label><input type="email" id="p-email" class="form-control"></div>
+    <div class="form-group"><label>Anschrift</label><div id="p-adr-box"></div></div>
     <div class="form-group"><label>Allergien / Unverträglichkeiten</label><input type="text" id="p-allergien" placeholder="z.B. Keine, Latex..." class="form-control"></div>
     <div class="form-group"><label>Anamnese / Notizen</label><textarea id="p-notizen" class="form-control" rows="2"></textarea></div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-patient')">Abbrechen</button><button type="button" class="btn btn-save" onclick="savePatient()">Speichern</button></div>
@@ -2092,7 +2097,7 @@ var gsScope = { kal: true, pat: true, rec: true };
 /* Die drei Knöpfe im Header legen Neues an */
 function hdAdd(k) {
   /* Die Knöpfe im Header gehören zu keiner Seite: immer eine frische, leere Maske */
-  if (k === 'termin') openTermin(); else if (k === 'pat') { ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; }); openModal('modal-patient'); }
+  if (k === 'termin') openTermin(); else if (k === 'pat') { ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen', 'p-adr-str', 'p-adr-nr', 'p-adr-plz', 'p-adr-ort'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; }); openModal('modal-patient'); }
   else if (k === 'rec') openInvoice(null);
 }
 function recentAdd(id) { try { var l = JSON.parse(kaGet('ka_recent') || '[]').filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_recent', JSON.stringify(l.slice(0, 12))); } catch (x) {} }
@@ -2650,6 +2655,24 @@ function slotClick(e, k) {
 var curP = null, stammEdit = false, editingDokuId = null, medInput = false, medMode = false, notizEdit = false, dokPick = false;
 var ICON_PEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
 var ICON_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+/* Anschrift in vier Feldern: Straße, Hausnummer, PLZ, Ort. Gespeichert wird weiter als Text „Straße Nr“ und „PLZ Ort“ in zwei Zeilen. */
+function addrParse(t) {
+  var ls = String(t || '').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean), o = { str: '', nr: '', plz: '', ort: '' };
+  if (ls[0]) { var m = /^(.*?\S)\s+(\d+\s?[A-Za-z]?(?:\s?[-\/]\s?\d+\s?[A-Za-z]?)?)$/.exec(ls[0]); if (m) { o.str = m[1]; o.nr = m[2]; } else o.str = ls[0]; }
+  if (ls[1]) { var z = /^(\d{4,5})\s+(.+)$/.exec(ls[1]); if (z) { o.plz = z[1]; o.ort = z[2]; } else o.ort = ls[1]; }
+  if (ls.length > 2) o.ort = (o.ort + ' ' + ls.slice(2).join(' ')).trim();
+  return o;
+}
+function addrJoin(o) { return [((o.str || '').trim() + ' ' + (o.nr || '').trim()).trim(), ((o.plz || '').trim() + ' ' + (o.ort || '').trim()).trim()].filter(Boolean).join('\n'); }
+function addrBlock(pre, text) {
+  var o = addrParse(text), box = document.createElement('div'); box.className = 'addr-block';
+  [['str', 'Straße', o.str, 'street-address'], ['nr', 'Hausnr.', o.nr, ''], ['plz', 'PLZ', o.plz, 'postal-code'], ['ort', 'Ort', o.ort, 'address-level2']].forEach(function (f) {
+    var i = document.createElement('input'); i.type = 'text'; i.className = 'form-control addr-' + f[0]; i.id = pre + f[0]; i.placeholder = f[1]; i.setAttribute('aria-label', f[1]); i.value = f[2];
+    if (f[0] === 'plz') i.inputMode = 'numeric'; box.appendChild(i);
+  });
+  return box;
+}
+function addrRead(pre) { var v = function (k) { return document.getElementById(pre + k).value; }; return addrJoin({ str: v('str'), nr: v('nr'), plz: v('plz'), ort: v('ort') }); }
 var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien']];
 var templates = [];
 try { var stp = JSON.parse(kaGet('ka_templates')); if (Array.isArray(stp)) templates = stp; } catch (x) {}
@@ -3816,7 +3839,7 @@ function tileBox(key, title, cls, fill) {
 function txtTile(key, title, cls, ph) {
   return tileBox(key, title, cls, function (t, ed) {
     if (!ed) { var v = (curP[key] || '').trim(); if (key === 'notizen' && curP.titel) v = ('Titel: ' + curP.titel + (v ? '\n' + v : '')); t.appendChild(mk('div', v ? 'a-txt' : 'a-txt a-none', v || ph)); return; }
-    var ta = mk('textarea', 'form-control'); ta.id = 'a-tile-in'; ta.rows = 3; ta.value = curP[key] || ''; t.appendChild(ta);
+    if (key === 'adresse') t.appendChild(addrBlock('a-adr-', curP.adresse)); else { var ta = mk('textarea', 'form-control'); ta.id = 'a-tile-in'; ta.rows = 3; ta.value = curP[key] || ''; t.appendChild(ta); }
     var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
     var c = mk('button', 'btn btn-cancel', 'Abbrechen'); c.type = 'button'; c.onclick = function () { tileEdit = ''; renderHead(); };
     var sv = mk('button', 'btn btn-save', 'Speichern'); sv.type = 'button'; sv.onclick = function () { tileSave(key); };
@@ -3824,7 +3847,7 @@ function txtTile(key, title, cls, ph) {
   });
 }
 function tileSave(key) {
-  var v = document.getElementById('a-tile-in').value.trim(), changed = v !== (curP[key] || '');
+  var v = key === 'adresse' ? addrRead('a-adr-') : document.getElementById('a-tile-in').value.trim(), changed = v !== (curP[key] || '');
   curP[key] = v; if (key === 'notizen' && changed && v) logAdd('notiz', v);
   tileEdit = ''; persist(); renderHead(); renderVerlauf(); renderPatients();
 }
@@ -3840,6 +3863,7 @@ function renderHead() {
     HEAD_FIELDS.forEach(function (k) {
       var g = mk('div', 'form-group'); g.appendChild(mk('label', '', k[1]));
       var inp;
+      if (k[0] === 'adresse') { g.appendChild(addrBlock('se-adr-', p.adresse)); g.style.gridColumn = '1 / -1'; grid.appendChild(g); return; }
       if (k[0] === 'anrede') {
         inp = mk('select', 'form-control');
         ['', 'Frau', 'Herr', 'Divers'].forEach(function (o) { var op = mk('option', '', o || 'Keine Angabe'); op.value = o; inp.appendChild(op); });
@@ -3905,7 +3929,8 @@ function toggleStamm() {
   if (!validDob(g('dob'))) { alert(DOB_MSG); return; }
   var old = nameKey(curP);
   if (patients.some(function (x) { return x !== curP && nameKey(x).toLowerCase() === (g('vorname') + ' ' + g('nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon.'); return; }
-  HEAD_FIELDS.forEach(function (k) { curP[k[0]] = g(k[0]); });
+  HEAD_FIELDS.forEach(function (k) { if (k[0] !== 'adresse') curP[k[0]] = g(k[0]); });
+  curP.adresse = addrRead('se-adr-');
   var nn = nameKey(curP);
   if (nn !== old) events.forEach(function (e) { if (e.patient === old) e.patient = nn; });
   persist(); renderPatients(); renderCal(); viewAkte(curP);
@@ -5398,7 +5423,7 @@ var AM_GROUPS = [
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
   AM_GROUPS.forEach(function (g, i) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat'; b.title = g.t; b.setAttribute('aria-label', g.t); b.innerHTML = tvSvg(g.ic);
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat c' + i; b.title = g.t; b.setAttribute('aria-label', g.t); b.innerHTML = tvSvg(g.ic);
     b.onclick = function (ev) { toggleAMenu(ev, i); }; box.appendChild(b);
   });
 })();
@@ -5408,10 +5433,11 @@ function toggleAMenu(ev, gi) {
   if (m.style.display === 'block' && m.dataset.g === key) { m.style.display = 'none'; return; }
   m.innerHTML = ''; m.dataset.g = key;
   (gi === undefined ? AM_GROUPS : [AM_GROUPS[gi]]).forEach(function (g) {
+    var ci = AM_GROUPS.indexOf(g);
     var h = document.createElement('div'); h.className = 'am-h'; h.textContent = g.t; m.appendChild(h);
     var gr = document.createElement('div'); gr.className = 'am-grid';
     g.items.forEach(function (it) {
-      var t = document.createElement('button'); t.type = 'button'; t.className = 'am-tile'; t.innerHTML = tvSvg(it[1]) + '<span>' + it[2] + '</span>';
+      var t = document.createElement('button'); t.type = 'button'; t.className = 'am-tile c' + ci; t.innerHTML = tvSvg(it[1]) + '<span>' + it[2] + '</span>';
       t.onclick = function () { aAct(it[0]); }; gr.appendChild(t);
     });
     m.appendChild(gr);
@@ -6406,15 +6432,16 @@ function doImportPatienten(d, files, q) {
     alert(added + ' Patient(en), ' + ev + ' Termin(e) und ' + nf + ' Datei(en) wurden hinzugefügt.' + (miss ? '\n' + miss + ' Datei(en) konnten nicht übernommen werden.' : ''));
   });
 }
+document.getElementById('p-adr-box').appendChild(addrBlock('p-adr-', ''));
 function savePatient() {
   var g = function (id) { return document.getElementById(id).value.trim(); };
   if (!g('p-vorname') || !g('p-nachname')) { alert('Bitte mind. Vorname und Nachname eingeben.'); return; }
   if (!validDob(g('p-dob'))) { alert(DOB_MSG); return; }
   if (patients.some(function (x) { return nameKey(x).toLowerCase() === (g('p-vorname') + ' ' + g('p-nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon. Termine und Rechnungen werden über den Namen zugeordnet, bitte den Namen unterscheidbar eintragen (z.B. mit zweitem Vornamen).'); return; }
-  patients.push({ anrede: g('p-anrede'), vorname: g('p-vorname'), nachname: g('p-nachname'), dob: g('p-dob'), phone: g('p-phone'), email: g('p-email'), allergien: g('p-allergien'), notizen: g('p-notizen') });
+  patients.push({ anrede: g('p-anrede'), vorname: g('p-vorname'), nachname: g('p-nachname'), dob: g('p-dob'), phone: g('p-phone'), email: g('p-email'), adresse: addrRead('p-adr-'), allergien: g('p-allergien'), notizen: g('p-notizen') });
   ensurePatients(); persist(); renderPatients();
   var newP = patients[patients.length - 1];
-  ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen'].forEach(function (id) { document.getElementById(id).value = ''; });
+  ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen', 'p-adr-str', 'p-adr-nr', 'p-adr-plz', 'p-adr-ort'].forEach(function (id) { document.getElementById(id).value = ''; });
   closeModal('modal-patient');
   offerNeu(newP);
 }
