@@ -4242,7 +4242,7 @@ function tlRow(it) {
   } else {
     var lab = it.t === 'med' ? 'Medikament' : it.t === 'mail' ? 'E-Mail' : it.t === 'rezept' ? 'Rezept' : 'Notiz';
     sh = tlShell(it.k, lab);
-    if (it.t === 'med') { var ml = sh.body.firstChild; ml.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><rect x="2.5" y="8" width="19" height="8" rx="4" transform="rotate(-45 12 12)"/><path d="M9.2 9.2l5.6 5.6"/></svg>'; ml.title = 'Medikament'; ml.setAttribute('aria-label', 'Medikament'); }
+    if (it.t === 'med') { var ml = sh.body.firstChild; ml.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><rect x="2" y="7.5" width="20" height="9" rx="4.5"/><path d="M12 7.5v9"/><path d="M5.5 11v2" stroke-width="1.5"/></svg>'; ml.title = 'Medikament'; ml.setAttribute('aria-label', 'Medikament'); }
     var lg = it.l;
     if (tlEditLog === lg) {
       var ta = mk('textarea', 'form-control'); ta.rows = 4; ta.value = lg.text; sh.body.appendChild(ta);
