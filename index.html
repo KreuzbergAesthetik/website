@@ -4282,7 +4282,9 @@ function renderVerlauf() {
     var row = tlRow(it), bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
     if (first) first.classList.add('tl-first');
-    if (bd) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
+    var always = it.t === 'termin' || it.t === 'doku';
+    if (always) row.classList.add('open');
+    if (bd && !always) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
     card.appendChild(row);
   });
 }
