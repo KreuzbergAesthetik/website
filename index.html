@@ -442,7 +442,7 @@ body { overflow-x:clip; }
 .tab-content > .card:not(.hc):not(.hero) { border-left:6px solid var(--tc,#94a3b8); }
 .card.hc { border-left-color:var(--c); } .card.hero { border-left-color:#1e3a8a; }
 #tab-kalender { --tc:#7c3aed; } #tab-patienten { --tc:#1e3a8a; } #tab-rechnungen { --tc:#2563eb; } #tab-todos { --tc:#ea580c; }
-#tab-lager { --tc:#0d9488; } #tab-leistungen { --tc:#db2777; } #tab-dokumente { --tc:#64748b; } #tab-nachrichten { --tc:#0ea5e9; }
+#tab-settings { --tc:#64748b; } #tab-lager { --tc:#0d9488; } #tab-leistungen { --tc:#db2777; } #tab-dokumente { --tc:#64748b; } #tab-nachrichten { --tc:#0ea5e9; }
 #tab-textbausteine { --tc:#8b5cf6; } #tab-webformulare { --tc:#f59e0b; } #tab-zahlungen { --tc:#16a34a; } #tab-statistik { --tc:#2563eb; }
 /* Tabellen: leicht, nur feine Linien zwischen den Zeilen */
 .pt { font-size:14.5px; }
@@ -667,7 +667,7 @@ async function alEncryptAll() {
   if (!c || c.enc) return;
   if (!(await alCheck(cur))) { alert('Bitte oben das aktuelle Passwort eingeben.'); return; }
   if (!confirm('Alle Daten auf diesem Gerät werden jetzt verschlüsselt.\n\nHast Du gerade eine Sicherung gemacht? Ohne das Passwort gibt es danach keinen Zugriff mehr auf die Daten.\n\nJetzt verschlüsseln?')) return;
-  closeModal('modal-settings'); progOpen('Daten werden verschlüsselt');
+  progOpen('Daten werden verschlüsselt');
   try {
     var raw = crypto.getRandomValues(new Uint8Array(32)), salt = alHex(crypto.getRandomValues(new Uint8Array(16)));
     KA.key = await alImportKey(raw);
@@ -682,7 +682,7 @@ async function alDecryptAll(silent) {
   if (!c || !c.enc) return true;
   if (!(await alCheck(cur))) { alert('Bitte oben das aktuelle Passwort eingeben.'); return false; }
   if (!silent && !confirm('Die Verschlüsselung wird aufgehoben. Die Daten liegen danach wieder unverschlüsselt auf dem Gerät. Die App-Sperre bleibt.\n\nFortfahren?')) return false;
-  closeModal('modal-settings'); progOpen('Verschlüsselung wird aufgehoben');
+  progOpen('Verschlüsselung wird aufgehoben');
   try {
     await kaIdle();
     Object.keys(KA.mem).forEach(function (k) { localStorage.setItem(k, KA.mem[k]); });
@@ -696,7 +696,7 @@ async function alDecryptAll(silent) {
 async function alRemove() {
   var c = alGet(); if (!c) return;
   if (!(await alCheck(document.getElementById('al-cur').value))) { alert('Bitte das aktuelle Passwort eingeben.'); return; }
-  if (c.enc) { if (!(await alDecryptAll(false))) return; if (!confirm('Verschlüsselung ist aufgehoben. Auch die App-Sperre jetzt entfernen?')) { openSettings(); return; } }
+  if (c.enc) { if (!(await alDecryptAll(false))) return; if (!confirm('Verschlüsselung ist aufgehoben. Auch die App-Sperre jetzt entfernen?')) { switchTab('settings'); return; } }
   else if (!confirm('App-Sperre wirklich entfernen?')) return;
   alPut(null); clearTimeout(alTimer); alUi();
 }
@@ -932,6 +932,48 @@ function kaStart() {
       <div id="zl-open"></div>
       <div class="ak-h">Einnahmen</div>
       <div class="scroll"><table class="pt" style="min-width:460px; font-size:14px;"><thead><tr><th>Datum</th><th>Patient</th><th>Rechnung</th><th>Art</th><th>Betrag</th></tr></thead><tbody id="zl-in"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- TAB: PRAXISDATEN -->
+  <div id="tab-settings" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Praxisdaten für Rechnungen</span></div>
+<div style="font-size:12px; color:#64748b; margin-bottom:10px;">Name, Anschrift, Telefon und E-Mail der Praxis sind fest hinterlegt. Hier trägst Du die übrigen Angaben einmal ein.</div>
+    <div class="grid-2">
+      <div class="form-group"><label>Steuernummer</label><input type="text" id="s-steuernr" class="form-control"></div>
+      <div class="form-group"><label>USt-IdNr. (falls vorhanden)</label><input type="text" id="s-ustid" class="form-control"></div>
+    </div>
+    <div class="form-group"><label>Kontoinhaber</label><input type="text" id="s-inhaber" class="form-control"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Bank</label><input type="text" id="s-bank" class="form-control"></div>
+      <div class="form-group"><label>BIC</label><input type="text" id="s-bic" class="form-control"></div>
+    </div>
+    <div class="form-group"><label>IBAN</label><input type="text" id="s-iban" class="form-control"></div>
+    <div class="form-group"><label>PayPal (E-Mail)</label><input type="text" id="s-paypal" class="form-control"></div>
+    <div class="form-group"><label>Hinweis bei 0 % Umsatzsteuer (wird bei 0 %-Positionen automatisch in die Rechnung eingefügt)</label><textarea id="s-hinweis" class="form-control" rows="2"></textarea></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Umsatzsteuer-Voranmeldung</label><select id="s-ustva" class="form-control"><option value="quartal">Vierteljährlich</option><option value="monat">Monatlich</option><option value="aus">Keine Erinnerung</option></select></div>
+      <div class="form-group"><label>Zahlungsziel in Tagen</label><input type="text" id="s-ziel" class="form-control" inputmode="numeric"></div>
+    </div>
+    <div class="form-group"><label>Standard-Zahlungshinweis</label><textarea id="s-zahlung" class="form-control" rows="2"></textarea></div>
+    <div class="ak-h">App-Sperre</div>
+    <div id="al-info" style="font-size:12px; color:#64748b; margin-bottom:8px;"></div>
+    <div class="form-group" id="al-curg"><label>Aktuelles Passwort</label><input type="password" id="al-cur" class="form-control" autocomplete="off"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Neues Passwort (mind. 6 Zeichen)</label><input type="password" id="al-new" class="form-control" autocomplete="new-password"></div>
+      <div class="form-group"><label>Wiederholen</label><input type="password" id="al-new2" class="form-control" autocomplete="new-password"></div>
+    </div>
+    <div class="form-group"><label>Automatisch sperren</label><select id="al-min" class="form-control" onchange="alSetMin()"><option value="0">Sobald die App verlassen wird</option><option value="1">Nach 1 Minute</option><option value="5">Nach 5 Minuten</option><option value="15">Nach 15 Minuten</option><option value="30">Nach 30 Minuten</option></select></div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" onclick="alSet()">Passwort festlegen</button><button type="button" class="btn btn-del" id="al-off" onclick="alRemove()">Sperre entfernen</button></div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" id="al-encb" onclick="alEncryptAll()">Daten verschlüsseln</button><button type="button" class="btn btn-cancel" id="al-decb" onclick="alDecryptAll()">Verschlüsselung aufheben</button></div>
+    <div id="al-warn" style="font-size:12px; color:#64748b;"></div>
+    <div class="ak-h">E-Mail-Versand (optional)</div>
+    <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
+    <div class="form-group"><label>Adresse von sendmail.php</label><input type="text" id="s-mailurl" class="form-control" placeholder="https://www.kreuzberg-aesthetik.de/app/sendmail.php" autocomplete="off"></div>
+    <div class="form-group"><label>Zugangscode</label><input type="password" id="s-mailtoken" class="form-control" autocomplete="off"></div>
+    <div style="font-size:12px; color:#64748b; margin-top:6px;">Die Leistungen mit Preisen pflegst Du jetzt im Reiter Leistungen.</div>
+      <div class="foot-bar"><button type="button" class="btn btn-save" id="s-save" onclick="saveSettings()">Speichern</button></div>
     </div>
   </div>
 
@@ -1481,47 +1523,6 @@ function kaStart() {
 </div>
 
 <!-- MODAL: PRAXISDATEN -->
-<div id="modal-settings" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header"><strong>Praxisdaten für Rechnungen</strong><button type="button" class="close-btn" onclick="closeModal('modal-settings')">&times;</button></div>
-    <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Name, Anschrift, Telefon und E-Mail der Praxis sind fest hinterlegt. Hier trägst Du die übrigen Angaben einmal ein.</div>
-    <div class="grid-2">
-      <div class="form-group"><label>Steuernummer</label><input type="text" id="s-steuernr" class="form-control"></div>
-      <div class="form-group"><label>USt-IdNr. (falls vorhanden)</label><input type="text" id="s-ustid" class="form-control"></div>
-    </div>
-    <div class="form-group"><label>Kontoinhaber</label><input type="text" id="s-inhaber" class="form-control"></div>
-    <div class="grid-2">
-      <div class="form-group"><label>Bank</label><input type="text" id="s-bank" class="form-control"></div>
-      <div class="form-group"><label>BIC</label><input type="text" id="s-bic" class="form-control"></div>
-    </div>
-    <div class="form-group"><label>IBAN</label><input type="text" id="s-iban" class="form-control"></div>
-    <div class="form-group"><label>PayPal (E-Mail)</label><input type="text" id="s-paypal" class="form-control"></div>
-    <div class="form-group"><label>Hinweis bei 0 % Umsatzsteuer (wird bei 0 %-Positionen automatisch in die Rechnung eingefügt)</label><textarea id="s-hinweis" class="form-control" rows="2"></textarea></div>
-    <div class="grid-2">
-      <div class="form-group"><label>Umsatzsteuer-Voranmeldung</label><select id="s-ustva" class="form-control"><option value="quartal">Vierteljährlich</option><option value="monat">Monatlich</option><option value="aus">Keine Erinnerung</option></select></div>
-      <div class="form-group"><label>Zahlungsziel in Tagen</label><input type="text" id="s-ziel" class="form-control" inputmode="numeric"></div>
-    </div>
-    <div class="form-group"><label>Standard-Zahlungshinweis</label><textarea id="s-zahlung" class="form-control" rows="2"></textarea></div>
-    <div class="ak-h">App-Sperre</div>
-    <div id="al-info" style="font-size:12px; color:#64748b; margin-bottom:8px;"></div>
-    <div class="form-group" id="al-curg"><label>Aktuelles Passwort</label><input type="password" id="al-cur" class="form-control" autocomplete="off"></div>
-    <div class="grid-2">
-      <div class="form-group"><label>Neues Passwort (mind. 6 Zeichen)</label><input type="password" id="al-new" class="form-control" autocomplete="new-password"></div>
-      <div class="form-group"><label>Wiederholen</label><input type="password" id="al-new2" class="form-control" autocomplete="new-password"></div>
-    </div>
-    <div class="form-group"><label>Automatisch sperren</label><select id="al-min" class="form-control" onchange="alSetMin()"><option value="0">Sobald die App verlassen wird</option><option value="1">Nach 1 Minute</option><option value="5">Nach 5 Minuten</option><option value="15">Nach 15 Minuten</option><option value="30">Nach 30 Minuten</option></select></div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" onclick="alSet()">Passwort festlegen</button><button type="button" class="btn btn-del" id="al-off" onclick="alRemove()">Sperre entfernen</button></div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" id="al-encb" onclick="alEncryptAll()">Daten verschlüsseln</button><button type="button" class="btn btn-cancel" id="al-decb" onclick="alDecryptAll()">Verschlüsselung aufheben</button></div>
-    <div id="al-warn" style="font-size:12px; color:#64748b;"></div>
-    <div class="ak-h">E-Mail-Versand (optional)</div>
-    <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
-    <div class="form-group"><label>Adresse von sendmail.php</label><input type="text" id="s-mailurl" class="form-control" placeholder="https://www.kreuzberg-aesthetik.de/app/sendmail.php" autocomplete="off"></div>
-    <div class="form-group"><label>Zugangscode</label><input type="password" id="s-mailtoken" class="form-control" autocomplete="off"></div>
-    <div style="font-size:12px; color:#64748b; margin-top:6px;">Die Leistungen mit Preisen pflegst Du jetzt im Reiter Leistungen.</div>
-    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-settings')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveSettings()">Speichern</button></div>
-  </div>
-</div>
-
 <!-- MODAL: RECHNUNGEN PRÜFEN -->
 <div id="modal-invchk" class="modal-overlay">
   <div class="modal-box" style="max-width:560px;">
@@ -1761,8 +1762,8 @@ function kaStart() {
 </div>
 
 <script type="text/plain" id="ka-main">
-var PRAXIS_TABS = ['lager', 'leistungen', 'dokumente', 'nachrichten', 'textbausteine', 'webformulare', 'zahlungen', 'statistik'];
-var TAB_RENDER = { webformulare: 'renderWebf', kalender: 'renderCal', start: 'renderHome', lager: 'renderLager', leistungen: 'renderLeist', dokumente: 'renderTemplates', zahlungen: 'renderZahlungen', todos: 'renderTodos', statistik: 'renderStat', nachrichten: 'renderNachr', textbausteine: 'renderTxt', rechnungen: 'renderInvoices' };
+var PRAXIS_TABS = ['settings', 'lager', 'leistungen', 'dokumente', 'nachrichten', 'textbausteine', 'webformulare', 'zahlungen', 'statistik'];
+var TAB_RENDER = { settings: 'openSettings', webformulare: 'renderWebf', kalender: 'renderCal', start: 'renderHome', lager: 'renderLager', leistungen: 'renderLeist', dokumente: 'renderTemplates', zahlungen: 'renderZahlungen', todos: 'renderTodos', statistik: 'renderStat', nachrichten: 'renderNachr', textbausteine: 'renderTxt', rechnungen: 'renderInvoices' };
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
 function errBanner(msg) {
   var b = document.getElementById('err-bar');
@@ -1778,7 +1779,7 @@ function toggleNavMenu(ev) {
   var r = ev.currentTarget.getBoundingClientRect(); m.style.display = 'block';
   m.style.top = (r.bottom + 4) + 'px'; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
-function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; if (id === 'settings') openSettings(); else switchTab(id); }
+function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Letzte Seite merken: nach dem Neuladen (z. B. Ziehen nach unten) geht es dort weiter, wo man war */
 var lastTab = 'start', lastReady = false;
 function saveLast() {
@@ -2904,12 +2905,12 @@ function openSettings() {
   Object.keys(m).forEach(function (id) { document.getElementById(id).value = settings[m[id]] || ''; });
   if (!settings.ustva) document.getElementById('s-ustva').value = 'quartal'; if (!settings.zahlungsziel) document.getElementById('s-ziel').value = '14';
   alUi();
-  openModal('modal-settings');
 }
 function saveSettings() {
   var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-ustva': 'ustva', 's-ziel': 'zahlungsziel', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { settings[m[id]] = document.getElementById(id).value.trim(); });
-  persist(); refreshLeistungen(); closeModal('modal-settings');
+  persist(); refreshLeistungen();
+  var sb = document.getElementById('s-save'); if (sb) { sb.textContent = 'Gespeichert ✓'; setTimeout(function () { sb.textContent = 'Speichern'; }, 1800); }
 }
 var invPayArt = '', invPayAuto = true;
 function setInvPay(art) {
