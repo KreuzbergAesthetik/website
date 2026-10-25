@@ -11,13 +11,14 @@
 <div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
 <div class="wrap" id="formbox">
   <form id="f" novalidate autocomplete="on">
-    <h1>Willkommen</h1>
-    <div class="intro">
-      <p>bei Kreuzberg Ästhetik. Bitte fülle das Formular aus.<br>Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p>
+    <div class="fhead"><h1>Anmeldung</h1><button type="button" class="info-i" data-for="info" onclick="toggleInfo(this)" title="Hinweise zum Formular" aria-label="Hinweise zum Formular">i</button></div>
+    <div class="info-panel" id="info">
+      <p>Willkommen bei Kreuzberg Ästhetik. Bitte fülle das Formular aus. Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p>
+      <p>Das System gleicht Vorname, Nachname und Geburtsdatum automatisch ab. Wenn möglich, benutze immer die gleiche Schreibweise Deines Namens.</p>
       <p>Liebe Grüße und bis ganz bald,<br><b>Manuel</b> von Kreuzberg Ästhetik</p>
-      <p class="ps">P.S.: Das System arbeitet mit einer automatischen Erkennung, indem es Vorname, Nachname und Geburtsdatum abgleicht. Wenn möglich benutze immer die gleiche Konstellation Deines Namens und die gleiche Schreibweise. Merci.</p>
     </div>
 
+    <h2>Zur Person</h2>
     <div class="card">
       <label class="l">Ich identifiziere mich … <span class="req">*</span></label>
       <div class="radios" id="g-geschlecht">
@@ -39,13 +40,22 @@
         <div><label class="l">Nachname(n) <span class="req">*</span></label><input type="text" id="nachname" autocomplete="family-name"></div>
       </div>
 
-      <div class="grid2">
+    </div>
+
+    <h2>Anschrift</h2>
+    <div class="card">
+      <div class="row-sn">
         <div><label class="l">Straße <span class="req">*</span></label><input type="text" id="strasse" autocomplete="address-line1"></div>
-        <div><label class="l">Nummer <span class="req">*</span></label><input type="text" id="nr"></div>
-        <div><label class="l">Postleitzahl <span class="req">*</span></label><input type="text" id="plz" inputmode="numeric" autocomplete="postal-code"></div>
+        <div><label class="l">Nr. <span class="req">*</span></label><input type="text" id="nr"></div>
+      </div>
+      <div class="row-po">
+        <div><label class="l">PLZ <span class="req">*</span></label><input type="text" id="plz" inputmode="numeric" autocomplete="postal-code"></div>
         <div><label class="l">Stadt <span class="req">*</span></label><input type="text" id="stadt" autocomplete="address-level2"></div>
       </div>
+    </div>
 
+    <h2>Kontakt</h2>
+    <div class="card">
       <div class="grid2">
         <div>
           <label class="l">Telefonnummer <span class="req">*</span></label>
@@ -61,11 +71,13 @@
     <h2>Noch eine Frage</h2>
     <div class="card" id="weitere"></div>
 
-    <div class="card"><div id="datenschutz"></div></div>
-
-    <label class="l" style="margin-top:20px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
-    <canvas id="sig" class="sigbox"></canvas>
-    <div class="sigbar"><span>Unterschrift</span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
+    <h2>Unterschrift</h2>
+    <div class="card">
+      <div id="datenschutz"></div>
+      <label class="l" style="margin-top:14px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
+      <canvas id="sig" class="sigbox"></canvas>
+      <div class="sigbar"><span>Unterschrift</span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
+    </div>
 
     <div class="hp"><label>Website <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
     <div id="errmsg" class="msg err" style="display:none"></div>

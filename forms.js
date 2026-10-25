@@ -10,6 +10,7 @@ function el(tag, attrs, kids) {
   (kids || []).forEach(function (c) { if (c) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
   return e;
 }
+function toggleInfo(b) { var p = document.getElementById(b.getAttribute('data-for')); var on = !p.classList.contains('on'); p.classList.toggle('on', on); b.classList.toggle('on', on); }
 function isEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
 /* Geburtsdatum aus Tag, Monat (01-12) und Jahr prüfen; liefert TT.MM.JJJJ oder '' */
 function dobFromParts(t, m, j) {
