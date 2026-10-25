@@ -1822,7 +1822,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-27-x';
+var KA_V = '2026-10-27-y';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2159,6 +2159,7 @@ function renderPatients() {
       tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]]);
     });
     ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); });
+    ib('img', 'Foto hinzufügen', function () { curP = p; zuNext = null; document.getElementById('a-img-in').click(); });
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
     wrap.appendChild(left); wrap.appendChild(acts); c1.appendChild(wrap);
