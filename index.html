@@ -2070,7 +2070,11 @@ function renderPatients() {
     var ib = function (k, t, fn) { var b = mk('button', 'pt-ib'); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k); b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
     ib('cal', 'Termin anlegen', function () { curP = p; var n = new Date(); openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true); document.getElementById('t-patient').value = nameKey(p); });
     ib('euro', 'Rechnung erstellen', function () { curP = p; openInvoice(p); });
-    ib('form', 'Anamnese senden', function (ev) { var tx = fillPlatzhalter(ANAM_TXT, p); sendMenu(ev, p, ['anamnese'], 'Anamnesebogen', tx); });
+    ib('book', 'Doku hinzufügen', function () { viewAkte(p); openDkPick(null); });
+    ib('mail', 'E-Mail oder WhatsApp schreiben', function (ev) {
+      curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
+      tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]]);
+    });
     ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); });
     c1.appendChild(acts);
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
