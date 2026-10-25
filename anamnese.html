@@ -11,10 +11,12 @@
 <div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
 <div class="wrap" id="formbox">
   <form id="f" novalidate autocomplete="on">
-    <h1>Anamnese</h1>
-    <div class="intro"><p>Bitte beantworte die folgenden Fragen zur gesundheitlichen Vorgeschichte. Alle Fragen sind mit <b>Ja</b> oder <b>Nein</b> zu beantworten. Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p></div>
-
-    <div class="card" id="codebox"></div>
+    <div class="fhead"><h1>Anamnese</h1><button type="button" class="info-i" data-for="info" onclick="toggleInfo(this)" title="Hinweise zum Bogen" aria-label="Hinweise zum Bogen">i</button></div>
+    <div class="info-panel" id="info">
+      <p>Bitte beantworte die Fragen zur gesundheitlichen Vorgeschichte. Alle Fragen sind mit <b>Ja</b> oder <b>Nein</b> zu beantworten. Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p>
+      <p>Wir fragen hier bewusst weder Namen noch Geburtsdatum ab. Deine Angaben werden nur über Deinen persönlichen Code zugeordnet. Bitte trage auch in den Textfeldern keine Namen ein. Die Unterschrift leistest Du bei uns in der Praxis.</p>
+    </div>
+    <div id="codebox"></div>
 
     <div id="fragen"></div>
 
@@ -128,7 +130,7 @@ $('datenschutz').appendChild(datenschutzBlock());
 var CODE = (new URLSearchParams(location.search).get('c') || '').toUpperCase().trim();
 if (!/^[A-Z2-9]{6}$/.test(CODE)) CODE = '';
 $('codebox').innerHTML = CODE
-  ? '<div class="l" style="margin-top:0">Dein persönlicher Code</div><div style="font-size:26px;font-weight:700;letter-spacing:4px">' + CODE + '</div><p style="margin:8px 0 0;color:#475569;font-size:14px">Wir fragen hier bewusst weder Namen noch Geburtsdatum ab. Deine Angaben werden nur über diesen Code Dir zugeordnet. Bitte trage auch in den Textfeldern keine Namen ein. Die Unterschrift leistest Du bei uns in der Praxis.</p>'
+  ? '<span class="codepill"><b>' + CODE + '</b><span>Dein persönlicher Code</span></span>'
   : '<div class="msg err" style="display:block;margin:0">Bitte öffne diesen Bogen über den persönlichen Link, den Du von der Praxis bekommen hast.</div>';
 if (!CODE) { $('go').disabled = true; }
 $('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } setTimeout(function () { ui.forEach(function (u) { u.items.forEach(function (t) { t.clear(); }); if (u.gate) u.gate.clear(); u.refresh(); }); sammel.clear(); applySammel(); }, 0); });

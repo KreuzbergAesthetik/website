@@ -11,9 +11,10 @@
 <div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
 <div class="wrap" id="formbox">
   <form id="f" novalidate autocomplete="on">
-    <h1>Terminerinnerung</h1>
-    <div class="intro"><p>Wenn Du möchtest, erinnern wir Dich per E-Mail an Deine Termine. Das ist freiwillig. Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p></div>
+    <div class="fhead"><h1>Terminerinnerung</h1><button type="button" class="info-i" data-for="info" onclick="toggleInfo(this)" title="Hinweise zum Formular" aria-label="Hinweise zum Formular">i</button></div>
+    <div class="info-panel" id="info"><p>Wenn Du möchtest, erinnern wir Dich per E-Mail an Deine Termine. Das ist freiwillig. Pflichtfelder sind mit einem <span style="color:#dc2626">*</span> markiert.</p></div>
 
+    <h2>Zur Person</h2>
     <div class="card">
       <div class="grid2">
         <div><label class="l">Vorname <span class="req">*</span></label><input type="text" id="vorname" autocomplete="given-name"></div>
@@ -27,6 +28,7 @@
       </div>
     </div>
 
+    <h2>Einwilligung</h2>
     <div class="card">
       <label class="l">E-Mail-Adresse <span class="req">*</span></label>
       <input type="email" id="email" autocomplete="email">
@@ -38,9 +40,11 @@
       <div id="datenschutz"></div>
     </div>
 
-    <label class="l" style="margin-top:20px">Bitte hier mit dem Finger oder der Maus unterschreiben <span class="req">*</span></label>
-    <canvas id="sig" class="sigbox"></canvas>
-    <div class="sigbar"><span>Unterschrift</span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
+    <h2>Unterschrift</h2>
+    <div class="card">
+      <canvas id="sig" class="sigbox"></canvas>
+      <div class="sigbar"><span>Bitte mit dem Finger oder der Maus unterschreiben <span class="req" style="color:#dc2626">*</span></span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
+    </div>
 
     <div class="hp"><label>Website <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
     <div id="errmsg" class="msg err" style="display:none"></div>
