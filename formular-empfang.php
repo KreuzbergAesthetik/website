@@ -30,7 +30,7 @@ if ($origin && !in_array($origin, $ERLAUBT, true)) fail(403, 'Nicht erlaubt.');
 if (!empty($_POST['website'])) { echo json_encode(['ok' => true]); exit; }   // Spam-Falle: Menschen lassen das Feld leer
 
 $typ = $_POST['typ'] ?? '';
-$labels = ['anmeldung' => 'Patientenanmeldung', 'anamnese' => 'Anamnese', 'erinnerung' => 'Terminerinnerung'];
+$labels = ['anmeldung' => 'Patientenanmeldung', 'anamnese' => 'Anamnese', 'erinnerung' => 'Terminerinnerung', 'aufklaerung' => 'Aufklärung'];
 if (!isset($labels[$typ])) fail(400, 'Unbekanntes Formular.');
 if (!isset($_FILES['pdf']) || $_FILES['pdf']['error'] !== UPLOAD_ERR_OK) fail(400, 'Das PDF fehlt.');
 if ($_FILES['pdf']['size'] > $MAX_BYTES) fail(413, 'Das PDF ist zu groß.');
