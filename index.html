@@ -72,6 +72,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .logo { width:36px; height:36px; background:#0f172a; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:18px; }
 .title-text h1 { font-size:17px; letter-spacing:.2px; } .title-text p { font-size:12px; color:#64748b; }
 nav { background:#fff; border-bottom:1px solid #e2e8f0; display:flex; overflow-x:auto; }
+@media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 1 0; min-width:0; padding-left:2px; padding-right:2px; text-align:center; } }
 nav > :first-child { margin-left:auto; } nav > :last-child { margin-right:auto; }
 .nav-btn { background:none; border:none; padding:12px 16px; font-size:14px; font-weight:500; color:#64748b; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
 .nav-btn.active { color:#0f172a; border-bottom-color:#0f172a; font-weight:600; }
@@ -736,7 +737,6 @@ function kaStart() {
   <nav>
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
-  <button type="button" class="nav-btn" id="btn-rechnungen" onclick="switchTab('rechnungen')">Rechnungen</button>
   <button type="button" class="nav-btn" id="btn-todos" onclick="switchTab('todos')">To-Dos <span id="todo-badge" class="nav-badge" style="display:none;"></span></button>
   <button type="button" class="nav-btn" id="btn-praxis" onclick="toggleNavMenu(event)">Praxis &#9662;</button>
 </nav>
@@ -1750,8 +1750,9 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var PRAXIS_NAV = [['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Dokumente', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
-  ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], '-', ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat']];
+var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
+  ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Dokumente', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
+  ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf']];
 var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function (x) { return x[0]; });
 (function () {
   var box = document.getElementById('nav-menu');
@@ -1762,7 +1763,7 @@ var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function 
     box.appendChild(b);
   });
 })();
-var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', todos: 'renderTodos', rechnungen: 'renderInvoices' };
+var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', todos: 'renderTodos' };
 PRAXIS_NAV.forEach(function (x) { if (x[0]) TAB_RENDER[x[0]] = x[2]; });
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
 function errBanner(msg) {
