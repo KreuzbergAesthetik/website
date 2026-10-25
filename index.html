@@ -1028,15 +1028,17 @@ function kaStart() {
   <div id="tab-webformulare" class="tab-content">
     <div class="card">
       <div class="card-header"><span class="card-title">Webformulare</span><button type="button" class="wf-i" title="Hinweise" aria-label="Hinweise" onclick="var p=document.getElementById('wf-info');p.style.display=p.style.display==='none'?'':'none';this.classList.toggle('on')">i</button></div>
-      <div id="wf-info" style="display:none; font-size:14px; color:#475569; margin-bottom:12px;">Patienten füllen die Formulare am Handy aus und unterschreiben mit dem Finger. Daraus entsteht ein PDF. Schicke ihnen den Link, zum Beispiel über eine Nachrichtenvorlage mit den Platzhaltern <b>{LinkAnmeldung}</b>, <b>{LinkAnamnese}</b> und <b>{LinkErinnerung}</b>.</div>
-      <div id="wf-list"></div>
-      <div class="ak-h">So kommen ausgefüllte Formulare in die App</div>
+      <div id="wf-info" style="display:none; font-size:14px; color:#475569; margin-bottom:12px;">Patienten füllen die Formulare am Handy aus und unterschreiben mit dem Finger. Daraus entsteht ein PDF. Schicke ihnen den Link, zum Beispiel über eine Nachrichtenvorlage mit den Platzhaltern <b>{LinkAnmeldung}</b>, <b>{LinkAnamnese}</b> und <b>{LinkErinnerung}</b>.
+      <div style="margin-top:12px;"><div class="ak-h">So kommen ausgefüllte Formulare in die App</div>
       <div style="font-size:14px; color:#334155;">
         <p style="margin-bottom:6px;">1. Mit eingerichtetem Geräte-Abgleich (Praxis, Geräte-Abgleich) landen die Formulare verschlüsselt im Postfach. Du bekommst nur eine kurze E-Mail ohne Patientendaten, die App zeigt „Abrufen (n)“ unter Patienten und oben eine Leiste. Ein Tipp übernimmt alles.</p>
         <p style="margin-bottom:6px;">2. Ohne Abgleich kommt das PDF wie bisher per E-Mail: Anhang speichern und unter Patienten den Knopf <b>Import</b> wählen.</p>
         <p style="margin-bottom:6px;">3. Die Anmeldung legt den Patienten an oder ergänzt ihn. Die Terminerinnerung trägt E-Mail und Einwilligung ein.</p>
         <p><b>Anamnese ohne Namen:</b> Der Bogen läuft nur über einen persönlichen Code (Link mit <b>?c=Code</b>). Der Link mit dem richtigen Code wird in Nachrichten mit dem Platzhalter {LinkAnamnese} automatisch für den jeweiligen Patienten eingesetzt (oder über die Schaltfläche „Anamnese senden“ in der Akte). Schicke ihn erst, wenn die Anmeldung da ist. Beim Import ordnet die App die Anamnese über den Code zu (bei einem neuen Code legt sie auf Wunsch einen neuen Patienten an oder ordnet den Code einem vorhandenen zu), füllt Allergien, Medikation und Diagnosen und hängt das PDF an die Akte. Die Unterschrift kommt vor Ort auf das PDF.</p>
       </div>
+      </div>
+      </div>
+      <div id="wf-list"></div>
     </div>
   </div>
 
