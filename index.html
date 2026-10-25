@@ -321,9 +321,8 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item + .tl-item { border-top:1px solid #e2e8f0; }
 .tl-day .tl-date b { display:none; } .tl-day .tl-date span { font-style:normal; font-size:12px; }
 .tl-day .tl-item:not(.open) .tl-body { display:flex; align-items:baseline; gap:8px; cursor:pointer; }
-.tl-day .tl-item:not(.open) .tl-label { flex:none; margin:0; width:78px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tl-day .tl-item:not(.open) .tl-label { flex:none; margin:0; width:auto; max-width:110px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tl-day .tl-item:not(.open) .tl-body > :not(.tl-label):not(.tl-first) { display:none; }
-.tl-day .tl-item.tl-med:not(.open) .tl-label { width:auto; }
 .tl-day .tl-item:not(.open) .tl-first { flex:1; min-width:0; margin:0; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis; font-size:14px; padding:0 !important; background:none !important; border:none !important; }
 .tl-day .tl-item:not(.open) .tl-first * { display:inline !important; white-space:nowrap !important; }
 .tl-day .tl-item { padding-top:6px; padding-bottom:6px; }
@@ -331,6 +330,10 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item.tl-termin + .tl-item, .tl-day .tl-item.tl-termin { border-top:none; }
 .tl-day .tl-item.tl-termin .tl-first { font-weight:700; color:#14532d; }
 .tl-day .tl-item.tl-termin .tl-label { font-weight:700; }
+.wf-i { width:22px; height:22px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#94a3b8; font:italic 700 13px Georgia,serif; cursor:pointer; padding:0; line-height:1; } .wf-i.on { background:#e2e8f0; color:#475569; }
+.wf-row { padding:10px 0; border-bottom:1px solid #e2e8f0; } .wf-t { display:block; margin-bottom:4px; }
+.wf-ln { display:flex; align-items:center; gap:6px; } .wf-a { flex:1; min-width:0; font-size:13px; color:#2563eb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-decoration:none; }
+.wf-cp { flex:none; width:30px; height:30px; border:none; background:#f1f5f9; color:#64748b; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; } .wf-cp.ok { background:#dcfce7; color:#16a34a; }
 .tl-day .tl-plus { width:22px; height:22px; font-size:15px; background:transparent; color:#94a3b8; padding:0 0 1px; }
 .tl-day .tl-plus:hover { background:#e2e8f0; color:#475569; }
 .tl-day .tl-plus { top:6px; right:0; }
@@ -1019,8 +1022,8 @@ function kaStart() {
   <!-- TAB: WEBFORMULARE -->
   <div id="tab-webformulare" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Webformulare</span></div>
-      <div style="font-size:14px; color:#475569; margin-bottom:12px;">Patienten füllen die Formulare am Handy aus und unterschreiben mit dem Finger. Daraus entsteht ein PDF. Schicke ihnen den Link, zum Beispiel über eine Nachrichtenvorlage mit den Platzhaltern <b>{LinkAnmeldung}</b>, <b>{LinkAnamnese}</b> und <b>{LinkErinnerung}</b>.</div>
+      <div class="card-header"><span class="card-title">Webformulare</span><button type="button" class="wf-i" title="Hinweise" aria-label="Hinweise" onclick="var p=document.getElementById('wf-info');p.style.display=p.style.display==='none'?'':'none';this.classList.toggle('on')">i</button></div>
+      <div id="wf-info" style="display:none; font-size:14px; color:#475569; margin-bottom:12px;">Patienten füllen die Formulare am Handy aus und unterschreiben mit dem Finger. Daraus entsteht ein PDF. Schicke ihnen den Link, zum Beispiel über eine Nachrichtenvorlage mit den Platzhaltern <b>{LinkAnmeldung}</b>, <b>{LinkAnamnese}</b> und <b>{LinkErinnerung}</b>.</div>
       <div id="wf-list"></div>
       <div class="ak-h">So kommen ausgefüllte Formulare in die App</div>
       <div style="font-size:14px; color:#334155;">
@@ -5555,13 +5558,14 @@ var WEBF = [['Patientenanmeldung', 'anmeldung.html'], ['Anamnesebogen', 'anamnes
 function webfUrl(f) { try { return new URL(f, location.href).href; } catch (x) { return f; } }
 function renderWebf() {
   var box = document.getElementById('wf-list'); if (!box) return; box.innerHTML = '';
+  var ic = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>';
   WEBF.forEach(function (w) {
-    var r = mk('div'); r.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 0; border-bottom:1px solid #e2e8f0;';
-    var t = mk('b', '', w[0]); t.style.cssText = 'flex:0 0 160px;'; r.appendChild(t);
-    var inp = mk('input', 'form-control'); inp.readOnly = true; inp.value = webfUrl(w[1]); inp.style.cssText = 'flex:1 1 220px; min-width:0; font-size:13px;'; r.appendChild(inp);
-    var cp = mk('button', 'btn btn-secondary btn-sm', 'Link kopieren'); cp.type = 'button'; cp.onclick = function () { copyText(inp.value, function () { cp.textContent = 'Kopiert'; setTimeout(function () { cp.textContent = 'Link kopieren'; }, 1500); }, function () { inp.select(); alert('Bitte den markierten Link von Hand kopieren.'); }); };
-    var op = mk('a', 'btn btn-secondary btn-sm', 'Öffnen'); op.href = inp.value; op.target = '_blank'; op.rel = 'noopener'; op.style.textDecoration = 'none';
-    r.appendChild(cp); r.appendChild(op); box.appendChild(r);
+    var url = webfUrl(w[1]), r = mk('div', 'wf-row');
+    r.appendChild(mk('b', 'wf-t', w[0]));
+    var ln = mk('div', 'wf-ln'), a = mk('a', 'wf-a', url); a.href = url; a.target = '_blank'; a.rel = 'noopener'; ln.appendChild(a);
+    var cp = mk('button', 'wf-cp'); cp.type = 'button'; cp.innerHTML = ic; cp.title = 'Link kopieren'; cp.setAttribute('aria-label', 'Link kopieren');
+    cp.onclick = function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, function () { prompt('Link zum Kopieren:', url); }); };
+    ln.appendChild(cp); r.appendChild(ln); box.appendChild(r);
   });
 }
 /* Ausgefüllte Formulare (.json und .pdf) in die Akten übernehmen */
