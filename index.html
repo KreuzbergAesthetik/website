@@ -209,7 +209,9 @@ textarea.form-control { font-size:15px; }
 .md-item { margin-bottom:10px; } .md-gh { display:flex; align-items:center; gap:6px; } .md-gt { font-size:12.5px; color:#64748b; } .md-zu { font-size:12px; color:#047857; margin:2px 0 4px; }
 .md-strip { grid-template-columns:repeat(auto-fill,minmax(62px,68px)) !important; margin:4px 0 6px !important; }
 .md-doc { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #eef2f6; min-width:0; }
-.md-ic.th { width:34px; height:44px; background-color:#fff; background-size:cover; background-position:top center; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 1px 2px rgba(15,23,42,.12); }
+.nav-ver { padding:8px 14px 4px; font-size:11px; color:#94a3b8; border-top:1px solid #eef2f6; margin-top:4px; }
+.dp-ov { position:fixed; inset:0; z-index:130; background:rgba(15,23,42,.72); display:flex; align-items:center; justify-content:center; padding:12px; } .dp-box { background:#fff; border-radius:12px; max-width:min(720px,100%); max-height:100%; display:flex; flex-direction:column; overflow:hidden; } .dp-bar { display:flex; gap:8px; align-items:center; padding:10px 12px; border-bottom:1px solid #e2e8f0; } .dp-t { flex:1; min-width:0; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .dp-img { display:block; max-width:100%; max-height:calc(100vh - 110px); object-fit:contain; margin:0 auto; background:#f1f5f9; }
+.md-ic.th { cursor:pointer; width:34px; height:44px; background-color:#fff; background-size:cover; background-position:top center; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 1px 2px rgba(15,23,42,.12); }
 .md-ic { flex:none; width:26px; height:30px; border-radius:5px; background:#fee2e2; color:#b91c1c; font-size:8px; font-weight:800; display:flex; align-items:center; justify-content:center; }
 .md-col { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:4px; } .md-l2 { display:flex; align-items:center; gap:6px; min-width:0; } .md-l2 .md-dots { margin-left:auto; } .md-l2 .md-sig { width:26px; height:26px; } .md-l2 .md-sig svg { width:15px; height:15px; } .md-l2 .md-pill { max-width:60%; }
 .md-nm { flex:0 0 auto; min-width:0; min-width:0; font-weight:600; color:#0f172a; font-size:14px; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -1809,6 +1811,8 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
+var KA_V = '2026-10-27-q';
+function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
   ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], ['abgleich', 'Geräte-Abgleich', 'renderSync']];
@@ -1821,6 +1825,7 @@ var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function 
     if (x[0]) { b.textContent = x[1]; b.onclick = function () { navGo(x[0]); }; } else { b.disabled = true; b.innerHTML = x[1] + ' <small>geplant</small>'; }
     box.appendChild(b);
   });
+  var vf = document.createElement('div'); vf.className = 'nav-ver'; vf.textContent = kaVersion(); box.appendChild(vf);
 })();
 var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', todos: 'renderTodos' };
 PRAXIS_NAV.forEach(function (x) { if (x[0]) TAB_RENDER[x[0]] = x[2]; });
@@ -4284,7 +4289,8 @@ function renderVerlauf() {
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
   lager.verbrauch.forEach(function (v) { if (v.pid === curP.id) items.push({ k: v.ts, t: 'verbrauch', v: v }); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
-  items.sort(function (a, b) { return b.k - a.k; });
+  var dkey = function (k) { var d = new Date(k); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
+  items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || (b.t === 'termin') - (a.t === 'termin') || b.k - a.k; });
   box.innerHTML = '';
   var day = null, card = null;
   items.forEach(function (it) {
@@ -5375,13 +5381,13 @@ function medDots(items) {
 /* Vorschaubild: erste Seite bei PDFs, das Bild selbst bei Fotos. Die PDFs werden nacheinander im Hintergrund gezeichnet. */
 var THQ = Promise.resolve(), THC = {};
 function setTh(ic, u) { ic.textContent = ''; ic.classList.add('th'); ic.style.backgroundImage = 'url(' + u + ')'; }
-async function pdfThumb(dd) {
+async function pdfThumb(dd, w) {
   var bl = await fileBlob(dd); if (!bl) return null;
   var lib = await loadPdfJs(), doc = await lib.getDocument({ data: new Uint8Array(await bl.arrayBuffer()) }).promise;
   try {
-    var pg = await doc.getPage(1), v0 = pg.getViewport({ scale: 1 }), v = pg.getViewport({ scale: 110 / v0.width }), c = document.createElement('canvas');
+    var pg = await doc.getPage(1), v0 = pg.getViewport({ scale: 1 }), v = pg.getViewport({ scale: (w || 110) / v0.width }), c = document.createElement('canvas');
     c.width = Math.round(v.width); c.height = Math.round(v.height); var cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
-    await pg.render({ canvasContext: cx, viewport: v }).promise; return c.toDataURL('image/jpeg', 0.7);
+    await pg.render({ canvasContext: cx, viewport: v }).promise; return c.toDataURL('image/jpeg', w ? 0.85 : 0.7);
   } finally { doc.destroy(); }
 }
 function docThumb(dd, ic) {
@@ -5390,9 +5396,19 @@ function docThumb(dd, ic) {
   if (/\.(png|jpe?g|webp|gif)$/i.test(dd.name || '')) fileURL(dd).then(function (u) { if (u) setTh(ic, u); });
   else if (/\.pdf$/i.test(dd.name || '')) THQ = THQ.then(function () { return pdfThumb(dd); }).then(function (u) { if (u) { THC[key] = u; setTh(ic, u); } }).catch(function () {});
 }
+/* Vorschau groß: Tipp auf das Vorschaubild */
+function docPreview(dd) {
+  var o = mk('div', 'dp-ov'), box = mk('div', 'dp-box'), img = mk('img', 'dp-img'), bar = mk('div', 'dp-bar'), t = mk('span', 'dp-t', dd.name || '');
+  var open = mk('a', 'btn btn-secondary btn-sm', 'Öffnen'); open.target = '_blank'; open.rel = 'noopener'; open.style.textDecoration = 'none';
+  var x = mk('button', 'btn btn-cancel btn-sm', 'Schließen'); x.type = 'button';
+  var close = function () { o.remove(); }; x.onclick = close; o.onclick = function (ev) { if (ev.target === o) close(); };
+  bar.appendChild(t); bar.appendChild(open); bar.appendChild(x); box.appendChild(bar); box.appendChild(img); o.appendChild(box); document.body.appendChild(o);
+  fileURL(dd).then(function (u) { if (u) { open.href = u; if (!/\.pdf$/i.test(dd.name || '')) img.src = u; } });
+  if (/\.pdf$/i.test(dd.name || '')) { img.alt = 'Wird geladen …'; pdfThumb(dd, 900).then(function (u) { if (u) img.src = u; }).catch(function () { img.alt = 'Keine Vorschau möglich.'; }); }
+}
 function medDocRow(p, dd) {
   var r = mk('div', 'md-doc'), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
-  var ic0 = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()); r.appendChild(ic0); docThumb(dd, ic0);
+  var ic0 = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()); r.appendChild(ic0); docThumb(dd, ic0); ic0.onclick = function () { if (ic0.classList.contains('th')) docPreview(dd); };
   var a = mk('a', 'md-nm', dd.name); a.href = '#'; a.title = dd.name + ' · ' + fmtD(iso(new Date(tsOf(dd))));
   fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
   var col = mk('div', 'md-col'), l2 = mk('div', 'md-l2'); col.appendChild(a); col.appendChild(l2); r.appendChild(col);
