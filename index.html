@@ -800,7 +800,7 @@ function kaStart() {
   <div id="tab-patienten" class="tab-content">
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Patientenverwaltung</span>
+        <span class="card-title">Patienten</span>
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
       <div class="cal-bar" style="margin-bottom:10px;">
@@ -888,7 +888,7 @@ function kaStart() {
   <div id="tab-dokumente" class="tab-content">
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Vorlagen und Aufklärungen</span>
+        <span class="card-title">Dokumente</span>
         <button type="button" class="btn btn-sm" onclick="document.getElementById('tpl-lib-in').click()">+ Vorlage</button>
         <input type="file" id="tpl-lib-in" multiple style="display:none" onchange="addTemplates(this)">
       </div>
@@ -927,7 +927,7 @@ function kaStart() {
   <!-- TAB: PRAXISDATEN -->
   <div id="tab-settings" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Praxisdaten für Rechnungen</span></div>
+      <div class="card-header"><span class="card-title">Praxisdaten</span></div>
 <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Name, Anschrift, Telefon und E-Mail der Praxis sind fest hinterlegt. Hier trägst Du die übrigen Angaben einmal ein.</div>
     <div class="grid-2">
       <div class="form-group"><label>Steuernummer</label><input type="text" id="s-steuernr" class="form-control"></div>
@@ -1061,7 +1061,7 @@ function kaStart() {
   <!-- TAB 5: LAGER -->
   <div id="tab-lager" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Produktlager</span></div>
+      <div class="card-header"><span class="card-title">Lager</span></div>
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
         <button type="button" class="btn btn-sm" onclick="openWare()">+ Wareneingang</button>
         <button type="button" class="btn btn-sm" onclick="openProdukt(null)">+ Produkt</button>
@@ -4938,7 +4938,60 @@ function savePaket() {
   persist(); closeModal('modal-pk'); renderPakete();
 }
 function deletePaket() { if (pkIdx < 0 || !confirm('Paket löschen?')) return; settings.pakete.splice(pkIdx, 1); persist(); closeModal('modal-pk'); renderPakete(); }
+/* Standardvorlagen: Nachsorge-Blätter als PDF, erstellt aus den Verhaltensregeln der Praxis (einmalig beim ersten Öffnen von Dokumente) */
+var VL_VER = 1;
+function tbText(n) { var t = TB_STD.filter(function (x) { return x.name === n; })[0]; return t ? t.text : ''; }
+function vlDefs() {
+  var ds = [['Nachsorge Neuromodulator', 'Nachsorge nach einer Behandlung mit einem Neuromodulator', ['Nachsorge Neuromodulator', 'Nachsorge Wirkungseintritt Neuromodulator', 'Nachsorge Blaue Flecken', 'Nachsorge Auffälligkeiten'], /btx|botox|botulinum|azzalure|bocouture|vistabel|dysport|neuromodul|letybo|relfydess|zornesfalte|stirn|krähenfüße|masseter|browlift/i],
+    ['Nachsorge Filler', 'Nachsorge nach einer Behandlung mit Filler', ['Nachsorge Filler', 'Nachsorge Filler Lippen', 'Nachsorge Filler Nase', 'Nachsorge Trinkmenge', 'Nachsorge Blaue Flecken', 'Nachsorge Auffälligkeiten'], /hyaluron|filler|redensity|teosyal|belotero|radiesse|rha|tränenrinne/i],
+    ['Nachsorge Poly-L-Milchsäure', 'Nachsorge nach einer Behandlung mit Poly-L-Milchsäure', ['Nachsorge Filler', 'Nachsorge Poly-L-Milchsäure', 'Nachsorge Auffälligkeiten'], /sculptra|poly-?l/i],
+    ['Nachsorge Neuromodulator (EN)', 'After care: neuromodulator', ['Nachsorge Neuromodulator EN'], null],
+    ['Nachsorge Filler (EN)', 'After care: dermal filler', ['Nachsorge Filler EN', 'Nachsorge Filler Lippen EN'], null],
+    ['Nachsorge Poly-L-Milchsäure (EN)', 'After care: poly-L-lactic acid', ['Nachsorge Poly-L-Milchsäure EN'], null]];
+  return ds;
+}
+async function vlPdf(titel, blocks) {
+  var L = await loadPdfLib(), doc = await L.PDFDocument.create(), f = await doc.embedFont(L.StandardFonts.Helvetica), fb = await doc.embedFont(L.StandardFonts.HelveticaBold);
+  var W = 595.28, H = 841.89, M = 56, y = 0, page = null, gray = L.rgb(0.4, 0.45, 0.5), black = L.rgb(0.06, 0.09, 0.16);
+  var add = function () { page = doc.addPage([W, H]); y = H - M; };
+  var line = function (t, o) { o = o || {}; var sz = o.size || 10.5, ft = o.bold ? fb : f; if (y < M + sz * 2) add(); page.drawText(rxSafe(t), { x: M + (o.x || 0), y: y - sz, size: sz, font: ft, color: o.color || black }); y -= sz * 1.5; };
+  var wrap = function (t, sz, ft, maxW) { var out = [], cur = ''; rxSafe(t).split(/\s+/).forEach(function (w) { var c = cur ? cur + ' ' + w : w; if (cur && ft.widthOfTextAtSize(c, sz) > maxW) { out.push(cur); cur = w; } else cur = c; }); if (cur) out.push(cur); return out; };
+  add();
+  line(PRAXIS.kopf.replace(' - ', ' · '), { bold: true, size: 12 }); line(PRAXIS.strasse + ' · ' + PRAXIS.ort + ' · ' + PRAXIS.web, { size: 9, color: gray }); y -= 16;
+  line(titel, { bold: true, size: 15 }); y -= 8;
+  blocks.forEach(function (b) {
+    String(b).split('\n').forEach(function (l) {
+      if (!l.trim()) { y -= 6; return; }
+      var bullet = /^- /.test(l), txt = bullet ? l.slice(2) : l, head = !bullet && /:$/.test(l.trim()) && l.length < 70;
+      var x = bullet ? 14 : 0, sz = 10.5, ft = head ? fb : f;
+      wrap(txt, sz, ft, W - 2 * M - x - (bullet ? 10 : 0)).forEach(function (w, i) { if (y < M + sz * 2) add(); if (bullet && i === 0) page.drawCircle({ x: M + 4, y: y - sz * 0.4, size: 1.8, color: black }); page.drawText(w, { x: M + x + (bullet ? 10 : 0), y: y - sz, size: sz, font: ft, color: black }); y -= sz * 1.5; });
+    });
+    y -= 12;
+  });
+  var bytes = await doc.save(); return new Blob([bytes], { type: 'application/pdf' });
+}
+var vlBusy = false;
+async function vlStandard() {
+  if (vlBusy || (settings.vlVer || 0) >= VL_VER) return; vlBusy = true;
+  try {
+    var made = 0, have = {}; templates.forEach(function (t) { have[String(t.name).toLowerCase()] = t; });
+    var defs = vlDefs();
+    for (var i = 0; i < defs.length; i++) {
+      var d = defs[i], t = have[d[0].toLowerCase()];
+      if (!t) {
+        var blob = await vlPdf(d[1], d[2].map(tbText)), id = newId();
+        if (!(await fPut(id, d[0] + '.pdf', blob))) continue;
+        t = { id: id, ts: Date.now() + i, name: d[0], kat: 'Nachsorge', neu: false }; templates.push(t); made++;
+      }
+      /* zu passenden Leistungen verknüpfen, damit die Vorlage beim Termin vorgeschlagen wird */
+      if (d[3]) (settings.katalog || []).forEach(function (k) { if (d[3].test(k.name) && (k.vorlagen = k.vorlagen || []).indexOf(t.id) < 0) k.vorlagen.push(t.id); });
+    }
+    settings.vlVer = VL_VER; persist(); renderTemplates();
+    if (made) alert(made + ' Nachsorge-Vorlagen wurden angelegt. Sie sind bei passenden Leistungen verknüpft (unter Leistungen änderbar).');
+  } catch (x) {} finally { vlBusy = false; }
+}
 function renderTemplates() {
+  vlStandard();
   var tb = document.getElementById('tp-table'); if (!tb) return;
   tb.innerHTML = ''; document.getElementById('tp-empty').style.display = templates.length ? 'none' : 'block';
   templates.forEach(function (t) {
