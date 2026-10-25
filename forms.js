@@ -138,11 +138,34 @@ async function newPdf(title, who) {
 function slug(t) { return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
 
 /* Versand an den Empfang der Praxis; schlägt er fehl, bleibt das Formular stehen und der Patient kann es erneut versuchen */
+/* Öffentlicher Schlüssel der Praxis: Damit wird das Formular schon im Browser verschlüsselt. Nur die Praxis-App kann es öffnen. */
+var KEY_URL = ENDPOINT.replace(/formular$/, 'schluessel');
+async function praxisKey() {
+  var r; try { r = await fetch(KEY_URL, { cache: 'no-store' }); } catch (x) { throw new Error('Die Verbindung zur Praxis ist nicht möglich. Prüfe Deine Internetverbindung oder fülle das Formular in der Praxis aus.'); }
+  var j = null; try { j = await r.json(); } catch (x) {}
+  return j && j.ok && j.key ? j.key : null;
+}
+function b64(u8) { var s = '', i; for (i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); }
+async function sealPaket(jwk, obj) {
+  var enc = new TextEncoder(), pub = await crypto.subtle.importKey('jwk', jwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+  var ak = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']), iv = crypto.getRandomValues(new Uint8Array(12));
+  var wrapped = new Uint8Array(await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pub, await crypto.subtle.exportKey('raw', ak)));
+  var ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, ak, enc.encode(JSON.stringify(obj))));
+  var out = new Uint8Array(2 + wrapped.length + 12 + ct.length);
+  out[0] = wrapped.length >> 8; out[1] = wrapped.length & 255; out.set(wrapped, 2); out.set(iv, 2 + wrapped.length); out.set(ct, 14 + wrapped.length);
+  return out;
+}
 async function deliver(typ, label, who, data, pdfBytes, hp) {
-  var blob = new Blob([pdfBytes], { type: 'application/pdf' }), fname = label + '_' + slug(who) + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
-  var fd = new FormData();
-  fd.append('typ', typ); fd.append('name', who); fd.append('website', hp || ''); fd.append('pdf', blob, fname);
-  fd.append('daten', new Blob([JSON.stringify(data)], { type: 'application/json' }), fname.replace(/\.pdf$/, '.json'));
+  var fname = label + '_' + slug(who) + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
+  var fd = new FormData(), key = await praxisKey();
+  fd.append('typ', typ); fd.append('website', hp || '');
+  if (key) {
+    var paket = await sealPaket(key, { typ: typ, name: who, daten: data, pdfName: fname, pdf: b64(new Uint8Array(pdfBytes)) });
+    fd.append('paket', new Blob([paket], { type: 'application/octet-stream' }), 'paket.bin');
+  } else {
+    fd.append('name', who); fd.append('pdf', new Blob([pdfBytes], { type: 'application/pdf' }), fname);
+    fd.append('daten', new Blob([JSON.stringify(data)], { type: 'application/json' }), fname.replace(/\.pdf$/, '.json'));
+  }
   var r;
   try { r = await fetch(ENDPOINT, { method: 'POST', body: fd }); }
   catch (x) { throw new Error('Die Verbindung zur Praxis ist nicht möglich. Prüfe Deine Internetverbindung oder fülle das Formular in der Praxis aus.'); }

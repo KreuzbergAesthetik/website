@@ -21,6 +21,7 @@
     <h2>Bestätigung</h2>
     <div class="card">
       <label class="chk" id="g-ok"><input type="checkbox" id="ok"><span>Ich habe die Aufklärung gelesen und verstanden. <span style="color:#dc2626">*</span></span></label>
+      <label class="chk" id="g-ok2" style="margin-top:10px"><input type="checkbox" id="ok2"><span>Ich weiß, dass ich vor der Behandlung im persönlichen Gespräch alle Fragen stellen kann und dass ich meine Einwilligung erst dort unterschreibe. <span style="color:#dc2626">*</span></span></label>
       <label class="l" style="margin-top:14px">Fragen für das Gespräch (freiwillig, bitte ohne Namen)</label>
       <textarea id="fragen"></textarea>
     </div>
@@ -45,18 +46,20 @@ else {
     function kv(k, v) { var lines = P.wrap(v || '-', P.f, 10.5, P.W - P.M * 2 - 180), lh = 14; P.ensure(lh * lines.length + 4); P.page.drawText(ascii(k), { x: P.M, y: P.y - 10, size: 9.5, font: P.f, color: P.gray }); lines.forEach(function (l, i) { P.page.drawText(ascii(l), { x: P.M + 180, y: P.y - 10 - i * lh, size: 10.5, font: P.f, color: P.black }); }); P.y -= lh * lines.length + 4; }
     P.text('AUFKLÄRUNG - KENNTNISNAHME', { size: 10.5, bold: true, gap: 2 }); P.rule(8);
     kv('Patientencode', CODE); kv('Dokument', DOC.titel); kv('Online gelesen am', today() + ' ' + pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ' Uhr');
-    kv('Bestätigung', 'Ich habe die Aufklärung gelesen und verstanden.');
+    kv('Bestätigung', 'Ich habe die Aufklärung gelesen und verstanden.'); kv('Hinweis bestätigt', 'Fragen können im persönlichen Gespräch gestellt werden, die Einwilligung wird erst dort unterschrieben.');
     var fr = $('fragen').value.trim(); if (fr) { P.y -= 6; P.text('FRAGEN FÜR DAS GESPRÄCH', { size: 10.5, bold: true, gap: 2 }); P.rule(8); P.text(fr, { size: 10.5, gap: 6 }); }
     P.y -= 10; P.text('Die Einwilligung wird in der Praxis auf dem Aufklärungsbogen unterschrieben. Diese Bestätigung enthält bewusst keinen Namen.', { size: 9, italic: true, color: P.gray, gap: 6 });
     return await P.finish({ format: 'ka-formular', version: 1, typ: 'aufklaerung', erstellt: new Date().toISOString(), patient: { code: CODE }, dokument: { id: DOC.id, titel: DOC.titel }, fragen: fr });
   }
   $('f').addEventListener('submit', async function (ev) {
     ev.preventDefault(); $('errmsg').style.display = 'none';
+    $('g-ok').classList.remove('invalid'); $('g-ok2').classList.remove('invalid');
     if (!$('ok').checked) { $('g-ok').classList.add('invalid'); errBox('Bitte bestätige mit dem Haken, dass Du die Aufklärung gelesen hast.'); return; }
+    if (!$('ok2').checked) { $('g-ok2').classList.add('invalid'); errBox('Bitte bestätige auch den zweiten Haken zum persönlichen Gespräch.'); return; }
     var go = $('go'); go.disabled = true; go.textContent = 'Wird gesendet …';
     try {
       var pdf = await build();
-      await deliver('aufklaerung', 'Aufklaerung', CODE, { format: 'ka-formular', version: 1, typ: 'aufklaerung', erstellt: new Date().toISOString(), patient: { code: CODE }, dokument: { id: DOC.id, titel: DOC.titel } }, pdf, $('website').value);
+      await deliver('aufklaerung', 'Aufklaerung', CODE, { format: 'ka-formular', version: 1, typ: 'aufklaerung', erstellt: new Date().toISOString(), patient: { code: CODE }, dokument: { id: DOC.id, titel: DOC.titel }, fragen: $('fragen').value.trim() }, pdf, $('website').value);
       showDone('Formular');
     } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
   });

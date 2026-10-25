@@ -357,6 +357,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .hm-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; } @media (max-width:760px) { .hm-grid { grid-template-columns:1fr; } }
 .hm-sec { font-size:13px; font-weight:700; color:#475569; margin:2px 0 6px; text-transform:uppercase; letter-spacing:.04em; }
 .hm-empty { color:#94a3b8; font-size:14px; padding:6px 4px; }
+.sy-state.good { color:#15803d; } .sy-state.bad { color:#b91c1c; } .sy-state.wait { color:#92400e; } #pt-abrufen.has-new { background:#16a34a; color:#fff; border-color:#16a34a; }
 .hm-warn { background:#fef3c7; color:#92400e; border-radius:8px; padding:10px 12px; font-size:14px; margin-bottom:12px; display:flex; justify-content:space-between; gap:8px; align-items:center; }
 .hm-stat { flex:1; background:#f8fafc; border-radius:10px; padding:10px 12px; } .hm-stat b { display:block; font-size:20px; white-space:nowrap; }
 .hm-allergy { background:#fee2e2; color:#b91c1c; }
@@ -544,6 +545,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-msg { color:#b91c1c; font-size:13px; min-height:18px; margin-top:8px; }
 </style>
 <script src="docs.js"></script>
+<script src="sync.js"></script>
 <script>try { if (localStorage.getItem('ka_lock')) document.documentElement.classList.add('locked'); } catch (e) {}</script>
 </head>
 <body>
@@ -821,6 +823,7 @@ function kaStart() {
             <option value="name">Name</option><option value="id">ID</option><option value="dob">Geburtsdatum</option><option value="erstellt">Erstellt am</option>
           </select>
           <button type="button" class="btn btn-secondary btn-sm" id="p-dir" onclick="togglePDir()" title="Sortierrichtung" aria-label="Sortierrichtung">&#9650;</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="pt-abrufen" style="display:none" onclick="KS.abrufen()" title="Neue Formulare aus dem Postfach holen">Abrufen</button>
           <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('pimp-file').click()" title="Patienten, Rechnungen oder ausgefüllte Formulare einlesen">Import</button>
           <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
         </div>
@@ -1002,10 +1005,32 @@ function kaStart() {
       <div id="wf-list"></div>
       <div class="ak-h">So kommen ausgefüllte Formulare in die App</div>
       <div style="font-size:14px; color:#334155;">
-        <p style="margin-bottom:6px;">1. Das ausgefüllte PDF kommt per E-Mail an (sobald der Empfang auf deiner Website eingerichtet ist, siehe LIESMICH) oder der Patient schickt das PDF selbst.</p>
-        <p style="margin-bottom:6px;">2. Speichere den Anhang (das PDF genügt, die Daten stecken darin) und wähle unter Patienten den Knopf <b>Import</b>.</p>
+        <p style="margin-bottom:6px;">1. Mit eingerichtetem Geräte-Abgleich (Praxis, Geräte-Abgleich) landen die Formulare verschlüsselt im Postfach. Du bekommst nur eine kurze E-Mail ohne Patientendaten, die App zeigt „Abrufen (n)“ unter Patienten und oben eine Leiste. Ein Tipp übernimmt alles.</p>
+        <p style="margin-bottom:6px;">2. Ohne Abgleich kommt das PDF wie bisher per E-Mail: Anhang speichern und unter Patienten den Knopf <b>Import</b> wählen.</p>
         <p style="margin-bottom:6px;">3. Die Anmeldung legt den Patienten an oder ergänzt ihn. Die Terminerinnerung trägt E-Mail und Einwilligung ein.</p>
         <p><b>Anamnese ohne Namen:</b> Der Bogen läuft nur über einen persönlichen Code (Link mit <b>?c=Code</b>). Der Link mit dem richtigen Code wird in Nachrichten mit dem Platzhalter {LinkAnamnese} automatisch für den jeweiligen Patienten eingesetzt (oder über die Schaltfläche „Anamnese senden“ in der Akte). Schicke ihn erst, wenn die Anmeldung da ist. Beim Import ordnet die App die Anamnese über den Code zu (bei einem neuen Code legt sie auf Wunsch einen neuen Patienten an oder ordnet den Code einem vorhandenen zu), füllt Allergien, Medikation und Diagnosen und hängt das PDF an die Akte. Die Unterschrift kommt vor Ort auf das PDF.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: GERÄTE-ABGLEICH -->
+  <div id="tab-abgleich" class="tab-content">
+    <div class="card" id="sync-box">
+      <div class="card-header"><span class="card-title">Geräte-Abgleich und Postfach</span></div>
+      <div class="sy-off">
+        <div style="font-size:14px; color:#334155; margin-bottom:12px;">Die App speichert ihre Daten auf Deinem Server und gleicht sie zwischen Tablet, Handy und Computer ab. Alles wird <b>auf dem Gerät verschlüsselt</b>, bevor es hochgeladen wird. Der Server sieht nur unlesbare Daten. Webformulare landen ebenfalls verschlüsselt im Postfach und werden mit einem Tipp übernommen, ohne PDF-Speichern und Import.</div>
+        <div class="form-group"><label>Abgleich-Passwort (mindestens 12 Zeichen)</label><input type="password" id="sy-pw" class="form-control" autocomplete="new-password"></div>
+        <div class="form-group"><label>Einrichtungscode (nur falls im Server-Skript ein Code eingetragen wurde)</label><input type="text" id="sy-code" class="form-control" autocomplete="off"></div>
+        <div class="hm-warn" style="margin-bottom:12px;">Wichtig: Schreibe das Passwort auf und bewahre es sicher auf. Ohne dieses Passwort sind die Daten auf dem Server nicht mehr lesbar, auch für mich nicht.</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-save" onclick="syncGo('setup')">Einrichten (erstes Gerät)</button><button type="button" class="btn btn-secondary" onclick="syncGo('connect')">Mit vorhandenem verbinden</button></div>
+        <div id="sy-msg" style="margin-top:10px; font-size:13px;"></div>
+      </div>
+      <div class="sy-on" style="display:none">
+        <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
+        <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:14px;"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
+        <div id="sy-baks"></div>
+        <div style="font-size:13px; color:#64748b;">Der Abgleich läuft automatisch beim Öffnen der App, beim Zurückkehren zur App und etwa 6 Sekunden nach jeder Änderung. Offline arbeitest Du normal weiter, der Abgleich holt sich nach, was fehlt. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
       </div>
     </div>
   </div>
@@ -1756,7 +1781,7 @@ function kaStart() {
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
-  ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf']];
+  ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], ['abgleich', 'Geräte-Abgleich', 'renderSync']];
 var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function (x) { return x[0]; });
 (function () {
   var box = document.getElementById('nav-menu');
@@ -1848,6 +1873,7 @@ function persist() {
   } catch (x) { alert('Der Speicher im Browser ist voll. Bitte große Dateien entfernen und eine Sicherung machen.'); }
   try { renderHome(); } catch (x) {}
   try { updateTodoBadge(); } catch (x) {}
+  try { KS.touch(); } catch (x) {}
 }
 var pSort = 'desc', pKey = 'id';
 /* ===== Hinweise an Patienten: offene To-Dos und Termine ohne Rechnung ===== */
@@ -5506,7 +5532,7 @@ function renderWebf() {
 /* Ausgefüllte Formulare (.json und .pdf) in die Akten übernehmen */
 function fIsDob(a, b) { return String(a || '').trim() === String(b || '').trim(); }
 async function formularImport(entries) {
-  var out = [], today = Date.now();
+  var out = [], today = Date.now(), okIdx = [];
   for (var i = 0; i < entries.length; i++) {
     var d = entries[i].d, pdf = entries[i].pdf;
     var q = d.patient, nm = ((q.vorname || '') + ' ' + (q.nachname || '')).trim().toLowerCase();
@@ -5568,11 +5594,13 @@ async function formularImport(entries) {
       var id = newId(); await fPut(id, pdf.name, pdf);
       p.dokumente.push({ id: id, ts: Date.now(), name: pdf.name, kat: d.typ === 'aufklaerung' ? 'Aufklärung' : 'Aufnahme und Anamnese', form: d.typ });
     }
+    okIdx[i] = true;
     out.push(({ anamnese: 'Anamnese', erinnerung: 'Terminerinnerung', aufklaerung: 'Aufklärung' }[d.typ] || 'Anmeldung') + ': ' + nameKey(p) + (created ? ' (neu angelegt)' : '') + (pdf ? ', PDF angehängt' : ', ohne PDF'));
   }
-  if (!out.length) return;
+  if (!out.length) return okIdx;
   persist(); renderPatients(); if (curP && document.getElementById('modal-akte').classList.contains('active')) viewAkte(curP);
   alert(out.join('\n'));
+  return okIdx;
 }
 /* ===== Rechnungen aus PDF importieren (Rechnungsnummer, Datum, Anschrift, Positionen, Zahlungsstatus) ===== */
 var riList = [];
@@ -6712,9 +6740,37 @@ function fixImported() {
 }
 fixImported();
 restoreLast();
+/* ===== Geräte-Abgleich ===== */
+function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); }
+async function syncGo(mode) {
+  var pw = document.getElementById('sy-pw').value, m = document.getElementById('sy-msg'); m.className = ''; m.style.color = '#64748b';
+  if (pw.length < 12) { m.style.color = '#b91c1c'; m.textContent = 'Das Passwort braucht mindestens 12 Zeichen.'; return; }
+  m.textContent = 'Einen Moment, der Schlüssel wird berechnet …';
+  try { if (mode === 'setup') await KS.setup(pw, document.getElementById('sy-code').value.trim()); else await KS.connect(pw); document.getElementById('sy-pw').value = ''; m.textContent = ''; }
+  catch (e) { m.style.color = '#b91c1c'; m.textContent = e && e.message ? e.message : 'Das hat nicht geklappt.'; }
+  KS.ui();
+}
+function syncOff() { if (confirm('Abgleich auf diesem Gerät beenden? Die Daten auf diesem Gerät bleiben erhalten, auf dem Server ändert sich nichts.')) KS.disconnect(); }
+async function syncBackups() {
+  var box = document.getElementById('sy-baks'); box.innerHTML = 'Lade …';
+  try {
+    var l = await KS.backups(); box.innerHTML = '';
+    if (!l.length) { box.textContent = 'Es gibt keine früheren Stände.'; box.style.cssText = 'font-size:13px;color:#64748b;margin-bottom:14px'; return; }
+    var h = mk('div', 'ak-h', 'Frühere Stände (von Konflikten)'); box.appendChild(h);
+    l.forEach(function (n) {
+      var ts = +n.replace('sich_', ''), r = mk('div'); r.style.cssText = 'display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:14px';
+      var t = mk('span', '', new Date(ts).toLocaleString('de-DE')); t.style.flex = '1';
+      var b = mk('button', 'btn btn-secondary btn-sm', 'Zurückholen'); b.type = 'button';
+      b.onclick = function () { if (confirm('Diesen Stand auf diesem Gerät einsetzen? Der aktuelle Stand wird dadurch ersetzt (er bleibt auf dem Server bis zum nächsten Abgleich erhalten).')) KS.restoreBackup(n).catch(function (e) { alert(e.message); }); };
+      r.appendChild(t); r.appendChild(b); box.appendChild(r);
+    });
+  } catch (e) { box.textContent = e.message; }
+}
+try { KS.init(); } catch (x) {}
 
 </script>
 <script>kaStart();</script>
+<div id="ks-bar" style="display:none; position:fixed; left:12px; right:12px; bottom:12px; z-index:89; background:#0f172a; color:#fff; border-radius:14px; padding:12px 14px; box-shadow:0 8px 24px rgba(15,23,42,.35); align-items:center; gap:10px; justify-content:space-between"><span id="ks-bar-t" style="font-size:14px"></span><button type="button" class="btn btn-save btn-sm" onclick="KS.abrufen()">Abrufen</button></div>
 <div id="upd-bar" style="display:none; position:fixed; left:12px; right:12px; bottom:12px; z-index:90; background:#0f172a; color:#fff; border-radius:14px; padding:12px 14px; box-shadow:0 8px 24px rgba(15,23,42,.35);">
   <div style="font-weight:700; margin-bottom:2px;">Neue Version verfügbar</div>
   <div style="font-size:13px; color:#cbd5e1; margin-bottom:10px;">Mach vorher eine Sicherung (Sichern oben). Die neue Version ändert beim ersten Start gespeicherte Daten.</div>
