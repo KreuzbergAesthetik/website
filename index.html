@@ -743,13 +743,6 @@ function kaStart() {
 </nav>
 </header>
 <div id="nav-menu" class="nav-menu" style="display:none;"></div>
-  <button type="button" disabled>Patientenstammdaten <small>geplant</small></button>
-  <button type="button" disabled>Automationen <small>geplant</small></button>
-  <button type="button" onclick="navGo('webformulare')">Webformulare</button>
-  <div class="nav-sep"></div>
-  <button type="button" onclick="navGo('zahlungen')">Zahlungen</button>
-  <button type="button" onclick="navGo('statistik')">Statistik</button>
-</div>
 
 <main>
 
@@ -1005,7 +998,7 @@ function kaStart() {
   <!-- TAB: TEXTBAUSTEINE -->
   <div id="tab-textbausteine" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Textbausteine</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="tbDefaults()">Standardtexte laden</button><button type="button" class="btn btn-sm" onclick="openTxt(-1)">+ Textbaustein</button></div></div>
+      <div class="card-header"><span class="card-title">Textbausteine</span><button type="button" class="btn btn-sm" onclick="openTxt(-1)" title="Neuer Textbaustein" aria-label="Neuer Textbaustein">+</button></div>
       <div id="tb-list"></div>
       <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Textbausteine kannst Du in der Dokumentation und in E-Mails über die Auswahl „Textbaustein einfügen" einsetzen.</div>
     </div>
@@ -4636,7 +4629,7 @@ var TB_STD = [
   { name: 'Nachsorge Filler Lippen', text: 'Besonders zu beachten bei einer Lippenunterspritzung mit Hyaluron:\n- mindestens 4 Stunden keine heißen Getränke und Speisen\n- 24 Stunden nicht küssen\n- Lippenstift oder Lippenpflege erst am Folgetag' },
   { name: 'Nachsorge Filler Nase', text: 'Besonders zu beachten bei einer Nasenkorrektur mit Hyaluron:\n- keine Druckbelastung der korrigierten Stelle für 2 Wochen (z. B. durch Brille, Sonnenbrille, Taucherbrille)' },
   { name: 'Nachsorge Trinkmenge', text: 'Was Sie darüber hinaus tun können:\n- mindestens 2 Liter Trinkmenge pro Tag' },
-  { name: 'Nachsorge Poly-L-Milchsäure', text: 'Zusätzlich bei Poly-L-Milchsäure (z. B. Sculptra®): leichte Gesichtsmassage\n- Feuchtigkeitscreme auftragen\n- immer von der Gesichtsmitte von innen nach außen massieren\n- 3 bis 5 Wiederholungen pro Stelle\n- nicht hin und her massieren, immer wieder neu ansetzen und mit leichtem Druck nach außen massieren\n- Häufigkeit: ___ pro Stelle, ___ Tage lang, ___ mal am Tag' },
+  { name: 'Nachsorge Poly-L-Milchsäure', text: 'Zusätzlich bei Poly-L-Milchsäure (z. B. Sculptra®): leichte Gesichtsmassage\n- Feuchtigkeitscreme auftragen\n- immer von der Gesichtsmitte von innen nach außen massieren\n- 5-5-5-Regel: 5 Mal pro Stelle, 5 Tage lang, 5 Mal am Tag\n- nicht hin und her massieren, immer wieder neu ansetzen und mit leichtem Druck nach außen massieren' },
   { name: 'Nachsorge Neuromodulator Kurz', text: 'In den ersten 4 bis 6 Stunden nach der Behandlung bitte körperlich schonen, nichts tun, was den Blutdruck erhöht, und die behandelten Muskeln nicht massieren, damit sich das Botulinumtoxin nicht ausbreitet.' },
   { name: 'Nachsorge Wirkungseintritt Neuromodulator', text: 'Das Ergebnis zeigt sich nach etwa 4 Tagen und erreicht nach 10 bis 14 Tagen seine volle Wirkung. Es hält etwa 4 bis 6 Monate an.' },
   { name: 'Nachsorge Blaue Flecken', text: 'Kleine blaue Flecken können zunächst gekühlt und anschließend mit Make-up abgedeckt werden.' },
@@ -4644,18 +4637,19 @@ var TB_STD = [
   { name: 'Nachsorge Neuromodulator EN', text: 'After care instructions: Neuromodulator (e.g. Botox®)\n\nOn the day of treatment:\n- No alcohol\n- No make-up\n- No rubbing or massaging the treated area\n\nAt least 48 hours:\n- No sports or excessive physical activity\n\nAt least 1 week:\n- No sauna, tanning bed or excessive sun exposure\n\nAt least 2 weeks:\n- No facial massage or invasive cosmetic facial treatments\n- No microblading, permanent make-up or tattooing in the treated area\n- No laser treatment in the treated area' },
   { name: 'Nachsorge Filler EN', text: 'After care instructions: Dermal filler (e.g. Hyaluron)\n\nOn the day of treatment:\n- No smoking for at least 4 hours after\n- No make-up or lipstick\n- No alcohol\n\nAt least 48 hours:\n- No sports or excessive physical activity\n\nAt least 1 week:\n- No sauna, tanning or excessive sun exposure\n\nAt least 2 weeks:\n- No facial massage or invasive cosmetic facial treatments\n- No dental treatments, no dental cleaning or bleaching\n\nAt least 4 weeks:\n- No microblading, permanent make-up or tattoo\n- No laser treatment in the treated area\n\nWhat you can do additionally:\n- Stay hydrated: drink at least 2 litres of water per day' },
   { name: 'Nachsorge Filler Lippen EN', text: 'Important after care steps for lip treatment with hyaluronic acid:\n- No hot drinks and food for at least 4 hours\n- No kissing for 24 hours\n- Lipstick or lip care only on the following day' },
-  { name: 'Nachsorge Poly-L-Milchsäure EN', text: 'After care instructions: Poly-L-lactic acid (e.g. Sculptra®)\n\nAdditionally: gentle facial massage\n- Apply moisturizer\n- Always massage from the center of the face outward\n- Repeat 3 to 5 times per area\n- Do not massage back and forth; always start anew and massage outward with gentle pressure' }
+  { name: 'Nachsorge Poly-L-Milchsäure EN', text: 'After care instructions: Poly-L-lactic acid (e.g. Sculptra®)\n\nAdditionally: gentle facial massage\n- Apply moisturizer\n- Always massage from the center of the face outward\n- 5-5-5 rule: 5 times per area, for 5 days, 5 times a day\n- Do not massage back and forth; always start anew and massage outward with gentle pressure' }
 ];
+/* Standardtexte einmalig übernehmen: nur Namen, die es noch nicht gibt; spätere Ergänzungen kommen mit höherem TB_VER dazu */
+var TB_VER = 2;
 function tbDefaults() {
   settings.textbausteine = settings.textbausteine || [];
+  if ((settings.tbVer || 0) >= TB_VER) return;
   var have = {}; settings.textbausteine.forEach(function (t) { have[String(t.name).toLowerCase()] = 1; });
-  var neu = TB_STD.filter(function (t) { return !have[t.name.toLowerCase()]; });
-  if (!neu.length) { alert('Alle Standardtexte sind schon vorhanden.'); return; }
-  if (!confirm(neu.length + ' Standardtexte hinzufügen? Vorhandene bleiben unverändert. Bitte die Zahlen und Zonen vor dem Einsetzen prüfen und anpassen.')) return;
-  neu.forEach(function (t) { settings.textbausteine.push({ id: newId(), name: t.name, text: t.text }); });
-  persist(); renderTxt();
+  TB_STD.forEach(function (t) { if (!have[t.name.toLowerCase()]) settings.textbausteine.push({ id: newId(), name: t.name, text: t.text }); });
+  settings.tbVer = TB_VER;
+  try { kaSet('ka_settings', JSON.stringify(settings)); } catch (x) {}
 }
-function renderTxt() { settings.textbausteine = settings.textbausteine || []; simpleList('tb-list', settings.textbausteine, openTxt, function (x) { return x.text.replace(/\s+/g, ' ').slice(0, 90); }); }
+function renderTxt() { tbDefaults(); settings.textbausteine = settings.textbausteine || []; simpleList('tb-list', settings.textbausteine, openTxt, function (x) { return x.text.replace(/\s+/g, ' ').slice(0, 90); }); }
 function nvAttRender(sel) {
   var box = document.getElementById('nv-att'); box.innerHTML = '';
   if (!templates.length) { box.appendChild(mk('div', 'hm-empty', 'Noch keine Dokumente unter Praxis → Dokumente hochgeladen.')); return; }
