@@ -193,6 +193,17 @@ textarea.form-control { font-size:15px; }
 .a-menu { position:absolute; top:42px; right:30px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.18); z-index:20; min-width:230px; padding:6px; }
 .a-menu button { display:block; width:100%; text-align:left; background:none; border:none; padding:10px; font-size:14px; cursor:pointer; border-radius:6px; color:#0f172a; }
 .a-menu button:hover { background:#f1f5f9; }
+.md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
+.md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:#0f172a; border-color:#0f172a; color:#fff; }
+.md-mon { font-weight:800; font-size:15px; margin:18px 0 8px; } .md-mon:first-child { margin-top:10px; }
+.md-item { margin-bottom:10px; } .md-gh { display:flex; align-items:center; gap:6px; } .md-gt { font-size:12.5px; color:#64748b; } .md-zu { font-size:12px; color:#047857; margin:2px 0 4px; }
+.md-strip { grid-template-columns:repeat(auto-fill,minmax(62px,68px)) !important; margin:4px 0 6px !important; }
+.md-doc { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #eef2f6; }
+.md-ic { flex:none; width:30px; height:36px; border-radius:5px; background:#fee2e2; color:#b91c1c; font-size:9px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+.md-mid { flex:1; min-width:0; } .md-nm { display:block; font-weight:600; color:#0f172a; font-size:14.5px; overflow-wrap:anywhere; text-decoration:none; } .md-sub { font-size:12px; color:#64748b; margin-top:2px; }
+.md-pill { border:none; background:#eef2f7; color:#475569; border-radius:999px; padding:2px 9px; font-size:11.5px; font-weight:600; cursor:pointer; }
+.md-dots { flex:none; border:none; background:none; color:#94a3b8; font-size:20px; line-height:1; padding:2px 8px; cursor:pointer; border-radius:6px; } .md-dots:hover { background:#f1f5f9; color:#475569; }
+.md-sign { flex:none; min-height:34px; padding:4px 10px; }
 .media { display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:6px; margin-bottom:8px; }
 .media img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; cursor:pointer; border:1px solid #e2e8f0; display:block; }
 .x-btn { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
@@ -1133,14 +1144,8 @@ function kaStart() {
     </div>
     <div class="cal-bar">
       <input type="text" id="md-filter" class="form-control" placeholder="Dateiname suchen..." autocomplete="off" oninput="medLimit = 30; renderMedien()" style="flex:1 1 200px;">
-      <div class="seg">
-        <button type="button" id="md-alle" onclick="setMedFilter('alle')">Alle</button>
-        <button type="button" id="md-bild" onclick="setMedFilter('bild')">Bilder</button>
-        <button type="button" id="md-dok" onclick="setMedFilter('dok')">Dokumente</button>
-      </div>
-      <select id="md-kat" class="form-control" style="max-width:230px;" onchange="medLimit = 30; renderMedien()"></select>
     </div>
-    <div id="md-sum" style="font-size:13px; color:#64748b; margin:4px 0 10px;"></div>
+    <div id="md-chips" class="md-chips"></div>
     <div id="md-list"></div>
   </div>
   </div>
@@ -4782,7 +4787,7 @@ function addTemplates(inp) {
   });
 }
 /* ===== Medien: Gruppen, Galerie, Zuordnung ===== */
-var zuNext = null, gal = null, zuCtx = null, medFilter = 'alle', medLimit = 30;
+var zuNext = null, gal = null, zuCtx = null, medFilter = 'alle', medKat = '', medLimit = 30;
 function validZu(p) {
   var v = {}, n = nameKey(p);
   events.forEach(function (e) { if (e.patient === n) v['e' + e.id] = 1; });
@@ -4919,39 +4924,70 @@ function saveZu() {
   closeModal('modal-zu'); refreshFiles();
 }
 /* Medien und Dokumente des Patienten an einem Ort */
-function setMedFilter(f) { medFilter = f; medLimit = 30; renderMedien(); }
+function setMedFilter(f, k) { medFilter = f; medKat = k || ''; medLimit = 30; renderMedien(); }
+/* Anlagen als Zeitleiste nach Monat: Bilder pro Tag als Streifen, Dokumente als Zeilen, Aktionen im Menü */
+function medDots(items) {
+  var b = mk('button', 'md-dots', '⋯'); b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
+  b.onclick = function (ev) { tlMenu(ev, items); }; return b;
+}
+function medDocRow(p, dd, g) {
+  var r = mk('div', 'md-doc'), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
+  r.appendChild(mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()));
+  var mid = mk('div', 'md-mid'), a = mk('a', 'md-nm', dd.name); a.href = '#';
+  fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
+  mid.appendChild(a);
+  var sub = mk('div', 'md-sub'), pill = mk('button', 'md-pill', katOf(dd)); pill.type = 'button'; pill.title = 'Kategorie ändern';
+  pill.onclick = function (ev) { tlMenu(ev, KATS.map(function (k) { return [k, function () { dd.kat = k; refreshFiles(); renderMedien(); }]; })); };
+  sub.appendChild(pill); sub.appendChild(document.createTextNode(' ' + fmtD(iso(new Date(tsOf(dd))))));
+  mid.appendChild(sub); r.appendChild(mid);
+  if (dd.sig) r.appendChild(mk('span', 'badge badge-green', 'unterschrieben'));
+  else if (signable(dd)) { var sb = mk('button', 'btn sign-btn md-sign'); sb.type = 'button'; sb.title = 'Unterschreiben'; sb.setAttribute('aria-label', 'Unterschreiben'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; r.appendChild(sb); }
+  r.appendChild(medDots([
+    ['Zuordnen', function () { openZu(p, [dd]); }],
+    ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
+    ['Löschen', function () { if (!confirm('Dokument "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
+  ]));
+  return r;
+}
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
   akTabs();
-  ['alle', 'bild', 'dok'].forEach(function (k) { document.getElementById('md-' + k).className = medFilter === k ? 'on' : ''; });
-  var ksel = document.getElementById('md-kat'); if (!ksel.options.length) fillKatSelect(ksel, true);
-  ksel.style.display = medFilter === 'bild' ? 'none' : '';
-  var kf = medFilter === 'bild' ? '' : ksel.value;
-  var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), groups = [], nb = 0, nd = 0;
-  (medFilter === 'alle' ? ['bild', 'dok'] : [medFilter]).forEach(function (k) {
+  var chips = document.getElementById('md-chips'); chips.innerHTML = '';
+  var kats = []; (curP.dokumente || []).forEach(function (d) { var k = katOf(d); if (kats.indexOf(k) < 0) kats.push(k); });
+  kats.sort(function (a, b) { return KATS.indexOf(a) - KATS.indexOf(b); });
+  if (medFilter === 'dok' && medKat && kats.indexOf(medKat) < 0) { medFilter = 'alle'; medKat = ''; }
+  [['Alle', 'alle', ''], ['Bilder', 'bild', '']].concat(kats.map(function (k) { return [k, 'dok', k]; })).forEach(function (c) {
+    var b = mk('button', 'md-chip' + (medFilter === c[1] && medKat === c[2] ? ' on' : ''), c[0]); b.type = 'button'; b.onclick = function () { setMedFilter(c[1], c[2]); }; chips.appendChild(b);
+  });
+  var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), items = [];
+  (medFilter === 'alle' ? ['bild', 'dok'] : [medFilter === 'bild' ? 'bild' : 'dok']).forEach(function (k) {
     fileGroups(curP, k).forEach(function (g) {
-      if (q || (kf && k === 'dok')) { g = { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(kf && k === 'dok') || katOf(x) === kf); }) }; if (!g.list.length) return; }
-      groups.push(g); if (k === 'bild') nb += g.list.length; else nd += g.list.length;
+      var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat && k === 'dok') || katOf(x) === medKat); });
+      if (!l.length) return; items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
     });
   });
-  groups.sort(function (a, b) { return b.k - a.k; });
-  document.getElementById('md-sum').textContent = nb + ' Bild(er) und ' + nd + ' Dokument(e)' + ((q || kf) ? ' gefunden' : '');
+  items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = '';
-  if (!groups.length) { box.appendChild(mk('div', 'hm-empty', q ? 'Keine Datei gefunden' : 'Noch keine Fotos oder Dokumente')); return; }
-  groups.slice(0, medLimit).forEach(function (g) {
-    var c = mk('div'); c.style.cssText = 'border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:10px;';
-    var h = mk('div'); h.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;';
-    h.appendChild(mk('b', '', (g.kind === 'bild' ? 'Bilder' : 'Dokumente') + ' (' + g.list.length + ')'));
-    var dt = mk('button', 'pn', fmtDT(g.k).replace(/^[^,]+, /, '')); dt.type = 'button'; dt.style.cssText += 'font-size:12px; color:#64748b;'; dt.title = 'Datum ändern';
-    dt.onclick = function () { editGroupDate(g.list); };
-    h.appendChild(dt); c.appendChild(h);
-    if (g.zu) { var zl = mk('div', '', zuLabel(g.p, g.zu)); zl.style.cssText = 'font-size:12px; color:#047857; margin-bottom:6px;'; c.appendChild(zl); }
-    c.appendChild(fileBody(g.p, g.list, g.kind));
-    var zb = mk('button', 'btn btn-secondary', 'Zuordnen'); zb.type = 'button'; zb.style.cssText = 'padding:6px 10px; font-size:13px; margin-top:8px;';
-    zb.onclick = function () { openZu(g.p, g.list); }; c.appendChild(zb);
+  if (!items.length) { box.appendChild(mk('div', 'hm-empty', (q || medKat || medFilter !== 'alle') ? 'Keine Datei gefunden' : 'Noch keine Fotos oder Dokumente')); return; }
+  var lastMon = '';
+  items.slice(0, medLimit).forEach(function (it) {
+    var g = it.g, d = new Date(it.k), mon = d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    if (mon !== lastMon) { box.appendChild(mk('div', 'md-mon', mon)); lastMon = mon; }
+    var c = mk('div', 'md-item');
+    if (g.kind === 'bild') {
+      var h = mk('div', 'md-gh'), t = mk('div', 'md-gt', pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '. · ' + g.list.length + (g.list.length === 1 ? ' Bild' : ' Bilder'));
+      h.appendChild(t); h.appendChild(mk('div', 'sp'));
+      h.appendChild(medDots([['Zuordnen', function () { openZu(g.p, g.list); }], ['Datum ändern', function () { editGroupDate(g.list); renderMedien(); }]]));
+      c.appendChild(h);
+      if (g.zu) c.appendChild(mk('div', 'md-zu', zuLabel(g.p, g.zu)));
+      var gr = mediaGrid(g.p, g.list); gr.classList.add('md-strip'); c.appendChild(gr);
+    } else {
+      if (g.zu) c.appendChild(mk('div', 'md-zu', zuLabel(g.p, g.zu)));
+      g.list.forEach(function (dd) { c.appendChild(medDocRow(g.p, dd, g)); });
+    }
     box.appendChild(c);
   });
-  if (groups.length > medLimit) { var mb = mk('button', 'btn btn-secondary', 'Mehr anzeigen (' + (groups.length - medLimit) + ')'); mb.type = 'button'; mb.onclick = function () { medLimit += 30; renderMedien(); }; box.appendChild(mb); }
+  if (items.length > medLimit) { var mb = mk('button', 'btn btn-secondary', 'Mehr anzeigen (' + (items.length - medLimit) + ')'); mb.type = 'button'; mb.onclick = function () { medLimit += 30; renderMedien(); }; box.appendChild(mb); }
 }
 /* Finanzen pro Patient */
 function renderFin() {
