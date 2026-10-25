@@ -1005,7 +1005,7 @@ function kaStart() {
   <!-- TAB: TEXTBAUSTEINE -->
   <div id="tab-textbausteine" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Textbausteine</span><button type="button" class="btn btn-sm" onclick="openTxt(-1)">+ Textbaustein</button></div>
+      <div class="card-header"><span class="card-title">Textbausteine</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="tbDefaults()">Standardtexte laden</button><button type="button" class="btn btn-sm" onclick="openTxt(-1)">+ Textbaustein</button></div></div>
       <div id="tb-list"></div>
       <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Textbausteine kannst Du in der Dokumentation und in E-Mails über die Auswahl „Textbaustein einfügen" einsetzen.</div>
     </div>
@@ -4610,6 +4610,33 @@ function nvDefaults() {
   persist(); renderNachr();
 }
 function renderNachr() { renderPakete(); settings.nachrichten = settings.nachrichten || []; simpleList('nv-list', settings.nachrichten, openNachr, function (x) { return (x.betreff || '') + (x.text ? ' · ' + x.text.replace(/\s+/g, ' ').slice(0, 70) : ''); }); }
+/* Standard-Textbausteine, abgeleitet aus den Schreibweisen in den bisherigen Rechnungen (ohne Namen, Chargen und Preise).
+   Zahlen und Zonen sind Beispiele und werden vor dem Einsetzen angepasst. */
+var TB_STD = [
+  { name: 'BTX Zornesfalte', text: 'Zornesfalte (Glabella): Botulinumtoxin, Injektionsschema 10-10-10-10-10 (50 Einheiten).' },
+  { name: 'BTX Stirn', text: 'Stirn (M. frontalis): Botulinumtoxin, Injektionsschema 5-5-5-5-5 (25 Einheiten).' },
+  { name: 'BTX Krähenfüße', text: 'Krähenfüße beidseits: Botulinumtoxin, Injektionsschema 5-10-10-10 pro Seite (70 Einheiten).' },
+  { name: 'BTX Browlift', text: 'Browlift: Botulinumtoxin, 4 Einheiten pro Seite.' },
+  { name: 'BTX Masseter', text: 'Masseter: Botulinumtoxin beidseits, ___ Einheiten pro Seite.' },
+  { name: 'BTX Zonen', text: 'Botulinumtoxin in ___ Zonen (___ Einheiten gesamt).' },
+  { name: 'Hinweis Speywood-Units', text: '(*SU = Speywood-Units, die spezifischen Units für Azzalure und Dysport)' },
+  { name: 'Produkt mit Charge', text: 'Produkt: ___, Chargennummer: ___, MHD: ___' },
+  { name: 'Hyaluron Menge', text: 'Hyaluronsäure ___ ml, Areal: ___, Kanüle: ___.' },
+  { name: 'Hyaluron Tränenrinne', text: 'Tränenrinne beidseits: Hyaluronsäure, ___ ml pro Seite, stumpfe Kanüle 25 G.' },
+  { name: 'Hyaluron Kinn', text: 'Kinn: Hyaluronsäure, ___ ml, spitze Kanüle.' },
+  { name: 'Hyaluron Hochrisiko-Gebiet', text: 'Hyaluronsäure ___ ml in einem Hochrisiko-Gebiet (___). Aufklärung über Gefäßrisiken erfolgt.' },
+  { name: 'Rechnung Dank', text: 'Vielen Dank für Ihr Vertrauen.' },
+  { name: 'Rechnung Wiedersehen', text: 'See you soon.' }
+];
+function tbDefaults() {
+  settings.textbausteine = settings.textbausteine || [];
+  var have = {}; settings.textbausteine.forEach(function (t) { have[String(t.name).toLowerCase()] = 1; });
+  var neu = TB_STD.filter(function (t) { return !have[t.name.toLowerCase()]; });
+  if (!neu.length) { alert('Alle Standardtexte sind schon vorhanden.'); return; }
+  if (!confirm(neu.length + ' Standardtexte hinzufügen? Vorhandene bleiben unverändert. Bitte die Zahlen und Zonen vor dem Einsetzen prüfen und anpassen.')) return;
+  neu.forEach(function (t) { settings.textbausteine.push({ id: newId(), name: t.name, text: t.text }); });
+  persist(); renderTxt();
+}
 function renderTxt() { settings.textbausteine = settings.textbausteine || []; simpleList('tb-list', settings.textbausteine, openTxt, function (x) { return x.text.replace(/\s+/g, ' ').slice(0, 90); }); }
 function nvAttRender(sel) {
   var box = document.getElementById('nv-att'); box.innerHTML = '';
