@@ -1143,7 +1143,7 @@ function kaStart() {
   </div>
   <div id="at-anl" style="display:none;">
   <div id="a-unt-block" class="card" style="display:none;">
-    <div class="ak-h" style="margin-top:0;">Unterlagen</div>
+    <div class="card-header" style="margin-bottom:0;"><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="document.getElementById('akt-form-file').click()" title="Ausgefülltes Formular (PDF) einlesen">Import</button><input type="file" id="akt-form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)"></div>
     <div id="a-unt"></div>
   </div>
 
