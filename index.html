@@ -40,6 +40,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .viz-legend { display:flex; gap:16px; font-size:13px; color:#334155; margin-bottom:6px; flex-wrap:wrap; } .viz-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; }
 .viz-tip { position:absolute; pointer-events:none; background:#0f172a; color:#fff; font-size:12px; padding:6px 9px; border-radius:6px; z-index:5; white-space:nowrap; display:none; line-height:1.5; }
 .dk-sec { margin-bottom:14px; } .dk-hrow { display:flex; justify-content:space-between; align-items:center; } .dk-tb { width:26px; height:26px; border:none; border-radius:8px; background:#eef2f7; color:#64748b; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; margin:-4px 0 0; } .dk-tb:hover { background:#e2e8f0; color:#334155; }
+.dk-plus { border:none; background:none; color:#2563eb; font-size:12.5px; font-weight:600; cursor:pointer; padding:0 2px; }
 .dk-fold .dk-fh { cursor:pointer; display:flex; align-items:center; gap:8px; } .dk-fold .dk-fh::after { content:'›'; margin-left:auto; color:#94a3b8; font-size:18px; line-height:1; transform:rotate(90deg); } .dk-fold.closed .dk-fh::after { transform:none; }
 .dk-fold.closed > :not(.dk-h) { display:none; } .dk-fold.closed .dk-tb { display:none; } .dk-fold .dk-tb { order:3; } .dk-sum { font-weight:400; font-size:12px; color:#94a3b8; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .dk-fold:not(.closed) .dk-sum { display:none; }
 .dk-fold { border-top:1px solid #eef2f6; padding-top:8px; }
@@ -1658,10 +1659,10 @@ function kaStart() {
 <!-- MODAL: DOKUMENTATION -->
 <div id="modal-dok" class="modal-overlay">
   <div class="modal-box" style="max-width:720px;">
-    <div class="modal-header"><strong id="dk-title">Dokumentation</strong><button type="button" class="close-btn" onclick="closeModal('modal-dok')">&times;</button></div>
+    <div class="modal-header"><strong id="dk-title">Dokumentation</strong><button type="button" class="close-btn" onclick="dkCancel()">&times;</button></div>
     <div id="dk-body"></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-dok')">Abbrechen</button>
+      <button type="button" class="btn btn-cancel" onclick="dkCancel()">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveDok()">Speichern</button>
     </div>
   </div>
@@ -1819,7 +1820,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-27-u';
+var KA_V = '2026-10-27-v';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4186,8 +4187,7 @@ var dkpDoc = null;
 function newFreeDoku() {
   var d = { ts: Date.now(), text: '' };
   curP.doku = (curP.doku || []).concat([d]);
-  editingDokuId = 'd' + d.ts; renderVerlauf();
-  var ta = document.getElementById('doku-in'); if (ta) ta.focus();
+  renderVerlauf(); openDokFree(d);
 }
 function openDkPick(doc) {
   dkpDoc = doc || null;
@@ -4249,10 +4249,9 @@ function tlRow(it) {
       if (!confirm('Dokumentation löschen?')) return;
       curP.doku = curP.doku.filter(function (y) { return y !== d; }); persist(); renderVerlauf();
     }));
-    sh.body.appendChild(docBox('d' + d.ts, d.text, 'Dokumentation vom ' + fmtDT(d.ts), 'Dokumentation hinzufügen',
-      function (t) { d.text = t; },
-      function () { if (!d.text) curP.doku = curP.doku.filter(function (y) { return y !== d; }); },
-      renderVerlauf));
+    var dtb = mk('div'); dtb.style.cssText = 'font-size:13px; margin:4px 0 0; padding:6px 8px; background:#f8fafc; border-radius:6px; white-space:pre-wrap; cursor:pointer;';
+    if (d.text) { dtb.style.color = '#0f172a'; dtb.textContent = d.text; } else { dtb.style.color = '#94a3b8'; dtb.textContent = 'Dokumentation hinzufügen'; }
+    dtb.onclick = function () { openDokFree(d); }; sh.body.appendChild(dtb);
     sh.body.appendChild(attachBlock(curP, 'd' + d.ts));
     tlPlus(sh, [['Mit Termin verknüpfen', function () { openDkPick(d); }]].concat(attItems('d' + d.ts), attMove('d' + d.ts)));
   } else if (it.t === 'rechnung') {
@@ -4399,7 +4398,7 @@ function dokSummary(e) {
     [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung'], ['leist', 'Leistungen'], ['ausblick', 'Ausblick']].forEach(function (k) {
       var t = d ? String(d[k[0]] || '').trim() : (k[0] === 'behandlung' ? String(e.doku || '').trim() : '');
       if (!t) return; shown = true;
-      var r = mk('div'); r.style.cssText = 'white-space:pre-wrap; margin-bottom:3px;'; r.appendChild(mk('b', '', k[1] + ': ')); r.appendChild(document.createTextNode(t.length > 160 ? t.slice(0, 160) + '…' : t)); box.appendChild(r);
+      var r = mk('div'); r.style.cssText = 'white-space:pre-wrap; margin-bottom:3px;'; r.appendChild(mk('b', '', k[1] + ': ')); r.appendChild(document.createTextNode(t)); box.appendChild(r);
     });
     if (d && d.verw) { var v = DK_VERW.filter(function (x) { return d.verw[x[0]]; }).map(function (x) { return x[1]; }); if (v.length) { shown = true; var r2v = mk('div'); r2v.style.marginBottom = '3px'; r2v.appendChild(mk('b', '', 'Verwaltung: ')); r2v.appendChild(document.createTextNode(v.join(', '))); box.appendChild(r2v); } }
     if (open) { var tb = mk('span', 'badge badge-amber', open + ' offene(s) To-Do'); box.appendChild(tb); }
@@ -4440,7 +4439,6 @@ function dkRenderProd() {
   var box = document.getElementById('dk-prod'); if (!box || !dkEv) return; box.innerHTML = '';
   var used = lager.verbrauch.filter(function (v) { return v.eid === dkEv.id; });
   used.forEach(function (v) { var r = mk('div', '', '• ' + v.name + ': ' + qty(v.menge) + ' ' + (v.einheit || '') + ' · Charge ' + (v.nr || '-')); r.style.cssText = 'font-size:13.5px; padding:2px 0;'; box.appendChild(r); });
-  if (!used.length) { var n = mk('div', 'hm-empty', 'Noch keine Produkte aus dem Lager abgebucht.'); n.style.padding = '2px 0'; box.appendChild(n); }
 }
 function dkRenderTodos() {
   var box = document.getElementById('dk-todos'); if (!box) return; box.innerHTML = '';
@@ -4454,16 +4452,29 @@ function dkRenderTodos() {
     [cb, tx, pr, du, x].forEach(function (c) { r.appendChild(c); }); box.appendChild(r);
   });
 }
-function openDok(id) {
-  var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
+function openDok(id) { var e = events.filter(function (x) { return x.id === id; })[0]; if (e) openDokEv(e); }
+/* Freie Dokumentation (ohne Termin) in derselben Maske bearbeiten */
+function openDokFree(d) {
+  var dt = new Date(d.ts);
+  openDokEv({ id: -1, pseudo: d, patient: nameKey(curP), date: iso(dt), time: pad(dt.getHours()) + ':' + pad(dt.getMinutes()), dok: d.dok ? JSON.parse(JSON.stringify(d.dok)) : null, doku: d.text || '' });
+}
+function dkCancel() {
+  var e = dkEv; closeModal('modal-dok');
+  if (e && e.pseudo && curP && !String(e.pseudo.text || '').trim() && !e.pseudo.dok) { curP.doku = (curP.doku || []).filter(function (y) { return y !== e.pseudo; }); persist(); renderVerlauf(); }
+  dkEv = null;
+}
+function openDokEv(e) {
   dkEv = e; var d = dokOf(e), box = document.getElementById('dk-body'); box.innerHTML = '';
   document.getElementById('dk-title').textContent = 'Dokumentation · ' + e.patient + ' · ' + fmtTermin(e);
   dkTodos = todos.filter(function (t) { return t.eid === e.id; }).map(function (t) { return Object.assign({}, t); });
   DK_TEXT.forEach(function (k) { box.appendChild(dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true)); });
   var vw = mk('div'), vs = d.verw || {}, vg = mk('div', 'dk-vgrid'); vw.appendChild(vg);
   DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vg.appendChild(l); });
-  var vt = dkTa('dk-verwtext', vs.text, 1); vt.placeholder = 'Freitext zur Verwaltung'; vt.classList.add('dk-grow'); vt.addEventListener('input', function () { autoGrow(vt); }); vw.appendChild(vt);
-  box.appendChild(dkSec('Verwaltung', vw));
+  var vt = dkTa('dk-verwtext', vs.text, 1); vt.placeholder = 'Freitext zur Verwaltung'; vt.classList.add('dk-grow'); vt.addEventListener('input', function () { autoGrow(vt); }); if (!String(vs.text || '').trim()) vt.style.display = 'none'; vw.appendChild(vt);
+  var vsec = dkSec('Verwaltung', vw), vh = vsec.firstChild; vh.classList.add('dk-hrow');
+  var vplus = mk('button', 'dk-plus', '+ Text'); vplus.type = 'button'; vplus.onclick = function () { vt.style.display = ''; autoGrow(vt); vt.focus(); vplus.style.display = 'none'; };
+  if (String(vs.text || '').trim()) vplus.style.display = 'none'; vh.appendChild(vplus);
+  box.appendChild(vsec);
   /* Leistungen und Produkte: eine Leiste zum Tippen oder Auswählen, darunter die gewählten Leistungen und die abgebuchten Produkte */
   var lw = mk('div'), lta = dkTa('dk-leist', d.leist || evLeistungen(e).join('\n'), 2); lta.style.display = 'none'; lw.appendChild(lta);
   var lrow = mk('div', 'dk-lrow'), lwrap = mk('div', 'dk-lwrap'), lin = mk('input', 'form-control'); lin.type = 'text'; lin.placeholder = 'Leistung eintippen oder wählen'; lin.autocomplete = 'off'; lin.setAttribute('aria-label', 'Leistung');
@@ -4487,7 +4498,7 @@ function openDok(id) {
   lin.addEventListener('input', showDd); lin.addEventListener('focus', showDd); lin.addEventListener('blur', function () { dd.style.display = 'none'; });
   lin.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); var q = lin.value.trim().toLowerCase(), hit = (settings.katalog || []).filter(function (k) { return k.name.toLowerCase().indexOf(q) >= 0; }); addL(q && hit.length === 1 ? hit[0].name : lin.value); } });
   lwrap.appendChild(lin); lwrap.appendChild(dd); lrow.appendChild(lwrap);
-  var pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); }; lrow.appendChild(pb);
+  var pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); }; if (!e.pseudo) lrow.appendChild(pb);
   lw.appendChild(lrow); lw.appendChild(chips); drawChips();
   var pl = mk('div'); pl.id = 'dk-prod'; lw.appendChild(pl);
   var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; lw.appendChild(pta);
@@ -4496,7 +4507,7 @@ function openDok(id) {
   var rs = dkTextSec('dk-rechnung', 'Text für die Rechnung', d.rechnung, 3); rs.appendChild(mk('div', 'hm-empty', 'Wird nicht automatisch übertragen. In der Rechnung kannst Du diesen Text bei Bedarf einfügen.')); box.appendChild(dkFold(rs, d.rechnung));
   var tw = mk('div'); var tl = mk('div'); tl.id = 'dk-todos'; tw.appendChild(tl);
   var ta2 = mk('div', 'add-row', '+ To-Do hinzufügen'); ta2.onclick = function () { dkTodos.push({ id: newId(), text: '', prio: 'mittel', due: '', done: false, created: Date.now() }); dkRenderTodos(); var ins = document.querySelectorAll('#dk-todos input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); }; tw.appendChild(ta2);
-  box.appendChild(dkFold(dkSec('To-Do', tw), dkTodos.length ? dkTodos.length + ' offen' : ''));
+  var tdf = dkFold(dkSec('To-Do', tw), dkTodos.length ? dkTodos.length + ' offen' : ''); if (e.pseudo) tdf.style.display = 'none'; box.appendChild(tdf);
   dkRenderProd(); dkRenderTodos(); openModal('modal-dok');
   [].slice.call(box.querySelectorAll('.dk-grow')).forEach(autoGrow);
 }
@@ -4506,6 +4517,11 @@ function saveDok() {
   var verw = { text: g('dk-verwtext') }; DK_VERW.forEach(function (v) { verw[v[0]] = document.getElementById('dk-v-' + v[0]).checked; });
   e.dok = { anamnese: g('dk-anamnese'), befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
   e.doku = dokuText(e);
+  if (e.pseudo) {
+    var d0 = e.pseudo; d0.dok = e.dok; d0.text = e.doku;
+    if (!String(d0.text).trim()) curP.doku = (curP.doku || []).filter(function (y) { return y !== d0; });
+    persist(); closeModal('modal-dok'); dkEv = null; renderVerlauf(); return;
+  }
   var p = patOf(e);
   todos = todos.filter(function (t) { return t.eid !== e.id; }).concat(dkTodos.filter(function (t) { return String(t.text).trim(); }).map(function (t) { t.eid = e.id; t.pid = p ? p.id : undefined; t.text = String(t.text).trim(); return t; }));
   persist(); closeModal('modal-dok'); dkEv = null;
