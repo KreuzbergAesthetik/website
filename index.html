@@ -480,7 +480,15 @@ body { overflow-x:clip; }
 .hm-s { display:none; }
 @media (max-width:520px) { #hm-fin table th, #hm-fin table td { padding:8px 6px; font-size:12.5px; } #hm-fin .hm-l { display:none; } #hm-fin .hm-s { display:inline; } }
 .pt td.pc-er { white-space:nowrap; }
-.pt-dot { position:absolute; left:-2px; top:22px; width:8px; height:8px; border-radius:50%; background:#dc2626; display:none; } .pt-dot.on { display:block; } @media (max-width:520px) { .pt-dot { top:18px; left:-3px; } }
+.pt-dots { position:absolute; left:-5px; top:7px; display:flex; flex-direction:column; gap:3px; }
+.pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#ea580c; } .pt-dot.d-anam { background:#d4a017; }
+.pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+/* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
+#tab-patienten .pt { border-collapse:separate; border-spacing:0 8px; }
+#tab-patienten .pt tbody td { background:#f6f8fb; border-top:1px solid #dbe2ea; border-bottom:1px solid #dbe2ea; padding-top:12px; padding-bottom:12px; }
+#tab-patienten .pt tbody td:first-child { border-left:1px solid #dbe2ea; border-radius:10px 0 0 10px; }
+#tab-patienten .pt tbody td.pc-er { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; }
+@media (max-width:520px) { #tab-patienten .pt tbody td:nth-child(2) { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; } }
 .pn-row { display:flex; align-items:center; gap:2px; min-width:0; } .pn-nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto; } .pn-row .pt-marks { flex:none; } .pt-dob { font-size:12.5px; color:#64748b; margin-top:1px; }
 .pt-marks { display:inline-flex; align-items:center; white-space:nowrap; margin-left:6px; }
 @media (max-width:520px) { .pt-marks { display:flex; margin:0 0 0 4px; } }
@@ -817,6 +825,7 @@ function kaStart() {
           <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
         </div>
       </div>
+      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#ea580c"></i>Rechnung offen</span><span><i style="background:#d4a017"></i>Anamnese</span></div>
       <div class="scroll">
         <table class="pt">
           <thead><tr>
@@ -1975,11 +1984,13 @@ function renderPatients() {
     var nb0 = mk('button', 'pidb', '#' + patNr(p)); nb0.type = 'button'; nb0.title = 'Nummer ändern'; nb0.onclick = function () { changePatNr(p); }; c0.appendChild(nb0);
     var noT = function (t) { return String(t || '').split(/\s+/).filter(function (w) { return w && !TITEL_RE.test(w); }).join(' '); };
     var full = noT(p.vorname) + ' ' + noT(p.nachname).toUpperCase();
-    var nrow = mk('div', 'pn-row'), fl0 = flagsMap().get(p), dot = mk('span', 'pt-dot'); if (fl0.todos.length) { dot.classList.add('on'); dot.title = 'Offene To-Dos: ' + fl0.todos.map(function (t) { return t.text; }).join(', '); } nrow.appendChild(dot);
+    var nrow = mk('div', 'pn-row'), fl0 = flagsMap().get(p), dots = mk('span', 'pt-dots');
+    var addDot = function (cls, t) { var d = mk('span', 'pt-dot ' + cls); d.title = t; d.setAttribute('aria-label', t); dots.appendChild(d); };
+    if (fl0.todos.length) addDot('d-todo', 'Offene To-Dos: ' + fl0.todos.map(function (t) { return t.text; }).join(', '));
+    if (fl0.unb.length) addDot('d-inv', 'Rechnung offen: vergangene Termine ohne Rechnung (' + fl0.unb.length + ')');
+    if (fl0.anam) addDot('d-anam', anamText(fl0.anam.info));
+    if (dots.childNodes.length) c1.appendChild(dots);
     var nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
-    var mks = mk('span', 'pt-marks');
-    flagPills(p, true).forEach(function (x) { mks.appendChild(x); });
-    if (mks.childNodes.length) nrow.appendChild(mks);
     c1.appendChild(nrow);
     if (p.dob) c1.appendChild(mk('div', 'pt-dob', p.dob + (age !== '' ? ' · ' + age + ' Jahre' : '')));
     if (p.phone) { var l1 = mk('div', 'pl'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); c1.appendChild(l1); }
