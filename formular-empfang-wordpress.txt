@@ -1,54 +1,208 @@
 /*
- * Empfang für die Webformulare von Kreuzberg Ästhetik (WordPress-Variante).
+ * Server-Teil für Kreuzberg Ästhetik (WordPress-Variante).
  * Dieses Stück Code kommt als PHP-Snippet in das Plugin "WPCode" (siehe LIESMICH.txt).
  *
- * Nimmt das ausgefüllte PDF entgegen und schickt es per E-Mail an die Praxis. Es wird nichts gespeichert.
- * Adresse zum Eintragen in forms.js (ENDPOINT):
- *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/formular
+ * Es macht zwei Dinge:
+ *  1. Postfach für Webformulare: Die Formulare werden im Browser des Patienten mit dem öffentlichen Schlüssel
+ *     der Praxis verschlüsselt. Der Server legt nur den verschlüsselten Umschlag ab und schickt Dir eine kurze
+ *     Benachrichtigung (ohne Namen, ohne PDF). Lesen kann sie nur die Praxis-App.
+ *  2. Abgleich der Praxis-App zwischen mehreren Geräten: Die App speichert ihren Datenbestand Ende-zu-Ende-
+ *     verschlüsselt. Der Server sieht nur unlesbare Daten und kennt weder Passwort noch Schlüssel.
+ *
+ * Gespeichert wird in wp-content/ka-daten (von außen gesperrt). Alles dort ist verschlüsselt.
+ * Adressen (stehen in forms.js und sync.js):
+ *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/formular     (Webformulare)
+ *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/schluessel   (öffentlicher Schlüssel)
+ *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/abgleich     (Praxis-App)
  */
-add_action('rest_api_init', function () {
-    register_rest_route('ka/v1', '/formular', array(
-        'methods' => 'POST',
-        'permission_callback' => '__return_true',
-        'callback' => function ($req) {
-            $EMPFAENGER = 'info@kreuzberg-aesthetik.de';          // Hierhin gehen die Formulare
-            $ERLAUBT    = array('https://fellamanuel-arch.github.io'); // Seiten, die senden dürfen
-            $MAX_BYTES  = 8 * 1024 * 1024;                          // größtes erlaubtes PDF
-            $fail = function ($code, $msg) { return new WP_REST_Response(array('ok' => false, 'error' => $msg), $code); };
+if (!function_exists('ka_cfg')) {
+    function ka_cfg() {
+        return array(
+            'EMPFAENGER'  => 'info@kreuzberg-aesthetik.de',          // Hierhin gehen die Benachrichtigungen
+            'ERLAUBT'     => array('https://fellamanuel-arch.github.io'), // Seiten, die senden dürfen
+            'EINRICHTUNG' => '',          // Optional: eigenes Wort, das beim ersten Einrichten der App einmal eingegeben werden muss
+            'MAX_PAKET'   => 12 * 1024 * 1024,   // größtes Formular (verschlüsselt)
+            'MAX_OBJEKT'  => 40 * 1024 * 1024,   // größte Datei im Abgleich
+            'MAX_GESAMT'  => 1500 * 1024 * 1024, // Speicher für den Abgleich insgesamt
+            'MAX_POSTFACH' => 300,        // so viele Formulare höchstens im Postfach
+        );
+    }
+    function ka_dir($sub = '') {
+        $d = WP_CONTENT_DIR . '/ka-daten';
+        if (!is_dir($d)) {
+            @mkdir($d, 0750, true);
+            @file_put_contents($d . '/.htaccess', "Require all denied\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n");
+            @file_put_contents($d . '/index.php', "<?php // leer\n");
+        }
+        if ($sub === '') return $d;
+        $p = $d . '/' . $sub;
+        if (!is_dir($p)) @mkdir($p, 0750, true);
+        return $p;
+    }
+    function ka_fail($code, $msg, $extra = array()) { return new WP_REST_Response(array_merge(array('ok' => false, 'error' => $msg), $extra), $code); }
+    function ka_ok($data = array()) { return new WP_REST_Response(array_merge(array('ok' => true), $data), 200); }
+    function ka_origin_ok($req) {
+        $c = ka_cfg(); $origin = (string) $req->get_header('origin');
+        return !$origin || in_array($origin, $c['ERLAUBT'], true);
+    }
+    function ka_ip_key($prefix) { return $prefix . md5(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'x'); }
+    function ka_dir_size($dir) {
+        $n = 0; foreach ((array) glob($dir . '/*') as $f) { if (is_file($f)) $n += filesize($f); }
+        return $n;
+    }
+    function ka_label($typ) {
+        $labels = array('anmeldung' => 'Patientenanmeldung', 'anamnese' => 'Anamnese', 'erinnerung' => 'Terminerinnerung', 'aufklaerung' => 'Aufklärung');
+        return isset($labels[$typ]) ? $labels[$typ] : ucfirst($typ);
+    }
+    function ka_notify($label, $mitPdf, $pdfBytes, $name, $fname) {
+        $c = ka_cfg(); $zeit = current_time('d.m.Y H:i');
+        if (!$mitPdf) {
+            $text = "Über die Website ist ein Formular eingegangen:\n\n" . $label . "\nZeitpunkt: " . $zeit . "\n\n"
+                  . "Es liegt verschlüsselt im Postfach der Praxis-App und wird dort beim Öffnen automatisch angezeigt (Patienten, Knopf „Abrufen“).\n"
+                  . "Diese Nachricht enthält bewusst keine Patientendaten.\n";
+            return wp_mail($c['EMPFAENGER'], 'Neues Formular: ' . $label, $text, array('Content-Type: text/plain; charset=UTF-8'));
+        }
+        $text = "Über die Website wurde ein Formular ausgefüllt:\n\n" . $label . "\nPatient: " . $name . "\nZeitpunkt: " . $zeit . "\n\n"
+              . "Das PDF hängt an. Zum Übernehmen in die Praxis-App: PDF speichern, in der App unter Patienten auf „Import“ tippen und die Datei wählen.\n";
+        $tmp = get_temp_dir() . uniqid('form_', true) . '_' . $fname;
+        file_put_contents($tmp, $pdfBytes);
+        $ok = wp_mail($c['EMPFAENGER'], 'Neues Formular: ' . $label . ' - ' . $name, $text, array('Content-Type: text/plain; charset=UTF-8'), array($tmp));
+        @unlink($tmp);
+        return $ok;
+    }
 
-            $origin = (string) $req->get_header('origin');
-            if ($origin && !in_array($origin, $ERLAUBT, true)) return $fail(403, 'Nicht erlaubt.');
-            if ((string) $req->get_param('website') !== '') return new WP_REST_Response(array('ok' => true), 200);   // Spam-Falle
+    /* Webformulare */
+    function ka_formular($req) {
+        $c = ka_cfg();
+        if (!ka_origin_ok($req)) return ka_fail(403, 'Nicht erlaubt.');
+        if ((string) $req->get_param('website') !== '') return ka_ok();   // Spam-Falle
 
-            /* höchstens 10 Formulare pro Stunde und Verbindung */
-            $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'x';
-            $key = 'ka_form_' . md5($ip); $n = (int) get_transient($key);
-            if ($n >= 10) return $fail(429, 'Zu viele Anfragen. Bitte später noch einmal versuchen.');
-            set_transient($key, $n + 1, HOUR_IN_SECONDS);
+        /* höchstens 10 Formulare pro Stunde und Verbindung */
+        $key = ka_ip_key('ka_form_'); $n = (int) get_transient($key);
+        if ($n >= 10) return ka_fail(429, 'Zu viele Anfragen. Bitte später noch einmal versuchen.');
+        set_transient($key, $n + 1, HOUR_IN_SECONDS);
 
-            $labels = array('anmeldung' => 'Patientenanmeldung', 'anamnese' => 'Anamnese', 'erinnerung' => 'Terminerinnerung', 'aufklaerung' => 'Aufklärung');
-            $typ = preg_replace('/[^a-z]/', '', strtolower((string) $req->get_param('typ')));
-            if ($typ === '') return $fail(400, 'Unbekanntes Formular.');
-            if (!isset($labels[$typ])) $labels[$typ] = ucfirst($typ);
+        $typ = preg_replace('/[^a-z]/', '', strtolower((string) $req->get_param('typ')));
+        if ($typ === '') return ka_fail(400, 'Unbekanntes Formular.');
+        $label = ka_label($typ);
+        $files = $req->get_file_params();
+
+        /* verschlüsselter Umschlag (normaler Weg, sobald die App eingerichtet ist) */
+        if (!empty($files['paket'])) {
+            if ($files['paket']['error'] !== UPLOAD_ERR_OK) return ka_fail(400, 'Das Formular fehlt.');
+            if ($files['paket']['size'] > $c['MAX_PAKET']) return ka_fail(413, 'Das Formular ist zu groß.');
+            if ($files['paket']['size'] < 300) return ka_fail(400, 'Das Formular ist ungültig.');
+            $box = ka_dir('inbox');
+            if (count((array) glob($box . '/*.bin')) >= $c['MAX_POSTFACH']) return ka_fail(503, 'Das Postfach ist voll. Bitte später noch einmal versuchen.');
+            $id = date('YmdHis') . bin2hex(random_bytes(8));
+            if (!@move_uploaded_file($files['paket']['tmp_name'], $box . '/' . $id . '.bin')) {
+                if (!@copy($files['paket']['tmp_name'], $box . '/' . $id . '.bin')) return ka_fail(500, 'Speichern nicht möglich.');
+            }
+            ka_notify($label, false, '', '', '');
+            return ka_ok();
+        }
+
+        /* ohne Schlüssel: PDF per E-Mail (alter Weg) */
+        if (empty($files['pdf']) || $files['pdf']['error'] !== UPLOAD_ERR_OK) return ka_fail(400, 'Das PDF fehlt.');
+        if ($files['pdf']['size'] > 8 * 1024 * 1024) return ka_fail(413, 'Das PDF ist zu groß.');
+        $pdf = file_get_contents($files['pdf']['tmp_name']);
+        if (substr($pdf, 0, 4) !== '%PDF') return ka_fail(400, 'Das ist kein PDF.');
+        $name = trim(preg_replace('/[^\p{L}\p{N} ._,\-]/u', '', (string) $req->get_param('name')));
+        if ($name === '') $name = 'ohne Namen';
+        $fname = preg_replace('/[^A-Za-z0-9._\-]/', '_', $files['pdf']['name'] ? $files['pdf']['name'] : 'formular.pdf');
+        if (!ka_notify($label, true, $pdf, $name, $fname)) return ka_fail(500, 'Die E-Mail konnte nicht gesendet werden.');
+        return ka_ok();
+    }
+
+    /* öffentlicher Schlüssel: damit verschlüsseln die Webformulare */
+    function ka_schluessel($req) {
+        $f = ka_dir() . '/pub.json';
+        $k = is_file($f) ? json_decode(file_get_contents($f), true) : null;
+        return ka_ok(array('key' => is_array($k) ? $k : null));
+    }
+
+    /* Abgleich der Praxis-App: alles mit Zugangs-Token, Daten liegen nur verschlüsselt hier */
+    function ka_abgleich($req) {
+        $c = ka_cfg();
+        if (!ka_origin_ok($req)) return ka_fail(403, 'Nicht erlaubt.');
+        $failKey = ka_ip_key('ka_auth_');
+        if ((int) get_transient($failKey) >= 40) return ka_fail(429, 'Zu viele Fehlversuche. Bitte in einer Stunde noch einmal versuchen.');
+        $bad = function ($code, $msg) use ($failKey) { set_transient($failKey, (int) get_transient($failKey) + 1, HOUR_IN_SECONDS); return ka_fail($code, $msg); };
+
+        $t = strtolower((string) $req->get_param('t'));
+        if (!preg_match('/^[0-9a-f]{64}$/', $t)) return $bad(400, 'Ungültige Anfrage.');
+        $a = (string) $req->get_param('a');
+        $vroot = ka_dir('v');
+        $vdir = $vroot . '/' . hash('sha256', $t);
+
+        if ($a === 'init') {
+            if (is_dir($vdir)) return ka_ok(array('neu' => false));
+            if ($c['EINRICHTUNG'] !== '' && !hash_equals($c['EINRICHTUNG'], (string) $req->get_param('e'))) return $bad(403, 'Der Einrichtungscode stimmt nicht.');
+            if (count((array) glob($vroot . '/*', GLOB_ONLYDIR)) >= 5) return $bad(403, 'Es gibt hier schon genug Bereiche.');
+            if (!@mkdir($vdir, 0750)) return ka_fail(500, 'Speichern nicht möglich.');
+            file_put_contents($vdir . '/rev', '0');
+            return ka_ok(array('neu' => true));
+        }
+        if (!is_dir($vdir)) return $bad(404, 'Hier ist nichts eingerichtet, oder das Passwort stimmt nicht.');
+
+        $revFile = $vdir . '/rev';
+        $rev = function () use ($revFile) { return is_file($revFile) ? (int) trim(file_get_contents($revFile)) : 0; };
+        $name = (string) $req->get_param('n');
+        $okName = preg_match('/^[A-Za-z0-9_\-]{1,100}$/', $name);
+
+        if ($a === 'status') {
+            $objs = array();
+            foreach ((array) glob($vdir . '/*.bin') as $f) $objs[] = array('n' => basename($f, '.bin'), 's' => filesize($f));
+            $inbox = array();
+            foreach ((array) glob(ka_dir('inbox') . '/*.bin') as $f) $inbox[] = array('id' => basename($f, '.bin'), 's' => filesize($f));
+            return ka_ok(array('rev' => $rev(), 'objs' => $objs, 'inbox' => $inbox, 'pub' => is_file(ka_dir() . '/pub.json')));
+        }
+        if ($a === 'get') {
+            $f = $vdir . '/' . $name . '.bin';
+            if (!$okName || !is_file($f)) return ka_fail(404, 'Nicht gefunden.');
+            return ka_ok(array('d' => base64_encode(file_get_contents($f))));
+        }
+        if ($a === 'put') {
             $files = $req->get_file_params();
-            if (empty($files['pdf']) || $files['pdf']['error'] !== UPLOAD_ERR_OK) return $fail(400, 'Das PDF fehlt.');
-            if ($files['pdf']['size'] > $MAX_BYTES) return $fail(413, 'Das PDF ist zu groß.');
-            $pdf = file_get_contents($files['pdf']['tmp_name']);
-            if (substr($pdf, 0, 4) !== '%PDF') return $fail(400, 'Das ist kein PDF.');
+            if (!$okName) return ka_fail(400, 'Ungültiger Name.');
+            if (empty($files['d']) || $files['d']['error'] !== UPLOAD_ERR_OK) return ka_fail(400, 'Die Daten fehlen.');
+            if ($files['d']['size'] > $c['MAX_OBJEKT']) return ka_fail(413, 'Die Datei ist zu groß.');
+            $f = $vdir . '/' . $name . '.bin';
+            if (ka_dir_size($vdir) - (is_file($f) ? filesize($f) : 0) + $files['d']['size'] > $c['MAX_GESAMT']) return ka_fail(507, 'Der Speicher für den Abgleich ist voll.');
+            $fh = fopen($revFile, 'c+'); flock($fh, LOCK_EX);
+            $cur = (int) trim(stream_get_contents($fh));
+            if ($name === 'core' && (int) $req->get_param('base') !== $cur) { flock($fh, LOCK_UN); fclose($fh); return ka_fail(409, 'Der Stand auf dem Server ist neuer.', array('rev' => $cur)); }
+            $tmp = $f . '.tmp' . bin2hex(random_bytes(4));
+            $moved = @move_uploaded_file($files['d']['tmp_name'], $tmp) || @copy($files['d']['tmp_name'], $tmp);
+            if (!$moved || !@rename($tmp, $f)) { @unlink($tmp); flock($fh, LOCK_UN); fclose($fh); return ka_fail(500, 'Speichern nicht möglich.'); }
+            if ($name === 'core') { $cur++; ftruncate($fh, 0); rewind($fh); fwrite($fh, (string) $cur); }
+            flock($fh, LOCK_UN); fclose($fh);
+            return ka_ok(array('rev' => $cur));
+        }
+        if ($a === 'del') {
+            $f = $vdir . '/' . $name . '.bin';
+            if ($okName && is_file($f)) @unlink($f);
+            return ka_ok();
+        }
+        if ($a === 'pubset') {
+            $k = json_decode((string) $req->get_param('k'), true);
+            if (!is_array($k) || ($k['kty'] ?? '') !== 'RSA' || strlen((string) $req->get_param('k')) > 3000) return ka_fail(400, 'Ungültiger Schlüssel.');
+            file_put_contents(ka_dir() . '/pub.json', json_encode($k));
+            return ka_ok();
+        }
+        if ($a === 'ibget' || $a === 'ibdel') {
+            $id = (string) $req->get_param('id');
+            $f = ka_dir('inbox') . '/' . $id . '.bin';
+            if (!preg_match('/^[A-Za-z0-9]{10,60}$/', $id) || !is_file($f)) return ka_fail(404, 'Nicht gefunden.');
+            if ($a === 'ibdel') { @unlink($f); return ka_ok(); }
+            return ka_ok(array('d' => base64_encode(file_get_contents($f))));
+        }
+        return ka_fail(400, 'Unbekannte Anfrage.');
+    }
+}
 
-            $name = trim(preg_replace('/[^\p{L}\p{N} ._,\-]/u', '', (string) $req->get_param('name')));
-            if ($name === '') $name = 'ohne Namen';
-            $fname = preg_replace('/[^A-Za-z0-9._\-]/', '_', $files['pdf']['name'] ? $files['pdf']['name'] : 'formular.pdf');
-            $betreff = 'Neues Formular: ' . $labels[$typ] . ' - ' . $name;
-            $text = "Über die Website wurde ein Formular ausgefüllt:\n\n" . $labels[$typ] . "\nPatient: " . $name . "\nZeitpunkt: " . current_time('d.m.Y H:i') . "\n\n"
-                  . "Das PDF hängt an. Zum Übernehmen in die Praxis-App: PDF speichern, in der App unter Patienten auf „Import“ tippen und die Datei wählen.\n";
-
-            $tmp = get_temp_dir() . uniqid('form_', true) . '_' . $fname;
-            file_put_contents($tmp, $pdf);
-            $ok = wp_mail($EMPFAENGER, $betreff, $text, array('Content-Type: text/plain; charset=UTF-8'), array($tmp));
-            @unlink($tmp);
-            if (!$ok) return $fail(500, 'Die E-Mail konnte nicht gesendet werden.');
-            return new WP_REST_Response(array('ok' => true), 200);
-        },
-    ));
+add_action('rest_api_init', function () {
+    register_rest_route('ka/v1', '/formular', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_formular'));
+    register_rest_route('ka/v1', '/schluessel', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_schluessel'));
+    register_rest_route('ka/v1', '/abgleich', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_abgleich'));
 });
