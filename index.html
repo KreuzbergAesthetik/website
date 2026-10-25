@@ -742,14 +742,7 @@ function kaStart() {
   <button type="button" class="nav-btn" id="btn-praxis" onclick="toggleNavMenu(event)">Praxis &#9662;</button>
 </nav>
 </header>
-<div id="nav-menu" class="nav-menu" style="display:none;">
-  <button type="button" onclick="navGo('settings')">Praxisdaten</button>
-  <button type="button" onclick="navGo('lager')">Lager</button>
-  <button type="button" onclick="navGo('leistungen')">Leistungen</button>
-  <button type="button" onclick="navGo('dokumente')">Dokumente</button>
-  <button type="button" onclick="navGo('nachrichten')">Nachrichtenvorlagen</button>
-  <button type="button" onclick="navGo('textbausteine')">Textbausteine</button>
-  <div class="nav-sep"></div>
+<div id="nav-menu" class="nav-menu" style="display:none;"></div>
   <button type="button" disabled>Patientenstammdaten <small>geplant</small></button>
   <button type="button" disabled>Automationen <small>geplant</small></button>
   <button type="button" onclick="navGo('webformulare')">Webformulare</button>
@@ -1761,8 +1754,21 @@ function kaStart() {
 </div>
 
 <script type="text/plain" id="ka-main">
-var PRAXIS_TABS = ['settings', 'lager', 'leistungen', 'dokumente', 'nachrichten', 'textbausteine', 'webformulare', 'zahlungen', 'statistik'];
-var TAB_RENDER = { settings: 'openSettings', webformulare: 'renderWebf', kalender: 'renderCal', start: 'renderHome', lager: 'renderLager', leistungen: 'renderLeist', dokumente: 'renderTemplates', zahlungen: 'renderZahlungen', todos: 'renderTodos', statistik: 'renderStat', nachrichten: 'renderNachr', textbausteine: 'renderTxt', rechnungen: 'renderInvoices' };
+/* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
+var PRAXIS_NAV = [['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Dokumente', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
+  ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], '-', ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat']];
+var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function (x) { return x[0]; });
+(function () {
+  var box = document.getElementById('nav-menu');
+  PRAXIS_NAV.forEach(function (x) {
+    if (x === '-') { var sp = document.createElement('div'); sp.className = 'nav-sep'; box.appendChild(sp); return; }
+    var b = document.createElement('button'); b.type = 'button';
+    if (x[0]) { b.textContent = x[1]; b.onclick = function () { navGo(x[0]); }; } else { b.disabled = true; b.innerHTML = x[1] + ' <small>geplant</small>'; }
+    box.appendChild(b);
+  });
+})();
+var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', todos: 'renderTodos', rechnungen: 'renderInvoices' };
+PRAXIS_NAV.forEach(function (x) { if (x[0]) TAB_RENDER[x[0]] = x[2]; });
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
 function errBanner(msg) {
   var b = document.getElementById('err-bar');
@@ -1815,6 +1821,12 @@ var ausgaben = [], todos = [];
 try { var sa = JSON.parse(kaGet('ka_ausgaben')); if (Array.isArray(sa)) ausgaben = sa; } catch (x) {}
 try { var stt = JSON.parse(kaGet('ka_todos')); if (Array.isArray(stt)) todos = stt; } catch (x) {}
 var patients = [];
+/* Akademische Titel im Namen (z. B. „Alexander Dip. Ing“) gehören nicht in die Namensleiste, sondern als Notiz in die Akte */
+var TITEL_RE = /^(Prof\.?|Dr\.?|med\.?|dent\.?|rer\.?|nat\.?|phil\.?|Dipl\.?(-\w+\.?)?|Dip\.?|Ing\.?|Mag\.?|MSc|BSc|M\.Sc\.|B\.Sc\.)$/i;
+function splitTitel(p) {
+  var ti = [], nm = (String(p.vorname || '') + ' ' + String(p.nachname || '')).split(/\s+/).filter(function (w) { if (w && TITEL_RE.test(w)) { ti.push(w); return false; } return !!w; });
+  return { name: nm.join(' ') || nameKey(p), titel: ti.join(' ') };
+}
 try { var sp = JSON.parse(kaGet('ka_patients')); if (Array.isArray(sp)) patients = sp; } catch (x) {}
 ensurePatients();
 var lager = { produkte: [], chargen: [], verbrauch: [] };
@@ -1861,14 +1873,14 @@ function flagsMap() {
 }
 /* Anamnese muss mindestens einmal im Jahr bestätigt werden (neu ausgefüllt oder vor Ort bestätigt) */
 function anamInfo(p) {
-  var ts = Math.max(((p.formSt || {}).anamnese || {}).got || 0, p.anamneseBest || 0);
-  (p.dokumente || []).forEach(function (d) { if (d.sig && /anamnese/i.test(d.name || '')) ts = Math.max(ts, d.sig.ts || 0); });
+  var ts = Math.max(bestLast(p, 'anamnese', 'got'), bestLast(p, 'anamnese', 'vorOrt'));
+  (p.dokumente || []).forEach(function (d) { if (d.sig && d.form === 'anamnese') ts = Math.max(ts, d.sig.ts || 0); });
   var due = ts + 365 * 86400000, left = Math.ceil((due - Date.now()) / 86400000);
   return { ts: ts, due: due, left: left, state: !ts ? 'fehlt' : left < 0 ? 'faellig' : left <= 30 ? 'bald' : 'ok' };
 }
 function anamText(ai) { return ai.state === 'fehlt' ? 'Anamnese fehlt' : ai.state === 'faellig' ? 'Anamnese älter als 1 Jahr' : 'Anamnese läuft in ' + ai.left + ' Tagen ab'; }
 function anamConfirm(p) {
-  p.anamneseBest = Date.now(); p.log = p.log || []; p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese vor Ort bestätigt' });
+  bestAdd(p, 'anamnese', 'vorOrt'); p.log = p.log || []; p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese vor Ort bestätigt' });
   persist(); renderUnterlagen(); if (curP === p) { renderHead(); renderVerlauf(); }
 }
 function evFlag(e) { var m = flagsMap(), p = m.byName[e.patient]; return p && m.get(p).todos.length ? '<span class="evfl" title="Offenes To-Do">!</span>' : ''; }
@@ -1929,6 +1941,19 @@ function ensurePatients() {
   var used = {}, mx = 0; patients.forEach(function (p) { if (p.nr > 0) { used[p.nr] = true; if (p.nr > mx) mx = p.nr; } });
   patients.forEach(function (p) { if (!(p.nr > 0)) { if (!used[p.id]) { p.nr = p.id; used[p.id] = true; if (p.id > mx) mx = p.id; } } });
   patients.forEach(function (p) { if (!(p.nr > 0)) p.nr = ++mx; });
+  patients.forEach(function (p) {
+    /* Titel als eigenes Feld: aus dem Namen und aus Notizzeilen „Titel: …“ übernehmen, der Name bleibt unverändert */
+    if (!p.titel) {
+      var tt = splitTitel(p).titel, nz = String(p.notizen || '').split('\n'), keep = [];
+      nz.forEach(function (l) { var m = /^Titel:\s*(.+)$/.exec(l.trim()); if (m) { if (!tt) tt = m[1].trim(); } else keep.push(l); });
+      if (tt) { p.titel = tt; p.notizen = keep.join('\n').trim(); }
+    }
+  });
+  patients.forEach(function (p) {
+    /* alte Felder formSt und anamneseBest in das Protokoll p.best übernehmen */
+    if (p.formSt) { Object.keys(p.formSt).forEach(function (k) { ['sent', 'got'].forEach(function (art) { if (p.formSt[k][art]) (p.best = p.best || []).push({ k: k, art: art, ts: p.formSt[k][art] }); }); }); delete p.formSt; }
+    if (p.anamneseBest) { (p.best = p.best || []).push({ k: 'anamnese', art: 'vorOrt', ts: p.anamneseBest }); delete p.anamneseBest; }
+  });
 }
 function patNr(p) { return p.nr > 0 ? p.nr : p.id; }
 function changePatNr(p) {
@@ -2456,7 +2481,9 @@ var TV_I = {
 function tvSvg(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + TV_I[k] + '</svg>'; }
 function tvIcon(k, title, fn) { var b = mk('button', 'tv-ib'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.innerHTML = tvSvg(k); b.onclick = fn; return b; }
 function tvTool(k, title, label, fn) { var b = mk('button', 'tv-ib tv-tool'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.setAttribute('data-tip', title); b.innerHTML = '<span class="tv-ic">' + tvSvg(k) + '</span><span class="tv-lbl">' + label + '</span>'; b.onclick = fn; return b; }
-function tvCopy(text, btn) { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { btn.style.color = '#16a34a'; setTimeout(function () { btn.style.color = ''; }, 1200); }, function () { alert(text); }); }
+/* Text in die Zwischenablage; ok/fail werden danach aufgerufen */
+function copyText(text, ok, fail) { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(ok, fail); }
+function tvCopy(text, btn) { copyText(text, function () { btn.style.color = '#16a34a'; setTimeout(function () { btn.style.color = ''; }, 1200); }, function () { alert(text); }); }
 function tvPhase(e) { var k = e.phase || ''; return TV_PH.filter(function (x) { return x[0] === k; })[0] || TV_PH[0]; }
 function setPhase(id, k) {
   var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
@@ -2577,7 +2604,7 @@ function slotClick(e, k) {
 var curP = null, stammEdit = false, editingDokuId = null, medInput = false, medMode = false, notizEdit = false, dokPick = false;
 var ICON_PEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
 var ICON_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
-var HEAD_FIELDS = [['anrede','Anrede'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien']];
+var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien']];
 var templates = [];
 try { var stp = JSON.parse(kaGet('ka_templates')); if (Array.isArray(stp)) templates = stp; } catch (x) {}
 function maskDob(el) {
@@ -3741,7 +3768,7 @@ function tileBox(key, title, cls, fill) {
 }
 function txtTile(key, title, cls, ph) {
   return tileBox(key, title, cls, function (t, ed) {
-    if (!ed) { var v = (curP[key] || '').trim(); t.appendChild(mk('div', v ? 'a-txt' : 'a-txt a-none', v || ph)); return; }
+    if (!ed) { var v = (curP[key] || '').trim(); if (key === 'notizen' && curP.titel) v = ('Titel: ' + curP.titel + (v ? '\n' + v : '')); t.appendChild(mk('div', v ? 'a-txt' : 'a-txt a-none', v || ph)); return; }
     var ta = mk('textarea', 'form-control'); ta.id = 'a-tile-in'; ta.rows = 3; ta.value = curP[key] || ''; t.appendChild(ta);
     var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
     var c = mk('button', 'btn btn-cancel', 'Abbrechen'); c.type = 'button'; c.onclick = function () { tileEdit = ''; renderHead(); };
@@ -3754,16 +3781,9 @@ function tileSave(key) {
   curP[key] = v; if (key === 'notizen' && changed && v) logAdd('notiz', v);
   tileEdit = ''; persist(); renderHead(); renderVerlauf(); renderPatients();
 }
-/* Akademische Titel im Namen (z. B. „Alexander Dip. Ing“) gehören nicht in die Namensleiste, sondern als Notiz in die Akte */
-var TITEL_RE = /^(Prof\.?|Dr\.?|med\.?|dent\.?|rer\.?|nat\.?|phil\.?|Dipl\.?(-\w+\.?)?|Dip\.?|Ing\.?|Mag\.?|MSc|BSc|M\.Sc\.|B\.Sc\.)$/i;
-function splitTitel(p) {
-  var ti = [], nm = (String(p.vorname || '') + ' ' + String(p.nachname || '')).split(/\s+/).filter(function (w) { if (w && TITEL_RE.test(w)) { ti.push(w); return false; } return !!w; });
-  return { name: nm.join(' ') || nameKey(p), titel: ti.join(' ') };
-}
 function renderHead() {
   var p = curP, box = document.getElementById('a-head'), ttl = document.getElementById('a-title'); box.innerHTML = ''; ttl.innerHTML = '';
   var pidn = mk('span', 'a-pid', '#' + patNr(p)); pidn.title = 'Nummer ändern'; pidn.style.cursor = 'pointer'; pidn.onclick = function () { changePatNr(p); }; ttl.appendChild(pidn); var tn = splitTitel(p); ttl.appendChild(document.createTextNode(tn.name));
-  if (tn.titel && String(p.notizen || '').indexOf('Titel:') < 0) { p.notizen = (p.notizen ? p.notizen + '\n' : '') + 'Titel: ' + tn.titel; persist(); }
   var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (sx) { var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; ttl.appendChild(sp); }
   renderFlags();
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
@@ -4698,8 +4718,11 @@ function offerNeu(p) {
 }
 /* Unterlagen: Pakete, Online-Formulare mit Status, Vorlagen zum Unterschreiben */
 var PK_FORMS = [['anmeldung', 'Patientenanmeldung', 'LinkAnmeldung', 'Deine Anmeldung bei Kreuzberg Ästhetik'], ['erinnerung', 'Terminerinnerung', 'LinkErinnerung', 'Terminerinnerung per E-Mail'], ['anamnese', 'Anamnesebogen', 'LinkAnamnese', 'Dein Anamnesebogen']];
-function formSt(p, k) { return (p.formSt || {})[k] || {}; }
-function formMark(p, k, what) { p.formSt = p.formSt || {}; p.formSt[k] = p.formSt[k] || {}; p.formSt[k][what] = Date.now(); }
+/* Protokoll der Formulare und Bestätigungen am Patienten: p.best = [{ k: Formular, art: 'sent' | 'got' | 'vorOrt', ts }] */
+function bestAdd(p, k, art) { (p.best = p.best || []).push({ k: k, art: art, ts: Date.now() }); }
+function bestLast(p, k, art) { return (p.best || []).reduce(function (m, e) { return e.k === k && e.art === art && e.ts > m ? e.ts : m; }, 0); }
+function formSt(p, k) { return { sent: bestLast(p, k, 'sent'), got: bestLast(p, k, 'got') }; }
+function formMark(p, k, art) { bestAdd(p, k, art); }
 function waOpen(p, txt) {
   var ph = String(p.phone || '').replace(/[^\d+]/g, '').replace(/^\+/, '').replace(/^00/, '').replace(/^0/, '49');
   window.open('https://wa.me/' + (ph.length > 6 ? ph : '') + '?text=' + encodeURIComponent(txt), '_blank');
@@ -4757,7 +4780,7 @@ function renderUnterlagen() {
   /* Online-Formulare */
   box.appendChild(mk('div', 'un-grp', 'Online vor dem Termin'));
   PK_FORMS.forEach(function (f) {
-    var st = formSt(p, f[0]), got = st.got, sent = st.sent, anm = formSt(p, 'anmeldung');
+    var st = formSt(p, f[0]), got = st.got || 0, sent = st.sent || 0, anm = formSt(p, 'anmeldung');
     if (f[0] === 'anamnese') {
       var ai = anamInfo(p);
       if (ai.ts) {
@@ -5127,7 +5150,8 @@ function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
   akTabs();
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
-  var kats = []; (curP.dokumente || []).forEach(function (d) { var k = katOf(d); if (kats.indexOf(k) < 0) kats.push(k); });
+  var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
+  var kats = []; (curP.dokumente || []).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });
   kats.sort(function (a, b) { return KATS.indexOf(a) - KATS.indexOf(b); });
   if (medFilter === 'dok' && medKat && kats.indexOf(medKat) < 0) { medFilter = 'alle'; medKat = ''; }
   [['Alle', 'alle', ''], ['Bilder', 'bild', '']].concat(kats.map(function (k) { return [k, 'dok', k]; })).forEach(function (c) {
@@ -5136,7 +5160,7 @@ function renderMedien() {
   var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), items = [];
   (medFilter === 'alle' ? ['bild', 'dok'] : [medFilter === 'bild' ? 'bild' : 'dok']).forEach(function (k) {
     fileGroups(curP, k).forEach(function (g) {
-      var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat && k === 'dok') || katOf(x) === medKat); });
+      var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat && k === 'dok') || kc(x) === medKat); });
       if (!l.length) return; items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
     });
   });
@@ -5259,7 +5283,7 @@ function aAct(x) {
   else if (x === 'anammail' || x === 'anamwa') sendForm(curP, ['anamnese'], x === 'anamwa' ? 'wa' : 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, curP));
   else if (x === 'anamlink') {
     var url = webfUrl('anamnese.html') + '?c=' + pCode(curP);
-    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, function () { prompt('Link zum Kopieren:', url); });
+    copyText(url, function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, function () { prompt('Link zum Kopieren:', url); });
   }
   else if (x === 'auto') autoZu();
 }
@@ -5273,7 +5297,7 @@ function renderWebf() {
     var r = mk('div'); r.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 0; border-bottom:1px solid #e2e8f0;';
     var t = mk('b', '', w[0]); t.style.cssText = 'flex:0 0 160px;'; r.appendChild(t);
     var inp = mk('input', 'form-control'); inp.readOnly = true; inp.value = webfUrl(w[1]); inp.style.cssText = 'flex:1 1 220px; min-width:0; font-size:13px;'; r.appendChild(inp);
-    var cp = mk('button', 'btn btn-secondary btn-sm', 'Link kopieren'); cp.type = 'button'; cp.onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(inp.value) : Promise.reject()).then(function () { cp.textContent = 'Kopiert'; setTimeout(function () { cp.textContent = 'Link kopieren'; }, 1500); }, function () { inp.select(); alert('Bitte den markierten Link von Hand kopieren.'); }); };
+    var cp = mk('button', 'btn btn-secondary btn-sm', 'Link kopieren'); cp.type = 'button'; cp.onclick = function () { copyText(inp.value, function () { cp.textContent = 'Kopiert'; setTimeout(function () { cp.textContent = 'Link kopieren'; }, 1500); }, function () { inp.select(); alert('Bitte den markierten Link von Hand kopieren.'); }); };
     var op = mk('a', 'btn btn-secondary btn-sm', 'Öffnen'); op.href = inp.value; op.target = '_blank'; op.rel = 'noopener'; op.style.textDecoration = 'none';
     r.appendChild(cp); r.appendChild(op); box.appendChild(r);
   });
@@ -5311,7 +5335,7 @@ async function formularImport(entries) {
     var addDiag = function (line) { if (!line) return; if (String(p.diagnosen || '').indexOf(line) < 0) p.diagnosen = (p.diagnosen ? p.diagnosen + '\n' : '') + line; };
     var setIf = function (k, v) { if (v && !String(p[k] || '').trim()) p[k] = v; };
     if (d.typ === 'anmeldung') {
-      setIf('anrede', q.anrede); setIf('phone', q.phone); setIf('email', q.email);
+      setIf('anrede', q.anrede); setIf('titel', q.titel); setIf('phone', q.phone); setIf('email', q.email);
       setIf('adresse', [((q.strasse || '') + ' ' + (q.nr || '')).trim(), ((q.plz || '') + ' ' + (q.stadt || '')).trim()].filter(Boolean).join('\n'));
       var a = d.angaben || {}, f = a.fragen || {};
       if (f.allergien && f.allergien.ja) setIf('allergien', f.allergien.text || 'ja (ohne nähere Angabe)');
@@ -5337,7 +5361,7 @@ async function formularImport(entries) {
     formMark(p, d.typ, 'got');
     if (pdf) {
       var id = newId(); await fPut(id, pdf.name, pdf);
-      p.dokumente.push({ id: id, ts: Date.now(), name: pdf.name, kat: 'Aufnahme und Anamnese' });
+      p.dokumente.push({ id: id, ts: Date.now(), name: pdf.name, kat: 'Aufnahme und Anamnese', form: d.typ });
     }
     out.push(({ anamnese: 'Anamnese', erinnerung: 'Terminerinnerung' }[d.typ] || 'Anmeldung') + ': ' + nameKey(p) + (created ? ' (neu angelegt)' : '') + (pdf ? ', PDF angehängt' : ', ohne PDF'));
   }
