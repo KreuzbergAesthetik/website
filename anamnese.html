@@ -211,8 +211,8 @@ $('f').addEventListener('submit', async function (ev) {
     var d = r.d;
     var data = { format: 'ka-formular', version: 1, typ: 'anamnese', erstellt: new Date().toISOString(), patient: { code: d.code }, antworten: d.q, zusammenfassung: summary(d) };
     var pdf = await buildAnamnese(d, data);
-    var res = await deliver('anamnese', 'Anamnese', d.code, data, pdf, $('website').value);
-    showDone(res, 'Anamnesebogen');
+    await deliver('anamnese', 'Anamnese', d.code, data, pdf, $('website').value);
+    showDone('Anamnesebogen');
   } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
 });
 </script>
