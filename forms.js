@@ -127,12 +127,11 @@ async function newPdf(title, who) {
   return P;
 }
 
-function bytesToBlob(b) { return new Blob([b], { type: 'application/pdf' }); }
 function slug(t) { return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
 
 /* Versand an den Empfang der Praxis; schlägt er fehl, bleibt das Formular stehen und der Patient kann es erneut versuchen */
 async function deliver(typ, label, who, data, pdfBytes, hp) {
-  var blob = bytesToBlob(pdfBytes), fname = label + '_' + slug(who) + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
+  var blob = new Blob([pdfBytes], { type: 'application/pdf' }), fname = label + '_' + slug(who) + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
   var fd = new FormData();
   fd.append('typ', typ); fd.append('name', who); fd.append('website', hp || ''); fd.append('pdf', blob, fname);
   fd.append('daten', new Blob([JSON.stringify(data)], { type: 'application/json' }), fname.replace(/\.pdf$/, '.json'));
@@ -141,9 +140,8 @@ async function deliver(typ, label, who, data, pdfBytes, hp) {
   catch (x) { throw new Error('Die Verbindung zur Praxis ist nicht möglich. Prüfe Deine Internetverbindung oder fülle das Formular in der Praxis aus.'); }
   var j = null; try { j = await r.json(); } catch (x) {}
   if (!(r.ok && j && j.ok)) throw new Error('Das Formular konnte nicht an die Praxis gesendet werden. Bitte versuche es später noch einmal oder fülle es in der Praxis aus.');
-  return { sent: true, who: who };
 }
-function showDone(res, label) {
+function showDone(label) {
   var box = $('formbox'); box.innerHTML = '';
   var d = el('div', { class: 'done' });
   d.appendChild(el('div', { html: '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l3 3 5-6"/></svg>' }));

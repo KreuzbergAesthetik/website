@@ -98,8 +98,8 @@ $('f').addEventListener('submit', async function (ev) {
   try {
     var d = r.d, data = { format: 'ka-formular', version: 1, typ: 'erinnerung', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob, email: d.email }, einwilligung: d.einwilligung };
     var pdf = await buildErinnerung(d);
-    var res = await deliver('erinnerung', 'Terminerinnerung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
-    showDone(res, 'Formular');
+    await deliver('erinnerung', 'Terminerinnerung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
+    showDone('Formular');
   } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
 });
 </script>

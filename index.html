@@ -437,10 +437,9 @@ body { overflow-x:clip; }
 /* ===== Einheitliches Design ===== */
 :root { --navy:#1e3a8a; --line:#dbe2ea; --soft:#eef2f6; }
 /* Karten und Seitenköpfe: Streifen in der Farbe des Bereichs, wie auf der Startseite */
-.card { border-color:var(--line); box-shadow:0 2px 8px rgba(15,23,42,.08); }
+.card { box-shadow:0 2px 8px rgba(15,23,42,.08); } .card:not(.hc):not(.hero) { border-color:var(--line); }
 .card-title { font-size:17px; font-weight:800; color:#0f172a; }
 .tab-content > .card:not(.hc):not(.hero) { border-left:6px solid var(--tc,#94a3b8); }
-.card.hc { border-left-color:var(--c); } .card.hero { border-left-color:#1e3a8a; }
 #tab-kalender { --tc:#7c3aed; } #tab-patienten { --tc:#1e3a8a; } #tab-rechnungen { --tc:#2563eb; } #tab-todos { --tc:#ea580c; }
 #tab-settings { --tc:#64748b; } #tab-lager { --tc:#0d9488; } #tab-leistungen { --tc:#db2777; } #tab-dokumente { --tc:#64748b; } #tab-nachrichten { --tc:#0ea5e9; }
 #tab-textbausteine { --tc:#8b5cf6; } #tab-webformulare { --tc:#f59e0b; } #tab-zahlungen { --tc:#16a34a; } #tab-statistik { --tc:#2563eb; }
@@ -1850,10 +1849,12 @@ function flagsMap() {
     if (end < now && end > cut) m.byId[p.id].unb.push(e);
   });
   var tdy = iso(new Date()), lim = iso(new Date(now + 14 * 86400000));
-  events.slice().sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); }).forEach(function (e) {
-    var p = byName[e.patient]; if (!p || e.phase === 'Abgesagt' || e.date < tdy || e.date > lim || m.byId[p.id].anam) return;
-    var ai = anamInfo(p); if (ai.state !== 'ok') m.byId[p.id].anam = { info: ai, e: e };
-  });
+  var seen = {};
+  events.filter(function (e) { return e.phase !== 'Abgesagt' && e.date >= tdy && e.date <= lim && byName[e.patient]; })
+    .sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); }).forEach(function (e) {
+      var p = byName[e.patient]; if (seen[p.id]) return; seen[p.id] = 1;
+      var ai = anamInfo(p); if (ai.state !== 'ok') m.byId[p.id].anam = { info: ai, e: e };
+    });
   Object.keys(m.byId).forEach(function (k) { m.byId[k].unb.sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }); });
   m.get = function (p) { return (p && m.byId[p.id]) || { todos: [], unb: [] }; };
   FLC = m; FLT = now; return m;
@@ -1868,7 +1869,7 @@ function anamInfo(p) {
 function anamText(ai) { return ai.state === 'fehlt' ? 'Anamnese fehlt' : ai.state === 'faellig' ? 'Anamnese älter als 1 Jahr' : 'Anamnese läuft in ' + ai.left + ' Tagen ab'; }
 function anamConfirm(p) {
   p.anamneseBest = Date.now(); p.log = p.log || []; p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese vor Ort bestätigt' });
-  FLT = 0; persist(); renderUnterlagen(); if (curP === p) { renderHead(); renderVerlauf(); }
+  persist(); renderUnterlagen(); if (curP === p) { renderHead(); renderVerlauf(); }
 }
 function evFlag(e) { var m = flagsMap(), p = m.byName[e.patient]; return p && m.get(p).todos.length ? '<span class="evfl" title="Offenes To-Do">!</span>' : ''; }
 function flagPills(p, noTodo) {
@@ -1880,7 +1881,7 @@ function flagPills(p, noTodo) {
 }
 function flagItems(p) {
   var f = flagsMap().get(p), out = [];
-  if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { curP = p; formMark(p, 'anamnese', 'sent'); persist(); anamMail(); }], ['Per WhatsApp senden', function () { curP = p; formMark(p, 'anamnese', 'sent'); persist(); anamWa(); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
+  if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
   f.todos.slice(0, 5).forEach(function (t) { out.push({ cls: 'fl-red', label: 'To-Do: ' + (t.text.length > 60 ? t.text.slice(0, 59) + '…' : t.text) + (t.due ? ' · fällig ' + fmtD(t.due) : ''), fn: function () { openTodo(t.id); } }); });
   if (f.todos.length > 5) out.push({ cls: 'fl-red', label: '+' + (f.todos.length - 5) + ' weitere To-Dos', fn: function () { switchTab('todos'); closeModal('modal-akte'); } });
   f.unb.slice(0, 5).forEach(function (e) {
@@ -4712,22 +4713,28 @@ function pakete() {
   }
   return settings.pakete;
 }
-function pkLinks(p, keys) { return keys.map(function (k) { var f = PK_FORMS.filter(function (x) { return x[0] === k; })[0]; return f ? f[1] + ': ' + fillPlatzhalter('{' + f[2] + '}', p) : ''; }).filter(Boolean).join('\n'); }
+function pkForm(k) { return PK_FORMS.filter(function (x) { return x[0] === k; })[0]; }
+function tplById(id) { return templates.filter(function (t) { return t.id === id; })[0]; }
+function pkLinks(p, keys) { return keys.map(function (k) { var f = pkForm(k); return f ? f[1] + ': ' + fillPlatzhalter('{' + f[2] + '}', p) : ''; }).filter(Boolean).join('\n'); }
+/* Formular-Links per E-Mail oder WhatsApp senden und als gesendet merken */
+function sendForm(p, keys, how, subject, txt) {
+  keys.forEach(function (k) { formMark(p, k, 'sent'); });
+  persist(); renderUnterlagen();
+  if (how === 'wa') waOpen(p, txt); else tvMail(p, '', [subject, txt]);
+}
+function sendMenu(ev, p, keys, subject, txt, extra) {
+  tlMenu(ev, [['Per E-Mail', function () { sendForm(p, keys, 'mail', subject, txt); }], ['Per WhatsApp', function () { sendForm(p, keys, 'wa', subject, txt); }]].concat(extra || []));
+}
+var ANAM_TXT = '{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Anamnesebogen aus:\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik';
 function pkSend(p, pk, how) {
   var txt = fillPlatzhalter(String(pk.text || '{Links}').replace('{Links}', pkLinks(p, pk.forms || [])), p);
-  (pk.forms || []).forEach(function (k) { formMark(p, k, 'sent'); });
-  var fehlt = (pk.tpls || []).map(function (id) { return templates.filter(function (t) { return t.id === id; })[0]; }).filter(function (t) { return t && tplState(p, t).s === 'fehlt'; });
-  if (fehlt.length) addTplsTo(p, fehlt, null);
-  persist(); renderUnterlagen();
-  if (how === 'wa') waOpen(p, txt); else tvMail(p, '', [pk.betreff || 'Formulare', txt]);
+  var fehlt = (pk.tpls || []).map(tplById).filter(function (t) { return t && tplState(p, t).s === 'fehlt'; });
+  sendForm(p, pk.forms || [], how, pk.betreff || 'Formulare', txt);
+  if (fehlt.length) addTplsTo(p, fehlt, null, renderUnterlagen);
 }
 function fmSend(ev, p, k) {
-  var f = PK_FORMS.filter(function (x) { return x[0] === k; })[0];
-  var txt = fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p);
-  tlMenu(ev, [
-    ['Per E-Mail', function () { formMark(p, k, 'sent'); persist(); renderUnterlagen(); tvMail(p, '', [f[3], txt]); }],
-    ['Per WhatsApp', function () { formMark(p, k, 'sent'); persist(); renderUnterlagen(); waOpen(p, txt); }]
-  ]);
+  var f = pkForm(k);
+  sendMenu(ev, p, [k], f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p));
 }
 function renderUnterlagen() {
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
@@ -4740,7 +4747,7 @@ function renderUnterlagen() {
   /* Pakete */
   pakete().forEach(function (pk) {
     var c = mk('div', 'un-pk'); c.appendChild(mk('b', '', pk.name));
-    var names = (pk.forms || []).map(function (k) { return PK_FORMS.filter(function (x) { return x[0] === k; })[0][1]; }).concat((pk.tpls || []).map(function (id) { var t = templates.filter(function (x) { return x.id === id; })[0]; return t ? t.name + ' (vor Ort)' : ''; }).filter(Boolean));
+    var names = (pk.forms || []).map(function (k) { return pkForm(k)[1]; }).concat((pk.tpls || []).map(function (id) { var t = tplById(id); return t ? t.name + ' (vor Ort)' : ''; }).filter(Boolean));
     c.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket'));
     var ts = (pk.forms || []).map(function (k) { return formSt(p, k).sent || 0; }), last = Math.max.apply(null, ts.concat([0]));
     var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;';
@@ -4757,8 +4764,7 @@ function renderUnterlagen() {
         var sub2 = ai.state === 'ok' ? 'bestätigt ' + dm(ai.ts) + ' · gültig bis ' + dm(ai.due) : ai.state === 'bald' ? 'gültig bis ' + dm(ai.due) + ' · bald erneuern' : 'vom ' + dm(ai.ts) + ' · älter als 1 Jahr';
         if (sent && sent > ai.ts) sub2 += ' · Erneuerung gesendet ' + dm(sent);
         var b2 = ai.state === 'ok' ? null : bt('Erneuern', ai.state === 'faellig', function (ev) {
-          var txt = fillPlatzhalter('{AnredeInformell},\n\nbitte bestätige oder aktualisiere vor Deinem Termin Deinen Anamnesebogen (einmal im Jahr nötig):\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik', p);
-          tlMenu(ev, [['Per E-Mail senden', function () { formMark(p, 'anamnese', 'sent'); persist(); renderUnterlagen(); tvMail(p, '', ['Anamnesebogen erneuern', txt]); }], ['Per WhatsApp senden', function () { formMark(p, 'anamnese', 'sent'); persist(); renderUnterlagen(); waOpen(p, txt); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]]);
+          sendMenu(ev, p, ['anamnese'], 'Anamnesebogen erneuern', fillPlatzhalter('{AnredeInformell},\n\nbitte bestätige oder aktualisiere vor Deinem Termin Deinen Anamnesebogen (einmal im Jahr nötig):\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik', p), [['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]]);
         });
         row(ai.state === 'ok' ? 'ok' : 'wait', ai.state === 'ok' ? '✓' : '!', f[1], sub2, b2); return;
       }
@@ -5029,7 +5035,6 @@ function docList(p, list) {
   });
   return ul;
 }
-function fileBody(p, list, kind) { return kind === 'bild' ? mediaGrid(p, list) : docList(p, list); }
 /* Dateien, die zu einem Termin oder einer Dokumentation gehören, direkt dort anzeigen */
 function attachBlock(p, key) {
   var imgs = (p.bilder || []).filter(function (x) { return x.zu === key; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
@@ -5099,7 +5104,7 @@ function medDots(items) {
   var b = mk('button', 'md-dots', '⋯'); b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   b.onclick = function (ev) { tlMenu(ev, items); }; return b;
 }
-function medDocRow(p, dd, g) {
+function medDocRow(p, dd) {
   var r = mk('div', 'md-doc'), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
   r.appendChild(mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()));
   var mid = mk('div', 'md-mid'), a = mk('a', 'md-nm', dd.name); a.href = '#';
@@ -5142,17 +5147,16 @@ function renderMedien() {
   items.slice(0, medLimit).forEach(function (it) {
     var g = it.g, d = new Date(it.k), mon = d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
     if (mon !== lastMon) { box.appendChild(mk('div', 'md-mon', mon)); lastMon = mon; }
-    var c = mk('div', 'md-item');
+    var c = mk('div', 'md-item'), zl = g.zu ? mk('div', 'md-zu', zuLabel(g.p, g.zu)) : null;
     if (g.kind === 'bild') {
       var h = mk('div', 'md-gh'), t = mk('div', 'md-gt', pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '. · ' + g.list.length + (g.list.length === 1 ? ' Bild' : ' Bilder'));
       h.appendChild(t); h.appendChild(mk('div', 'sp'));
       h.appendChild(medDots([['Zuordnen', function () { openZu(g.p, g.list); }], ['Datum ändern', function () { editGroupDate(g.list); renderMedien(); }]]));
-      c.appendChild(h);
-      if (g.zu) c.appendChild(mk('div', 'md-zu', zuLabel(g.p, g.zu)));
+      c.appendChild(h); if (zl) c.appendChild(zl);
       var gr = mediaGrid(g.p, g.list); gr.classList.add('md-strip'); c.appendChild(gr);
     } else {
-      if (g.zu) c.appendChild(mk('div', 'md-zu', zuLabel(g.p, g.zu)));
-      g.list.forEach(function (dd) { c.appendChild(medDocRow(g.p, dd, g)); });
+      if (zl) c.appendChild(zl);
+      g.list.forEach(function (dd) { c.appendChild(medDocRow(g.p, dd)); });
     }
     box.appendChild(c);
   });
@@ -5252,22 +5256,12 @@ function aAct(x) {
   else if (x === 'produkt') openVb(null);
   else if (x === 'rechnung') openInvoice(curP);
   else if (x === 'rezept') openRx(null);
-  else if (x === 'anammail') anamMail();
-  else if (x === 'anamwa') anamWa();
+  else if (x === 'anammail' || x === 'anamwa') sendForm(curP, ['anamnese'], x === 'anamwa' ? 'wa' : 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, curP));
   else if (x === 'anamlink') {
     var url = webfUrl('anamnese.html') + '?c=' + pCode(curP);
     (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, function () { prompt('Link zum Kopieren:', url); });
   }
   else if (x === 'auto') autoZu();
-}
-
-/* Anamnese-Link (mit Patientencode) per E-Mail oder WhatsApp senden */
-function anamMail() { var p = curP; if (p) tvMail(p, '', ['Anamnesebogen', '{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Anamnesebogen aus:\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik']); }
-function anamWa() {
-  var p = curP; if (!p) return;
-  var ph = String(p.phone || '').replace(/[^\d+]/g, '').replace(/^\+/, '').replace(/^00/, '').replace(/^0/, '49');
-  var txt = fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Anamnesebogen aus:\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik', p);
-  window.open('https://wa.me/' + (ph.length > 6 ? ph : '') + '?text=' + encodeURIComponent(txt), '_blank');
 }
 
 /* ===== Webformulare ===== */
@@ -5340,7 +5334,7 @@ async function formularImport(entries) {
       var hw = (z.hinweise || []); if (hw.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese, Hinweise:\n' + hw.join('\n') });
       p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnesebogen übernommen (Unterschrift vor Ort noch nötig)' + (created ? ' (Patient angelegt)' : '') });
     }
-    formMark(p, d.typ, 'got'); FLT = 0;
+    formMark(p, d.typ, 'got');
     if (pdf) {
       var id = newId(); await fPut(id, pdf.name, pdf);
       p.dokumente.push({ id: id, ts: Date.now(), name: pdf.name, kat: 'Aufnahme und Anamnese' });

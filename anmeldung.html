@@ -84,7 +84,7 @@ $('datenschutz').appendChild(datenschutzBlock());
 
 var sig = makeSig($('sig'));
 $('sig-clear').onclick = function () { sig.clear(); };
-$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); setTimeout(function () { document.querySelectorAll('.follow').forEach(function (f) { f.style.display = 'none'; }); }, 0); });
+$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); });
 
 function val(id) { return $(id).value.trim(); }
 function mark(node) { node.classList.add('invalid'); }
@@ -136,8 +136,8 @@ $('f').addEventListener('submit', async function (ev) {
     var d = r.d;
     var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: new Date().toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { quelle: d.quelle } };
     var pdf = await buildAnmeldung(d, data);
-    var res = await deliver('anmeldung', 'Patientenanmeldung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
-    showDone(res, 'Anmeldebogen');
+    await deliver('anmeldung', 'Patientenanmeldung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
+    showDone('Anmeldebogen');
   } catch (x) { go.disabled = false; go.textContent = 'Anmelden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
 });
 </script>
