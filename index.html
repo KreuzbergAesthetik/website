@@ -203,7 +203,8 @@ textarea.form-control { font-size:15px; }
 .un-pk { border:1px solid #dbe2ea; border-left:5px solid #2f9e44; border-radius:12px; padding:12px; margin-bottom:8px; } .un-pk b { display:block; }
 .md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
 .md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:#0f172a; border-color:#0f172a; color:#fff; }
-.md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .md-seg { display:flex; margin:10px 0 2px; } .md-seg button { flex:1; }
+.md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .seg#inv-payseg { display:flex; width:100%; margin-bottom:16px; } #inv-payseg button { flex:1 1 auto; min-width:0; padding:9px 4px; font-size:12.5px; white-space:nowrap; } #inv-paybox { margin-bottom:6px; }
+.md-seg { display:flex; margin:10px 0 2px; } .md-seg button { flex:1; }
 .md-mon { font-weight:800; font-size:15px; margin:18px 0 8px; } .md-mon:first-child { margin-top:10px; }
 .md-item { margin-bottom:10px; } .md-gh { display:flex; align-items:center; gap:6px; } .md-gt { font-size:12.5px; color:#64748b; } .md-zu { font-size:12px; color:#047857; margin:2px 0 4px; }
 .md-strip { grid-template-columns:repeat(auto-fill,minmax(62px,68px)) !important; margin:4px 0 6px !important; }
@@ -1317,7 +1318,7 @@ function kaStart() {
     <div id="inv-rab" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:2px 0 4px;"></div>
     <div style="text-align:right; font-weight:700; margin:10px 0;">Gesamt: <span id="inv-total">€ 0,00</span></div>
     <div class="ak-h">Zahlung</div>
-    <div class="seg" id="inv-payseg" role="group" aria-label="Zahlung" style="flex-wrap:wrap;">
+    <div class="seg" id="inv-payseg" role="group" aria-label="Zahlung">
       <button type="button" data-art="" class="on" onclick="setInvPay('')">Noch offen</button>
       <button type="button" data-art="Karte" onclick="setInvPay('Karte')">Karte</button>
       <button type="button" data-art="Bar" onclick="setInvPay('Bar')">Bar</button>
