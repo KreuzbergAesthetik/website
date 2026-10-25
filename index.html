@@ -315,6 +315,12 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tv-foot { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background:#f1f3f5; font-size:13.5px; color:#475569; }
 .tv-del { border:none; background:none; color:#b91c1c; font-size:14px; cursor:pointer; }
 .ev.cancel { opacity:.5; } .ev.cancel b, .ev.cancel { text-decoration:line-through; }
+.tl-day { background:#f1f4f8; border:1px solid #d5dde7; border-radius:12px; margin-bottom:10px; padding:10px 12px 4px; }
+.tl-day-h { font-size:13px; font-weight:800; color:#0f172a; letter-spacing:.02em; margin-bottom:4px; }
+.tl-day .tl-item { background:none; border:none; border-radius:0; margin:0; padding:8px 38px 8px 0; grid-template-columns:44px 1fr; }
+.tl-day .tl-item + .tl-item { border-top:1px solid #e2e8f0; }
+.tl-day .tl-date b { display:none; } .tl-day .tl-date span { font-style:normal; font-size:12px; }
+.tl-day .tl-plus { top:6px; right:0; }
 .tl-plus { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:none; background:#dfe5ec; color:#475569; font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0 0 2px; }
 .tl-plus:hover { background:#cbd5e1; }
 #tl-menu { position:fixed; z-index:70; min-width:230px; top:0; left:0; }
@@ -4255,7 +4261,16 @@ function renderVerlauf() {
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
   items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = '';
-  items.forEach(function (it) { box.appendChild(tlRow(it)); });
+  var day = null, card = null;
+  items.forEach(function (it) {
+    var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+    if (key !== day) {
+      day = key; card = mk('div', 'tl-day');
+      card.appendChild(mk('div', 'tl-day-h', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
+      box.appendChild(card);
+    }
+    card.appendChild(tlRow(it));
+  });
 }
 
 /* Bilder und Dokumente hinzufügen */
