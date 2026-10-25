@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Hinweise Kreuzberg Ästhetik</title>
+<link rel="stylesheet" href="forms.css">
+</head>
+<body>
+<div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
+<div class="wrap" id="box"></div>
+<script src="docs.js"></script>
+<script>
+/* Hinweisblatt ohne Eingaben: es werden keine Daten abgefragt oder gesendet */
+var id = new URLSearchParams(location.search).get('d'), d = KA_DOCS.filter(function (x) { return x.id === id && x.typ === 'info'; })[0], box = document.getElementById('box');
+if (!d) box.innerHTML = '<div class="msg err">Dieses Blatt wurde nicht gefunden. Bitte öffne den Link aus der Nachricht der Praxis noch einmal.</div>';
+else {
+  document.documentElement.lang = d.lang; document.title = d.titel + ' – Kreuzberg Ästhetik';
+  box.innerHTML = '<div class="fhead"><h1>' + d.titel + '</h1></div><div class="ro">' + kaDocHtml(kaDocText(d)) + '</div>' +
+    '<p class="hint" style="margin:10px 2px 0">Kreuzberg Ästhetik · Manuel Fella · Neuenburger Str. 24 · 10969 Berlin · info@kreuzberg-aesthetik.de</p>' +
+    '<div class="actions" style="justify-content:center"><button type="button" class="btn" onclick="window.print()">Drucken oder als PDF speichern</button></div>';
+}
+</script>
+</body>
+</html>

@@ -26,9 +26,10 @@ add_action('rest_api_init', function () {
             if ($n >= 10) return $fail(429, 'Zu viele Anfragen. Bitte später noch einmal versuchen.');
             set_transient($key, $n + 1, HOUR_IN_SECONDS);
 
-            $labels = array('anmeldung' => 'Patientenanmeldung', 'anamnese' => 'Anamnese', 'erinnerung' => 'Terminerinnerung');
-            $typ = (string) $req->get_param('typ');
-            if (!isset($labels[$typ])) return $fail(400, 'Unbekanntes Formular.');
+            $labels = array('anmeldung' => 'Patientenanmeldung', 'anamnese' => 'Anamnese', 'erinnerung' => 'Terminerinnerung', 'aufklaerung' => 'Aufklärung');
+            $typ = preg_replace('/[^a-z]/', '', strtolower((string) $req->get_param('typ')));
+            if ($typ === '') return $fail(400, 'Unbekanntes Formular.');
+            if (!isset($labels[$typ])) $labels[$typ] = ucfirst($typ);
             $files = $req->get_file_params();
             if (empty($files['pdf']) || $files['pdf']['error'] !== UPLOAD_ERR_OK) return $fail(400, 'Das PDF fehlt.');
             if ($files['pdf']['size'] > $MAX_BYTES) return $fail(413, 'Das PDF ist zu groß.');

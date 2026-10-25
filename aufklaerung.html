@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Aufklärung Kreuzberg Ästhetik</title>
+<link rel="stylesheet" href="forms.css">
+</head>
+<body>
+<div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
+<div class="wrap" id="formbox">
+  <form id="f" novalidate autocomplete="off">
+    <div class="fhead"><h1 id="ttl">Aufklärung</h1><button type="button" class="info-i" data-for="info" onclick="toggleInfo(this)" title="Hinweise zum Bogen" aria-label="Hinweise zum Bogen">i</button></div>
+    <div class="info-panel" id="info">
+      <p>Bitte lies die Aufklärung in Ruhe. Mit dem Haken bestätigst Du, dass Du sie gelesen hast. Das ersetzt nicht das Gespräch mit Deinem Arzt: Die Einwilligung unterschreibst Du bei uns in der Praxis.</p>
+      <p>Wir fragen hier bewusst keinen Namen ab. Deine Bestätigung wird über Deinen persönlichen Code zugeordnet. Bitte trage auch in den Fragen keine Namen ein.</p>
+    </div>
+    <div id="codebox"></div>
+    <div class="ro" id="doc"></div>
+    <h2>Bestätigung</h2>
+    <div class="card">
+      <label class="chk" id="g-ok"><input type="checkbox" id="ok"><span>Ich habe die Aufklärung gelesen und verstanden. <span style="color:#dc2626">*</span></span></label>
+      <label class="l" style="margin-top:14px">Fragen für das Gespräch (freiwillig, bitte ohne Namen)</label>
+      <textarea id="fragen"></textarea>
+    </div>
+    <div class="hp"><label>Website <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
+    <div id="errmsg" class="msg err" style="display:none"></div>
+    <div class="actions"><span></span><button type="submit" class="btn primary" id="go">Absenden</button></div>
+  </form>
+</div>
+<script src="forms.js"></script>
+<script src="docs.js"></script>
+<script>
+var q = new URLSearchParams(location.search), DOC = KA_DOCS.filter(function (x) { return x.id === q.get('d') && x.typ === 'aufklaerung'; })[0];
+var CODE = (q.get('c') || '').toUpperCase().trim(); if (!/^[A-Z2-9]{6}$/.test(CODE)) CODE = '';
+if (!DOC) { $('formbox').innerHTML = '<div class="msg err" style="display:block;margin-top:20px">Diese Aufklärung wurde nicht gefunden. Bitte öffne den Link aus der Nachricht der Praxis noch einmal.</div>'; }
+else {
+  $('ttl').textContent = DOC.titel; document.title = DOC.titel + ' – Kreuzberg Ästhetik';
+  $('doc').innerHTML = kaDocHtml(DOC.text);
+  $('codebox').innerHTML = CODE ? '<span class="codepill"><b>' + CODE + '</b><span>Dein persönlicher Code</span></span>' : '<div class="msg err" style="display:block;margin:0 0 8px">Bitte öffne diese Aufklärung über den persönlichen Link, den Du von der Praxis bekommen hast. Ohne Code kannst Du sie lesen, aber nicht bestätigen.</div>';
+  if (!CODE) $('go').disabled = true;
+  async function build() {
+    var P = await newPdf('Aufklärung: Kenntnisnahme', 'Code ' + CODE), now = new Date();
+    function kv(k, v) { var lines = P.wrap(v || '-', P.f, 10.5, P.W - P.M * 2 - 180), lh = 14; P.ensure(lh * lines.length + 4); P.page.drawText(ascii(k), { x: P.M, y: P.y - 10, size: 9.5, font: P.f, color: P.gray }); lines.forEach(function (l, i) { P.page.drawText(ascii(l), { x: P.M + 180, y: P.y - 10 - i * lh, size: 10.5, font: P.f, color: P.black }); }); P.y -= lh * lines.length + 4; }
+    P.text('AUFKLÄRUNG - KENNTNISNAHME', { size: 10.5, bold: true, gap: 2 }); P.rule(8);
+    kv('Patientencode', CODE); kv('Dokument', DOC.titel); kv('Online gelesen am', today() + ' ' + pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ' Uhr');
+    kv('Bestätigung', 'Ich habe die Aufklärung gelesen und verstanden.');
+    var fr = $('fragen').value.trim(); if (fr) { P.y -= 6; P.text('FRAGEN FÜR DAS GESPRÄCH', { size: 10.5, bold: true, gap: 2 }); P.rule(8); P.text(fr, { size: 10.5, gap: 6 }); }
+    P.y -= 10; P.text('Die Einwilligung wird in der Praxis auf dem Aufklärungsbogen unterschrieben. Diese Bestätigung enthält bewusst keinen Namen.', { size: 9, italic: true, color: P.gray, gap: 6 });
+    return await P.finish({ format: 'ka-formular', version: 1, typ: 'aufklaerung', erstellt: new Date().toISOString(), patient: { code: CODE }, dokument: { id: DOC.id, titel: DOC.titel }, fragen: fr });
+  }
+  $('f').addEventListener('submit', async function (ev) {
+    ev.preventDefault(); $('errmsg').style.display = 'none';
+    if (!$('ok').checked) { $('g-ok').classList.add('invalid'); errBox('Bitte bestätige mit dem Haken, dass Du die Aufklärung gelesen hast.'); return; }
+    var go = $('go'); go.disabled = true; go.textContent = 'Wird gesendet …';
+    try {
+      var pdf = await build();
+      await deliver('aufklaerung', 'Aufklaerung', CODE, { format: 'ka-formular', version: 1, typ: 'aufklaerung', erstellt: new Date().toISOString(), patient: { code: CODE }, dokument: { id: DOC.id, titel: DOC.titel } }, pdf, $('website').value);
+      showDone('Formular');
+    } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
+  });
+}
+</script>
+</body>
+</html>
