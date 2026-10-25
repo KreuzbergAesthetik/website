@@ -211,7 +211,8 @@ textarea.form-control { font-size:15px; }
 .md-doc { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #eef2f6; min-width:0; }
 .md-ic.th { width:34px; height:44px; background-color:#fff; background-size:cover; background-position:top center; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 1px 2px rgba(15,23,42,.12); }
 .md-ic { flex:none; width:26px; height:30px; border-radius:5px; background:#fee2e2; color:#b91c1c; font-size:8px; font-weight:800; display:flex; align-items:center; justify-content:center; }
-.md-nm { flex:1 1 0; min-width:0; font-weight:600; color:#0f172a; font-size:14px; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.md-col { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:4px; } .md-l2 { display:flex; align-items:center; gap:6px; min-width:0; } .md-l2 .md-dots { margin-left:auto; } .md-l2 .md-sig { width:26px; height:26px; } .md-l2 .md-sig svg { width:15px; height:15px; } .md-l2 .md-pill { max-width:60%; }
+.md-nm { flex:0 0 auto; min-width:0; min-width:0; font-weight:600; color:#0f172a; font-size:14px; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .md-pill { flex:0 1 auto; max-width:34%; border:none; background:#eef2f7; color:#475569; border-radius:999px; padding:3px 9px; font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .md-sig { flex:none; width:30px; height:30px; border-radius:8px; border:none; background:#0f172a; color:#fff; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; } .md-sig svg { width:17px; height:17px; }
 .md-sig.on { background:#16a34a; cursor:default; }
@@ -5394,14 +5395,14 @@ function medDocRow(p, dd) {
   var ic0 = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()); r.appendChild(ic0); docThumb(dd, ic0);
   var a = mk('a', 'md-nm', dd.name); a.href = '#'; a.title = dd.name + ' · ' + fmtD(iso(new Date(tsOf(dd))));
   fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
-  r.appendChild(a);
+  var col = mk('div', 'md-col'), l2 = mk('div', 'md-l2'); col.appendChild(a); col.appendChild(l2); r.appendChild(col);
   var pill = mk('button', 'md-pill', katOf(dd)); pill.type = 'button'; pill.title = 'Kategorie ändern';
   pill.onclick = function (ev) { tlMenu(ev, KATS.map(function (k) { return [k, function () { dd.kat = k; refreshFiles(); renderMedien(); }]; })); };
-  r.appendChild(pill);
+  l2.appendChild(pill);
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
-  if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; r.appendChild(sg); }
-  else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; r.appendChild(sb); }
-  r.appendChild(medDots([
+  if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); }
+  else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
+  l2.appendChild(medDots([
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
     ['Löschen', function () { if (!confirm('Datei "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
