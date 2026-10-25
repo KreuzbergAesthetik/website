@@ -330,6 +330,8 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item.tl-termin + .tl-item, .tl-day .tl-item.tl-termin { border-top:none; }
 .tl-day .tl-item.tl-termin .tl-first { font-weight:700; color:#14532d; }
 .tl-day .tl-item.tl-termin .tl-label { font-weight:700; }
+.tl-day .tl-plus { width:22px; height:22px; font-size:15px; background:transparent; color:#94a3b8; padding:0 0 1px; }
+.tl-day .tl-plus:hover { background:#e2e8f0; color:#475569; }
 .tl-day .tl-plus { top:6px; right:0; }
 .tl-plus { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:none; background:#dfe5ec; color:#475569; font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0 0 2px; }
 .tl-plus:hover { background:#cbd5e1; }
@@ -4240,6 +4242,7 @@ function tlRow(it) {
   } else {
     var lab = it.t === 'med' ? 'Medikament' : it.t === 'mail' ? 'E-Mail' : it.t === 'rezept' ? 'Rezept' : 'Notiz';
     sh = tlShell(it.k, lab);
+    if (it.t === 'med') { var ml = sh.body.firstChild; ml.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><rect x="2.5" y="8" width="19" height="8" rx="4" transform="rotate(-45 12 12)"/><path d="M9.2 9.2l5.6 5.6"/></svg>'; ml.title = 'Medikament'; ml.setAttribute('aria-label', 'Medikament'); }
     var lg = it.l;
     if (tlEditLog === lg) {
       var ta = mk('textarea', 'form-control'); ta.rows = 4; ta.value = lg.text; sh.body.appendChild(ta);
@@ -4249,7 +4252,7 @@ function tlRow(it) {
       sv.onclick = function () { var v = ta.value.trim(); if (!v) { alert('Der Text darf nicht leer sein. Zum Entfernen bitte „Löschen“ wählen.'); return; } lg.text = v; tlEditLog = null; persist(); renderVerlauf(); };
       fb.appendChild(cb); fb.appendChild(sv); sh.body.appendChild(fb);
     } else {
-      var tx = mk('div', '', it.t === 'med' ? 'Medikament hinzugefügt: ' + lg.text : lg.text);
+      var tx = mk('div', '', it.t === 'med' ? String(lg.text).replace(/^Medikament hinzugefügt:\s*/, '') : lg.text);
       tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
       tlPlus(sh, [['Bearbeiten', function () { tlEditLog = lg; renderVerlauf(); }], ['Löschen', function () {
         if (!confirm('Eintrag aus dem Zeitstrahl löschen?')) return;
