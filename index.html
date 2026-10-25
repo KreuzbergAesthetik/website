@@ -193,6 +193,13 @@ textarea.form-control { font-size:15px; }
 .a-menu { position:absolute; top:42px; right:30px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.18); z-index:20; min-width:230px; padding:6px; }
 .a-menu button { display:block; width:100%; text-align:left; background:none; border:none; padding:10px; font-size:14px; cursor:pointer; border-radius:6px; color:#0f172a; }
 .a-menu button:hover { background:#f1f5f9; }
+.un-grp { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:16px 0 4px; }
+.un-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid #eef2f6; } .un-grp + .un-row { border-top:none; }
+.un-st { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex:none; background:#f1f5f9; color:#94a3b8; }
+.un-st.ok { background:#dcfce7; color:#15803d; } .un-st.wait { background:#fef3c7; color:#b45309; }
+.un-main { flex:1; min-width:0; } .un-t { font-weight:600; overflow-wrap:anywhere; } .un-s { font-size:12px; color:#64748b; margin-top:1px; }
+.un-btn { flex:none; padding:6px 10px; font-size:13px; white-space:nowrap; }
+.un-pk { border:1px solid #dbe2ea; border-left:5px solid #2f9e44; border-radius:12px; padding:12px; margin-bottom:8px; } .un-pk b { display:block; }
 .md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
 .md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:#0f172a; border-color:#0f172a; color:#fff; }
 .md-mon { font-weight:800; font-size:15px; margin:18px 0 8px; } .md-mon:first-child { margin-top:10px; }
@@ -923,6 +930,11 @@ function kaStart() {
       <div id="nv-list"></div>
       <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Platzhalter: {Anrede} {Vorname} {Nachname} {Name} {Datum} {DatumWochentag} {Termin} {TerminDatum} {Uhrzeit} {NaechsterTermin} {Behandlung} sowie die fertigen Anreden {AnredeFormell} (Sehr geehrte Frau …), {AnredeInformell} (Liebe …) und {AnredeEnglisch} (Dear Ms. …) sowie {LinkAnmeldung}, {LinkAnamnese} und {LinkErinnerung} für die Webformulare. Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
     </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Pakete für neue Patienten</span><button type="button" class="btn btn-sm" onclick="openPaket(-1)">+ Paket</button></div>
+      <div id="pk-list"></div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Ein Paket verschickt in einer Nachricht die Links zu den gewählten Online-Formularen. Die gewählten Vorlagen (z. B. Datenschutz) werden dabei in die Akte gelegt und vor Ort unterschrieben. Im Text steht {Links} für die Liste der Formular-Links, dazu gehen alle Platzhalter der Nachrichtenvorlagen.</div>
+    </div>
   </div>
 
   <!-- TAB: WEBFORMULARE -->
@@ -1379,6 +1391,22 @@ function kaStart() {
 </div>
 
 <!-- MODAL: NACHRICHTENVORLAGE -->
+<div id="modal-pk" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Paket</strong><button type="button" class="close-btn" onclick="closeModal('modal-pk')">&times;</button></div>
+    <div class="form-group"><label>Name des Pakets</label><input type="text" id="pk-name" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Online-Formulare (Links in der Nachricht)</label><div id="pk-forms"></div></div>
+    <div class="form-group"><label>Vorlagen für die Akte (vor Ort unterschreiben)</label><div id="pk-tpls"></div></div>
+    <div class="form-group"><label>Betreff</label><input type="text" id="pk-betreff" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Nachricht</label><textarea id="pk-text" class="form-control" rows="8"></textarea></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-pk')">Abbrechen</button>
+      <button type="button" id="pk-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deletePaket()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-save" onclick="savePaket()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <div id="modal-nv" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><strong>Nachrichtenvorlage</strong><button type="button" class="close-btn" onclick="closeModal('modal-nv')">&times;</button></div>
@@ -4474,7 +4502,7 @@ function nvDefaults() {
   neu.forEach(function (n) { settings.nachrichten.push({ id: newId(), name: n.name, betreff: n.betreff, text: n.text }); });
   persist(); renderNachr();
 }
-function renderNachr() { settings.nachrichten = settings.nachrichten || []; simpleList('nv-list', settings.nachrichten, openNachr, function (x) { return (x.betreff || '') + (x.text ? ' · ' + x.text.replace(/\s+/g, ' ').slice(0, 70) : ''); }); }
+function renderNachr() { renderPakete(); settings.nachrichten = settings.nachrichten || []; simpleList('nv-list', settings.nachrichten, openNachr, function (x) { return (x.betreff || '') + (x.text ? ' · ' + x.text.replace(/\s+/g, ' ').slice(0, 70) : ''); }); }
 function renderTxt() { settings.textbausteine = settings.textbausteine || []; simpleList('tb-list', settings.textbausteine, openTxt, function (x) { return x.text.replace(/\s+/g, ' ').slice(0, 90); }); }
 function nvAttRender(sel) {
   var box = document.getElementById('nv-att'); box.innerHTML = '';
@@ -4626,21 +4654,109 @@ function offerNeu(p) {
   if (!confirm('Für den neuen Patienten ' + nameKey(p) + ' diese Unterlagen hinzufügen?\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n'))) return;
   addTplsTo(p, miss, null);
 }
+/* Unterlagen: Pakete, Online-Formulare mit Status, Vorlagen zum Unterschreiben */
+var PK_FORMS = [['anmeldung', 'Patientenanmeldung', 'LinkAnmeldung', 'Deine Anmeldung bei Kreuzberg Ästhetik'], ['erinnerung', 'Terminerinnerung', 'LinkErinnerung', 'Terminerinnerung per E-Mail'], ['anamnese', 'Anamnesebogen', 'LinkAnamnese', 'Dein Anamnesebogen']];
+function formSt(p, k) { return (p.formSt || {})[k] || {}; }
+function formMark(p, k, what) { p.formSt = p.formSt || {}; p.formSt[k] = p.formSt[k] || {}; p.formSt[k][what] = Date.now(); }
+function waOpen(p, txt) {
+  var ph = String(p.phone || '').replace(/[^\d+]/g, '').replace(/^\+/, '').replace(/^00/, '').replace(/^0/, '49');
+  window.open('https://wa.me/' + (ph.length > 6 ? ph : '') + '?text=' + encodeURIComponent(txt), '_blank');
+}
+function pakete() {
+  settings.pakete = settings.pakete || [];
+  if (!settings.paketeInit) {
+    settings.paketeInit = 1;
+    settings.pakete.push({ id: newId(), name: 'Erstkunden', forms: ['anmeldung', 'erinnerung'], tpls: templates.filter(function (t) { return t.neu; }).map(function (t) { return t.id; }), betreff: 'Willkommen bei Kreuzberg Ästhetik', text: '{AnredeInformell},\n\nschön, dass Du zu uns kommst! Bitte fülle vor Deinem Termin diese Formulare aus:\n\n{Links}\n\nDas geht bequem am Handy und dauert nur wenige Minuten. Den Anamnesebogen schicke ich Dir danach separat.\n\nManuel - Kreuzberg Ästhetik' });
+    persist();
+  }
+  return settings.pakete;
+}
+function pkLinks(p, keys) { return keys.map(function (k) { var f = PK_FORMS.filter(function (x) { return x[0] === k; })[0]; return f ? f[1] + ': ' + fillPlatzhalter('{' + f[2] + '}', p) : ''; }).filter(Boolean).join('\n'); }
+function pkSend(p, pk, how) {
+  var txt = fillPlatzhalter(String(pk.text || '{Links}').replace('{Links}', pkLinks(p, pk.forms || [])), p);
+  (pk.forms || []).forEach(function (k) { formMark(p, k, 'sent'); });
+  var fehlt = (pk.tpls || []).map(function (id) { return templates.filter(function (t) { return t.id === id; })[0]; }).filter(function (t) { return t && tplState(p, t).s === 'fehlt'; });
+  if (fehlt.length) addTplsTo(p, fehlt, null);
+  persist(); renderUnterlagen();
+  if (how === 'wa') waOpen(p, txt); else tvMail(p, '', [pk.betreff || 'Formulare', txt]);
+}
+function fmSend(ev, p, k) {
+  var f = PK_FORMS.filter(function (x) { return x[0] === k; })[0];
+  var txt = fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p);
+  tlMenu(ev, [
+    ['Per E-Mail', function () { formMark(p, k, 'sent'); persist(); renderUnterlagen(); tvMail(p, '', [f[3], txt]); }],
+    ['Per WhatsApp', function () { formMark(p, k, 'sent'); persist(); renderUnterlagen(); waOpen(p, txt); }]
+  ]);
+}
 function renderUnterlagen() {
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
-  var req = templates.filter(function (t) { return t.neu; }), today = iso(new Date()), n = nameKey(curP);
-  events.forEach(function (e) { if (e.patient === n && e.date >= today) tplsForEvent(e).forEach(function (t) { if (req.indexOf(t) < 0) req.push(t); }); });
-  blk.style.display = req.length ? 'block' : 'none'; box.innerHTML = '';
-  req.forEach(function (t) {
-    var st = tplState(curP, t), d = st.d, btn = null;
-    if (st.s === 'fehlt') { btn = mk('button', 'btn btn-secondary', 'Hinzufügen'); btn.type = 'button'; btn.style.cssText = 'padding:6px 10px; font-size:13px;'; btn.onclick = function (ev) { ev.stopPropagation(); addTplsTo(curP, [t], null); }; }
-    else if (st.s === 'offen') { btn = mk('button', 'btn', 'Unterschreiben'); btn.type = 'button'; btn.style.cssText = 'padding:6px 10px; font-size:13px;'; btn.onclick = function (ev) { ev.stopPropagation(); openSign(curP, d); }; }
-    else { btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben ' + fmtD(iso(new Date(d.sig.ts))) : 'vom ' + fmtD(iso(new Date(tsOf(d))))); }
-    var row = hmRow(st.s === 'ok' ? '✓' : st.s === 'offen' ? '✎' : '✗', t.name, katOf(t) + (st.s === 'offen' ? ' · Unterschrift fehlt' : ''), function () { if (st.s === 'fehlt') addTplsTo(curP, [t], null); }, btn);
-    row.firstChild.style.cssText += (st.s === 'ok' ? 'color:#047857;' : st.s === 'offen' ? 'color:#b45309;' : 'color:#b91c1c;') + ' width:28px;';
-    box.appendChild(row);
+  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = 'block'; box.innerHTML = '';
+  var row = function (cls, ic, t, sub, btn) {
+    var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); box.appendChild(r); return r;
+  };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'btn un-btn' + (dark ? '' : ' btn-secondary'), txt); b.type = 'button'; b.onclick = fn; return b; };
+  var dm = function (ts) { return fmtD(iso(new Date(ts))); };
+  /* Pakete */
+  pakete().forEach(function (pk) {
+    var c = mk('div', 'un-pk'); c.appendChild(mk('b', '', pk.name));
+    var names = (pk.forms || []).map(function (k) { return PK_FORMS.filter(function (x) { return x[0] === k; })[0][1]; }).concat((pk.tpls || []).map(function (id) { var t = templates.filter(function (x) { return x.id === id; })[0]; return t ? t.name + ' (vor Ort)' : ''; }).filter(Boolean));
+    c.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket'));
+    var ts = (pk.forms || []).map(function (k) { return formSt(p, k).sent || 0; }), last = Math.max.apply(null, ts.concat([0]));
+    var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;';
+    rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); })); rr.appendChild(bt('Per WhatsApp', false, function () { pkSend(p, pk, 'wa'); }));
+    rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); c.appendChild(rr); box.appendChild(c);
   });
+  /* Online-Formulare */
+  box.appendChild(mk('div', 'un-grp', 'Online vor dem Termin'));
+  PK_FORMS.forEach(function (f) {
+    var st = formSt(p, f[0]), got = st.got, sent = st.sent, anm = formSt(p, 'anmeldung');
+    var sub = got ? 'eingegangen ' + dm(got) : sent ? 'gesendet ' + dm(sent) + ' · wartet' : f[0] === 'anamnese' && !anm.got ? 'erst nach der Anmeldung' : 'noch nicht gesendet';
+    var btn = got ? null : bt(sent ? 'Erneut senden' : 'Senden', f[0] === 'anamnese' && anm.got && !sent, function (ev) { fmSend(ev, p, f[0]); });
+    row(got ? 'ok' : sent ? 'wait' : '', got ? '✓' : sent ? '…' : '–', f[1], sub, btn);
+  });
+  /* Vorlagen zum Unterschreiben */
+  var req = templates.filter(function (t) { return t.neu; });
+  events.forEach(function (e) { if (e.patient === n && e.date >= today) tplsForEvent(e).forEach(function (t) { if (req.indexOf(t) < 0) req.push(t); }); });
+  templates.forEach(function (t) { if (req.indexOf(t) < 0 && tplDoc(p, t)) req.push(t); });
+  box.appendChild(mk('div', 'un-grp', 'In der Praxis unterschreiben'));
+  req.forEach(function (t) {
+    var st = tplState(p, t), d = st.d, btn;
+    if (st.s === 'fehlt') btn = bt('Hinzufügen', false, function () { addTplsTo(p, [t], null); });
+    else if (st.s === 'offen') btn = bt('Unterschreiben', true, function () { openSign(p, d); });
+    else btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben' : 'vorhanden');
+    row(st.s === 'ok' ? 'ok' : st.s === 'offen' ? 'wait' : '', st.s === 'ok' ? '✓' : st.s === 'offen' ? '✎' : '–', t.name, st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : 'noch nicht in der Akte', btn);
+  });
+  var rest = templates.filter(function (t) { return req.indexOf(t) < 0; });
+  if (rest.length) {
+    var sel = mk('select', 'form-control'); sel.style.cssText = 'margin-top:10px; font-size:13px;';
+    var o0 = mk('option', '', '+ Weitere Vorlage hinzufügen …'); o0.value = ''; sel.appendChild(o0);
+    rest.forEach(function (t) { var o = mk('option', '', t.name); o.value = String(t.id); sel.appendChild(o); });
+    sel.onchange = function () { var t = templates.filter(function (x) { return String(x.id) === sel.value; })[0]; if (t) addTplsTo(p, [t], null, renderUnterlagen); };
+    box.appendChild(sel);
+  }
 }
+/* Pakete verwalten (Praxis, Nachrichten) */
+var pkIdx = -1;
+function renderPakete() { var l = pakete(); simpleList('pk-list', l, openPaket, function (x) { return (x.forms || []).length + ' Formular(e), ' + (x.tpls || []).length + ' Vorlage(n)'; }); }
+function openPaket(i) {
+  pkIdx = i; var x = i >= 0 ? pakete()[i] : { name: '', forms: [], tpls: [], betreff: '', text: '{AnredeInformell},\n\nbitte fülle vor Deinem Termin diese Formulare aus:\n\n{Links}\n\nManuel - Kreuzberg Ästhetik' };
+  document.getElementById('pk-name').value = x.name; document.getElementById('pk-betreff').value = x.betreff || ''; document.getElementById('pk-text').value = x.text || '';
+  var fb = document.getElementById('pk-forms'); fb.innerHTML = '';
+  PK_FORMS.forEach(function (f) { var l = mk('label'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; margin-bottom:4px;'; var c = mk('input'); c.type = 'checkbox'; c.value = f[0]; c.checked = (x.forms || []).indexOf(f[0]) >= 0; l.appendChild(c); l.appendChild(document.createTextNode(f[1])); fb.appendChild(l); });
+  var tb = document.getElementById('pk-tpls'); tb.innerHTML = '';
+  templates.forEach(function (t) { var l = mk('label'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; margin-bottom:4px;'; var c = mk('input'); c.type = 'checkbox'; c.value = String(t.id); c.checked = (x.tpls || []).indexOf(t.id) >= 0; l.appendChild(c); l.appendChild(document.createTextNode(t.name)); tb.appendChild(l); });
+  if (!templates.length) tb.appendChild(mk('div', 'hm-empty', 'Noch keine Vorlagen unter Praxis, Dokumente.'));
+  document.getElementById('pk-del').style.display = i >= 0 ? '' : 'none'; openModal('modal-pk');
+}
+function savePaket() {
+  var nm = document.getElementById('pk-name').value.trim(); if (!nm) { alert('Bitte einen Namen eingeben.'); return; }
+  var x = { id: pkIdx >= 0 ? pakete()[pkIdx].id : newId(), name: nm, betreff: document.getElementById('pk-betreff').value.trim(), text: document.getElementById('pk-text').value,
+    forms: [].slice.call(document.querySelectorAll('#pk-forms input:checked')).map(function (c) { return c.value; }),
+    tpls: [].slice.call(document.querySelectorAll('#pk-tpls input:checked')).map(function (c) { var t = templates.filter(function (y) { return String(y.id) === c.value; })[0]; return t ? t.id : c.value; }) };
+  if (pkIdx >= 0) settings.pakete[pkIdx] = x; else settings.pakete.push(x);
+  persist(); closeModal('modal-pk'); renderPakete();
+}
+function deletePaket() { if (pkIdx < 0 || !confirm('Paket löschen?')) return; settings.pakete.splice(pkIdx, 1); persist(); closeModal('modal-pk'); renderPakete(); }
 function renderTemplates() {
   var tb = document.getElementById('tp-table'); if (!tb) return;
   tb.innerHTML = ''; document.getElementById('tp-empty').style.display = templates.length ? 'none' : 'block';
@@ -5171,6 +5287,7 @@ async function formularImport(entries) {
       var hw = (z.hinweise || []); if (hw.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese, Hinweise:\n' + hw.join('\n') });
       p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnesebogen übernommen (Unterschrift vor Ort noch nötig)' + (created ? ' (Patient angelegt)' : '') });
     }
+    formMark(p, d.typ, 'got');
     if (pdf) {
       var id = newId(); await fPut(id, pdf.name, pdf);
       p.dokumente.push({ id: id, ts: Date.now(), name: pdf.name, kat: 'Aufnahme und Anamnese' });
