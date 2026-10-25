@@ -768,6 +768,7 @@ function kaStart() {
     <div class="card hc hc-open"><div class="card-header"><span class="card-title"><i class="hc-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></i>Offene Punkte</span></div>
       <div class="hm-sec">Termine ohne Dokumentation</div><div id="hm-nodoku"></div>
       <div class="hm-sec" style="margin-top:14px;">Offene Rechnungen</div><div id="hm-open"></div>
+      <div class="hm-sec" style="margin-top:14px;">Anamnese erneuern</div><div id="hm-anam"></div>
     </div>
   </div>
 
@@ -1836,19 +1837,38 @@ function flagsMap() {
     var end = new Date(e.date + 'T' + e.time + ':00').getTime() + (+e.dur || 60) * 60000;
     if (end < now && end > cut) m.byId[p.id].unb.push(e);
   });
+  var tdy = iso(new Date()), lim = iso(new Date(now + 14 * 86400000));
+  events.slice().sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); }).forEach(function (e) {
+    var p = byName[e.patient]; if (!p || e.phase === 'Abgesagt' || e.date < tdy || e.date > lim || m.byId[p.id].anam) return;
+    var ai = anamInfo(p); if (ai.state !== 'ok') m.byId[p.id].anam = { info: ai, e: e };
+  });
   Object.keys(m.byId).forEach(function (k) { m.byId[k].unb.sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }); });
   m.get = function (p) { return (p && m.byId[p.id]) || { todos: [], unb: [] }; };
   FLC = m; FLT = now; return m;
+}
+/* Anamnese muss mindestens einmal im Jahr bestätigt werden (neu ausgefüllt oder vor Ort bestätigt) */
+function anamInfo(p) {
+  var ts = Math.max(((p.formSt || {}).anamnese || {}).got || 0, p.anamneseBest || 0);
+  (p.dokumente || []).forEach(function (d) { if (d.sig && /anamnese/i.test(d.name || '')) ts = Math.max(ts, d.sig.ts || 0); });
+  var due = ts + 365 * 86400000, left = Math.ceil((due - Date.now()) / 86400000);
+  return { ts: ts, due: due, left: left, state: !ts ? 'fehlt' : left < 0 ? 'faellig' : left <= 30 ? 'bald' : 'ok' };
+}
+function anamText(ai) { return ai.state === 'fehlt' ? 'Anamnese fehlt' : ai.state === 'faellig' ? 'Anamnese älter als 1 Jahr' : 'Anamnese läuft in ' + ai.left + ' Tagen ab'; }
+function anamConfirm(p) {
+  p.anamneseBest = Date.now(); p.log = p.log || []; p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese vor Ort bestätigt' });
+  FLT = 0; persist(); renderUnterlagen(); if (curP === p) { renderHead(); renderVerlauf(); }
 }
 function evFlag(e) { var m = flagsMap(), p = m.byName[e.patient]; return p && m.get(p).todos.length ? '<span class="evfl" title="Offenes To-Do">!</span>' : ''; }
 function flagPills(p) {
   var f = flagsMap().get(p), out = [];
   if (f.todos.length) { var a = mk('span', 'fl fl-red', 'To-Do' + (f.todos.length > 1 ? ' ×' + f.todos.length : '')); a.title = f.todos.map(function (t) { return t.text; }).join('\n'); out.push(a); }
   if (f.unb.length) { var b = mk('span', 'fl fl-amb fl-ico'); b.innerHTML = tvSvg('euro'); b.title = 'Rechnung offen: vergangene Termine ohne Rechnung (' + f.unb.length + ')'; b.setAttribute('aria-label', 'Rechnung offen'); out.push(b); }
+  if (f.anam) { var c = mk('span', 'fl fl-amb', 'Anamnese'); c.title = anamText(f.anam.info) + ' · Termin ' + fmtTermin(f.anam.e); out.push(c); }
   return out;
 }
 function flagItems(p) {
   var f = flagsMap().get(p), out = [];
+  if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { curP = p; formMark(p, 'anamnese', 'sent'); persist(); anamMail(); }], ['Per WhatsApp senden', function () { curP = p; formMark(p, 'anamnese', 'sent'); persist(); anamWa(); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
   f.todos.slice(0, 5).forEach(function (t) { out.push({ cls: 'fl-red', label: 'To-Do: ' + (t.text.length > 60 ? t.text.slice(0, 59) + '…' : t.text) + (t.due ? ' · fällig ' + fmtD(t.due) : ''), fn: function () { openTodo(t.id); } }); });
   if (f.todos.length > 5) out.push({ cls: 'fl-red', label: '+' + (f.todos.length - 5) + ' weitere To-Dos', fn: function () { switchTab('todos'); closeModal('modal-akte'); } });
   f.unb.slice(0, 5).forEach(function (e) {
@@ -2404,6 +2424,10 @@ function renderHome() {
   if (op.length > 5) opRows.push(mk('div', 'hm-empty', 'und ' + (op.length - 5) + ' weitere'));
   if (op.length) opRows.push(mk('div', 'hm-empty', 'Offen insgesamt: ' + eur(sum)));
   hmFill('hm-open', opRows, 'Keine offenen Rechnungen.');
+  var fm = flagsMap(), an = patients.filter(function (p) { return fm.get(p).anam; }).sort(function (a, b) { var x = fm.get(a).anam.e, y = fm.get(b).anam.e; return (x.date + x.time).localeCompare(y.date + y.time); });
+  var anRows = an.slice(0, 5).map(function (p) { var z = fm.get(p).anam; return hmRow(null, nameKey(p), 'Termin ' + fmtTermin(z.e) + ' · ' + anamText(z.info), function () { viewAkte(p); setAkTab('anl'); }); });
+  if (an.length > 5) anRows.push(mk('div', 'hm-empty', 'und ' + (an.length - 5) + ' weitere'));
+  hmFill('hm-anam', anRows, 'Alle Anamnesen für die nächsten Termine sind aktuell.');
 }
 /* Terminansicht (angelehnt an die Termin-Karte des Altsystems): Details, Schnellaktionen, Ablauf-Status */
 var TV_PH = [['', 'Patient noch nicht erschienen', '#d9edf7', '#31708f', 'Patient im Warteraum'], ['Warteraum', 'Patient im Warteraum', '#fef3c7', '#92400e', 'Behandlung starten'], ['Behandlung', 'Patient in Behandlung', '#d1fae5', '#065f46', 'Abschließen'], ['Fertig', 'Behandlung abgeschlossen', '#e2e8f0', '#334155', 'Wieder öffnen'], ['Abgesagt', 'Termin abgesagt', '#fee2e2', '#991b1b', 'Wieder aktivieren']];
@@ -4710,6 +4734,18 @@ function renderUnterlagen() {
   box.appendChild(mk('div', 'un-grp', 'Online vor dem Termin'));
   PK_FORMS.forEach(function (f) {
     var st = formSt(p, f[0]), got = st.got, sent = st.sent, anm = formSt(p, 'anmeldung');
+    if (f[0] === 'anamnese') {
+      var ai = anamInfo(p);
+      if (ai.ts) {
+        var sub2 = ai.state === 'ok' ? 'bestätigt ' + dm(ai.ts) + ' · gültig bis ' + dm(ai.due) : ai.state === 'bald' ? 'gültig bis ' + dm(ai.due) + ' · bald erneuern' : 'vom ' + dm(ai.ts) + ' · älter als 1 Jahr';
+        if (sent && sent > ai.ts) sub2 += ' · Erneuerung gesendet ' + dm(sent);
+        var b2 = ai.state === 'ok' ? null : bt('Erneuern', ai.state === 'faellig', function (ev) {
+          var txt = fillPlatzhalter('{AnredeInformell},\n\nbitte bestätige oder aktualisiere vor Deinem Termin Deinen Anamnesebogen (einmal im Jahr nötig):\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik', p);
+          tlMenu(ev, [['Per E-Mail senden', function () { formMark(p, 'anamnese', 'sent'); persist(); renderUnterlagen(); tvMail(p, '', ['Anamnesebogen erneuern', txt]); }], ['Per WhatsApp senden', function () { formMark(p, 'anamnese', 'sent'); persist(); renderUnterlagen(); waOpen(p, txt); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]]);
+        });
+        row(ai.state === 'ok' ? 'ok' : 'wait', ai.state === 'ok' ? '✓' : '!', f[1], sub2, b2); return;
+      }
+    }
     var sub = got ? 'eingegangen ' + dm(got) : sent ? 'gesendet ' + dm(sent) + ' · wartet' : f[0] === 'anamnese' && !anm.got ? 'erst nach der Anmeldung' : 'noch nicht gesendet';
     var btn = got ? null : bt(sent ? 'Erneut senden' : 'Senden', f[0] === 'anamnese' && anm.got && !sent, function (ev) { fmSend(ev, p, f[0]); });
     row(got ? 'ok' : sent ? 'wait' : '', got ? '✓' : sent ? '…' : '–', f[1], sub, btn);
@@ -5287,7 +5323,7 @@ async function formularImport(entries) {
       var hw = (z.hinweise || []); if (hw.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese, Hinweise:\n' + hw.join('\n') });
       p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnesebogen übernommen (Unterschrift vor Ort noch nötig)' + (created ? ' (Patient angelegt)' : '') });
     }
-    formMark(p, d.typ, 'got');
+    formMark(p, d.typ, 'got'); FLT = 0;
     if (pdf) {
       var id = newId(); await fPut(id, pdf.name, pdf);
       p.dokumente.push({ id: id, ts: Date.now(), name: pdf.name, kat: 'Aufnahme und Anamnese' });
