@@ -43,7 +43,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .dk-fold .dk-fh { cursor:pointer; display:flex; align-items:center; gap:8px; } .dk-fold .dk-fh::after { content:'›'; margin-left:auto; color:#94a3b8; font-size:18px; line-height:1; transform:rotate(90deg); } .dk-fold.closed .dk-fh::after { transform:none; }
 .dk-fold.closed > :not(.dk-h) { display:none; } .dk-fold.closed .dk-tb { display:none; } .dk-fold .dk-tb { order:3; } .dk-sum { font-weight:400; font-size:12px; color:#94a3b8; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .dk-fold:not(.closed) .dk-sum { display:none; }
 .dk-fold { border-top:1px solid #eef2f6; padding-top:8px; }
-.dk-lwrap input { font-size:14px; padding-left:10px; padding-right:8px; } .dk-lrow { display:flex; gap:8px; align-items:center; } .dk-lwrap { position:relative; flex:1; min-width:0; } .dk-pb { flex:none; white-space:nowrap; }
+.dk-lwrap input { font-size:13px; padding-left:10px; padding-right:8px; } .dk-lrow { display:flex; gap:8px; align-items:center; } .dk-lwrap { position:relative; flex:1; min-width:0; } .dk-pb { flex:none; white-space:nowrap; }
 .dk-dd { display:none; position:absolute; left:0; right:0; top:100%; margin-top:4px; z-index:60; background:#fff; border:1px solid #cbd5e1; border-radius:10px; box-shadow:0 8px 24px rgba(15,23,42,.15); max-height:240px; overflow:auto; }
 .dk-ddi { display:block; width:100%; text-align:left; border:none; background:none; padding:9px 12px; font-size:14px; color:#0f172a; cursor:pointer; } .dk-ddi:hover { background:#f1f5f9; } .dk-own { color:#2563eb; border-top:1px solid #eef2f6; }
 .dk-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } .dk-chips:empty { display:none; } .dk-chip { display:inline-flex; align-items:center; gap:4px; background:#eef2f7; color:#334155; border-radius:999px; padding:4px 6px 4px 10px; font-size:13px; } .dk-chx { border:none; background:none; color:#94a3b8; font-size:16px; line-height:1; cursor:pointer; padding:0 4px; } .dk-chx:hover { color:#dc2626; }
@@ -1819,7 +1819,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-27-t';
+var KA_V = '2026-10-27-u';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4462,7 +4462,7 @@ function openDok(id) {
   DK_TEXT.forEach(function (k) { box.appendChild(dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true)); });
   var vw = mk('div'), vs = d.verw || {}, vg = mk('div', 'dk-vgrid'); vw.appendChild(vg);
   DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vg.appendChild(l); });
-  var vt = dkTa('dk-verwtext', vs.text, 2); vt.placeholder = 'Freitext zur Verwaltung'; vt.style.marginTop = '6px'; vw.appendChild(vt);
+  var vt = dkTa('dk-verwtext', vs.text, 1); vt.placeholder = 'Freitext zur Verwaltung'; vt.classList.add('dk-grow'); vt.addEventListener('input', function () { autoGrow(vt); }); vw.appendChild(vt);
   box.appendChild(dkSec('Verwaltung', vw));
   /* Leistungen und Produkte: eine Leiste zum Tippen oder Auswählen, darunter die gewählten Leistungen und die abgebuchten Produkte */
   var lw = mk('div'), lta = dkTa('dk-leist', d.leist || evLeistungen(e).join('\n'), 2); lta.style.display = 'none'; lw.appendChild(lta);
