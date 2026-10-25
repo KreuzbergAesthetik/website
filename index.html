@@ -209,6 +209,7 @@ textarea.form-control { font-size:15px; }
 .md-item { margin-bottom:10px; } .md-gh { display:flex; align-items:center; gap:6px; } .md-gt { font-size:12.5px; color:#64748b; } .md-zu { font-size:12px; color:#047857; margin:2px 0 4px; }
 .md-strip { grid-template-columns:repeat(auto-fill,minmax(62px,68px)) !important; margin:4px 0 6px !important; }
 .md-doc { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #eef2f6; min-width:0; }
+.md-ic.th { width:34px; height:44px; background-color:#fff; background-size:cover; background-position:top center; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 1px 2px rgba(15,23,42,.12); }
 .md-ic { flex:none; width:26px; height:30px; border-radius:5px; background:#fee2e2; color:#b91c1c; font-size:8px; font-weight:800; display:flex; align-items:center; justify-content:center; }
 .md-nm { flex:1 1 0; min-width:0; font-weight:600; color:#0f172a; font-size:14px; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .md-pill { flex:0 1 auto; max-width:34%; border:none; background:#eef2f7; color:#475569; border-radius:999px; padding:3px 9px; font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -335,7 +336,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item.tl-termin .tl-first { font-weight:700; color:#14532d; }
 .tl-day .tl-item.tl-termin .tl-label { font-weight:700; }
 .wf-i { width:22px; height:22px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#94a3b8; font:italic 700 13px Georgia,serif; cursor:pointer; padding:0; line-height:1; } .wf-i.on { background:#e2e8f0; color:#475569; }
-.wf-row { padding:10px 0; border-bottom:1px solid #e2e8f0; } .wf-t { display:block; margin-bottom:4px; }
+.wf-row { padding:10px 12px; margin-bottom:10px; background:#f1f4f8; border:1px solid #d5dde7; border-radius:12px; } .wf-t { display:block; margin-bottom:4px; }
 .wf-ln { display:flex; align-items:center; gap:6px; } .wf-a { flex:1; min-width:0; font-size:13px; color:#2563eb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-decoration:none; }
 .wf-cp { flex:none; width:30px; height:30px; border:none; background:#f1f5f9; color:#64748b; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; } .wf-cp.ok { background:#dcfce7; color:#16a34a; }
 .tl-day .tl-plus { width:22px; height:22px; font-size:15px; background:transparent; color:#94a3b8; padding:0 0 1px; }
@@ -5368,9 +5369,27 @@ function medDots(items) {
   var b = mk('button', 'md-dots', '⋯'); b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   b.onclick = function (ev) { tlMenu(ev, items); }; return b;
 }
+/* Vorschaubild: erste Seite bei PDFs, das Bild selbst bei Fotos. Die PDFs werden nacheinander im Hintergrund gezeichnet. */
+var THQ = Promise.resolve(), THC = {};
+function setTh(ic, u) { ic.textContent = ''; ic.classList.add('th'); ic.style.backgroundImage = 'url(' + u + ')'; }
+async function pdfThumb(dd) {
+  var bl = await fileBlob(dd); if (!bl) return null;
+  var lib = await loadPdfJs(), doc = await lib.getDocument({ data: new Uint8Array(await bl.arrayBuffer()) }).promise;
+  try {
+    var pg = await doc.getPage(1), v0 = pg.getViewport({ scale: 1 }), v = pg.getViewport({ scale: 110 / v0.width }), c = document.createElement('canvas');
+    c.width = Math.round(v.width); c.height = Math.round(v.height); var cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+    await pg.render({ canvasContext: cx, viewport: v }).promise; return c.toDataURL('image/jpeg', 0.7);
+  } finally { doc.destroy(); }
+}
+function docThumb(dd, ic) {
+  var key = dd.id + '|' + (dd.sig ? dd.sig.ts : '');
+  if (THC[key]) { setTh(ic, THC[key]); return; }
+  if (/\.(png|jpe?g|webp|gif)$/i.test(dd.name || '')) fileURL(dd).then(function (u) { if (u) setTh(ic, u); });
+  else if (/\.pdf$/i.test(dd.name || '')) THQ = THQ.then(function () { return pdfThumb(dd); }).then(function (u) { if (u) { THC[key] = u; setTh(ic, u); } }).catch(function () {});
+}
 function medDocRow(p, dd) {
   var r = mk('div', 'md-doc'), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
-  r.appendChild(mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()));
+  var ic0 = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()); r.appendChild(ic0); docThumb(dd, ic0);
   var a = mk('a', 'md-nm', dd.name); a.href = '#'; a.title = dd.name + ' · ' + fmtD(iso(new Date(tsOf(dd))));
   fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
   r.appendChild(a);
