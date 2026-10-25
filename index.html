@@ -320,6 +320,16 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item { background:none; border:none; border-radius:0; margin:0; padding:8px 38px 8px 0; grid-template-columns:44px 1fr; }
 .tl-day .tl-item + .tl-item { border-top:1px solid #e2e8f0; }
 .tl-day .tl-date b { display:none; } .tl-day .tl-date span { font-style:normal; font-size:12px; }
+.tl-day .tl-item:not(.open) .tl-body { display:flex; align-items:baseline; gap:8px; cursor:pointer; }
+.tl-day .tl-item:not(.open) .tl-label { flex:none; margin:0; width:78px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tl-day .tl-item:not(.open) .tl-body > :not(.tl-label):not(.tl-first) { display:none; }
+.tl-day .tl-item:not(.open) .tl-first { flex:1; min-width:0; margin:0; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis; font-size:14px; padding:0 !important; background:none !important; border:none !important; }
+.tl-day .tl-item:not(.open) .tl-first * { display:inline !important; white-space:nowrap !important; }
+.tl-day .tl-item { padding-top:6px; padding-bottom:6px; }
+.tl-day .tl-item.tl-termin { background:#e3f4ea; border-radius:8px; margin:3px -6px; padding-left:6px; border-top-color:transparent; }
+.tl-day .tl-item.tl-termin + .tl-item, .tl-day .tl-item.tl-termin { border-top:none; }
+.tl-day .tl-item.tl-termin .tl-first { font-weight:700; color:#14532d; }
+.tl-day .tl-item.tl-termin .tl-label { font-weight:700; }
 .tl-day .tl-plus { top:6px; right:0; }
 .tl-plus { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:none; background:#dfe5ec; color:#475569; font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0 0 2px; }
 .tl-plus:hover { background:#cbd5e1; }
@@ -4269,7 +4279,11 @@ function renderVerlauf() {
       card.appendChild(mk('div', 'tl-day-h', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
       box.appendChild(card);
     }
-    card.appendChild(tlRow(it));
+    var row = tlRow(it), bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
+    var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
+    if (first) first.classList.add('tl-first');
+    if (bd) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
+    card.appendChild(row);
   });
 }
 
