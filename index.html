@@ -2070,7 +2070,7 @@ function renderPatients() {
     var ib = function (k, t, fn) { var b = mk('button', 'pt-ib'); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k); b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
     ib('cal', 'Termin anlegen', function () { curP = p; var n = new Date(); openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true); document.getElementById('t-patient').value = nameKey(p); });
     ib('euro', 'Rechnung erstellen', function () { curP = p; openInvoice(p); });
-    ib('book', 'Doku hinzufügen', function () { viewAkte(p); openDkPick(null); });
+    ib('book', 'Dokumentation hinzufügen', function () { viewAkte(p); openDkPick(null); });
     ib('mail', 'E-Mail oder WhatsApp schreiben', function (ev) {
       curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
       tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]]);
@@ -3037,7 +3037,7 @@ function fillTermine(p) {
   if (!p) return;
   events.filter(function (e) { return e.patient === nameKey(p); })
     .sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
-    .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Doku' : '')); o.value = String(e.id); sel.appendChild(o); });
+    .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); });
 }
 var invDokEv = null;
 function invDokuEinfuegen() {
