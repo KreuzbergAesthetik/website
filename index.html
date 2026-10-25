@@ -479,8 +479,10 @@ body { overflow-x:clip; }
 .hc.hc-empty { padding-top:12px; padding-bottom:12px; } .hc.hc-empty .card-header { margin-bottom:2px; } .hc.hc-empty .hm-sec { display:none; } .hc.hc-empty .hm-empty { padding:2px 0 0; font-size:13px; }
 .hm-s { display:none; }
 @media (max-width:520px) { #hm-fin table th, #hm-fin table td { padding:8px 6px; font-size:12.5px; } #hm-fin .hm-l { display:none; } #hm-fin .hm-s { display:inline; } }
+.pt td.pc-er { white-space:nowrap; }
+.pn-row { display:flex; align-items:center; gap:2px; min-width:0; } .pn-nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto; } .pn-row .pt-marks { flex:none; } .pt-dob { font-size:12.5px; color:#64748b; margin-top:1px; }
 .pt-marks { display:inline-flex; align-items:center; white-space:nowrap; margin-left:6px; }
-@media (max-width:520px) { .pt-marks { display:flex; margin:2px 0 0; } }
+@media (max-width:520px) { .pt-marks { display:flex; margin:0 0 0 4px; } }
 .pt td .fl, .pt td .warn { height:18px; box-sizing:border-box; margin:4px 4px 0 0; vertical-align:middle; } .pt td .fl { line-height:18px; padding:0 7px; font-size:10.5px; }
 .pt td .fl-ico { padding:0 5px; } .pt td .warn { width:18px; margin-left:0; font-size:10.5px; }
 @media (max-width:520px) { #tab-rechnungen .pc-d { display:none; } #tab-rechnungen .pc-ds { display:block; }
@@ -819,7 +821,6 @@ function kaStart() {
           <thead><tr>
             <th class="sort" style="width:64px;" onclick="sortBy('id')">ID <span class="sarr" data-k="id"></span></th>
             <th class="sort" onclick="sortBy('name')">Name <span class="sarr" data-k="name"></span></th>
-            <th class="sort" style="width:170px;" onclick="sortBy('dob')"><span class="hm-l">Geburtsdatum</span><span class="hm-s">Geboren</span> <span class="sarr" data-k="dob"></span></th>
             <th class="sort pc-er" style="width:190px;" onclick="sortBy('erstellt')">Erstellt am <span class="sarr" data-k="erstellt"></span></th>
           </tr></thead>
           <tbody id="patient-table"></tbody>
@@ -1968,20 +1969,22 @@ function renderPatients() {
   patients.slice().sort(cmp).forEach(function (p) {
     var o = document.createElement('option'); o.value = p.vorname + ' ' + p.nachname; dl.appendChild(o);
     if (q && (nameKey(p) + ' ' + p.nachname + ' ' + (p.phone || '') + ' ' + (p.dob || '') + ' #' + patNr(p)).toLowerCase().indexOf(q) < 0) return;
-    var age = ageOf(p.dob), row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
+    var age = ageOf(p.dob), row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c3 = row.insertCell();
+    c1.style.cssText = 'max-width:0; width:100%;';
     var nb0 = mk('button', 'pidb', '#' + patNr(p)); nb0.type = 'button'; nb0.title = 'Nummer ändern'; nb0.onclick = function () { changePatNr(p); }; c0.appendChild(nb0);
-    var full = p.vorname + ' ' + String(p.nachname).toUpperCase() + (age !== '' ? ' (' + age + ')' : '');
-    var nb = mk('button', 'pn', full); nb.type = 'button'; nb.onclick = function () { viewAkte(p); }; c1.appendChild(nb);
-    var sxi = sexIcon(p); if (sxi) c1.appendChild(sxi);
+    var noT = function (t) { return String(t || '').split(/\s+/).filter(function (w) { return w && !TITEL_RE.test(w); }).join(' '); };
+    var full = noT(p.vorname) + ' ' + noT(p.nachname).toUpperCase();
+    var nrow = mk('div', 'pn-row'), nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
     var mks = mk('span', 'pt-marks');
     flagPills(p).forEach(function (x) { mks.appendChild(x); });
-    if (mks.childNodes.length) c1.appendChild(mks);
+    if (mks.childNodes.length) nrow.appendChild(mks);
+    c1.appendChild(nrow);
+    if (p.dob) c1.appendChild(mk('div', 'pt-dob', p.dob + (age !== '' ? ' · ' + age + ' Jahre' : '')));
     if (p.phone) { var l1 = mk('div', 'pl'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); c1.appendChild(l1); }
     if (p.email) { var l2 = mk('div', 'pl'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); c1.appendChild(l2); }
-    c2.textContent = p.dob ? p.dob : '-';
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
   });
-  if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
+  if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
 }
 var hasEntry = false, silentPop = false;
 function anyOverlay() { return !!document.querySelector('.modal-overlay.active, .akte-page.active') || !document.getElementById('tab-start').classList.contains('active'); }
