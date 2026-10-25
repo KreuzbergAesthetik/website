@@ -47,7 +47,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .td-chk { width:22px; height:22px; margin-top:1px; flex:none; accent-color:#0f172a; }
 .td-main { flex:1; min-width:0; cursor:pointer; } .td-text { font-size:14.5px; } .td-sub { font-size:12px; color:#64748b; margin-top:2px; }
 .fl { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:6px; vertical-align:middle; line-height:16px; border:none; font-family:inherit; }
-.fl-red { background:#dc2626; color:#fff; } .fl-ico { display:inline-flex; align-items:center; padding:2px 5px; } .fl-ico svg { width:13px; height:13px; stroke-width:2.4; } .fl-amb { background:#e2e8f0; color:#475569; }
+.fl-red { background:#dc2626; color:#fff; } .fl-blue { background:#1e3a8a; color:#fff; } .fl-ico { display:inline-flex; align-items:center; padding:2px 5px; } .fl-ico svg { width:13px; height:13px; stroke-width:2.4; } .fl-amb { background:#e2e8f0; color:#475569; }
 .pt .fl { margin:3px 4px 0 0; }
 .a-flagcard { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:8px 12px; margin-bottom:12px; } .a-flagcard .fl { margin:0; font-size:12px; padding:3px 10px; cursor:pointer; text-align:left; } .a-fl-t { font-size:12px; font-weight:700; color:#64748b; }
 .a-flagbtn { position:fixed; right:0; top:calc(var(--hdh,112px) + 70px); z-index:41; width:34px; height:42px; border:none; border-radius:12px 0 0 12px; align-items:center; justify-content:center; cursor:pointer; box-shadow:-2px 3px 10px rgba(15,23,42,.3); } .a-flagbtn.red { background:#dc2626; color:#fff; } .a-flagbtn.amb { background:#94a3b8; color:#fff; }
@@ -1892,7 +1892,7 @@ function evFlag(e) { var m = flagsMap(), p = m.byName[e.patient]; return p && m.
 function flagPills(p, noTodo) {
   var f = flagsMap().get(p), out = [];
   if (f.todos.length && !noTodo) { var a = mk('span', 'fl fl-red', 'To-Do' + (f.todos.length > 1 ? ' ×' + f.todos.length : '')); a.title = f.todos.map(function (t) { return t.text; }).join('\n'); out.push(a); }
-  if (f.unb.length) { var b = mk('span', 'fl fl-amb fl-ico'); b.innerHTML = tvSvg('euro'); b.title = 'Rechnung offen: vergangene Termine ohne Rechnung (' + f.unb.length + ')'; b.setAttribute('aria-label', 'Rechnung offen'); out.push(b); }
+  if (f.unb.length) { var b = mk('span', 'fl fl-blue fl-ico'); b.innerHTML = tvSvg('euro'); b.title = 'Rechnung offen: vergangene Termine ohne Rechnung (' + f.unb.length + ')'; b.setAttribute('aria-label', 'Rechnung offen'); out.push(b); }
   if (f.anam) { var c = mk('span', 'fl fl-amb', 'Anamnese'); c.title = anamText(f.anam.info) + ' · Termin ' + fmtTermin(f.anam.e); out.push(c); }
   return out;
 }
@@ -1903,9 +1903,9 @@ function flagItems(p) {
   if (f.todos.length > 5) out.push({ cls: 'fl-red', label: '+' + (f.todos.length - 5) + ' weitere To-Dos', fn: function () { switchTab('todos'); closeModal('modal-akte'); } });
   f.unb.slice(0, 5).forEach(function (e) {
     var d = e.date.split('-');
-    out.push({ cls: 'fl-amb', label: 'Rechnung offen: ' + d[2] + '.' + d[1] + '. ' + (e.behandlung || 'Termin'), menu: [['Rechnung erstellen', function () { openInvoice(p); document.getElementById('inv-termin').value = String(e.id); invTerminChanged(); }], ['Keine Rechnung nötig', function () { e.keineRechnung = true; persist(); }]] });
+    out.push({ cls: 'fl-blue', label: 'Rechnung offen: ' + d[2] + '.' + d[1] + '. ' + (e.behandlung || 'Termin'), menu: [['Rechnung erstellen', function () { openInvoice(p); document.getElementById('inv-termin').value = String(e.id); invTerminChanged(); }], ['Keine Rechnung nötig', function () { e.keineRechnung = true; persist(); }]] });
   });
-  if (f.unb.length > 5) out.push({ cls: 'fl-amb', label: '+' + (f.unb.length - 5) + ' weitere Termine ohne Rechnung' });
+  if (f.unb.length > 5) out.push({ cls: 'fl-blue', label: '+' + (f.unb.length - 5) + ' weitere Termine ohne Rechnung' });
   return out;
 }
 function flagBtn(it) {
