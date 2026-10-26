@@ -1370,7 +1370,7 @@ function kaStart() {
 <!-- MODAL: RECHNUNG ERSTELLEN -->
 <div id="modal-inv" class="modal-overlay">
   <div class="modal-box" style="max-width:680px;">
-    <div class="modal-header"><strong>Rechnung erstellen</strong><button type="button" class="close-btn" onclick="closeModal('modal-inv')">&times;</button></div>
+    <div class="modal-header"><strong id="inv-title">Rechnung erstellen</strong><button type="button" class="close-btn" onclick="closeModal('modal-inv')">&times;</button></div>
     <div class="form-group"><label>Patient *</label><input type="text" id="inv-patient" class="form-control" list="t-patient-list" placeholder="Name eingeben..." autocomplete="off" onchange="invPatientChanged()"></div>
     <div class="form-group"><label>Termin übernehmen (Leistung, Datum und Dokumentation)</label><select id="inv-termin" class="form-control" onchange="invTerminChanged()"></select></div>
     <div class="form-group"><label>Anschrift *</label><textarea id="inv-adresse" class="form-control" rows="3" placeholder="Straße Hausnummer&#10;PLZ Ort&#10;Land"></textarea></div>
@@ -1388,7 +1388,7 @@ function kaStart() {
     <div id="inv-0info" style="display:none; font-size:12px; margin:6px 0; padding:8px 10px; border-radius:8px; background:#fef3c7; color:#92400e;"></div>
     <div id="inv-rab" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:2px 0 4px;"></div>
     <div style="text-align:right; font-weight:700; margin:10px 0;">Gesamt: <span id="inv-total">€ 0,00</span></div>
-    <div class="ak-h">Zahlung</div>
+    <div class="ak-h" id="inv-payh">Zahlung</div>
     <div class="seg" id="inv-payseg" role="group" aria-label="Zahlung">
       <button type="button" data-art="" class="on" onclick="setInvPay('')">Noch offen</button>
       <button type="button" data-art="Karte" onclick="setInvPay('Karte')">Karte</button>
@@ -1402,7 +1402,7 @@ function kaStart() {
     </div>
     <div class="form-group"><label>Text zur Behandlung (optional, wird auf der Rechnung gedruckt)</label><textarea id="inv-doku" class="form-control" rows="3"></textarea><button type="button" id="inv-doku-btn" class="btn btn-secondary btn-sm" style="display:none; margin-top:6px;" onclick="invDokuEinfuegen()">Text aus der Dokumentation einfügen</button></div>
     <div class="form-group"><label>Zahlungshinweis (wird bei offenen Rechnungen gedruckt)</label><textarea id="inv-zahlung" class="form-control" rows="2"></textarea></div>
-    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-inv')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveInvoice()">Rechnung erstellen</button></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-inv')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveInvoice()" id="inv-savebtn">Rechnung erstellen</button></div>
   </div>
 </div>
 
@@ -1600,6 +1600,7 @@ function kaStart() {
     <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
       <button type="button" class="btn btn-secondary" onclick="closeModal('modal-invview')">&lsaquo; Zurück</button>
       <button type="button" class="btn btn-secondary" id="inv-pay-btn" onclick="openPay()">Zahlung erfassen</button>
+      <button type="button" class="btn btn-secondary" onclick="editInvoice()">Bearbeiten</button>
       <button type="button" class="btn btn-save" onclick="sendInvoice()">Rechnung senden</button>
       <button type="button" class="btn btn-secondary" onclick="savePdf()">Als PDF speichern</button>
       <button type="button" class="btn btn-del btn-ico" style="margin-left:auto;" title="Rechnung löschen" aria-label="Rechnung löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
@@ -1826,7 +1827,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-f';
+var KA_V = '2026-10-28-g';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3148,8 +3149,31 @@ function nextPayNr(date) {
   return 'B' + yr + '-' + String(seq + 1).padStart(5, '0');
 }
 function newRow(type) { return type === 'rabatt' ? { type: 'rabatt', text: 'Rabatt', pct: '', rate: '19' } : { type: 'pos', text: '', qty: '1', price: '', rate: '19' }; }
+var invEdit = null;
+function invEditUi(on) {
+  document.getElementById('inv-title').textContent = on ? 'Rechnung bearbeiten' : 'Rechnung erstellen';
+  document.getElementById('inv-savebtn').textContent = on ? 'Speichern' : 'Rechnung erstellen';
+  ['inv-payh', 'inv-payseg', 'inv-paybox'].forEach(function (id) { var e = document.getElementById(id); if (e) e.style.display = on ? 'none' : (id === 'inv-paybox' ? (invPayArt ? 'grid' : 'none') : ''); });
+}
+/* Bestehende Rechnung ändern: Nummer und Zahlungen bleiben erhalten */
+function editInvoice() {
+  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
+  var p = patients.filter(function (x) { return x.id === inv.pid; })[0]; if (!p) { alert('Der Patient zu dieser Rechnung wurde nicht gefunden.'); return; }
+  closeModal('modal-invview'); openInvoice(p); invEdit = inv; invEditUi(true);
+  var g = function (id) { return document.getElementById(id); };
+  g('inv-adresse').value = inv.adresse || ''; g('inv-datum').value = inv.date || ''; g('inv-leistung').value = inv.leistung || inv.date || '';
+  g('inv-vortext').value = inv.vortext || ''; g('inv-doku').value = inv.doku || ''; g('inv-zahlung').value = inv.zahlung || '';
+  if (inv.eid) g('inv-termin').value = String(inv.eid);
+  invRows = (inv.items || []).map(function (it) {
+    var c = function (v) { return String(v).replace('.', ','); };
+    if (it.rabatt) return { type: 'rabatt', text: String(it.text || '').replace(/\s*-[\d,.]+%$/, ''), pct: c(it.pct), rate: String(it.rate) };
+    return { type: 'pos', text: it.text, qty: c(it.qty), price: c(it.price), rate: String(it.rate) };
+  });
+  if (!invRows.length) invRows = [newRow('pos')];
+  renderInvRows();
+}
 function openInvoice(p) {
-  invP = p;
+  invP = p; invEdit = null; if (document.getElementById('inv-title')) invEditUi(false);
   document.getElementById('inv-patient').value = p ? nameKey(p) : '';
   document.getElementById('inv-adresse').value = p && p.adresse ? p.adresse : '';
   var t = iso(new Date());
@@ -3298,6 +3322,19 @@ function saveInvoice() {
     var tot0 = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
     if (payAmount <= 0 || !payDate) { alert('Bitte bei der Zahlung Betrag und Datum angeben, oder "Noch offen" wählen.'); return; }
     if (payAmount > tot0 + 0.005) { alert('Der Zahlungsbetrag ist höher als die Rechnungssumme.'); return; }
+  }
+  if (invEdit) {
+    var ie = invEdit, totE = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
+    if (paidSum(ie) > totE + 0.005 && !confirm('Die bereits erfassten Zahlungen (' + eur(paidSum(ie)) + ') sind höher als die neue Summe (' + eur(totE) + '). Trotzdem speichern?')) return;
+    var changed = JSON.stringify(ie.items) !== JSON.stringify(items) || ie.date !== datum || ie.adresse !== adresse || ie.vortext !== document.getElementById('inv-vortext').value.trim();
+    ie.date = datum; ie.leistung = leist; ie.pid = p.id; ie.name = (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname; ie.adresse = adresse; ie.items = items;
+    ie.doku = document.getElementById('inv-doku').value.trim(); ie.eid = parseInt(document.getElementById('inv-termin').value, 10) || null; ie.hinweis = hinweis; ie.zahlung = document.getElementById('inv-zahlung').value.trim();
+    ie.vortext = document.getElementById('inv-vortext').value.trim(); ie.total = totE;
+    if (changed) ie.sentAt = null;
+    p.adresse = adresse; invEdit = null; persist(); closeModal('modal-inv'); renderInvoices();
+    if (curP === p) { renderHead(); renderVerlauf(); }
+    ['tab-zahlungen', 'tab-statistik'].forEach(function (t) { var el = document.getElementById(t); if (el && el.classList.contains('active')) (t === 'tab-zahlungen' ? renderZahlungen : renderStat)(); });
+    viewInvoice(ie.id); return;
   }
   var yr = datum.slice(0, 4), seq = 0;
   invoices.forEach(function (i) { var m = /^(?:RE-)?(\d{4})-(\d+)$/.exec(i.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); });
