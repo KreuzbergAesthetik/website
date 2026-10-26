@@ -266,7 +266,7 @@ body.akte-open main { display:none; }
 .a-tile ul { border:1px solid #94a3b8; border-radius:8px; overflow:hidden; background:#fff; margin-top:6px; } .a-tile ul li { display:flex; justify-content:space-between; gap:6px; padding:7px 10px; font-size:14px; line-height:1.35; } .a-tile ul li + li { border-top:1px solid #cbd5e1; } .a-tile .med-n { font-weight:600; } .a-tile .med-d { color:#64748b; }
 .a-tile ul li button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
 @media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:20px; } .a-tabs button { font-size:15px; } }
-@media (max-width:440px) { .a-tiles { grid-template-columns:1fr; } .a-tile { min-height:0; } }
+@media (max-width:440px) { .a-tile { min-height:0; } } .a-tile.a-wide { grid-column:1 / -1; } .a-tiles { gap:8px; } @media (max-width:640px) { .a-tiles { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); } .a-tile { padding:9px 26px 9px 10px; font-size:13.5px; } .a-tile h4 { font-size:12px; } .a-tile .tl-ln { gap:5px; margin-top:3px; } .a-tile .tl-ln svg { width:15px; height:15px; } .a-tile .tl-ln a { font-size:12.5px; letter-spacing:-.1px; } .a-tile.a-kt { padding-right:8px; } .a-tile.a-kt h4 { padding-right:22px; } }
 .a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; color:#0f172a; border:1px solid #dbe2ea; border-left:6px solid #1e3a8a; border-radius:14px; padding:8px 12px; margin-bottom:12px; box-shadow:0 3px 10px rgba(15,23,42,.12); }
 .a-sex { font-size:17px; color:#64748b; margin-left:8px; font-weight:400; }
 .a-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:40; }
@@ -4330,13 +4330,13 @@ function renderHead() {
     return;
   }
   var tiles = mk('div', 'a-tiles'), age = ageOf(p.dob);
-  var kt = mk('div', 'a-tile'); kt.appendChild(mk('h4', '', 'Kontakt')); kt.appendChild(tilePen(function () { toggleStamm(); }));
+  var kt = mk('div', 'a-tile a-kt'); kt.appendChild(mk('h4', '', 'Kontakt')); kt.appendChild(tilePen(function () { toggleStamm(); }));
   kt.appendChild(mk('div', p.dob ? '' : 'a-none', p.dob ? p.dob + (age !== '' ? ' (' + age + ' Jahre)' : '') : 'Geburtsdatum fehlt'));
   if (p.phone) { var l1 = mk('div', 'tl-ln'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); kt.appendChild(l1); }
   if (p.email) { var l2 = mk('div', 'tl-ln'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); kt.appendChild(l2); }
   tiles.appendChild(kt);
   tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));
-  tiles.appendChild(tileBox('med', 'Medikation', '', function (t, ed) {
+  tiles.appendChild(tileBox('med', 'Medikation', 'a-wide', function (t, ed) {
     var list = p.medikation || [];
     if (!list.length && !ed) t.appendChild(mk('div', 'a-txt a-none', 'Keine Medikation'));
     var ul = mk('ul'); list.forEach(function (m, i) {
