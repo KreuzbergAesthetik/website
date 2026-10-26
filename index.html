@@ -119,7 +119,7 @@ textarea.form-control { font-size:15px; }
 .nav-btn { min-height:48px; }
 .nav-btn:focus-visible, .btn:focus-visible { outline-offset:-3px; }
 .modal-box { -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
-#modal-invview .modal-box { overflow-x:auto; }
+#modal-invview .modal-box { overflow-x:hidden; } #inv-view { overflow-x:auto; -webkit-overflow-scrolling:touch; }
 .mc { height:92px; }
 .ev { box-shadow:0 1px 2px rgba(15,23,42,.15); }
 @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; } }
@@ -392,6 +392,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
   #modal-invview { position:static !important; background:#fff !important; padding:0 !important; display:block !important; }
   #modal-invview .modal-box { box-shadow:none !important; max-height:none !important; max-width:none !important; padding:0 !important; overflow:visible !important; }
   #modal-invview .no-print { display:none !important; }
+  #inv-view { overflow:visible !important; }
 }
 .inv2 { width:100%; border-collapse:collapse; border:1px solid #333; margin-top:14px; } .inv2 .c { text-align:center; }
 .inv2 th { background:#eee; text-align:left; padding:6px 8px; font-size:14px; border:1px solid #333; color:#111; }
@@ -1862,7 +1863,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-h';
+var KA_V = '2026-10-29-i';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
