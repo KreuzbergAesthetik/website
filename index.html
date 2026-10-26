@@ -1759,6 +1759,18 @@ function kaStart() {
   </div>
 </div>
 
+<!-- MODAL: WEBFORMULAR VISUELL BEARBEITEN -->
+<div id="modal-fvis" class="modal-overlay" style="padding:0; align-items:stretch;">
+  <div style="background:#fff; width:100%; max-width:640px; margin:0 auto; display:flex; flex-direction:column; height:100%;">
+    <div style="display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #e2e8f0;">
+      <strong id="fv-title" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Formular</strong>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-fvis')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="fv-save" onclick="fvSave()">Speichern</button>
+    </div>
+    <iframe id="fv-frame" title="Formular" style="flex:1; border:0; width:100%; background:#f8fafc;"></iframe>
+  </div>
+</div>
+
 <!-- MODAL: PRODUKT -->
 <div id="modal-produkt" class="modal-overlay">
   <div class="modal-box" style="max-width:600px;">
@@ -1892,7 +1904,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-n';
+var KA_V = '2026-10-29-o';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -6094,9 +6106,10 @@ function renderWebf() {
     var cp = mk('button', 'wf-cp'); cp.type = 'button'; cp.innerHTML = ic; cp.title = 'Link kopieren'; cp.setAttribute('aria-label', 'Link kopieren');
     cp.onclick = function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, function () { prompt('Link zum Kopieren:', url); }); };
     ln.appendChild(cp); r.appendChild(ln);
-    var eb = mk('button', 'btn btn-secondary btn-sm', 'Texte bearbeiten'); eb.type = 'button'; eb.style.marginTop = '8px'; eb.onclick = function () { ftOpen(w); };
+    var vb = mk('button', 'btn btn-save btn-sm', 'Bearbeiten'); vb.type = 'button'; vb.style.marginTop = '8px'; vb.onclick = function () { fvOpen(w); }; r.appendChild(vb);
+    var eb = mk('button', 'btn btn-secondary btn-sm', 'Texte als Liste'); eb.type = 'button'; eb.style.cssText = 'margin-top:8px; margin-left:8px;'; eb.onclick = function () { ftOpen(w); };
     r.appendChild(eb);
-    if (/^(anmeldung|anamnese|erinnerung)\.html/.test(w[1])) { var fb = mk('button', 'btn btn-secondary btn-sm', 'Felder bearbeiten'); fb.type = 'button'; fb.style.cssText = 'margin-top:8px; margin-left:8px;'; fb.onclick = function () { ffOpen(w); }; r.appendChild(fb); }
+    if (/^(anmeldung|anamnese|erinnerung)\.html/.test(w[1])) { var fb = mk('button', 'btn btn-secondary btn-sm', 'Felder als Liste'); fb.type = 'button'; fb.style.cssText = 'margin-top:8px; margin-left:8px;'; fb.onclick = function () { ffOpen(w); }; r.appendChild(fb); }
     box.appendChild(r);
   });
 }
@@ -6187,6 +6200,24 @@ async function ffSave() {
   catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
 }
 /* Eigene Texte der Webformulare: Originaltext -> eigener Text, gespeichert in settings.formTexte und auf dem Server veröffentlicht */
+/* Visueller Editor: das echte Formular im Rahmen, Änderungen per Antippen */
+var FV = { form: '' };
+function ffvInit() { var fe = (settings.formFelder || {})[FV.form] || {}; return { texte: JSON.parse(JSON.stringify(settings.formTexte || {})), felder: JSON.parse(JSON.stringify(fe)) }; }
+function fvOpen(w) {
+  FV.form = /^(anmeldung|anamnese|erinnerung)\.html/.test(w[1]) ? w[1].replace(/\.html.*/, '') : '';
+  document.getElementById('fv-title').textContent = w[0]; var url = webfUrl(w[1]); url += (url.indexOf('?') >= 0 ? '&' : '?') + 'ed=1&vis=1';
+  var fr = document.getElementById('fv-frame'); fr.removeAttribute('src'); openModal('modal-fvis'); fr.src = url;
+}
+async function fvSave() {
+  var fr = document.getElementById('fv-frame'), K = null; try { K = fr.contentWindow.KE; } catch (x) {}
+  if (!K) { alert('Der Editor ist noch nicht geladen, oder die Seite ist noch nicht auf dem neuesten Stand. Bitte kurz warten und noch einmal versuchen.'); return; }
+  var res = K.result(); if (res.error) { alert(res.error); return; }
+  settings.formTexte = res.texte;
+  if (FV.form) { settings.formFelder = settings.formFelder || {}; settings.formFelder[FV.form] = res.felder; }
+  persist(); closeModal('modal-fvis');
+  try { await KS.txtset(settings.formTexte || {}, settings.formFelder || {}); alert('Gespeichert und veröffentlicht. Das Formular zeigt die Änderungen beim nächsten Öffnen.'); }
+  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
+}
 var ftCur = null, ftKeys = [];
 function ftNorm(t) { return String(t == null ? '' : t).replace(/\s+/g, ' ').trim(); }
 function ftOpen(w) {
