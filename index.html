@@ -549,11 +549,11 @@ body { overflow-x:clip; }
 .hm-s { display:none; }
 @media (max-width:520px) { #hm-fin table th, #hm-fin table td { padding:8px 6px; font-size:12.5px; } #hm-fin .hm-l { display:none; } #hm-fin .hm-s { display:inline; } }
 .pt td.pc-er { white-space:nowrap; }
-.pt-dots { position:absolute; left:-5px; top:17px; display:flex; flex-direction:column; gap:3px; }
+.pt-dots { position:absolute; left:-5px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:3px; }
 .addr-block { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; } .addr-str { grid-column:1 / 3; } .addr-nr { grid-column:3; } .addr-plz { grid-column:1; } .addr-ort { grid-column:2 / 4; }
 .pt-tit { font-size:12px; color:#64748b; margin-left:8px; white-space:nowrap; flex:none; }
 .pt-dr { display:flex; flex-direction:column; gap:1px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
-.pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:flex-start; }
+.pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:flex-start; } .pn-l { white-space:nowrap; } .pn-f { display:inline-block; } .pt-tit2 { font-size:11px; font-weight:400; color:#64748b; margin-left:5px; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
@@ -564,12 +564,12 @@ body { overflow-x:clip; }
 .inv-plus { width:36px; height:36px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
-.pt-acts { display:grid; grid-template-columns:repeat(3,32px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:32px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
+.pt-acts { display:grid; grid-template-columns:repeat(2,34px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:34px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
 .pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; } .pt-dot.d-rem { background:#ea580c; } .pt-dot.d-next { background:#16a34a; } .pt-dot.d-send { background:#eab308; }
 .pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
-#tab-patienten .pt { border-collapse:separate; border-spacing:0 8px; }
-#tab-patienten .pt tbody td { background:#f6f8fb; border-top:1px solid #dbe2ea; border-bottom:1px solid #dbe2ea; padding-top:12px; padding-bottom:12px; }
+#tab-patienten .pt { border-collapse:separate; border-spacing:0 6px; }
+#tab-patienten .pt tbody td { background:#f6f8fb; border-top:1px solid #dbe2ea; border-bottom:1px solid #dbe2ea; padding-top:7px; padding-bottom:7px; vertical-align:middle; }
 #tab-patienten .pt tbody td:first-child { border-left:1px solid #dbe2ea; border-radius:10px 0 0 10px; }
 #tab-patienten .pt tbody td.pc-er { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; }
 @media (max-width:520px) { #tab-patienten .pt tbody td:nth-child(2) { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; } }
@@ -1906,7 +1906,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-x';
+var KA_V = '2026-10-29-y';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -1953,12 +1953,12 @@ function errBanner(msg) {
   if (!b) { b = document.createElement('div'); b.id = 'err-bar'; b.style.cssText = 'position:fixed; left:8px; right:8px; bottom:8px; z-index:99; background:#7f1d1d; color:#fff; padding:10px 14px; border-radius:10px; font-size:13px; line-height:1.4;'; b.onclick = function () { b.style.display = 'none'; }; document.body.appendChild(b); }
   b.textContent = 'Fehler: ' + msg + ' (zum Schließen tippen)'; b.style.display = 'block';
 }
-/* Sofort sichtbare Hinweise (Maus): zeigt den title-Text kleiner Symbol-Buttons ohne Verzögerung */
+/* Sofort sichtbare Hinweise (Maus und Stift, auch am Handy): zeigt den title-Text kleiner Symbol-Buttons ohne Verzögerung */
 (function () {
-  if (!window.matchMedia || !matchMedia('(hover:hover)').matches) return;
   var tip = null, cur = null, tm = 0;
   function hide() { clearTimeout(tm); if (tip) tip.style.display = 'none'; if (cur && cur._tt) { cur.setAttribute('title', cur._tt); cur._tt = null; } cur = null; }
-  document.addEventListener('mouseover', function (e) {
+  document.addEventListener('pointerover', function (e) {
+    if (e.pointerType === 'touch') return;
     var t = e.target.closest && e.target.closest('[title]'); if (!t || t === cur) return; hide();
     var txt = t.getAttribute('title'); if (!txt) return; cur = t; t._tt = txt; t.removeAttribute('title');
     tm = setTimeout(function () {
@@ -1968,7 +1968,7 @@ function errBanner(msg) {
       tip.style.left = l + 'px'; tip.style.top = tp + 'px';
     }, 80);
   });
-  document.addEventListener('mouseout', function (e) { if (cur && !cur.contains(e.relatedTarget)) hide(); });
+  document.addEventListener('pointerout', function (e) { if (cur && !cur.contains(e.relatedTarget)) hide(); });
   document.addEventListener('click', hide, true); window.addEventListener('scroll', hide, true);
 })();
 window.addEventListener('error', function (ev) { errBanner((ev.message || 'unbekannt') + (ev.lineno ? ' [Zeile ' + ev.lineno + ']' : '')); });
@@ -2287,10 +2287,11 @@ function renderPatients() {
     if (fl0.anam) addDot('d-anam', anamText(fl0.anam.info));
     if (fl0.rem) addDot('d-rem', 'Terminerinnerung fällig: ' + fmtTermin(fl0.rem));
     if (fl0.next) addDot('d-next', 'Nächster Termin gebucht: ' + fmtTermin(fl0.next));
-    var nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
-    if (p.titel) nrow.appendChild(mk('span', 'pt-tit', p.titel));
+    var nb = mk('button', 'pn pn-nm'); nb.type = 'button'; nb.title = full + (p.titel ? ' (' + p.titel + ')' : ''); nb.onclick = function () { viewAkte(p); };
+    var nl1 = mk('span', 'pn-l'); nl1.appendChild(document.createTextNode(noT(p.nachname) + ','));
+    nb.appendChild(nl1); nb.appendChild(document.createTextNode(' ')); var nl2 = mk('span', 'pn-f', noT(p.vorname)); if (p.titel) nl2.appendChild(mk('small', 'pt-tit2', p.titel)); nb.appendChild(nl2); nrow.appendChild(nb);
     c1.appendChild(nrow);
-    var sub = [p.dob ? 'geb. ' + p.dob + (age !== '' ? ' (' + age + ')' : '') : '', { Frau: '♀', Herr: '♂', Divers: '⚧' }[p.anrede] || ''].filter(Boolean).join(' · ');
+    var sub = p.dob ? 'geb. ' + p.dob : '';
     var em = evMap[nameKey(p)] || {};
     if (sub) { var dr = mk('div', 'pt-dr'); dr.appendChild(mk('span', 'pt-dob', sub)); c1.appendChild(dr); }
     var inv0 = em.last ? invoices.filter(function (i) { return i.eid === em.last.e.id || (i.pid === p.id && i.date === em.last.e.date); })[0] : null;
@@ -2301,13 +2302,11 @@ function renderPatients() {
     var ib = function (k, t, fn) { var b = mk('button', 'pt-ib'); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k); b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
     ib('cal', 'Termin anlegen', function () { curP = p; var n = new Date(); openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true); document.getElementById('t-patient').value = nameKey(p); });
     ib('book', 'Dokumentation hinzufügen', function () { viewAkte(p); openDkPick(null); });
-    ib('mail', 'E-Mail oder WhatsApp schreiben', function (ev) {
-      curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
-      tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]]);
-    });
-    ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); });
     var fst = formStatus(p);
-    ib('form', fst.t, function (ev) { tlMenu(ev, formMenuItems(p)); });
+    ib('mail', 'Senden: E-Mail, WhatsApp, Formulare' + (fst.t ? ' · ' + fst.t : ''), function (ev) {
+      curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
+      tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]].concat(formMenuItems(p)));
+    });
     acts.lastChild.classList.add('st-' + fst.s);
     ib('plus', 'Alle Aktionen', function (ev) { ptAMenu(ev, p); });
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
