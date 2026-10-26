@@ -48,3 +48,24 @@ Der Datenschutztext in forms.js (DATENSCHUTZ) ist ein Entwurf und sollte durch d
 
 Update-Bestätigung: Die App lädt eine neue Version im Hintergrund, wechselt aber erst nach Tipp auf "Jetzt aktualisieren" (Hinweisleiste unten).
 Beim Veröffentlichen einer neuen Version muss in sw.js die Zeile mit V (Versionsstand) geändert werden, sonst erkennt das Gerät keine neue Version.
+
+
+=== Stand und offene Wünsche (Stand: Version 29.10.2026 d) ===
+Arbeitsweise mit Claude (für eine neue Sitzung)
+- Auf Deutsch, per Du. Kurz antworten, Screenshots nur auf Wunsch. Mehrere Änderungen in einer Runde umsetzen und einmal veröffentlichen.
+- Bei größeren Umbauten vorher Skizze oder Vorschlag zeigen und entscheiden lassen. Bei Unsicherheit fragen.
+- Veröffentlichen: auf dem Branch claude/new-session-40fqjl committen, pushen, Pull Request nach main erstellen und mergen. GitHub Pages braucht danach 1 bis 2 Minuten.
+- Bei jeder Veröffentlichung die Version erhöhen: in sw.js die Konstante V und in index.html die Konstante KA_V (beide gleich). Die Version steht unten im Praxis-Menü.
+- Gestaltungsregeln: Grau = Abbrechen und Bearbeiten, Grün = Speichern und Senden, Löschen als kleines rotes Symbol (Umriss) ganz links, Rot und Grün nie nebeneinander. Platzsparend, ruhig, wenige Beschriftungen, Symbole mit Farbe. Keine echten Patientendaten in das öffentliche Repository.
+
+Noch zu erledigen (vom Praxisinhaber)
+- Server-Snippet formular-empfang-wordpress.txt in WPCode ersetzen, dann Praxis, Geräte-Abgleich einrichten (Passwort aufschreiben).
+- Auf dem Tablet vor dem ersten Start der neuen Version sichern (Praxis, Sicherung).
+- Datenschutztexte der Webformulare, Aufklärungen und Nachsorge-Hinweise rechtlich und medizinisch prüfen lassen. Datenschutztext um den Geräte-Abgleich ergänzen.
+- Wunschwert für die Terminerinnerung festlegen (aktuell 2 Tage vorher, Einstellung settings.remDays, noch ohne Eingabemaske).
+
+Offene Ideen
+- Eingabemaske für den Erinnerungs-Abstand, Punkt "Wiedervorstellung fehlt" (letzter Termin über 6 Wochen, nichts gebucht).
+- Fehlende Stammdaten bei importierten Patienten (Telefon, E-Mail, Geburtsdatum). Termine aus dem alten Programm importieren.
+- Manuelle Ausgaben unter Zahlungen (wurde entfernt). Nachsorge-Hinweise für weitere Behandlungen (Microneedling, Exosomen u. a.), sobald die Regeln vorliegen.
+- Kostenvoranschlag: bei Bedarf Satz zur Unverbindlichkeit ergänzen. Rechnungsversand: Versandmarke wird nach dem Teilen gesetzt oder per Hand.
