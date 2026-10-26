@@ -378,7 +378,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .icon-btn svg { width:20px; height:20px; }
 .iv-bar { display:flex; gap:5px; align-items:flex-start; margin:-20px -20px 4px; padding:10px 14px 0; position:sticky; top:-20px; z-index:20; background:none; pointer-events:none; height:70px; } .iv-sp { flex:1; } .iv-bar > * { pointer-events:auto; }
 .iv-b { box-shadow:0 4px 12px rgba(15,23,42,.18); flex:1 1 0; min-width:0; height:50px; border:none; border-radius:10px; padding:6px 0 4px; cursor:pointer; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:10px; font-weight:600; line-height:1.1; } .iv-b svg { width:20px; height:20px; } .iv-b span { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-@media (min-width:600px) { .iv-bar { justify-content:center; gap:6px; } .iv-b { flex:none; width:42px; height:42px; border-radius:12px; padding:0; } .iv-b span { display:none; } .iv-back { position:absolute; left:14px; top:10px; width:40px; height:42px; } }
+@media (min-width:600px) { .iv-bar { justify-content:center; gap:9px; } .iv-b { flex:none; width:42px; height:42px; border-radius:12px; padding:0; } .iv-b span { display:none; } .iv-back { position:absolute; left:14px; top:10px; width:40px; height:42px; } }
 .iv-back { background:none; box-shadow:none; color:#334155; flex:0 0 40px; padding:0; } .iv-back svg { width:32px; height:32px; stroke-width:3; }
 .iv-grey { background:#eef2f7; color:#475569; } .iv-navy { background:#eef1fa; color:#1e3a8a; } .iv-orange { background:#fdf5ea; color:#b45309; } .iv-violet { background:#f5f1ff; color:#7c3aed; } .iv-green { background:#16a34a; color:#fff; } .iv-del { background:#fdecec; color:#dc2626; box-shadow:inset 0 0 0 1px #fbcaca, 0 4px 12px rgba(15,23,42,.18); }
 .inv-card { background:#f8fafc; border:1px solid #d5dde7; border-radius:12px; padding:10px; margin-bottom:10px; } .inv-card.rab { background:#fff7ed; border-color:#fed7aa; } .inv-addbar { background:#f1f5f9; border:1px dashed #94a3b8; border-radius:12px; padding:10px; margin:4px 0 10px; } .ic-btns { display:flex; gap:6px; flex-wrap:wrap; } .ic-add { border:1px dashed #94a3b8; background:#fff; color:#475569; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; cursor:pointer; } .ic-add.on { border-style:solid; border-color:#2563eb; color:#2563eb; background:#eff4ff; } .ic-fields { margin-bottom:6px; } .ic-f { margin-bottom:6px; } .ic-f.two { display:flex; gap:6px; }
@@ -1640,7 +1640,7 @@ function kaStart() {
     <div class="no-print iv-bar">
       <button type="button" class="iv-b iv-back" title="Zurück" aria-label="Zurück" onclick="closeModal('modal-invview')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <button type="button" class="iv-b iv-del" title="Löschen" aria-label="Löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
-      <button type="button" class="iv-b iv-navy" id="inv-pay-btn" title="Zahlung erfassen" aria-label="Zahlung erfassen" onclick="openPay()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7a6 6 0 100 10M5 10h9M5 14h9"/></svg><span>Zahlung</span></button>
+      <button type="button" class="iv-b iv-navy" id="inv-pay-btn" title="Zahlung erfassen" aria-label="Zahlung erfassen" onclick="openPay()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 6.5A7 7 0 107 17.5 7 7 0 0017.5 17.5M4 10.5h9M4 13.5h9"/></svg><span>Zahlung</span></button>
       <button type="button" class="iv-b iv-grey" title="Bearbeiten" aria-label="Bearbeiten" onclick="editInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg><span>Bearbeiten</span></button>
       <button type="button" class="iv-b iv-violet" id="inv-kv-btn" style="display:none" title="In Rechnung umwandeln" aria-label="In Rechnung umwandeln" onclick="kvToInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 14h5M13 11l3 3-3 3"/></svg><span>Rechnung</span></button>
       <button type="button" class="iv-b iv-orange" title="Als PDF speichern" aria-label="Als PDF speichern" onclick="savePdf()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>PDF</span></button>
@@ -1906,7 +1906,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-w';
+var KA_V = '2026-10-29-x';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -1953,6 +1953,24 @@ function errBanner(msg) {
   if (!b) { b = document.createElement('div'); b.id = 'err-bar'; b.style.cssText = 'position:fixed; left:8px; right:8px; bottom:8px; z-index:99; background:#7f1d1d; color:#fff; padding:10px 14px; border-radius:10px; font-size:13px; line-height:1.4;'; b.onclick = function () { b.style.display = 'none'; }; document.body.appendChild(b); }
   b.textContent = 'Fehler: ' + msg + ' (zum Schließen tippen)'; b.style.display = 'block';
 }
+/* Sofort sichtbare Hinweise (Maus): zeigt den title-Text kleiner Symbol-Buttons ohne Verzögerung */
+(function () {
+  if (!window.matchMedia || !matchMedia('(hover:hover)').matches) return;
+  var tip = null, cur = null, tm = 0;
+  function hide() { clearTimeout(tm); if (tip) tip.style.display = 'none'; if (cur && cur._tt) { cur.setAttribute('title', cur._tt); cur._tt = null; } cur = null; }
+  document.addEventListener('mouseover', function (e) {
+    var t = e.target.closest && e.target.closest('[title]'); if (!t || t === cur) return; hide();
+    var txt = t.getAttribute('title'); if (!txt) return; cur = t; t._tt = txt; t.removeAttribute('title');
+    tm = setTimeout(function () {
+      if (!tip) { tip = document.createElement('div'); tip.style.cssText = 'position:fixed; z-index:99999; background:#0f172a; color:#fff; font:12px/1.3 system-ui,sans-serif; padding:5px 9px; border-radius:7px; pointer-events:none; box-shadow:0 4px 12px rgba(15,23,42,.3); max-width:260px;'; document.body.appendChild(tip); }
+      tip.textContent = txt; tip.style.display = 'block'; var r = t.getBoundingClientRect();
+      var l = Math.max(6, Math.min(r.left + r.width / 2 - tip.offsetWidth / 2, window.innerWidth - tip.offsetWidth - 6)), tp = r.bottom + 6; if (tp + tip.offsetHeight > window.innerHeight - 6) tp = r.top - tip.offsetHeight - 6;
+      tip.style.left = l + 'px'; tip.style.top = tp + 'px';
+    }, 80);
+  });
+  document.addEventListener('mouseout', function (e) { if (cur && !cur.contains(e.relatedTarget)) hide(); });
+  document.addEventListener('click', hide, true); window.addEventListener('scroll', hide, true);
+})();
 window.addEventListener('error', function (ev) { errBanner((ev.message || 'unbekannt') + (ev.lineno ? ' [Zeile ' + ev.lineno + ']' : '')); });
 window.addEventListener('unhandledrejection', function (ev) { errBanner(ev.reason && ev.reason.message ? ev.reason.message : 'Vorgang fehlgeschlagen'); });
 function hdRun(fn, name) { try { fn(); } catch (x) { errBanner(name + ': ' + (x && x.message ? x.message : x)); } }
