@@ -221,6 +221,18 @@ if (!function_exists('ka_cfg')) {
             if ($a === 'ibdel') { @unlink($f); return ka_ok(); }
             return ka_ok(array('d' => base64_encode(file_get_contents($f))));
         }
+        /* Privater Kalender: der Server holt die iCal-Datei bei Google, Apple oder Outlook ab, damit sie in der App erscheint */
+        if ($a === 'calget') {
+            $u = preg_replace('#^webcal://#i', 'https://', trim((string) $req->get_param('u')));
+            $pu = parse_url($u); $host = strtolower(isset($pu['host']) ? $pu['host'] : '');
+            $okHost = $host !== '' && (($pu['scheme'] ?? '') === 'https') && (in_array($host, array('calendar.google.com', 'outlook.office365.com', 'outlook.live.com', 'www.google.com'), true) || substr($host, -11) === '.icloud.com');
+            if (!$okHost || strlen($u) > 600) return ka_fail(400, 'Diese Adresse wird nicht unterstützt. Erlaubt sind iCal-Adressen von Google, Apple und Outlook.');
+            $r = wp_safe_remote_get($u, array('timeout' => 12, 'redirection' => 2, 'limit_response_size' => 3 * 1024 * 1024, 'user-agent' => 'Praxis-App'));
+            if (is_wp_error($r) || (int) wp_remote_retrieve_response_code($r) !== 200) return ka_fail(502, 'Der Kalender konnte nicht abgerufen werden. Bitte die Adresse prüfen.');
+            $body = wp_remote_retrieve_body($r);
+            if (strpos($body, 'BEGIN:VCALENDAR') === false) return ka_fail(502, 'Unter dieser Adresse liegt kein Kalender.');
+            return ka_ok(array('ics' => $body));
+        }
         /* Kalender ohne Namen für Google, Apple usw.: die App legt hier eine fertige .ics-Datei ab, abrufbar nur über den geheimen Code */
         if ($a === 'calput' || $a === 'caldel') {
             $cc = strtolower((string) $req->get_param('c'));
