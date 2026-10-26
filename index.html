@@ -575,8 +575,8 @@ body { overflow-x:clip; }
 .badge-gray { background:#e2e8f0; color:#475569; }
 .pt thead th:not([onclick]) { cursor:pointer; user-select:none; }
 .pt th[data-sd="1"]::after { content:' \25B2'; font-size:9px; } .pt th[data-sd="-1"]::after { content:' \25BC'; font-size:9px; }
-.open-box { display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#fff7ed; border:1px solid #fed7aa; border-left:6px solid #ea580c; border-radius:12px; padding:10px 14px; margin:0 0 12px; } .open-box.late { background:#fef2f2; border-color:#fecaca; border-left-color:#dc2626; }
-.open-box .ob-l { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#9a3412; } .open-box b { font-size:22px; color:#9a3412; } .open-box.late .ob-l, .open-box.late b { color:#991b1b; } .open-box .ob-t { font-size:13.5px; color:#475569; flex:1; min-width:180px; }
+.open-box { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; background:none; border:none; border-left:4px solid #ea580c; border-radius:2px; padding:2px 0 2px 12px; margin:0 0 12px; } .open-box.late { border-left-color:#dc2626; }
+.open-box b { font-size:20px; color:#0f172a; } .open-box.late b { color:#991b1b; } .open-box .ob-t { font-size:13px; color:#64748b; flex:1; min-width:150px; }
 .pt tr.t-open td { background:none; } .pt tr.t-late td { background:#fff1e0; } #inv-table td:first-child { padding-right:10px; } #inv-table td:nth-child(3) { padding-left:4px; padding-right:22px; text-align:left; } #inv-table td:nth-child(4) { width:1%; white-space:nowrap; text-align:right; padding-left:4px; }
 .pt tr.t-open td:first-child, .pt tr.t-late td:first-child, .pt tr.t-paid td:first-child { padding-left:20px !important; } .pt tr.t-paid td:first-child { box-shadow:inset 4px 0 0 #16a34a; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
 .badge-red { background:#fee2e2; color:#991b1b; font-weight:700; }
@@ -1856,7 +1856,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-b';
+var KA_V = '2026-10-29-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3453,7 +3453,7 @@ function invOpenInfo() {
 function openBox() {
   var o = invOpenInfo(); if (!o.list.length) return null;
   var b = mk('div', 'open-box' + (o.lateN ? ' late' : '')), a = mk('div');
-  a.appendChild(mk('div', 'ob-l', 'Offene Posten')); a.appendChild(mk('b', '', eur(o.sum)));
+  a.appendChild(mk('b', '', eur(o.sum)));
   b.appendChild(a);
   var t = mk('div', 'ob-t', o.list.length + (o.list.length === 1 ? ' offene Rechnung' : ' offene Rechnungen') + (o.lateN ? ' · davon ' + o.lateN + ' überfällig (' + eur(o.lateSum) + ')' : ''));
   b.appendChild(t); return b;
