@@ -1951,7 +1951,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zd';
+var KA_V = '2026-10-29-ze';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4579,7 +4579,7 @@ function openRx(zu, edit) {
   rxRows = (curP.medikation || []).map(function (m) { return { on: false, text: m, neu: false }; });
   var dat = iso(new Date());
   if (edit) {
-    var od = rxDocOf(edit); if (od && od.zu) rxZu = od.zu;
+    var od = rxDocOf(edit); if (od && od.zu) rxZu = od.zu; if (!edit.items && !String(edit.text || '').trim() && od) { var mm = /(\d{2})\.(\d{2})\.(\d{4})/.exec(od.name || ''); if (mm) edit.datum = mm[3] + '-' + mm[2] + '-' + mm[1]; }
     (edit.items || String(edit.text || '').replace(/^Rezept erstellt:\s*/, '').split(/;\s*/)).filter(Boolean).forEach(function (t) { var r = rxRows.filter(function (x) { return x.text === t; })[0]; if (r) r.on = true; else rxRows.push({ on: true, text: t, neu: true }); });
     dat = edit.datum || iso(new Date(edit.ts));
   }
@@ -4652,7 +4652,7 @@ async function rxMake() {
     p.dokumente = (p.dokumente || []).concat([{ id: id, ts: oldDoc ? oldDoc.ts : Date.now(), name: name, kat: 'Rezept', zu: rxZu || undefined }]);
     rxRows.forEach(function (r) { if (r.on && r.neu && document.getElementById('rx-merk').checked && (p.medikation || []).indexOf(r.text.trim()) < 0) { p.medikation = (p.medikation || []).concat([r.text.trim()]); } });
     var items = sel.map(function (r) { return r.text.trim(); }), rtext = 'Rezept erstellt: ' + items.join('; ');
-    if (rxEdit) { rxEdit.text = rtext; rxEdit.items = items; rxEdit.docId = id; rxEdit.datum = datum; }
+    if (rxEdit) { rxEdit.text = rtext; rxEdit.items = items; rxEdit.docId = id; rxEdit.datum = datum; if (rxEdit._tmp) { delete rxEdit._tmp; p.log = (p.log || []).concat([rxEdit]); } }
     else p.log = (p.log || []).concat([{ ts: Date.now(), type: 'rezept', text: rtext, items: items, docId: id, datum: datum }]);
     rxEdit = null;
     persist(); closeModal('modal-rx'); renderHead(); renderVerlauf();
@@ -6096,7 +6096,11 @@ function medDocRow(p, dd) {
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
-  l2.appendChild(medDots([
+  l2.appendChild(medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
+      curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
+      if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }
+      openRx(null, lg);
+    }]] : []).concat([
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Umbenennen', function () {
       var v = prompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
@@ -6105,7 +6109,7 @@ function medDocRow(p, dd) {
     }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
     ['Löschen', function () { if (!confirm('Datei "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
-  ]));
+  ])));
   return r;
 }
 function renderMedien() {
