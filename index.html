@@ -81,7 +81,9 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .logo { width:36px; height:36px; background:#0f172a; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:18px; }
 .title-text h1 { font-size:17px; letter-spacing:.2px; } .title-text p { font-size:12px; color:#64748b; }
 nav { background:#fff; border-bottom:1px solid #e2e8f0; display:flex; overflow-x:auto; }
-@media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 1 0; min-width:0; padding-left:2px; padding-right:2px; text-align:center; } }
+@media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 0 auto; min-width:0; padding-left:1px; padding-right:1px; text-align:center; font-size:13px; } }
+.nav-meas .nav-btn { flex:none !important; }
+.nav-more { flex:0 0 auto !important; padding-left:12px !important; padding-right:12px !important; display:inline-flex; align-items:center; justify-content:center; } .nav-badge { margin-left:2px; padding:1px 5px; }
 nav > :first-child { margin-left:auto; } nav > :last-child { margin-right:auto; }
 .nav-btn { background:none; border:none; padding:12px 16px; font-size:14px; font-weight:500; color:#64748b; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
 .nav-btn.active { color:#0f172a; border-bottom-color:#0f172a; font-weight:600; }
@@ -119,8 +121,8 @@ textarea.form-control { font-size:15px; }
 .nav-btn { min-height:48px; }
 .nav-btn:focus-visible, .btn:focus-visible { outline-offset:-3px; }
 .modal-box { -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
-#modal-invview .modal-box { overflow-x:auto; }
-.mc { min-height:92px; }
+#modal-invview .modal-box { overflow-x:hidden; } #inv-view { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.mc { height:92px; }
 .ev { box-shadow:0 1px 2px rgba(15,23,42,.15); }
 @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; } }
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -130,6 +132,8 @@ textarea.form-control { font-size:15px; }
 /* Kalender */
 .cal-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .seg { display:inline-flex; border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; }
+.cal-plus { width:40px; height:40px; padding:0; flex:none; font-size:22px; border-radius:10px; line-height:1; } .seg-hd { flex:1; display:flex; } .seg-hd button { flex:1; }
+.wk-add { display:block; width:100%; margin:2px 0; padding:2px 0; font-size:10px; line-height:1.2; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#475569; cursor:pointer; } .dh .wk-x { margin-left:4px; color:#94a3b8; cursor:pointer; font-weight:400; }
 .seg button { background:#fff; border:none; padding:7px 14px; font-size:13px; color:#475569; cursor:pointer; }
 .seg button.on { background:#0f172a; color:#fff; }
 .cal-nav { display:flex; align-items:center; gap:6px; }
@@ -144,7 +148,7 @@ textarea.form-control { font-size:15px; }
 .now-line { position:absolute; left:0; right:0; height:0; border-top:2px solid #dc2626; z-index:4; pointer-events:none; }
 .now-line::before { content:''; position:absolute; left:-4px; top:-5px; width:8px; height:8px; border-radius:50%; background:#dc2626; }
 .tc { position:relative; }
-.now-tag { position:absolute; right:2px; transform:translateY(-50%); background:#dc2626; color:#fff; font-size:10.5px; font-weight:700; padding:1px 5px; border-radius:8px; z-index:4; pointer-events:none; }
+.now-tag { position:absolute; right:0; white-space:nowrap; transform:translateY(-50%); background:#dc2626; color:#fff; font-size:9.5px; font-weight:700; padding:1px 3px; border-radius:6px; z-index:4; pointer-events:none; }
 .dc { position:relative; border-right:1px solid #f1f5f9; background:repeating-linear-gradient(#e2e8f0 0 1px, transparent 1px 48px); }
 .ev { position:absolute; left:2px; right:2px; min-width:0; background:#fef3c7; border-left:3px solid #d97706; color:#78350f; border-radius:4px; padding:2px 5px; font-size:11px; line-height:1.3; overflow:hidden; }
 .ev.multi { border-left-width:0; padding-left:12px; }
@@ -153,9 +157,9 @@ textarea.form-control { font-size:15px; }
 .evchips { display:flex; flex-wrap:wrap; gap:3px; margin-top:3px; }
 .evchips i { font-style:normal; font-size:10px; padding:0 6px; border-radius:8px; color:#fff; line-height:15px; }
 .ev.ok { background:#d1fae5; border-left-color:#059669; color:#064e3b; }
-.mg { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0; }
-.mh { text-align:center; font-size:12px; font-weight:600; padding:6px 0; color:#475569; background:#f8fafc; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; }
-.mc { min-height:76px; padding:4px; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; cursor:pointer; font-size:11px; }
+.mg { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); grid-auto-rows:auto; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0; }
+.mh { min-width:0; text-align:center; font-size:12px; font-weight:600; padding:6px 0; color:#475569; background:#f8fafc; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; }
+.mc { height:92px; min-width:0; overflow:hidden; padding:4px; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; cursor:pointer; font-size:11px; }
 .mc:hover { background:#f8fafc; }
 .mc.out { background:#fafafa; color:#cbd5e1; }
 .mc .n { font-size:12px; font-weight:600; margin-bottom:2px; }
@@ -259,17 +263,18 @@ body.akte-open main { display:none; }
 .a-tile .tl-ln svg { width:17px; height:17px; flex:none; color:#475569; }
 .a-tile .tl-ln a { color:#5b6f95; text-decoration:none; overflow-wrap:anywhere; }
 .a-tile ul { list-style:none; }
-.a-tile ul li { display:flex; justify-content:space-between; gap:6px; padding:2px 0; }
+.a-tile ul { border:1px solid #94a3b8; border-radius:8px; overflow:hidden; background:#fff; margin-top:6px; } .a-tile ul li { display:flex; justify-content:space-between; gap:6px; padding:7px 10px; font-size:14px; line-height:1.35; } .a-tile ul li + li { border-top:1px solid #cbd5e1; } .a-tile .med-n { font-weight:600; } .a-tile .med-d { color:#64748b; }
 .a-tile ul li button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
 @media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:20px; } .a-tabs button { font-size:15px; } }
-@media (max-width:440px) { .a-tiles { grid-template-columns:1fr; } .a-tile { min-height:0; } }
+@media (max-width:440px) { .a-tile { min-height:0; } } .a-tiles { gap:8px; } @media (max-width:640px) { .a-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); } .a-tile { grid-column:1 / -1; min-height:0; padding:9px 28px 9px 10px; font-size:13.5px; } .a-tile.a-half { grid-column:auto; } .a-tile.ed, .a-tile.ed.a-half { grid-column:1 / -1; } .a-tile h4 { font-size:12px; } }
 .a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; color:#0f172a; border:1px solid #dbe2ea; border-left:6px solid #1e3a8a; border-radius:14px; padding:8px 12px; margin-bottom:12px; box-shadow:0 3px 10px rgba(15,23,42,.12); }
 .a-sex { font-size:17px; color:#64748b; margin-left:8px; font-weight:400; }
 .a-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:40; }
 body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .a-fab { left:50%; right:auto; bottom:14px; transform:translateX(-50%); width:min(880px, calc(100% - 24px)); } .a-fab .a-cats { flex:1; justify-content:space-between; gap:4px; } @media (max-width:520px) { .a-fab { right:auto; bottom:12px; } }
-.a-cats { display:flex; gap:5px; } .a-cat { width:38px; height:38px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
-.am-tile.c0 { --ac:#2563eb; --ab:#eff4ff; } .am-tile.c1 { --ac:#15803d; --ab:#effaf2; } .am-tile.c2 { --ac:#7c3aed; --ab:#f5f1ff; } .am-tile.c3 { --ac:#0f766e; --ab:#ecfaf8; }
+@media (min-width:600px) { .a-fab { left:auto; right:18px; transform:none; width:auto; } .a-fab .a-cats { flex:none; gap:6px; } }
+.a-cats { display:flex; gap:5px; } .a-cat { width:42px; height:42px; border-radius:12px; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
+.am-tile.c0 { --ac:#2563eb; --ab:#eff4ff; } .am-tile.c1 { --ac:#15803d; --ab:#effaf2; } .am-tile.c2 { --ac:#7c3aed; --ab:#f5f1ff; } .am-tile.c3 { --ac:#0f766e; --ab:#ecfaf8; } .am-tile.c4 { --ac:#b45309; --ab:#fdf5ea; }
 .a-cat.d0 { --ac:#2563eb; --ab:#eff4ff; } .a-cat.d1 { --ac:#15803d; --ab:#effaf2; } .a-cat.d2 { --ac:#1e3a8a; --ab:#eef1fa; } .a-cat.d3 { --ac:#b45309; --ab:#fdf5ea; } .a-cat.d4 { --ac:#7c3aed; --ab:#f5f1ff; } .a-cat.d5 { --ac:#0f766e; --ab:#ecfaf8; }
 .a-cat[class*=" d"] { color:var(--ac); border-color:color-mix(in srgb, var(--ac) 35%, #fff); background:var(--ab); }
 .a-menu .am-tile[class*=" c"] svg { color:var(--ac); } .a-menu .am-tile[class*=" c"] { background:var(--ab); border-color:color-mix(in srgb, var(--ac) 22%, #fff); }
@@ -278,7 +283,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .am-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
 .a-menu .am-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; width:auto; min-height:70px; padding:10px 4px 8px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:11.5px; font-weight:600; color:#334155; text-align:center; line-height:1.15; } .am-tile svg { width:22px; height:22px; } .a-menu .am-tile:hover { background:#eef2f7; }
 .akte-page { padding-bottom:90px; }
-.plus-btn.fab { width:56px; height:56px; font-size:32px; box-shadow:0 6px 18px rgba(15,23,42,.35); background:#0f172a; display:flex; align-items:center; justify-content:center; padding:0 0 3px; }
+.plus-btn.fab { width:46px; height:46px; border-radius:12px; font-size:32px; box-shadow:0 6px 18px rgba(15,23,42,.35); background:#0f172a; display:flex; align-items:center; justify-content:center; padding:0 0 3px; }
 .a-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:0; position:relative; z-index:1; }
 .a-tabs button { background:#dbe3ec; border:1px solid #b6c2d1; border-bottom:1px solid #b6c2d1; border-radius:12px 12px 0 0; padding:12px 6px; font-size:17px; font-weight:600; color:#475569; cursor:pointer; margin-bottom:-1px; }
 .a-tabs button.on { background:#fff; color:#0f172a; font-weight:800; border-bottom-color:#fff; }
@@ -355,6 +360,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-plus { width:22px; height:22px; font-size:15px; background:transparent; color:#94a3b8; padding:0 0 1px; }
 .tl-day .tl-plus:hover { background:#e2e8f0; color:#475569; }
 .tl-day .tl-plus { top:6px; right:0; }
+.tl-day .tl-item.tl-notiz .tl-plus, .tl-day .tl-item.tl-mail .tl-plus, .tl-day .tl-item.tl-med .tl-plus, .tl-day .tl-item.tl-rezept .tl-plus, .tl-day .tl-item.tl-rechnung .tl-plus, .tl-day .tl-item.tl-verbrauch .tl-plus, .tl-day .tl-item.tl-angelegt .tl-plus { top:14px; }
 .tl-plus { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:none; background:#dfe5ec; color:#475569; font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0 0 2px; }
 .tl-plus:hover { background:#cbd5e1; }
 #tl-menu { position:fixed; z-index:70; min-width:230px; top:0; left:0; }
@@ -372,7 +378,8 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .icon-btn svg { width:20px; height:20px; }
 .iv-bar { display:flex; gap:5px; align-items:flex-start; margin:-20px -20px 4px; padding:10px 14px 0; position:sticky; top:-20px; z-index:20; background:none; pointer-events:none; height:70px; } .iv-sp { flex:1; } .iv-bar > * { pointer-events:auto; }
 .iv-b { box-shadow:0 4px 12px rgba(15,23,42,.18); flex:1 1 0; min-width:0; height:50px; border:none; border-radius:10px; padding:6px 0 4px; cursor:pointer; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:10px; font-weight:600; line-height:1.1; } .iv-b svg { width:20px; height:20px; } .iv-b span { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.iv-back { background:#e8ecf1; color:#475569; } .iv-back svg { width:22px; height:22px; }
+@media (min-width:600px) { .iv-bar { justify-content:center; gap:9px; } .iv-b { flex:none; width:42px; height:42px; border-radius:12px; padding:0; } .iv-b span { display:none; } .iv-back { position:absolute; left:14px; top:10px; width:40px; height:42px; } }
+.iv-back { background:none; box-shadow:none; color:#334155; flex:0 0 40px; padding:0; } .iv-back svg { width:32px; height:32px; stroke-width:3; }
 .iv-grey { background:#eef2f7; color:#475569; } .iv-navy { background:#eef1fa; color:#1e3a8a; } .iv-orange { background:#fdf5ea; color:#b45309; } .iv-violet { background:#f5f1ff; color:#7c3aed; } .iv-green { background:#16a34a; color:#fff; } .iv-del { background:#fdecec; color:#dc2626; box-shadow:inset 0 0 0 1px #fbcaca, 0 4px 12px rgba(15,23,42,.18); }
 .inv-card { background:#f8fafc; border:1px solid #d5dde7; border-radius:12px; padding:10px; margin-bottom:10px; } .inv-card.rab { background:#fff7ed; border-color:#fed7aa; } .inv-addbar { background:#f1f5f9; border:1px dashed #94a3b8; border-radius:12px; padding:10px; margin:4px 0 10px; } .ic-btns { display:flex; gap:6px; flex-wrap:wrap; } .ic-add { border:1px dashed #94a3b8; background:#fff; color:#475569; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; cursor:pointer; } .ic-add.on { border-style:solid; border-color:#2563eb; color:#2563eb; background:#eff4ff; } .ic-fields { margin-bottom:6px; } .ic-f { margin-bottom:6px; } .ic-f.two { display:flex; gap:6px; }
 .ic-top { display:grid; grid-template-columns:minmax(0,1fr) auto 24px; gap:8px; align-items:center; margin-bottom:6px; } .inv-amt { font-size:13px; font-weight:600; white-space:nowrap; }
@@ -389,6 +396,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
   #modal-invview { position:static !important; background:#fff !important; padding:0 !important; display:block !important; }
   #modal-invview .modal-box { box-shadow:none !important; max-height:none !important; max-width:none !important; padding:0 !important; overflow:visible !important; }
   #modal-invview .no-print { display:none !important; }
+  #inv-view { overflow:visible !important; }
 }
 .inv2 { width:100%; border-collapse:collapse; border:1px solid #333; margin-top:14px; } .inv2 .c { text-align:center; }
 .inv2 th { background:#eee; text-align:left; padding:6px 8px; font-size:14px; border:1px solid #333; color:#111; }
@@ -525,6 +533,8 @@ body { overflow-x:clip; }
 .tm-title { font-size:17px; font-weight:800; color:#0f172a; line-height:1.15; } .tm-sub { font-size:12.5px; color:#64748b; margin-top:2px; min-height:16px; overflow-wrap:anywhere; }
 .tm-body { padding:10px 14px 14px; max-height:calc(90vh - 70px); overflow-y:auto; }
 .tm-tile { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:12px; padding:8px 10px 10px; margin-bottom:8px; }
+.pat-dd { position:absolute; left:10px; right:10px; top:100%; margin-top:-8px; z-index:30; background:#fff; border:1px solid #cbd5e1; border-radius:10px; box-shadow:0 8px 22px rgba(15,23,42,.22); max-height:240px; overflow-y:auto; } .pat-dd button { display:block; width:100%; text-align:left; background:none; border:none; border-bottom:1px solid #f1f5f9; padding:10px 12px; font-size:15px; color:#0f172a; cursor:pointer; } .pat-dd button:last-child { border-bottom:none; } .pat-dd button.pd-new { color:#15803d; font-weight:600; }
+#modal-patient { z-index:60; }
 .tm-tile .form-control { min-height:38px; padding:7px 10px; background:#fff; }
 .tm-lbl { display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:0 0 5px; } .tm-lbl em { font-style:normal; text-transform:none; letter-spacing:0; font-weight:600; }
 .tm-dr { display:flex; gap:8px; align-items:center; } .tm-dr .form-control { flex:1; min-width:0; }
@@ -539,11 +549,13 @@ body { overflow-x:clip; }
 .hm-s { display:none; }
 @media (max-width:520px) { #hm-fin table th, #hm-fin table td { padding:8px 6px; font-size:12.5px; } #hm-fin .hm-l { display:none; } #hm-fin .hm-s { display:inline; } }
 .pt td.pc-er { white-space:nowrap; }
-.pt-dots { position:absolute; left:-5px; top:17px; display:flex; flex-direction:column; gap:3px; }
+.pt-dots { position:absolute; left:-5px; top:16px; display:flex; flex-direction:column; gap:3px; }
 .addr-block { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; } .addr-str { grid-column:1 / 3; } .addr-nr { grid-column:3; } .addr-plz { grid-column:1; } .addr-ort { grid-column:2 / 4; }
 .pt-tit { font-size:12px; color:#64748b; margin-left:8px; white-space:nowrap; flex:none; }
 .pt-dr { display:flex; flex-direction:column; gap:1px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
-.pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:flex-start; }
+.pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:center; min-height:30px; } .pt-l .pt-dr { margin-top:-4px; } .pt .pidb { margin-top:3px; }
+.pt-info, .pt-acts .pt-wide-b { display:none; }
+@media (min-width:700px) { .pt-wrap { grid-template-columns:minmax(0,1.7fr) minmax(0,1.3fr) auto; align-items:center; } .pt-info { display:flex; flex-direction:column; gap:3px; min-width:0; font-size:12.5px; color:#64748b; } .pt-acts .pt-wide-b { display:inline-flex; } .pt-wrap .pt-acts { grid-template-columns:repeat(6,30px); } .pt-l .pn-row { min-height:0; } .pt-l .pt-dr { margin-top:0; } .pt-chip { align-self:flex-start; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#fee2e2; color:#b91c1c; border-radius:6px; padding:1px 8px; font-size:12px; } .pt-ct { display:flex; gap:12px; flex-wrap:wrap; } .pt-ct a { color:#5b6f95; text-decoration:none; } .pt-ct a:hover { text-decoration:underline; } } .pn-l { white-space:nowrap; } .pn-f { display:inline-block; } .pt-tit2 { font-size:11px; font-weight:400; color:#64748b; margin-left:5px; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
@@ -554,12 +566,12 @@ body { overflow-x:clip; }
 .inv-plus { width:36px; height:36px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
-.pt-acts { display:grid; grid-template-columns:repeat(3,32px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:32px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
-.pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; } .pt-dot.d-rem { background:#ea580c; } .pt-dot.d-next { background:#16a34a; }
+.pt-acts { display:grid; grid-template-columns:repeat(2,30px); gap:3px; margin-top:0; } .pt-acts .pt-ib { width:30px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
+.pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; } .pt-dot.d-rem { background:#ea580c; } .pt-dot.d-next { background:#16a34a; } .pt-dot.d-send { background:#eab308; }
 .pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
-#tab-patienten .pt { border-collapse:separate; border-spacing:0 8px; }
-#tab-patienten .pt tbody td { background:#f6f8fb; border-top:1px solid #dbe2ea; border-bottom:1px solid #dbe2ea; padding-top:12px; padding-bottom:12px; }
+#tab-patienten .pt { border-collapse:separate; border-spacing:0 5px; }
+#tab-patienten .pt tbody td { background:#f6f8fb; border-top:1px solid #dbe2ea; border-bottom:1px solid #dbe2ea; padding-top:5px; padding-bottom:5px; vertical-align:top; }
 #tab-patienten .pt tbody td:first-child { border-left:1px solid #dbe2ea; border-radius:10px 0 0 10px; }
 #tab-patienten .pt tbody td.pc-er { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; }
 @media (max-width:520px) { #tab-patienten .pt tbody td:nth-child(2) { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; } }
@@ -603,6 +615,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
 .al-box img { width:72px; height:72px; margin-bottom:8px; } .al-box h2 { font-size:17px; margin-bottom:14px; } .al-box input { text-align:center; }
 .al-msg { color:#b91c1c; font-size:13px; min-height:18px; margin-top:8px; }
+@media (max-width:760px) { header .nav-btn { padding-left:2px; padding-right:2px; } header .nav-btn.nav-more { padding-left:12px; padding-right:12px; } }
 </style>
 <script src="docs.js"></script>
 <script src="sync.js"></script>
@@ -814,7 +827,7 @@ function kaStart() {
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
   <button type="button" class="nav-btn" id="btn-todos" onclick="switchTab('todos')">To-Dos <span id="todo-badge" class="nav-badge" style="display:none;"></span></button>
-  <button type="button" class="nav-btn" id="btn-praxis" onclick="toggleNavMenu(event)">Praxis &#9662;</button>
+  <button type="button" class="nav-btn nav-more" id="btn-praxis" onclick="toggleNavMenu(event)" title="Praxis" aria-label="Praxis"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
 </nav>
 </header>
 <div id="nav-menu" class="nav-menu" style="display:none;"></div>
@@ -847,14 +860,14 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Kalender</span>
-        <button type="button" class="btn btn-sm" onclick="openTermin()">+ Termin</button>
-      </div>
-      <div class="cal-bar">
-        <div class="seg">
+        <div class="seg seg-hd">
           <button type="button" id="v-tag" onclick="setView('tag')">Tag</button>
           <button type="button" id="v-woche" onclick="setView('woche')">Woche</button>
           <button type="button" id="v-monat" onclick="setView('monat')">Monat</button>
         </div>
+        <button type="button" class="btn btn-sm cal-plus" onclick="openTermin()" title="Neuer Termin" aria-label="Neuer Termin">+</button>
+      </div>
+      <div class="cal-bar" style="justify-content:flex-end">
         <div class="cal-nav">
           <button type="button" class="btn btn-secondary" onclick="step(-1)">&lsaquo;</button>
           <span id="cal-title"></span>
@@ -862,8 +875,8 @@ function kaStart() {
           <button type="button" class="btn btn-secondary" onclick="goToday()">Heute</button>
         </div>
       </div>
-      <div id="cal-legend" style="margin:0 0 10px;"></div>
       <div class="scroll" id="cal-body"></div>
+      <div id="cal-legend" style="margin:12px 0 0;"></div>
     </div>
   </div>
 
@@ -872,10 +885,11 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Patienten</span>
+        <button type="button" class="btn btn-sm btn-secondary" style="margin-left:auto" onclick="var l=document.getElementById('pt-leg'); l.style.display = l.style.display === 'none' ? 'flex' : 'none';" title="Legende der Punkte" aria-label="Legende der Punkte">ⓘ</button>
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
       <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="display:none;">
-      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span><span><i style="background:#16a34a"></i>Termin gebucht</span></div>
+      <div class="pt-leg" id="pt-leg" style="display:none"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span><span><i style="background:#16a34a"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
       <div class="scroll">
         <table class="pt">
           <thead><tr>
@@ -1246,9 +1260,10 @@ function kaStart() {
           <input type="time" id="t-ende" step="900" class="form-control" onchange="updDur(); tmSub()">
         </div>
       </div>
-      <div class="tm-tile">
+      <div class="tm-tile" style="position:relative">
         <span class="tm-lbl">Patient</span>
-        <input type="text" id="t-patient" class="form-control" list="t-patient-list" placeholder="Name eingeben..." autocomplete="off">
+        <input type="text" id="t-patient" class="form-control" placeholder="Name eingeben..." autocomplete="off" oninput="tPatDD()" onfocus="tPatDD()" onblur="setTimeout(tPatDDHide,180)">
+        <div id="t-pat-dd" class="pat-dd" style="display:none"></div>
         <datalist id="t-patient-list"></datalist>
       </div>
       <div class="tm-tile">
@@ -1309,7 +1324,7 @@ function kaStart() {
   </div>
   <div id="at-anl" style="display:none;">
   <div id="a-unt-block" class="card" style="display:none;">
-    <div class="card-header" style="margin-bottom:0;"><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="document.getElementById('akt-form-file').click()" title="Ausgefülltes Formular (PDF) einlesen">Import</button><input type="file" id="akt-form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)"></div>
+    <div class="card-header" style="margin-bottom:12px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="document.getElementById('akt-form-file').click()" title="Ausgefülltes Formular (PDF) einlesen">Import</button><input type="file" id="akt-form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)"></div>
     <div id="a-unt"></div>
   </div>
 
@@ -1641,8 +1656,8 @@ function kaStart() {
     <div class="no-print iv-bar">
       <button type="button" class="iv-b iv-back" title="Zurück" aria-label="Zurück" onclick="closeModal('modal-invview')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <button type="button" class="iv-b iv-del" title="Löschen" aria-label="Löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
-      <button type="button" class="iv-b iv-navy" id="inv-pay-btn" title="Zahlung erfassen" aria-label="Zahlung erfassen" onclick="openPay()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7a6 6 0 100 10M5 10h9M5 14h9"/></svg><span>Zahlung</span></button>
-      <button type="button" class="iv-b iv-grey" title="Bearbeiten" aria-label="Bearbeiten" onclick="editInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg><span>Ändern</span></button>
+      <button type="button" class="iv-b iv-navy" id="inv-pay-btn" title="Zahlung erfassen" aria-label="Zahlung erfassen" onclick="openPay()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 6.5A7 7 0 107 17.5 7 7 0 0017.5 17.5M4 10.5h9M4 13.5h9"/></svg><span>Zahlung</span></button>
+      <button type="button" class="iv-b iv-grey" title="Bearbeiten" aria-label="Bearbeiten" onclick="editInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg><span>Bearbeiten</span></button>
       <button type="button" class="iv-b iv-violet" id="inv-kv-btn" style="display:none" title="In Rechnung umwandeln" aria-label="In Rechnung umwandeln" onclick="kvToInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 14h5M13 11l3 3-3 3"/></svg><span>Rechnung</span></button>
       <button type="button" class="iv-b iv-orange" title="Als PDF speichern" aria-label="Als PDF speichern" onclick="savePdf()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>PDF</span></button>
       <button type="button" class="iv-b iv-green" id="inv-send-btn" title="Rechnung senden" aria-label="Rechnung senden" onclick="sendInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg><span id="inv-send-cap">Senden</span></button>
@@ -1654,15 +1669,15 @@ function kaStart() {
 <!-- MODAL: ZAHLUNG -->
 <div id="modal-pay" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-header"><strong>Zahlung erfassen</strong><button type="button" class="close-btn" onclick="closeModal('modal-pay')">&times;</button></div>
+    <div class="modal-header"><strong id="pay-title">Zahlung erfassen</strong><button type="button" class="close-btn" onclick="closeModal('modal-pay')">&times;</button></div>
     <div class="form-group"><label>Zahlart</label>
-      <select id="pay-art" class="form-control"><option>Karte</option><option>Bar</option><option>Überweisung</option><option>PayPal</option></select>
+      <select id="pay-art" class="form-control"><option>Karte</option><option>Bar</option><option>Überweisung</option><option>PayPal</option><option>Gutschein</option></select>
     </div>
     <div class="grid-2">
       <div class="form-group"><label>Betrag in Euro</label><input type="text" id="pay-betrag" inputmode="decimal" class="form-control"></div>
       <div class="form-group"><label>Datum</label><input type="date" id="pay-datum" class="form-control"></div>
     </div>
-    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-pay')">Abbrechen</button><button type="button" class="btn btn-save" onclick="savePay()">Speichern</button></div>
+    <div class="foot-bar"><button type="button" id="pay-del" class="btn btn-del btn-ico" style="display:none" title="Zahlung löschen" aria-label="Zahlung löschen" onclick="deletePay()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button><button type="button" class="btn btn-cancel" onclick="closeModal('modal-pay')">Abbrechen</button><button type="button" class="btn btn-save" onclick="savePay()">Speichern</button></div>
   </div>
 </div>
 
@@ -1736,6 +1751,44 @@ function kaStart() {
   </div>
 </div>
 
+<!-- MODAL: WEBFORMULAR-TEXTE -->
+<div id="modal-ftxt" class="modal-overlay">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header"><strong id="ft-title">Texte</strong><button type="button" class="close-btn" onclick="closeModal('modal-ftxt')">&times;</button></div>
+    <div style="font-size:13px; color:#64748b; margin-bottom:8px;">Ändere die Texte so, wie sie im Formular stehen sollen. Ein Text gilt überall, wo er vorkommt. Zeilenumbrüche werden nicht übernommen.</div>
+    <input type="search" id="ft-q" class="form-control" placeholder="Suchen..." oninput="ftFilter()" style="margin-bottom:10px;">
+    <div id="ft-list" style="max-height:52vh; overflow-y:auto; padding-right:2px;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ftxt')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="ft-save" onclick="ftSave()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: WEBFORMULAR-FELDER -->
+<div id="modal-ffeld" class="modal-overlay">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header"><strong id="ff-title">Felder</strong><button type="button" class="close-btn" onclick="closeModal('modal-ffeld')">&times;</button></div>
+    <div id="ff-body" style="max-height:62vh; overflow-y:auto; padding-right:2px;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ffeld')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="ff-save" onclick="ffSave()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: WEBFORMULAR VISUELL BEARBEITEN -->
+<div id="modal-fvis" class="modal-overlay" style="padding:0; align-items:stretch;">
+  <div style="background:#fff; width:100%; max-width:640px; margin:0 auto; display:flex; flex-direction:column; height:100%;">
+    <div style="display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #e2e8f0;">
+      <strong id="fv-title" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Formular</strong>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-fvis')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="fv-save" onclick="fvSave()">Speichern</button>
+    </div>
+    <iframe id="fv-frame" title="Formular" style="flex:1; border:0; width:100%; background:#f8fafc;"></iframe>
+  </div>
+</div>
+
 <!-- MODAL: PRODUKT -->
 <div id="modal-produkt" class="modal-overlay">
   <div class="modal-box" style="max-width:600px;">
@@ -1800,7 +1853,7 @@ function kaStart() {
 <!-- MODAL: WARENEINGANG -->
 <div id="modal-ware" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-header"><strong>Wareneingang</strong><button type="button" class="close-btn" onclick="closeModal('modal-ware')">&times;</button></div>
+    <div class="modal-header"><strong id="lw-title">Wareneingang</strong><button type="button" class="close-btn" onclick="closeModal('modal-ware')">&times;</button></div>
     <div class="form-group"><label>Produkt</label><select id="lw-prod" class="form-control" onchange="wareProdChanged()"></select></div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
       <div class="form-group"><label>Chargennummer</label><input type="text" id="lw-nr" class="form-control" autocomplete="off"></div>
@@ -1810,6 +1863,7 @@ function kaStart() {
       <div class="form-group"><label>Lieferdatum</label><input type="date" id="lw-datum" class="form-control"></div>
     </div>
     <div class="foot-bar">
+      <button type="button" id="lw-del" class="btn btn-del btn-ico" style="display:none" title="Charge löschen" aria-label="Charge löschen" onclick="deleteWare()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ware')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveWare()">Speichern</button>
     </div>
@@ -1869,22 +1923,45 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-e';
+var KA_V = '2026-10-29-zd';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
   ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung']];
 var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function (x) { return x[0]; });
+/* Navigationsleiste: so viele Seiten aus dem Praxis-Menü, wie in die Breite passen; der Rest steht hinter dem Pfeil */
 (function () {
-  var box = document.getElementById('nav-menu');
+  var nav = document.querySelector('header nav'), more = document.getElementById('btn-praxis');
   PRAXIS_NAV.forEach(function (x) {
-    if (x === '-') { var sp = document.createElement('div'); sp.className = 'nav-sep'; box.appendChild(sp); return; }
+    if (x === '-' || !x[0]) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'nav-btn nav-x'; b.id = 'btn-' + x[0]; b.textContent = x[1]; b.style.display = 'none'; b.onclick = function () { switchTab(x[0]); };
+    nav.insertBefore(b, more);
+  });
+})();
+function navFit() {
+  var nav = document.querySelector('header nav'), more = document.getElementById('btn-praxis'); if (!nav || !more) return;
+  var fixed = [].filter.call(nav.querySelectorAll('.nav-btn:not(.nav-x)'), function (b) { return b !== more; }), xs = [].slice.call(nav.querySelectorAll('.nav-x'));
+  nav.classList.add('nav-meas'); xs.forEach(function (b) { b.style.display = ''; });
+  var used = more.offsetWidth + fixed.reduce(function (t, b) { return t + b.offsetWidth; }, 0), avail = nav.clientWidth, n = 0;
+  for (var i = 0; i < xs.length; i++) { var w = xs[i].offsetWidth; if (used + w > avail - 10) break; used += w; n++; }
+  xs.forEach(function (b, i) { b.style.display = i < n ? '' : 'none'; });
+  nav.classList.remove('nav-meas');
+  var cur = document.querySelector('.tab-content.active'); if (cur) { var id = cur.id.replace(/^tab-/, ''), nb = document.getElementById('btn-' + id), vis = nb && nb.style.display !== 'none'; [].forEach.call(nav.querySelectorAll('.nav-btn'), function (b) { b.classList.remove('active'); }); var t = vis ? nb : (PRAXIS_TABS.indexOf(id) >= 0 ? more : null); if (t) t.classList.add('active'); }
+}
+function fillNavMenu() {
+  var box = document.getElementById('nav-menu'); box.innerHTML = ''; var last = '';
+  PRAXIS_NAV.forEach(function (x) {
+    if (x === '-') { if (last && last !== '-') { var sp = document.createElement('div'); sp.className = 'nav-sep'; box.appendChild(sp); last = '-'; } return; }
+    var vb = x[0] && document.getElementById('btn-' + x[0]); if (vb && vb.classList.contains('nav-x') && vb.style.display !== 'none') return;
     var b = document.createElement('button'); b.type = 'button';
     if (x[0]) { b.textContent = x[1]; b.onclick = function () { navGo(x[0]); }; } else { b.disabled = true; b.innerHTML = x[1] + ' <small>geplant</small>'; }
-    box.appendChild(b);
+    box.appendChild(b); last = 'b';
   });
+  var sps = box.querySelectorAll('.nav-sep'); if (sps.length && box.lastChild === sps[sps.length - 1]) box.removeChild(sps[sps.length - 1]);
   var vf = document.createElement('div'); vf.className = 'nav-ver'; vf.textContent = kaVersion(); box.appendChild(vf);
-})();
+}
+try { document.fonts.ready.then(navFit); } catch (x) {}
+window.addEventListener('resize', navFit); window.addEventListener('orientationchange', navFit); window.addEventListener('load', navFit); setTimeout(navFit, 0);
 var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', todos: 'renderTodos' };
 PRAXIS_NAV.forEach(function (x) { if (x[0]) TAB_RENDER[x[0]] = x[2]; });
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
@@ -1893,12 +1970,31 @@ function errBanner(msg) {
   if (!b) { b = document.createElement('div'); b.id = 'err-bar'; b.style.cssText = 'position:fixed; left:8px; right:8px; bottom:8px; z-index:99; background:#7f1d1d; color:#fff; padding:10px 14px; border-radius:10px; font-size:13px; line-height:1.4;'; b.onclick = function () { b.style.display = 'none'; }; document.body.appendChild(b); }
   b.textContent = 'Fehler: ' + msg + ' (zum Schließen tippen)'; b.style.display = 'block';
 }
+/* Sofort sichtbare Hinweise (Maus und Stift, auch am Handy): zeigt den title-Text kleiner Symbol-Buttons ohne Verzögerung */
+(function () {
+  var tip = null, cur = null, tm = 0;
+  function hide() { clearTimeout(tm); if (tip) tip.style.display = 'none'; if (cur && cur._tt) { cur.setAttribute('title', cur._tt); cur._tt = null; } cur = null; }
+  document.addEventListener('pointerover', function (e) {
+    if (e.pointerType === 'touch') return;
+    var t = e.target.closest && e.target.closest('[title]'); if (!t || t === cur) return; hide();
+    var txt = t.getAttribute('title'); if (!txt) return; cur = t; t._tt = txt; t.removeAttribute('title');
+    tm = setTimeout(function () {
+      if (!tip) { tip = document.createElement('div'); tip.style.cssText = 'position:fixed; z-index:99999; background:#0f172a; color:#fff; font:12px/1.3 system-ui,sans-serif; padding:5px 9px; border-radius:7px; pointer-events:none; box-shadow:0 4px 12px rgba(15,23,42,.3); max-width:260px;'; document.body.appendChild(tip); }
+      tip.textContent = txt; tip.style.display = 'block'; var r = t.getBoundingClientRect();
+      var l = Math.max(6, Math.min(r.left + r.width / 2 - tip.offsetWidth / 2, window.innerWidth - tip.offsetWidth - 6)), tp = r.bottom + 6; if (tp + tip.offsetHeight > window.innerHeight - 6) tp = r.top - tip.offsetHeight - 6;
+      tip.style.left = l + 'px'; tip.style.top = tp + 'px';
+    }, 80);
+  });
+  document.addEventListener('pointerout', function (e) { if (cur && !cur.contains(e.relatedTarget)) hide(); });
+  document.addEventListener('click', hide, true); window.addEventListener('scroll', hide, true);
+})();
 window.addEventListener('error', function (ev) { errBanner((ev.message || 'unbekannt') + (ev.lineno ? ' [Zeile ' + ev.lineno + ']' : '')); });
 window.addEventListener('unhandledrejection', function (ev) { errBanner(ev.reason && ev.reason.message ? ev.reason.message : 'Vorgang fehlgeschlagen'); });
 function hdRun(fn, name) { try { fn(); } catch (x) { errBanner(name + ': ' + (x && x.message ? x.message : x)); } }
 function toggleNavMenu(ev) {
   ev.stopPropagation(); var m = document.getElementById('nav-menu');
   if (m.style.display !== 'none') { m.style.display = 'none'; return; }
+  fillNavMenu();
   var r = ev.currentTarget.getBoundingClientRect(); m.style.display = 'block';
   m.style.top = (r.bottom + 4) + 'px'; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
@@ -1930,7 +2026,7 @@ function switchTab(tabId) {
   var b = document.querySelectorAll('.nav-btn');
   for (var j = 0; j < b.length; j++) b[j].classList.remove('active');
   document.getElementById('tab-' + tabId).classList.add('active');
-  var nb = document.getElementById(PRAXIS_TABS.indexOf(tabId) >= 0 ? 'btn-praxis' : 'btn-' + tabId); if (nb) nb.classList.add('active');
+  var nb = document.getElementById('btn-' + tabId); if (!nb || nb.style.display === 'none') nb = PRAXIS_TABS.indexOf(tabId) >= 0 ? document.getElementById('btn-praxis') : null; if (nb) nb.classList.add('active');
   if (tabId === 'start') histClean(); else histPush();
   saveLast();
 }
@@ -2027,9 +2123,17 @@ function flagItems(p) {
   var f = flagsMap().get(p), out = [];
   if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
   if (f.rem) {
-    var re = f.rem, rtx = fillPlatzhalter('{AnredeInformell},\n\nwir erinnern Dich an Deinen Termin am ' + fmtD(re.date) + ' um ' + re.time + ' Uhr bei Kreuzberg Ästhetik.\n\nSolltest Du den Termin nicht wahrnehmen können, gib uns bitte rechtzeitig Bescheid.\n\nManuel - Kreuzberg Ästhetik', p);
+    var re = f.rem, rtx = fillPlatzhalter('{AnredeInformell},\n\nich erinnere Dich an Deinen Termin am ' + fmtD(re.date) + ' um ' + re.time + ' Uhr bei Kreuzberg Ästhetik.\n\nSolltest Du den Termin nicht wahrnehmen können, gib mir bitte rechtzeitig Bescheid.\n\nManuel - Kreuzberg Ästhetik', p);
     var rmark = function () { bestAdd(p, 'termin:' + re.id, 'sent'); p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'Terminerinnerung gesendet für ' + fmtTermin(re) }]); persist(); if (curP === p) { renderVerlauf(); renderHead(); } };
     out.push({ cls: 'fl-orange', label: 'Terminerinnerung: ' + fmtTermin(re), menu: [['Per E-Mail senden', function () { rmark(); tvMail(p, '', ['Terminerinnerung', rtx]); }], ['Per WhatsApp senden', function () { rmark(); waOpen(p, rtx); }], ['Schon erinnert (vor Ort oder telefonisch)', rmark]] });
+  }
+  else if (f.next && f.next.date <= iso(new Date(Date.now() + (settings.remDays == null ? 2 : +settings.remDays) * 86400000)) && bestLast(p, 'termin:' + f.next.id, 'sent')) {
+    var ue = f.next;
+    out.push({ cls: 'fl-grey', label: 'Terminerinnerung gesendet: ' + fmtTermin(ue), menu: [['Rückgängig (als nicht gesendet markieren)', function () {
+      p.best = (p.best || []).filter(function (b) { return !(b.k === 'termin:' + ue.id && b.art === 'sent'); });
+      var tx = 'Terminerinnerung gesendet für ' + fmtTermin(ue), ix = -1; (p.log || []).forEach(function (l, i) { if (l.text === tx) ix = i; }); if (ix >= 0) p.log.splice(ix, 1);
+      persist(); if (curP === p) { renderVerlauf(); renderHead(); } renderPatients();
+    }]] });
   }
   f.todos.slice(0, 5).forEach(function (t) { out.push({ cls: 'fl-red', label: 'To-Do: ' + (t.text.length > 60 ? t.text.slice(0, 59) + '…' : t.text) + (t.due ? ' · fällig ' + fmtD(t.due) : ''), fn: function () { openTodo(t.id); } }); });
   if (f.todos.length > 5) out.push({ cls: 'fl-red', label: '+' + (f.todos.length - 5) + ' weitere To-Dos', fn: function () { switchTab('todos'); closeModal('modal-akte'); } });
@@ -2192,7 +2296,7 @@ function renderPatients() {
     c1.style.cssText = 'max-width:0; width:100%; position:relative;';
     var nb0 = mk('button', 'pidb', '#' + patNr(p)); nb0.type = 'button'; nb0.title = 'Nummer ändern'; nb0.onclick = function () { changePatNr(p); }; c0.appendChild(nb0);
     var noT = function (t) { return String(t || '').split(/\s+/).filter(function (w) { return w && !TITEL_RE.test(w); }).join(' '); };
-    var full = noT(p.nachname).toUpperCase() + ', ' + noT(p.vorname);
+    var full = noT(p.nachname) + ', ' + noT(p.vorname);
     var nrow = mk('div', 'pn-row'), fl0 = flagsMap().get(p), dots = mk('span', 'pt-dots');
     var addDot = function (cls, t) { var d = mk('span', 'pt-dot ' + cls); d.title = t; d.setAttribute('aria-label', t); dots.appendChild(d); };
     if (fl0.todos.length) addDot('d-todo', 'Offene To-Dos: ' + fl0.todos.map(function (t) { return t.text; }).join(', '));
@@ -2200,41 +2304,44 @@ function renderPatients() {
     if (fl0.anam) addDot('d-anam', anamText(fl0.anam.info));
     if (fl0.rem) addDot('d-rem', 'Terminerinnerung fällig: ' + fmtTermin(fl0.rem));
     if (fl0.next) addDot('d-next', 'Nächster Termin gebucht: ' + fmtTermin(fl0.next));
-    if (dots.childNodes.length) c1.appendChild(dots);
-    var nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
-    if (p.titel) nrow.appendChild(mk('span', 'pt-tit', p.titel));
+    var nb = mk('button', 'pn pn-nm'); nb.type = 'button'; nb.title = full + (p.titel ? ' (' + p.titel + ')' : ''); nb.onclick = function () { viewAkte(p); };
+    var nl1 = mk('span', 'pn-l'); nl1.appendChild(document.createTextNode(noT(p.nachname) + ','));
+    nb.appendChild(nl1); nb.appendChild(document.createTextNode(' ')); var nl2 = mk('span', 'pn-f', noT(p.vorname)); if (p.titel) nl2.appendChild(mk('small', 'pt-tit2', p.titel)); nb.appendChild(nl2); nrow.appendChild(nb);
     c1.appendChild(nrow);
-    var sub = [p.dob ? 'geb. ' + p.dob + (age !== '' ? ' (' + age + ')' : '') : '', { Frau: '♀', Herr: '♂', Divers: '⚧' }[p.anrede] || ''].filter(Boolean).join(' · ');
+    var sub = p.dob || '';
     var em = evMap[nameKey(p)] || {};
     if (sub) { var dr = mk('div', 'pt-dr'); dr.appendChild(mk('span', 'pt-dob', sub)); c1.appendChild(dr); }
     var inv0 = em.last ? invoices.filter(function (i) { return i.eid === em.last.e.id || (i.pid === p.id && i.date === em.last.e.date); })[0] : null;
-    /* Zeile nur, solange die Rechnung zum letzten Termin fehlt oder noch nicht versendet ist */
-    if (em.last && !(inv0 && (invState(inv0).full || inv0.sentAt))) {
-      /* letzter Termin mit Rechnungs-Symbol: grau = keine Rechnung, gelb = offen, grün = bezahlt */
-      var le = em.last.e, lrow = mk('div', 'pt-lt'), lt = mk('span', 'pt-ev', fmtS(em.last.t)); lt.title = 'Letzter Termin: ' + (le.behandlung || 'Termin') + ' · ' + fmtDT(em.last.t); lrow.appendChild(lt);
-      var is = inv0 ? 'wait' : 'todo';
-      var rb = mk('button', 'pt-ib pt-inv st-' + is); rb.type = 'button'; rb.innerHTML = tvSvg('euro');
-      rb.title = is === 'wait' ? 'Rechnung erstellt, noch nicht versendet' : 'Rechnung erstellen';
-      rb.setAttribute('aria-label', rb.title);
-      rb.onclick = function (ev) { curP = p; if (!inv0) { ev.stopPropagation(); invFromEvent(le); return; } tlMenu(ev, [['Rechnung ansehen', function () { viewInvoice(inv0.id); }], ['Als versendet markieren', function () { inv0.sentAt = Date.now(); persist(); renderPatients(); }]]); };
-      lrow.appendChild(rb); c1.appendChild(lrow);
-    }
+    if (em.last && inv0 && !(invState(inv0).full || inv0.sentAt)) { var yd = mk('span', 'pt-dot d-send'); yd.title = 'Rechnung erstellt, noch nicht versendet'; yd.setAttribute('aria-label', yd.title); dots.appendChild(yd); }
+    if (dots.childNodes.length) c1.appendChild(dots);
     /* Schnellaktionen */
     var acts = mk('div', 'pt-acts');
     var ib = function (k, t, fn) { var b = mk('button', 'pt-ib'); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k); b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
     ib('cal', 'Termin anlegen', function () { curP = p; var n = new Date(); openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true); document.getElementById('t-patient').value = nameKey(p); });
     ib('book', 'Dokumentation hinzufügen', function () { viewAkte(p); openDkPick(null); });
-    ib('mail', 'E-Mail oder WhatsApp schreiben', function (ev) {
-      curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
-      tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]]);
-    });
-    ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); });
     var fst = formStatus(p);
-    ib('form', fst.t, function (ev) { tlMenu(ev, formMenuItems(p)); });
+    ib('mail', 'Senden: E-Mail, WhatsApp, Formulare' + (fst.t ? ' · ' + fst.t : ''), function (ev) {
+      curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
+      tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]].concat(formMenuItems(p)));
+    });
     acts.lastChild.classList.add('st-' + fst.s);
+    ib('euro', 'Rechnung', function (ev) {
+      curP = p; var it = [['Rechnung erstellen', function () { openInvoice(p); }], ['Kostenvoranschlag erstellen', function () { openInvoiceKind(p, 'kv'); }]];
+      invoices.filter(function (i) { return i.pid === p.id && !i.kind && !(invState(i).full || i.sentAt); }).slice(0, 4).forEach(function (i) { it.push(['Rechnung ' + (i.nr || '') + ' ansehen und senden', function () { curP = p; viewInvoice(i.id); }]); });
+      tlMenu(ev, it);
+    });
+    acts.lastChild.classList.add('pt-wide-b');
+    ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); });
+    acts.lastChild.classList.add('pt-wide-b');
+    ib('plus', 'Alle Aktionen', function (ev) { ptAMenu(ev, p); });
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
-    wrap.appendChild(left); wrap.appendChild(acts); c1.appendChild(wrap);
+    var info = mk('div', 'pt-info'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+    if (String(p.allergien || '').trim()) { var al = mk('span', 'pt-chip', 'Allergie: ' + cut(p.allergien, 36)); al.title = 'Allergie: ' + p.allergien; info.appendChild(al); }
+    if (em.next) info.appendChild(mk('span', 'pt-ev next', 'Nächster Termin ' + fmtS(em.next.t) + (em.next.e.behandlung ? ' · ' + cut(em.next.e.behandlung, 28) : '')));
+    else if (em.last) info.appendChild(mk('span', 'pt-ev', 'Zuletzt ' + fmtS(em.last.t)));
+    if (p.phone || p.email) { var ct = mk('span', 'pt-ct'); if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; ct.appendChild(pa); } if (p.email) { var ea = mk('a', '', p.email); ea.href = 'mailto:' + p.email; ea.onclick = function (e) { e.stopPropagation(); }; ct.appendChild(ea); } info.appendChild(ct); }
+    wrap.appendChild(left); wrap.appendChild(info); wrap.appendChild(acts); c1.appendChild(wrap);
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
   });
   if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
@@ -2267,7 +2374,27 @@ function recentAdd(id) { try { var l = JSON.parse(kaGet('ka_recent') || '[]').fi
 /* Suche: nur Patienten, die letzten fünf Treffer merkt sich die App */
 function lastSearch() { try { var l = JSON.parse(kaGet('ka_lastsearch') || '[]'); return Array.isArray(l) ? l : []; } catch (x) { return []; } }
 function lastSearchAdd(id) { try { var l = lastSearch().filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_lastsearch', JSON.stringify(l.slice(0, 5))); } catch (x) {} }
-function gsPatRow(box, p) { gsRow(box, '#' + patNr(p) + '  ' + nameKey(p), p.dob || p.phone || '', function () { lastSearchAdd(p.id); viewAkte(p); }); var r = box.lastChild; if (r) flagPills(p).forEach(function (x) { r.insertBefore(x, r.querySelector('small')); }); }
+/* Aktionsmenü wie in der Patientenakte, direkt aus der Patientenübersicht */
+function ptAMenu(ev, p) {
+  var btn = ev.currentTarget, m = document.getElementById('pt-amenu');
+  if (!m) { m = mk('div', 'a-menu'); m.id = 'pt-amenu'; document.body.appendChild(m); }
+  if (m.style.display === 'block' && m._src === btn) { m.style.display = 'none'; return; }
+  m._src = btn; m.innerHTML = '';
+  AM_GROUPS.forEach(function (g, ci) {
+    var h = mk('div', 'am-h', g.t); m.appendChild(h);
+    var gr = mk('div', 'am-grid');
+    g.items.forEach(function (it) {
+      var t = mk('button', 'am-tile c' + ci); t.type = 'button'; t.innerHTML = tvSvg(it[1]) + '<span>' + it[2] + '</span>';
+      t.onclick = function () { m.style.display = 'none'; viewAkte(p); setTimeout(function () { aAct(it[0]); }, 80); }; gr.appendChild(t);
+    });
+    m.appendChild(gr);
+  });
+  var r = btn.getBoundingClientRect(); m.style.position = 'fixed'; m.style.right = 'auto'; m.style.width = 'min(372px, calc(100vw - 16px))'; m.style.maxHeight = '70vh'; m.style.overflowY = 'auto'; m.style.display = 'block';
+  m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, window.innerWidth - m.offsetWidth - 8)) + 'px';
+  var top = r.bottom + 4; if (top + m.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - m.offsetHeight - 4);
+  m.style.top = top + 'px'; m.style.zIndex = 45;
+}
+function gsPatRow(box, p) { gsRow(box, '#' + patNr(p) + '  ' + dnP(p), p.dob || p.phone || '', function () { lastSearchAdd(p.id); viewAkte(p); }); var r = box.lastChild; if (r) flagPills(p).forEach(function (x) { r.insertBefore(x, r.querySelector('small')); }); }
 function gsRow(res, title, sub, fn) {
   var b = mk('button', 'gs-r'); b.type = 'button'; b.appendChild(document.createTextNode(title)); if (sub) b.appendChild(mk('small', '', sub));
   b.onclick = function () { document.getElementById('gs-res').style.display = 'none'; document.getElementById('gs-in').value = ''; fn(); }; res.appendChild(b);
@@ -2309,7 +2436,7 @@ function evBlock(e, lane, lanes) {
   var pos = lanes > 1 ? 'left:calc(' + (lane * 100 / lanes) + '% + 2px);right:auto;width:calc(' + (100 / lanes) + '% - 4px);' : '';
   var cats = evKats(e), seg = '', chips = '';
   if (cats.length > 1) { seg = '<span class="evseg">' + cats.map(function (c) { return '<i style="background:' + c.color + '"></i>'; }).join('') + '</span>'; if (h >= 62) chips = '<div class="evchips">' + cats.map(function (c) { return '<i style="background:' + c.color + '">' + esc(c.name) + '</i>'; }).join('') + '</div>'; }
-  return '<div class="ev' + (e.phase === 'Abgesagt' ? ' cancel' : '') + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + evFlag(e) + '<b>' + e.time + '</b> ' + esc(e.patient) + '<br>' + esc(e.behandlung) + chips + '</div>';
+  return '<div class="ev' + (e.phase === 'Abgesagt' ? ' cancel' : '') + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + evFlag(e) + '<b>' + e.time + '</b> ' + esc(dnS(e.patient)) + '<br>' + esc(e.behandlung) + chips + '</div>';
 }
 
 /* Überlappende Termine nebeneinander statt übereinander */
@@ -2335,15 +2462,18 @@ function fitHours() {
   });
 }
 function timeGrid(days) {
-  var cols = 'grid-template-columns:44px repeat(' + days.length + ',1fr);';
-  var minW = days.length > 1 ? 'min-width:720px;' : '';
+  var wk = days.length > 1, addC = wk && (!wkSa || !wkSo);
+  var cols = 'grid-template-columns:30px repeat(' + days.length + ',1fr)' + (addC ? ' 34px' : '') + ';';
+  var minW = wk ? 'min-width:' + (days.length * 100 + 60) + 'px;' : '';
   var today = iso(new Date());
   var html = '<div style="' + minW + '"><div class="tg-row" style="' + cols + '"><div class="dh" style="border-right:1px solid #e2e8f0;"></div>';
   days.forEach(function (d) {
-    html += '<div class="dh' + (iso(d) === today ? ' today' : '') + '">' + WD[(d.getDay() + 6) % 7] + ' ' + d.getDate() + '.</div>';
+    var wdi = (d.getDay() + 6) % 7;
+    html += '<div class="dh' + (iso(d) === today ? ' today' : '') + '">' + WD[wdi] + ' ' + d.getDate() + '.' + (wk && wdi >= 5 ? '<span class="wk-x" onclick="wkTog(\'' + (wdi === 5 ? 'sa' : 'so') + '\')" title="Ausblenden">×</span>' : '') + '</div>';
   });
+  if (addC) html += '<div class="dh" style="padding:2px">' + (wkSa ? '' : '<button type="button" class="wk-add" onclick="wkTog(\'sa\')" title="Samstag einblenden">+Sa</button>') + (wkSo ? '' : '<button type="button" class="wk-add" onclick="wkTog(\'so\')" title="Sonntag einblenden">+So</button>') + '</div>';
   html += '</div><div class="tg-row" style="' + cols + '"><div class="tc">';
-  for (var h = START; h < END; h++) html += '<div class="hl">' + pad(h) + ':00</div>';
+  for (var h = START; h < END; h++) html += '<div class="hl">' + h + '</div>';
   var nw = new Date(), nmin = nw.getHours() * 60 + nw.getMinutes(), nowShow = days.some(function (d) { return iso(d) === today; }) && nmin >= START * 60 && nmin < END * 60;
   if (nowShow) html += '<div class="now-tag" style="top:' + ((nmin - START * 60) * H / 60) + 'px">' + pad(nw.getHours()) + ':' + pad(nw.getMinutes()) + '</div>';
   html += '</div>';
@@ -2354,6 +2484,7 @@ function timeGrid(days) {
     if (nowShow && k === today) html += '<div class="now-line" style="top:' + ((nmin - START * 60) * H / 60) + 'px"></div>';
     html += '</div>';
   });
+  if (addC) html += '<div></div>';
   return html + '</div></div>';
 }
 
@@ -2368,7 +2499,7 @@ function monthGrid() {
     var list = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time < b.time ? -1 : 1; });
     html += '<div class="mc' + (d.getMonth() !== m ? ' out' : '') + (k === today ? ' today' : '') + '" onclick="openDay(\'' + k + '\')"><div class="n">' + d.getDate() + '</div>';
     list.slice(0, 3).forEach(function (e) {
-      html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openTerminView(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + esc(e.patient) + '</div>';
+      html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openTerminView(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + esc(dnS(e.patient)) + '</div>';
     });
     if (list.length > 3) html += '<div style="color:#64748b;margin-top:2px;">+' + (list.length - 3) + ' weitere</div>';
     html += '</div>';
@@ -2387,6 +2518,9 @@ function updNow() {
   line.style.top = y + 'px'; if (tag) { tag.style.top = y + 'px'; tag.textContent = pad(n.getHours()) + ':' + pad(n.getMinutes()); }
 }
 setInterval(updNow, 30000);
+var wkSa = false, wkSo = false;
+try { wkSa = kaGet('ka_wksa') === '1'; wkSo = kaGet('ka_wkso') === '1'; } catch (x) {}
+function wkTog(k) { if (k === 'sa') wkSa = !wkSa; else wkSo = !wkSo; try { kaSet('ka_wksa', wkSa ? '1' : '0'); kaSet('ka_wkso', wkSo ? '1' : '0'); } catch (x) {} renderCal(); }
 function renderCal() {
   fitHours();
   ['tag', 'woche', 'monat'].forEach(function (v) {
@@ -2398,8 +2532,8 @@ function renderCal() {
     body = timeGrid([cur]);
   } else if (view === 'woche') {
     var mo = monday(cur), days = [];
-    for (var i = 0; i < 7; i++) days.push(addDays(mo, i));
-    var so = days[6];
+    for (var i = 0; i < 7; i++) if (i < 5 || (i === 5 && wkSa) || (i === 6 && wkSo)) days.push(addDays(mo, i));
+    var so = days[days.length - 1];
     title = mo.getDate() + '. ' + MN[mo.getMonth()].slice(0, 3) + ' bis ' + so.getDate() + '. ' + MN[so.getMonth()].slice(0, 3) + ' ' + so.getFullYear();
     body = timeGrid(days);
   } else {
@@ -2449,6 +2583,7 @@ function toggleGanztag() {
   var g = document.getElementById('t-ganztag').checked;
   document.getElementById('t-zeit').disabled = g;
   document.getElementById('t-ende').disabled = g;
+  document.querySelector('#modal-termin .tm-times').style.display = g ? 'none' : '';
   tmSub();
 }
 var retP = null;
@@ -2613,7 +2748,7 @@ function renderHome() {
       if (miss.length) ex.appendChild(mk('span', 'badge badge-amber', 'Unterlagen offen: ' + miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' (Unterschrift)' : ''); }).join(', ')));
     }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
-    return hmRow(e.time + ' bis ' + endStr, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
+    return hmRow(e.time + ' bis ' + endStr, dnS(e.patient), e.behandlung || '', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
   }), 'Heute stehen keine Termine an.');
   /* Heute wichtig: nur, was heute erledigt werden muss */
   var imp = document.getElementById('hm-important'); imp.innerHTML = '';
@@ -2633,7 +2768,7 @@ function renderHome() {
   if (verzug.length > 3) imp.appendChild(mk('div', 'hm-empty', 'und ' + (verzug.length - 3) + ' weitere überfällige Rechnungen'));
   patients.forEach(function (p) {
     var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(p.dob || ''); if (!m || +m[1] !== now.getDate() || +m[2] !== now.getMonth() + 1) return;
-    imp.appendChild(hmRow(null, 'Geburtstag: ' + nameKey(p), 'wird heute ' + (now.getFullYear() - +m[3]), function () { viewAkte(p); }, null, 'next'));
+    imp.appendChild(hmRow(null, 'Geburtstag: ' + dnP(p), 'wird heute ' + (now.getFullYear() - +m[3]), function () { viewAkte(p); }, null, 'next'));
   });
   var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
   var days = lb ? Math.round((new Date(today) - new Date(iso(new Date(lb)))) / 86400000) : null;
@@ -2659,7 +2794,7 @@ function renderHome() {
     var dd = addDays(now, di - wd), k = iso(dd), ev = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time.localeCompare(b.time); });
     if (!ev.length) continue; any = true;
     wk.appendChild(mk('div', 'hm-sec', WDL[dd.getDay()] + ', ' + dd.getDate() + '. ' + MN[dd.getMonth()] + (k === today ? ' (heute)' : '')));
-    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); })); });
+    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, dnS(e.patient), e.behandlung || '', function () { openAkteFromTermin(e.id); })); });
   }
   if (!any) wk.appendChild(mk('div', 'hm-empty', 'Diese Woche stehen keine Termine an.'));
   /* Umsatz und Ausgaben des Jahres */
@@ -2671,7 +2806,7 @@ function renderHome() {
   fin.appendChild(tb);
   /* offene Punkte */
   var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !e.alt && !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
-  var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, e.patient, fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung'), function () { openDokuFromTermin(e.id); }); });
+  var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, dnS(e.patient), fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : ''), function () { openDokuFromTermin(e.id); }); });
   if (nd.length > 5) ndRows.push(mk('div', 'hm-empty', 'und ' + (nd.length - 5) + ' weitere'));
   hmFill('hm-nodoku', ndRows, 'Alles dokumentiert.');
   var op = invoices.filter(function (i) { return !invState(i).full; }).sort(function (a, b) { return a.date.localeCompare(b.date); }), sum = 0;
@@ -2681,13 +2816,14 @@ function renderHome() {
   if (op.length) opRows.push(mk('div', 'hm-empty', 'Offen insgesamt: ' + eur(sum)));
   hmFill('hm-open', opRows, 'Keine offenen Rechnungen.');
   var fm = flagsMap(), an = patients.filter(function (p) { return fm.get(p).anam; }).sort(function (a, b) { var x = fm.get(a).anam.e, y = fm.get(b).anam.e; return (x.date + x.time).localeCompare(y.date + y.time); });
-  var anRows = an.slice(0, 5).map(function (p) { var z = fm.get(p).anam; return hmRow(null, nameKey(p), 'Termin ' + fmtTermin(z.e) + ' · ' + anamText(z.info), function () { viewAkte(p); setAkTab('anl'); }); });
+  var anRows = an.slice(0, 5).map(function (p) { var z = fm.get(p).anam; return hmRow(null, dnP(p), 'Termin ' + fmtTermin(z.e) + ' · ' + anamText(z.info), function () { viewAkte(p); setAkTab('anl'); }); });
   if (an.length > 5) anRows.push(mk('div', 'hm-empty', 'und ' + (an.length - 5) + ' weitere'));
   hmFill('hm-anam', anRows, 'Alle Anamnesen für die nächsten Termine sind aktuell.');
 }
 /* Terminansicht (angelehnt an die Termin-Karte des Altsystems): Details, Schnellaktionen, Ablauf-Status */
 var TV_PH = [['', 'Patient noch nicht erschienen', '#d9edf7', '#31708f', 'Patient im Warteraum'], ['Warteraum', 'Patient im Warteraum', '#fef3c7', '#92400e', 'Behandlung starten'], ['Behandlung', 'Patient in Behandlung', '#d1fae5', '#065f46', 'Abschließen'], ['Fertig', 'Behandlung abgeschlossen', '#e2e8f0', '#334155', 'Wieder öffnen'], ['Abgesagt', 'Termin abgesagt', '#fee2e2', '#991b1b', 'Wieder aktivieren']];
 var TV_I = {
+  plus: '<path d="M12 5v14M5 12h14"/>', cancel: '<circle cx="12" cy="12" r="9"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/>',
   form: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>', box: '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>', rx: '<path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 12h5M10 16h5"/>', wa: '<path d="M4 20l1.3-4A8 8 0 118 18.7z"/>', link: '<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>', img: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>', auto: '<path d="M4 12a8 8 0 0114-5l2-2v6h-6l2.2-2.2A5.5 5.5 0 006.5 12M20 12a8 8 0 01-14 5l-2 2v-6h6l-2.2 2.2A5.5 5.5 0 0017.5 12"/>',
   cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
@@ -2730,20 +2866,16 @@ function openTerminView(id, keep) {
   /* Kopf: Streifen und blasse Fläche in der Kategoriefarbe, Name, Datum und Uhrzeit */
   var hd = mk('div', 'tv-hd'); hd.style.setProperty('--tvc', col);
   var hm = mk('div', 'tv-hm');
-  var wen = mk('div', 'tv-wann'); wen.innerHTML = WD[(d.getDay() + 6) % 7] + ', ' + d.getDate() + '. ' + MN[d.getMonth()].slice(0, 3) + '. · <b>' + e.time + '</b> – <b>' + fromMin(toMin(e.time) + e.dur) + '</b> Uhr <span>(' + e.dur + ' min)</span>';
+  var wen = mk('div', 'tv-wann'); var ganzT = e.time === fromMin(DSTART * 60) && e.dur === (DEND - DSTART) * 60;
+  wen.innerHTML = WD[(d.getDay() + 6) % 7] + ', ' + d.getDate() + '. ' + MN[d.getMonth()].slice(0, 3) + '. · ' + (ganzT ? '<b>ganztägig</b>' : '<b>' + e.time + '</b> – <b>' + fromMin(toMin(e.time) + e.dur) + '</b> Uhr <span>(' + e.dur + ' min)</span>');
   hm.appendChild(wen);
-  var nm = p ? ((p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + String(p.nachname).toUpperCase() + (ageOf(p.dob) !== '' ? ' (' + ageOf(p.dob) + ')' : '')) : e.patient;
+  var nm = p ? (dnP(p) + (ageOf(p.dob) !== '' ? ' (' + ageOf(p.dob) + ')' : '')) : e.patient;
   var nl = mk('a', 'tv-name', nm); nl.href = '#'; nl.title = 'Patientenakte öffnen';
   if (p) nl.onclick = function (ev) { ev.preventDefault(); closeModal('modal-tview'); viewAkte(p); }; else { nl.removeAttribute('href'); nl.style.cursor = 'default'; nl.style.textDecoration = 'none'; }
   hm.appendChild(nl);
   if (p) { var fl = flagPills(p); if (fl.length) { var fw = mk('div', 'tv-fl'); fl.forEach(function (x) { x.style.marginLeft = '0'; fw.appendChild(x); }); hm.appendChild(fw); } }
   if (!p) hm.appendChild(mk('div', 'hm-empty', 'Keine Patientenakte angelegt'));
   hd.appendChild(hm);
-  hd.appendChild(tvIcon('dots', 'Bearbeiten, kopieren, absagen', function (ev) {
-    var it = [['Bearbeiten', function () { closeModal('modal-tview'); editTermin(id); }], ['Termin kopieren', function () { dupTermin(id); }]];
-    if (e.phase !== 'Abgesagt') it.push(['Termin absagen', function () { tvCancel(e, p); }]);
-    tlMenu(ev, it);
-  }));
   hd.appendChild(tvIcon('x', 'Schließen', function () { closeModal('modal-tview'); }));
   box.appendChild(hd);
   /* Pillen: Anrufen, E-Mail */
@@ -2788,6 +2920,11 @@ function openTerminView(id, keep) {
   var ft = mk('div', 'tv-foot');
   var del = mk('button', 'tv-del'); del.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'; del.title = 'Termin löschen'; del.setAttribute('aria-label', 'Termin löschen'); del.type = 'button'; del.onclick = function () { if (!confirm('Termin wirklich löschen?')) return; events = events.filter(function (x) { return x.id !== id; }); persist(); renderCal(); closeModal('modal-tview'); }; ft.appendChild(del);
   ft.appendChild(del);
+  var fsp = mk('span'); fsp.style.flex = '1'; ft.appendChild(fsp);
+  var fb = function (k, t, fn) { var b = tvIcon(k, t, fn); b.style.cssText = 'width:42px; height:38px; border-radius:10px;'; ft.appendChild(b); };
+  fb('copy', 'Termin kopieren', function () { dupTermin(id); });
+  fb('pen', 'Bearbeiten', function () { closeModal('modal-tview'); editTermin(id); });
+  if (e.phase !== 'Abgesagt') fb('cancel', 'Termin absagen', function () { tvCancel(e, p); });
   box.appendChild(ft);
   if (!keep) openModal('modal-tview');
 }
@@ -2836,7 +2973,7 @@ function addrBlock(pre, text) {
   return box;
 }
 function addrRead(pre) { var v = function (k) { return document.getElementById(pre + k).value; }; return addrJoin({ str: v('str'), nr: v('nr'), plz: v('plz'), ort: v('ort') }); }
-var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien']];
+var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien'],['diagnosen','Erkrankungen / Diagnosen']];
 var templates = [];
 try { var stp = JSON.parse(kaGet('ka_templates')); if (Array.isArray(stp)) templates = stp; } catch (x) {}
 function maskDob(el) {
@@ -2853,6 +2990,9 @@ function validDob(v) {
 }
 var DOB_MSG = 'Bitte das Geburtsdatum im Format TT.MM.JJJJ eingeben, z.B. 23.09.1978.';
 function nameKey(p) { return p.vorname + ' ' + p.nachname; }
+/* Anzeige: Nachname, Vorname (die Zuordnung läuft weiter über nameKey) */
+function dnP(p) { return p.nachname + ', ' + p.vorname; }
+function dnS(n) { var p = patients.filter(function (x) { return nameKey(x) === n; })[0]; return p ? dnP(p) : n; }
 function newId() { return Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
 function tsOf(x) { return x.ts || parseInt(String(x.id || '0').split('-')[0], 10) || 0; }
 /* ===== Dateispeicher (IndexedDB): Fotos und Dokumente liegen nicht im kleinen localStorage ===== */
@@ -3259,7 +3399,7 @@ function fillTermine(p) {
   if (!p) return;
   events.filter(function (e) { return e.patient === nameKey(p); })
     .sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
-    .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); });
+    .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); });
 }
 var invDokEv = null;
 function invDokuEinfuegen() {
@@ -3535,7 +3675,7 @@ function invNew() { if (invTab === 'rechnung') openInvoice(null); else openInvoi
 /* Reiter Rechnungen | Kostenvoranschläge | Test-Rechnungen: Kostenvoranschläge und Test-Rechnungen haben keine Nummer und zählen nicht in Statistik und Zahlungen */
 function renderEntw() {
   var sg = document.getElementById('inv-kind'); if (!sg) return; sg.innerHTML = '';
-  [['rechnung', 'Rechnungen'], ['kv', 'Kosten\u00advor\u00adan\u00adschläge'], ['test', 'Test-Rechnungen']].forEach(function (k) {
+  [['rechnung', 'Rechnungen'], ['kv', 'Kostenvor\u00adanschläge'], ['test', 'Test-Rechnungen']].forEach(function (k) {
     var b = mk('button', invTab === k[0] ? 'on' : '', k[1]); b.type = 'button'; b.onclick = function () { invTab = k[0]; renderInvoices(); }; sg.appendChild(b);
   });
   var dr = DRAFT[invTab], main = document.getElementById('inv-main'), box = document.getElementById('entw-list'), srb = document.querySelector('#tab-rechnungen .sr-fab'), srbar = document.querySelector('#tab-rechnungen .sr-bar'); if (srb) srb.style.display = dr ? 'none' : ''; if (dr && srbar) srbar.style.display = 'none';
@@ -3732,7 +3872,7 @@ function invoiceDOM(inv) {
 }
 function viewInvoice(id) {
   viewInvId = id; var inv = invCur(); if (!inv) return;
-  var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv));
+  var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv)); if (!invIsDraft(inv)) box.appendChild(invPayBlock(inv));
   document.getElementById('inv-pay-btn').style.display = invIsDraft(inv) || invState(inv).full ? 'none' : 'inline-block';
   document.getElementById('inv-kv-btn').style.display = inv.kind === 'kv' ? '' : 'none';
   var sb = document.getElementById('inv-send-btn'), sl = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden'; sb.title = sl; sb.setAttribute('aria-label', sl);
@@ -3756,20 +3896,59 @@ function deleteInvoice() {
   if (document.getElementById('tab-start').classList.contains('active')) renderHome();
   if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
 }
-function openPay() {
-  var inv = invCur(); if (!inv) return;
-  document.getElementById('pay-art').value = 'Überweisung';
-  document.getElementById('pay-betrag').value = nf(Math.max(0, inv.total - paidSum(inv)));
-  document.getElementById('pay-datum').value = iso(new Date());
+var payCur = null;
+function payFill(art, amount, date, titel, edit) {
+  var sel = document.getElementById('pay-art'); if (![].some.call(sel.options, function (o) { return o.text === art; })) sel.appendChild(mk('option', '', art));
+  sel.value = art; document.getElementById('pay-betrag').value = nf(amount); document.getElementById('pay-datum').value = date;
+  document.getElementById('pay-title').textContent = titel; document.getElementById('pay-del').style.display = edit ? '' : 'none';
   openModal('modal-pay');
+}
+function openPay() {
+  var inv = invCur(); if (!inv) return; payCur = null;
+  payFill('Überweisung', Math.max(0, inv.total - paidSum(inv)), iso(new Date()), 'Zahlung erfassen', false);
+}
+/* Vorhandene Zahlung ändern oder löschen; ref = Eintrag in inv.payments, ohne ref = alter Vermerk "bezahlt" */
+function openPayEdit(invId, ref) {
+  viewInvId = invId; var inv = invCur(); if (!inv) return;
+  payCur = ref ? { ref: ref } : { legacy: true };
+  payFill(ref ? ref.art : 'Überweisung', ref ? ref.amount : inv.total, ref ? ref.date : inv.date, 'Zahlung bearbeiten', true);
+}
+function payRefresh(inv, openView) {
+  renderInvoices();
+  if (openView || document.getElementById('modal-invview').classList.contains('active')) viewInvoice(inv.id);
+  ['zahlungen', 'statistik'].forEach(function (t) { var el = document.getElementById('tab-' + t); if (el && el.classList.contains('active') && typeof window[TAB_RENDER[t]] === 'function') window[TAB_RENDER[t]](); });
+  if (document.getElementById('tab-start').classList.contains('active')) renderHome();
+  try { renderPatients(); } catch (x) {}
+  if (curP && document.getElementById('modal-akte').classList.contains('active')) { renderVerlauf(); }
 }
 function savePay() {
   var inv = invCur(); if (!inv) return;
-  var amount = r2(numIn(document.getElementById('pay-betrag').value)), date = document.getElementById('pay-datum').value;
+  var amount = r2(numIn(document.getElementById('pay-betrag').value)), date = document.getElementById('pay-datum').value, art = document.getElementById('pay-art').value;
   if (amount <= 0 || !date) { alert('Bitte Betrag und Datum angeben.'); return; }
-  inv.payments = (inv.payments || []).concat([{ nr: nextPayNr(date), art: document.getElementById('pay-art').value, amount: amount, date: date }]);
-  persist(); closeModal('modal-pay'); renderInvoices(); viewInvoice(inv.id);
-  if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
+  if (payCur && payCur.ref) { payCur.ref.art = art; payCur.ref.amount = amount; payCur.ref.date = date; }
+  else if (payCur && payCur.legacy) { inv.paid = false; inv.payments = (inv.payments || []).concat([{ nr: nextPayNr(date), art: art, amount: amount, date: date }]); }
+  else inv.payments = (inv.payments || []).concat([{ nr: nextPayNr(date), art: art, amount: amount, date: date }]);
+  var wasEdit = !!payCur; payCur = null;
+  persist(); closeModal('modal-pay'); payRefresh(inv, !wasEdit);
+}
+function deletePay() {
+  var inv = invCur(); if (!inv || !payCur) return;
+  if (!confirm('Diese Zahlung löschen? Die Rechnung gilt danach wieder als offen bzw. teilbezahlt.')) return;
+  if (payCur.ref) inv.payments = (inv.payments || []).filter(function (x) { return x !== payCur.ref; }); else inv.paid = false;
+  payCur = null; persist(); closeModal('modal-pay'); payRefresh(inv, false);
+}
+/* Zahlungen unter der Rechnung (nur am Bildschirm) */
+function invPayBlock(inv) {
+  var w = mk('div', 'no-print'), pays = inv.payments || []; if (!pays.length && !inv.paid) return w;
+  w.style.cssText = 'margin-top:16px; padding-top:10px; border-top:1px dashed #cbd5e1; font-size:13px; color:#334155;';
+  var h = mk('b', '', 'Zahlungen'); h.style.cssText = 'display:block; margin-bottom:4px;'; w.appendChild(h);
+  var line = function (txt, fn) {
+    var r = mk('div'); r.style.cssText = 'display:flex; align-items:center; gap:8px; padding:3px 0;'; var t = mk('span', '', txt); t.style.flex = '1'; r.appendChild(t);
+    var b = mk('button', 'x-btn'); b.type = 'button'; b.title = 'Zahlung bearbeiten'; b.setAttribute('aria-label', 'Zahlung bearbeiten'); b.innerHTML = tvSvg('pen'); b.firstChild.style.cssText = 'width:16px;height:16px;'; b.onclick = fn; r.appendChild(b); w.appendChild(r);
+  };
+  if (pays.length) pays.forEach(function (x) { line(fmtD(x.date) + ' · ' + x.art + ' · ' + eur(x.amount), function () { openPayEdit(inv.id, x); }); });
+  else line('Als bezahlt vermerkt (' + eur(inv.total) + ')', function () { openPayEdit(inv.id, null); });
+  return w;
 }
 /* ===== PDF-Erzeugung (ohne Fremdbibliothek) ===== */
 var HW = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
@@ -4191,7 +4370,7 @@ var tileEdit = '', akTab = 'akte';
 function tilePen(fn) { var b = mk('button', 'a-pen'); b.type = 'button'; b.innerHTML = ICON_PEN; b.title = 'Bearbeiten'; b.setAttribute('aria-label', 'Bearbeiten'); b.onclick = fn; return b; }
 function tileBox(key, title, cls, fill) {
   var t = mk('div', 'a-tile' + (cls ? ' ' + cls : '')); t.appendChild(mk('h4', '', title));
-  if (tileEdit === key) { t.className += ' ed'; fill(t, true); } else { t.appendChild(tilePen(function () { stammEdit = false; tileEdit = key; renderHead(); var f = document.getElementById('a-tile-in') || document.getElementById('a-med-in'); if (f) f.focus(); })); fill(t, false); }
+  if (tileEdit === key) { t.className += ' ed'; fill(t, true); } else { t.appendChild(tilePen(function () { stammEdit = false; tileEdit = key; renderHead(); var f = document.getElementById('a-tile-in') || document.getElementById('a-med-in'); if (f) f.focus(); })); fill(t, false); if (t.querySelector('.a-none') && !t.querySelector('li')) t.style.display = 'none'; }
   return t;
 }
 function txtTile(key, title, cls, ph) {
@@ -4211,7 +4390,7 @@ function tileSave(key) {
 }
 function renderHead() {
   var p = curP, box = document.getElementById('a-head'), ttl = document.getElementById('a-title'); box.innerHTML = ''; ttl.innerHTML = '';
-  var pidn = mk('span', 'a-pid', '#' + patNr(p)); pidn.title = 'Nummer ändern'; pidn.style.cursor = 'pointer'; pidn.onclick = function () { changePatNr(p); }; ttl.appendChild(pidn); var tn = splitTitel(p); ttl.appendChild(document.createTextNode(tn.name));
+  var pidn = mk('span', 'a-pid', '#' + patNr(p)); pidn.title = 'Nummer ändern'; pidn.style.cursor = 'pointer'; pidn.onclick = function () { changePatNr(p); }; ttl.appendChild(pidn); var tn = splitTitel(p); ttl.appendChild(document.createTextNode(String(tn.name).split(' ').length > 1 ? (function () { var v = splitTitel({ vorname: p.vorname, nachname: '' }).name, n = splitTitel({ vorname: '', nachname: p.nachname }).name; return (n || p.nachname) + ', ' + (v || p.vorname); })() : tn.name));
   var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (sx) { var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; ttl.appendChild(sp); }
   renderFlags();
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
@@ -4225,7 +4404,7 @@ function renderHead() {
       if (k[0] === 'anrede') {
         inp = mk('select', 'form-control');
         ['', 'Frau', 'Herr', 'Divers'].forEach(function (o) { var op = mk('option', '', o || 'Keine Angabe'); op.value = o; inp.appendChild(op); });
-      } else inp = mk('input', 'form-control');
+      } else if (k[0] === 'diagnosen') { inp = mk('textarea', 'form-control'); inp.rows = 2; g.style.gridColumn = '1 / -1'; } else inp = mk('input', 'form-control');
       inp.id = 'se-' + k[0]; inp.value = p[k[0]] || '';
       if (k[0] === 'dob') { inp.placeholder = 'TT.MM.JJJJ'; inp.inputMode = 'numeric'; inp.maxLength = 10; inp.oninput = function () { maskDob(inp); }; }
       g.appendChild(inp); grid.appendChild(g);
@@ -4239,17 +4418,20 @@ function renderHead() {
     return;
   }
   var tiles = mk('div', 'a-tiles'), age = ageOf(p.dob);
-  var kt = mk('div', 'a-tile'); kt.appendChild(mk('h4', '', 'Kontakt')); kt.appendChild(tilePen(function () { toggleStamm(); }));
+  var kt = mk('div', 'a-tile a-kt'); kt.appendChild(mk('h4', '', 'Kontakt')); kt.appendChild(tilePen(function () { toggleStamm(); }));
   kt.appendChild(mk('div', p.dob ? '' : 'a-none', p.dob ? p.dob + (age !== '' ? ' (' + age + ' Jahre)' : '') : 'Geburtsdatum fehlt'));
   if (p.phone) { var l1 = mk('div', 'tl-ln'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); kt.appendChild(l1); }
   if (p.email) { var l2 = mk('div', 'tl-ln'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); kt.appendChild(l2); }
   tiles.appendChild(kt);
   tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));
-  tiles.appendChild(tileBox('med', 'Medikation', '', function (t, ed) {
+  tiles.appendChild(tileBox('med', 'Medikation', 'a-wide', function (t, ed) {
     var list = p.medikation || [];
     if (!list.length && !ed) t.appendChild(mk('div', 'a-txt a-none', 'Keine Medikation'));
     var ul = mk('ul'); list.forEach(function (m, i) {
-      var li = mk('li'); li.appendChild(document.createTextNode(m));
+      var li = mk('li'), mm = /^(.*?)(?:\s+(?=\S*\d))([\s\S]*)$/.exec(m), tx = mk('span', 'med-t');
+      if (mm && mm[1]) { tx.appendChild(mk('b', 'med-n', mm[1])); tx.appendChild(mk('span', 'med-d', ' ' + mm[2])); } else tx.appendChild(mk('b', 'med-n', m));
+      if (ed) { tx.style.cursor = 'pointer'; tx.title = 'Tippen zum Bearbeiten'; tx.onclick = function () { var v = prompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v) { p.medikation[i] = v; persist(); renderHead(); renderVerlauf(); } }; }
+      li.appendChild(tx);
       if (ed) { var b = mk('button', '', '×'); b.type = 'button'; b.onclick = function () { p.medikation.splice(i, 1); persist(); renderHead(); }; li.appendChild(b); }
       ul.appendChild(li);
     }); t.appendChild(ul);
@@ -4261,9 +4443,10 @@ function renderHead() {
       var ok = mk('button', 'btn btn-save', 'Fertig'); ok.type = 'button'; ok.onclick = function () { tileEdit = ''; renderHead(); }; fb.appendChild(ok); t.appendChild(fb);
     }
   }));
-  tiles.appendChild(txtTile('allergien', 'Allergien', hasWarn(p) ? 'a-warn' : '', 'Keine Angabe'));
+  var tAl = txtTile('allergien', 'Allergien', (hasWarn(p) ? 'a-warn ' : '') + 'a-half', 'Keine Angabe'), tAd = txtTile('adresse', 'Anschrift', 'a-half', 'Keine Anschrift');
+  tiles.appendChild(tAl); tiles.appendChild(tAd);
+  if ([tAl, tAd].filter(function (x) { return x.style.display !== 'none'; }).length === 1) { tAl.classList.remove('a-half'); tAd.classList.remove('a-half'); }
   tiles.appendChild(txtTile('diagnosen', 'Erkrankungen / Diagnosen', '', 'Keine Angabe'));
-  tiles.appendChild(txtTile('adresse', 'Anschrift', '', 'Keine Anschrift'));
   box.appendChild(tiles);
 }
 function hdH() { var h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdh', h.offsetHeight + 'px'); }
@@ -4321,7 +4504,7 @@ var rxRows = [], rxZu = null;
 function openRx(zu) {
   rxZu = zu || null;
   rxRows = (curP.medikation || []).map(function (m) { return { on: false, text: m, neu: false }; });
-  document.getElementById('rx-title').textContent = 'Rezept · ' + nameKey(curP);
+  document.getElementById('rx-title').textContent = 'Rezept · ' + dnP(curP);
   document.getElementById('rx-datum').value = iso(new Date());
   document.getElementById('rx-new').value = '';
   var o = settings.rx || {}; document.getElementById('rx-dx').value = o.dx || 0; document.getElementById('rx-dy').value = o.dy || 0;
@@ -4480,7 +4663,7 @@ function openDkPick(doc) {
   if (!doc && !evs.length) { newFreeDoku(); return; }
   if (doc && !evs.length) { alert('Für diesen Patienten gibt es noch keinen Termin, mit dem die Dokumentation verknüpft werden kann.'); return; }
   var sel = document.getElementById('dkp-sel'); sel.innerHTML = ''; var today = iso(new Date()), pre = null;
-  evs.forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); if (!pre && e.date <= today) pre = String(e.id); });
+  evs.forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); if (!pre && e.date <= today) pre = String(e.id); });
   if (!doc) { var o2 = mk('option', '', 'Ohne Termin (freie Dokumentation)'); o2.value = ''; sel.appendChild(o2); }
   sel.value = pre || String(evs[evs.length - 1].id);
   document.getElementById('dkp-title').textContent = doc ? 'Dokumentation mit Termin verknüpfen' : 'Dokumentation zu einem Termin';
@@ -4509,9 +4692,6 @@ function tlRow(it) {
   if (it.t === 'termin') {
     var e = it.e;
     sh = tlShell(it.k, 'Termin · ' + fmtTermin(e));
-    line = mk('div', '', e.behandlung || 'Beratung'); line.style.cssText = 'font-weight:600; cursor:pointer;';
-    line.onclick = function () { editTermin(e.id, true); };
-    sh.body.appendChild(line);
     sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));
     tlPlus(sh, [['Dokumentation', function () { openDok(e.id); }], ['Termin bearbeiten', function () { editTermin(e.id, true); }], ['Im Kalender anzeigen', function () { showInCal(e); }]]
@@ -4526,6 +4706,13 @@ function tlRow(it) {
       lager.verbrauch = lager.verbrauch.filter(function (y) { return y.id !== vb.id; }); persist(); renderVerlauf(); renderLager();
     }));
     var ev0 = vb.eid ? events.filter(function (x) { return x.id === vb.eid; })[0] : null;
+    tlPlus(sh, [['Menge ändern', function () {
+      var v = prompt('Neue Menge für ' + vb.name + ' (' + (vb.einheit || 'Stk') + '):', qty(vb.menge)); if (v === null) return; var n = num(v);
+      if (n === null || n <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
+      var ch = lager.chargen.filter(function (c) { return c.id === vb.chId; })[0], d = n - vb.menge;
+      if (ch && d > (+ch.rest || 0) + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(ch.rest) + ' da.'); return; }
+      if (ch) ch.rest = Math.round(((+ch.rest || 0) - d) * 1000) / 1000; vb.menge = n; persist(); renderVerlauf(); renderLager();
+    }]]);
     sh.body.appendChild(mk('div', '', vb.name + ': ' + qty(vb.menge) + ' ' + (vb.einheit || '') + ' · Charge ' + (vb.nr || '-') + (vb.verfall ? ' · verwendbar bis ' + fmtD(vb.verfall) : '') + (ev0 ? ' · Termin ' + fmtTermin(ev0) : '')));
   } else if (it.t === 'doku') {
     var d = it.d;
@@ -4655,7 +4842,8 @@ function addDocs(inp, key) {
   });
 }
 /* ===== Dokumentation eines Termins (strukturiert) und To-Dos ===== */
-var DK_TEXT = [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung']];
+var DK_TEXT = [['befund', 'Befund'], ['behandlung', 'Behandlung']];
+var dkPend = [], dkDel = [];
 var DK_VERW = [['aufkl', 'Aufklärung'], ['dok', 'Unterlagen'], ['anam', 'Anamnesebogen'], ['honorar', 'Honorarvertrag']];
 var DK_FIELDS = ['anamnese', 'befund', 'behandlung', 'leist', 'produkte', 'ausblick', 'rechnung'];
 var dkEv = null, dkTodos = [], tdPrio = '', tdStat = 'offen', toCur = null;
@@ -4679,13 +4867,18 @@ function dokSummary(e) {
   var d = e.dok, open = todos.filter(function (t) { return t.eid === e.id && !t.done; }).length;
   if (!dokFilled(e) && !open) { box.textContent = 'Dokumentation für diesen Termin hinzufügen'; box.style.color = '#94a3b8'; }
   else {
-    var shown = false;
-    [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung'], ['leist', 'Leistungen'], ['ausblick', 'Ausblick']].forEach(function (k) {
-      var t = d ? String(d[k[0]] || '').trim() : (k[0] === 'behandlung' ? String(e.doku || '').trim() : '');
-      if (!t) return; shown = true;
-      var r = mk('div'); r.style.cssText = 'white-space:pre-wrap; margin-bottom:3px;'; r.appendChild(mk('b', '', k[1] + ': ')); r.appendChild(document.createTextNode(t)); box.appendChild(r);
+    var shown = false, secs = [], cl = function (t) { return String(t || '').trim(); };
+    var used = lager.verbrauch.filter(function (v) { return v.eid === e.id; });
+    var lt = d ? cl(d.leist).split('\n').map(cl).filter(Boolean) : []; if (!lt.length) lt = evLeistungen(e);
+    var pt = used.map(function (v) { return v.name + ' ' + qty(v.menge) + ' ' + (v.einheit || ''); }); if (d && cl(d.produkte)) pt.push(cl(d.produkte));
+    secs.push(['Anamnese', d ? cl(d.anamnese) : '']); secs.push(['Befund', d ? cl(d.befund) : '']);
+    secs.push(['Leistungen', lt.join(', ')]); secs.push(['Produkte', pt.join(', ')]);
+    secs.push(['Behandlung', d ? cl(d.behandlung) : cl(e.doku)]); secs.push(['Ausblick', d ? cl(d.ausblick) : '']);
+    secs.forEach(function (k) {
+      if (!k[1]) return; shown = true;
+      var r = mk('div'); r.style.cssText = 'white-space:pre-wrap; padding:5px 0;' + (box.children.length ? ' border-top:1px solid #dbe2ea;' : ''); r.appendChild(mk('b', '', k[0] + ': ')); r.appendChild(document.createTextNode(k[1])); box.appendChild(r);
     });
-    if (d && d.verw) { var v = DK_VERW.filter(function (x) { return d.verw[x[0]]; }).map(function (x) { return x[1]; }); if (v.length) { shown = true; var r2v = mk('div'); r2v.style.marginBottom = '3px'; r2v.appendChild(mk('b', '', 'Verwaltung: ')); r2v.appendChild(document.createTextNode(v.join(', '))); box.appendChild(r2v); } }
+    if (d && d.verw) { var v = DK_VERW.filter(function (x) { return d.verw[x[0]]; }).map(function (x) { return x[1]; }); if (v.length) { shown = true; var r2v = mk('div'); r2v.style.cssText = 'padding:5px 0;' + (box.children.length ? ' border-top:1px solid #dbe2ea;' : ''); r2v.appendChild(mk('b', '', 'Verwaltung: ')); r2v.appendChild(document.createTextNode(v.join(', '))); box.appendChild(r2v); } }
     if (open) { var tb = mk('span', 'badge badge-amber', open + ' offene(s) To-Do'); box.appendChild(tb); }
     if (!shown && !open) box.textContent = 'Dokumentation geöffnet';
   }
@@ -4722,8 +4915,32 @@ function dkFold(sec, content) {
 }
 function dkRenderProd() {
   var box = document.getElementById('dk-prod'); if (!box || !dkEv) return; box.innerHTML = '';
-  var used = lager.verbrauch.filter(function (v) { return v.eid === dkEv.id; });
-  used.forEach(function (v) { var r = mk('div', '', '• ' + v.name + ': ' + qty(v.menge) + ' ' + (v.einheit || '') + ' · Charge ' + (v.nr || '-')); r.style.cssText = 'font-size:13.5px; padding:2px 0;'; box.appendChild(r); });
+  var rows = lager.verbrauch.filter(function (v) { return v.eid === dkEv.id && dkDel.indexOf(v.id) < 0; }).map(function (v) { return [v, false]; }).concat(dkPend.map(function (v) { return [v, true]; }));
+  rows.forEach(function (r) {
+    var v = r[0], row = mk('div'); row.style.cssText = 'display:flex; gap:8px; align-items:center; font-size:13.5px; padding:2px 0;';
+    var t = mk('span', '', '• ' + v.name + ': ' + qty(v.menge) + ' ' + (v.einheit || '') + ' · Charge ' + (v.nr || '-')); t.style.flex = '1'; row.appendChild(t);
+    var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Produkt entfernen'; x.setAttribute('aria-label', v.name + ' entfernen');
+    x.onclick = function () { if (r[1]) dkPend = dkPend.filter(function (y) { return y !== v; }); else dkDel.push(v.id); dkRenderProd(); };
+    row.appendChild(x); box.appendChild(row);
+  });
+  if (dkPend.length || dkDel.length) { var h = mk('div', 'hm-empty', 'Das Lager wird erst beim Speichern angepasst.'); box.appendChild(h); }
+}
+/* Produktänderungen der Dokumentation erst beim Speichern ins Lager übernehmen */
+function dkApplyProd(e) {
+  var skipped = 0, rd = function (x) { return Math.round(x * 1000) / 1000; };
+  dkDel.forEach(function (id) {
+    var v = lager.verbrauch.filter(function (y) { return y.id === id; })[0]; if (!v) return;
+    var ch = lager.chargen.filter(function (c) { return c.id === v.chId; })[0]; if (ch) ch.rest = rd((+ch.rest || 0) + v.menge);
+    lager.verbrauch = lager.verbrauch.filter(function (y) { return y.id !== id; });
+  });
+  dkPend.forEach(function (v) {
+    var ch = lager.chargen.filter(function (c) { return c.id === v.chId; })[0];
+    if (!ch || v.menge > (+ch.rest || 0) + 1e-9) { skipped++; return; }
+    ch.rest = rd((+ch.rest || 0) - v.menge); v.ts = Date.now(); lager.verbrauch.push(v);
+  });
+  dkPend = []; dkDel = [];
+  if (skipped) alert(skipped + ' Produkt(e) konnten nicht abgebucht werden, weil der Bestand der Charge nicht mehr reicht.');
+  try { renderLager(); } catch (x) {}
 }
 function dkRenderTodos() {
   var box = document.getElementById('dk-todos'); if (!box) return; box.innerHTML = '';
@@ -4746,20 +4963,21 @@ function openDokFree(d) {
 function dkCancel() {
   var e = dkEv; closeModal('modal-dok');
   if (e && e.pseudo && curP && !String(e.pseudo.text || '').trim() && !e.pseudo.dok) { curP.doku = (curP.doku || []).filter(function (y) { return y !== e.pseudo; }); persist(); renderVerlauf(); }
-  dkEv = null;
+  dkEv = null; dkPend = []; dkDel = [];
 }
 function openDokEv(e) {
   dkEv = e; var d = dokOf(e), box = document.getElementById('dk-body'); box.innerHTML = '';
-  document.getElementById('dk-title').textContent = 'Dokumentation · ' + e.patient + ' · ' + fmtTermin(e);
+  document.getElementById('dk-title').textContent = 'Dokumentation · ' + dnS(e.patient) + ' · ' + fmtTermin(e);
   dkTodos = todos.filter(function (t) { return t.eid === e.id; }).map(function (t) { return Object.assign({}, t); });
-  DK_TEXT.forEach(function (k) { box.appendChild(dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true)); });
+  dkPend = []; dkDel = [];
+  var dkT = {}; DK_TEXT.forEach(function (k) { dkT[k[0]] = dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true); });
+  box.appendChild(dkT.befund);
   var vw = mk('div'), vs = d.verw || {}, vg = mk('div', 'dk-vgrid'); vw.appendChild(vg);
   DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vg.appendChild(l); });
   var vt = dkTa('dk-verwtext', vs.text, 1); vt.placeholder = 'Freitext zur Verwaltung'; vt.classList.add('dk-grow'); vt.addEventListener('input', function () { autoGrow(vt); }); if (!String(vs.text || '').trim()) vt.style.display = 'none'; vw.appendChild(vt);
   var vsec = dkSec('Verwaltung', vw), vh = vsec.firstChild; vh.classList.add('dk-hrow');
   var vplus = mk('button', 'dk-plus', '+ Text'); vplus.type = 'button'; vplus.onclick = function () { vt.style.display = ''; autoGrow(vt); vt.focus(); vplus.style.display = 'none'; };
   if (String(vs.text || '').trim()) vplus.style.display = 'none'; vh.appendChild(vplus);
-  box.appendChild(vsec);
   /* Leistungen und Produkte: eine Leiste zum Tippen oder Auswählen, darunter die gewählten Leistungen und die abgebuchten Produkte */
   var lw = mk('div'), lta = dkTa('dk-leist', d.leist || evLeistungen(e).join('\n'), 2); lta.style.display = 'none'; lw.appendChild(lta);
   var lrow = mk('div', 'dk-lrow'), lwrap = mk('div', 'dk-lwrap'), lin = mk('input', 'form-control'); lin.type = 'text'; lin.placeholder = 'Leistung eintippen oder wählen'; lin.autocomplete = 'off'; lin.setAttribute('aria-label', 'Leistung');
@@ -4783,11 +5001,14 @@ function openDokEv(e) {
   lin.addEventListener('input', showDd); lin.addEventListener('focus', showDd); lin.addEventListener('blur', function () { dd.style.display = 'none'; });
   lin.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); var q = lin.value.trim().toLowerCase(), hit = (settings.katalog || []).filter(function (k) { return k.name.toLowerCase().indexOf(q) >= 0; }); addL(q && hit.length === 1 ? hit[0].name : lin.value); } });
   lwrap.appendChild(lin); lwrap.appendChild(dd); lrow.appendChild(lwrap);
-  var pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); }; if (!e.pseudo) lrow.appendChild(pb);
   lw.appendChild(lrow); lw.appendChild(chips); drawChips();
-  var pl = mk('div'); pl.id = 'dk-prod'; lw.appendChild(pl);
-  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; lw.appendChild(pta);
-  box.appendChild(dkSec('Leistungen und Produkte', lw));
+  box.appendChild(dkSec('Leistung', lw));
+  var pw = mk('div'), pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); };
+  var pl = mk('div'); pl.id = 'dk-prod'; pw.appendChild(pl); if (!e.pseudo) pw.appendChild(pb);
+  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; pw.appendChild(pta);
+  if (!e.pseudo || String(d.produkte || '').trim()) box.appendChild(dkSec('Produkte', pw));
+  box.appendChild(dkT.behandlung);
+  box.appendChild(vsec);
   box.appendChild(dkFold(dkTextSec('dk-ausblick', 'Ausblick und Procedere', d.ausblick), d.ausblick));
   var rs = dkTextSec('dk-rechnung', 'Text für die Rechnung', d.rechnung, 3); rs.appendChild(mk('div', 'hm-empty', 'Wird nicht automatisch übertragen. In der Rechnung kannst Du diesen Text bei Bedarf einfügen.')); box.appendChild(dkFold(rs, d.rechnung));
   var tw = mk('div'); var tl = mk('div'); tl.id = 'dk-todos'; tw.appendChild(tl);
@@ -4799,8 +5020,9 @@ function openDokEv(e) {
 function saveDok() {
   var e = dkEv; if (!e) return;
   var g = function (id) { return (document.getElementById(id).value || '').trim(); };
+  if (!e.pseudo) dkApplyProd(e);
   var verw = { text: g('dk-verwtext') }; DK_VERW.forEach(function (v) { verw[v[0]] = document.getElementById('dk-v-' + v[0]).checked; });
-  e.dok = { anamnese: g('dk-anamnese'), befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
+  e.dok = { anamnese: (e.dok && e.dok.anamnese) || '', befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
   e.doku = dokuText(e);
   if (e.pseudo) {
     var d0 = e.pseudo; d0.dok = e.dok; d0.text = e.doku;
@@ -4831,7 +5053,7 @@ function todoRow(t) {
   cb.onchange = function () { t.done = cb.checked; t.doneTs = cb.checked ? Date.now() : 0; persist(); refreshTodoViews(); };
   var main = mk('div', 'td-main'); main.appendChild(mk('div', 'td-text', t.text));
   var sub = mk('div', 'td-sub'), p = t.pid ? patients.filter(function (x) { return x.id === t.pid; })[0] : null, ev = t.eid ? events.filter(function (x) { return x.id === t.eid; })[0] : null;
-  var parts = []; if (p) parts.push(nameKey(p)); if (ev) parts.push('Termin ' + fmtTermin(ev)); sub.textContent = parts.join(' · ');
+  var parts = []; if (p) parts.push(dnP(p)); if (ev) parts.push('Termin ' + fmtTermin(ev)); sub.textContent = parts.join(' · ');
   if (t.due) { var du = mk('span', '', (parts.length ? ' · ' : '') + 'fällig ' + fmtD(t.due)); if (!t.done && t.due < today) { du.style.color = '#b91c1c'; du.style.fontWeight = '600'; du.textContent += ' (überfällig)'; } sub.appendChild(du); }
   if (parts.length || t.due) main.appendChild(sub);
   main.onclick = function () { openTodo(t.id); };
@@ -4958,8 +5180,8 @@ var zMonth = iso(new Date()).slice(0, 7), zArt = '', agCur = null;
 function allPayments() {
   var out = [];
   invoices.forEach(function (i) {
-    if ((i.payments || []).length) i.payments.forEach(function (p) { out.push({ date: p.date, amount: p.amount, art: p.art, inv: i }); });
-    else if (i.paid) out.push({ date: i.date, amount: i.total, art: '-', inv: i });
+    if ((i.payments || []).length) i.payments.forEach(function (p) { out.push({ date: p.date, amount: p.amount, art: p.art, inv: i, ref: p }); });
+    else if (i.paid) out.push({ date: i.date, amount: i.total, art: '-', inv: i, ref: null });
   });
   return out;
 }
@@ -5003,6 +5225,8 @@ function renderZahlungen() {
     var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 5) + '</span>'; c0.className = 'nw'; c1.textContent = p.inv.name; c4.className = 'nw';
     var b = mk('button', 'pn', p.inv.nr); b.type = 'button'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar); c4.textContent = eur(p.amount);
+    var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Zahlung bearbeiten'; pe.setAttribute('aria-label', 'Zahlung bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:15px;height:15px;vertical-align:middle;'; pe.style.marginLeft = '6px'; c4.appendChild(pe);
+    row.style.cursor = 'pointer'; row.onclick = function (ev) { if (ev.target.closest('.pn')) return; openPayEdit(p.inv.id, p.ref); };
   });
   if (!pays.length) { var er = tin.insertRow(), ec = er.insertCell(); ec.colSpan = 5; ec.textContent = 'Keine Zahlungen im Zeitraum'; ec.style.color = '#94a3b8'; }
   var op = document.getElementById('zl-open'); op.innerHTML = '';
@@ -5320,7 +5544,9 @@ function formMenuItems(p) {
 }
 function fmSend(ev, p, k) {
   var f = pkForm(k);
-  sendMenu(ev, p, [k], f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p));
+  var st = formSt(p, k), ex = [];
+  if (st.sent && !st.got) ex.push(['Als nicht gesendet zurücksetzen', function () { p.best = (p.best || []).filter(function (b) { return !(b.k === k && b.art === 'sent'); }); persist(); if (curP === p) { renderVerlauf(); renderHead(); } renderPatients(); }]);
+  sendMenu(ev, p, [k], f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p), ex);
 }
 /* Hinweisblatt oder Aufklärung als Link: Hinweisblätter enthalten keine Daten (ohne Code), Aufklärungen laufen über den Patientencode */
 function docLink(p, d) { var u = webfUrl(d.typ === 'info' ? 'info.html' : 'aufklaerung.html') + '?d=' + d.id; return d.typ === 'info' ? u : u + '&c=' + pCode(p); }
@@ -5330,6 +5556,7 @@ function docSend(ev, p, d) {
   sendMenu(ev, p, ['doc:' + d.id], d.titel, txt);
 }
 function renderUnterlagen() {
+  fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
   var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = 'block'; box.innerHTML = '';
   var row = function (cls, ic, t, sub, btn) {
@@ -5337,6 +5564,12 @@ function renderUnterlagen() {
   };
   var bt = function (txt, dark, fn) { var b = mk('button', 'btn un-btn' + (dark ? '' : ' btn-secondary'), txt); b.type = 'button'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
+  var unReset = function (keys) {
+    var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg>';
+    b.onclick = function () { p.best = (p.best || []).filter(function (x) { return !(keys.indexOf(x.k) >= 0 && x.art === 'sent'); }); persist(); renderUnterlagen(); renderPatients(); };
+    return b;
+  };
   /* Pakete */
   pakete().forEach(function (pk) {
     var c = mk('div', 'un-pk'); c.appendChild(mk('b', '', pk.name));
@@ -5345,7 +5578,7 @@ function renderUnterlagen() {
     var ts = (pk.forms || []).map(function (k) { return formSt(p, k).sent || 0; }), last = Math.max.apply(null, ts.concat([0]));
     var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;';
     rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); })); rr.appendChild(bt('Per WhatsApp', false, function () { pkSend(p, pk, 'wa'); }));
-    rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); c.appendChild(rr); box.appendChild(c);
+    rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); if (last) rr.appendChild(unReset(pk.forms || [])); c.appendChild(rr); box.appendChild(c);
   });
   /* Online-Formulare */
   box.appendChild(mk('div', 'un-grp', 'Online vor dem Termin'));
@@ -5363,7 +5596,8 @@ function renderUnterlagen() {
       }
     }
     var sub = got ? 'eingegangen ' + dm(got) : sent ? 'gesendet ' + dm(sent) + ' · wartet' : f[0] === 'anamnese' && !anm.got ? 'erst nach der Anmeldung' : 'noch nicht gesendet';
-    var btn = got ? null : bt(sent ? 'Erneut senden' : 'Senden', f[0] === 'anamnese' && anm.got && !sent, function (ev) { fmSend(ev, p, f[0]); });
+    var btn = got ? null : bt('Senden', f[0] === 'anamnese' && anm.got && !sent, function (ev) { fmSend(ev, p, f[0]); });
+    if (btn && sent) { var bw = mk('span'); bw.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; bw.appendChild(unReset([f[0]])); bw.appendChild(btn); btn = bw; }
     row(got ? 'ok' : sent ? 'wait' : '', got ? '✓' : sent ? '…' : '–', f[1], sub, btn);
   });
   /* Vorlagen zum Unterschreiben */
@@ -5628,7 +5862,7 @@ function validZu(p) {
   return v;
 }
 function zuLabel(p, key) {
-  if (key.charAt(0) === 'e') { var e = events.filter(function (x) { return 'e' + x.id === key; })[0]; return e ? 'Termin ' + fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') : ''; }
+  if (key.charAt(0) === 'e') { var e = events.filter(function (x) { return 'e' + x.id === key; })[0]; return e ? 'Termin ' + fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '') : ''; }
   var d = (p.doku || []).filter(function (x) { return 'd' + x.ts === key; })[0];
   return d ? 'Dokumentation ' + fmtDT(d.ts) : '';
 }
@@ -5720,7 +5954,7 @@ function openZu(p, list) {
   var o0 = mk('option', '', 'Keine Zuordnung (frei in der Zeitleiste)'); o0.value = ''; sel.appendChild(o0);
   var n = nameKey(p), day = iso(new Date(tsOf(list[0])));
   events.filter(function (e) { return e.patient === n; }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
-    .forEach(function (e) { var o = mk('option', '', 'Termin ' + fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung')); o.value = 'e' + e.id; sel.appendChild(o); });
+    .forEach(function (e) { var o = mk('option', '', 'Termin ' + fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = 'e' + e.id; sel.appendChild(o); });
   (p.doku || []).slice().sort(function (a, b) { return b.ts - a.ts; }).forEach(function (d) {
     var o = mk('option', '', 'Dokumentation ' + fmtDT(d.ts) + ' · ' + String(d.text || '').split('\n')[0].slice(0, 40)); o.value = 'd' + d.ts; sel.appendChild(o);
   });
@@ -5784,6 +6018,11 @@ function medDocRow(p, dd) {
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
   l2.appendChild(medDots([
     ['Zuordnen', function () { openZu(p, [dd]); }],
+    ['Umbenennen', function () {
+      var v = prompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
+      var ex = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[0] || ''; if (ex && !/\.[A-Za-z0-9]{1,6}$/.test(v)) v += ex;
+      dd.name = v; persist(); refreshFiles(); renderMedien();
+    }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
     ['Löschen', function () { if (!confirm('Datei "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
   ]));
@@ -5878,13 +6117,14 @@ function renderPick() {
 /* Plus-Menü der Patientenakte */
 /* Aktionsmenü der Akte: vier Kategorien mit eigenem Symbol, das + öffnet alle */
 var AM_GROUPS = [
-  { t: 'Dokumentieren', ic: 'book', items: [['doku', 'book', 'Dokumentation'], ['notiz', 'pen', 'Notiz'], ['med', 'pill', 'Medikament'], ['produkt', 'box', 'Produkt']] },
-  { t: 'Termin und Abrechnung', ic: 'cal', items: [['termin', 'cal', 'Termin'], ['rechnung', 'euro', 'Rechnung'], ['rezept', 'rx', 'Rezept']] },
+  { t: 'Dokumentieren', ic: 'book', items: [['doku', 'book', 'Dokumentation'], ['notiz', 'pen', 'Notiz'], ['produkt', 'box', 'Produkt']] },
+  { t: 'Termin und Abrechnung', ic: 'cal', items: [['termin', 'cal', 'Termin'], ['rechnung', 'euro', 'Rechnung']] },
   { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamwa', 'wa', 'Anamnese WhatsApp'], ['anamlink', 'link', 'Anamnese-Link']] },
-  { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] }
+  { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] },
+  { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
 /* Symbolleiste: Termin, Rechnung und Rezept (häufigste Aktionen) starten direkt, die anderen öffnen ihre Kategorie */
-var AM_DOCK = [{ t: 'Dokumentieren', ic: 'book', g: 0, c: 'd0' }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Rezept', ic: 'rx', act: 'rezept', c: 'd3' }, { t: 'Nachrichten', ic: 'mail', g: 2, c: 'd4' }, { t: 'Dateien', ic: 'img', g: 3, c: 'd5' }];
+var AM_DOCK = [{ t: 'Dokumentieren', ic: 'book', g: 0, c: 'd0' }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Medikamente', ic: 'pill', g: 4, c: 'd3' }, { t: 'Nachrichten', ic: 'mail', g: 2, c: 'd4' }, { t: 'Dateien', ic: 'img', g: 3, c: 'd5' }];
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
   AM_DOCK.forEach(function (d) {
@@ -5913,6 +6153,7 @@ document.addEventListener('click', function (ev) {
   var m = document.getElementById('a-menu'); if (m) m.style.display = 'none';
   var tm = document.getElementById('tl-menu'); if (tm) tm.style.display = 'none';
   var n = document.getElementById('nav-menu'); if (n) n.style.display = 'none';
+  var pm = document.getElementById('pt-amenu'); if (pm) pm.style.display = 'none';
   var g = document.getElementById('gs-res'); if (g && !ev.target.closest('.hd-top')) g.style.display = 'none';
 });
 /* Tippen neben ein Pop-up schließt es. Bei ungespeicherten Eingaben fragt die App vorher. */
@@ -5960,19 +6201,195 @@ function aAct(x) {
 }
 
 /* ===== Webformulare ===== */
+/* Eigene Namen der drei Formulare (settings.formFelder[Formular].name) in WEBF und PK_FORMS übernehmen */
+var FNAME_DEF = { anmeldung: 'Patientenanmeldung', anamnese: 'Anamnesebogen', erinnerung: 'Terminerinnerung' };
+function fNamen() {
+  var fe = settings.formFelder || {};
+  PK_FORMS.forEach(function (f) { if (FNAME_DEF[f[0]]) f[1] = (fe[f[0]] && fe[f[0]].name) || FNAME_DEF[f[0]]; });
+  WEBF.forEach(function (w) { var id = String(w[1]).replace(/\.html.*/, ''); if (FNAME_DEF[id]) w[0] = (fe[id] && fe[id].name) || FNAME_DEF[id]; });
+}
+function fRename(w) {
+  var id = String(w[1]).replace(/\.html.*/, ''); if (!FNAME_DEF[id]) return;
+  var v = prompt('Neuer Name für dieses Formular (leer = ' + FNAME_DEF[id] + '):', w[0]); if (v === null) return;
+  v = v.trim(); if (v === FNAME_DEF[id]) v = '';
+  settings.formFelder = settings.formFelder || {}; var c = settings.formFelder[id] = settings.formFelder[id] || {}; if (v) c.name = v; else delete c.name;
+  persist(); fNamen(); renderWebf();
+  if (typeof KS !== 'undefined') KS.txtset(settings.formTexte || {}, settings.formFelder).catch(function () { alert('Der Name ist gespeichert, aber noch nicht auf dem Server veröffentlicht. Er gilt dort nach dem nächsten Speichern im Editor.'); });
+}
 var WEBF = [['Patientenanmeldung', 'anmeldung.html'], ['Anamnesebogen', 'anamnese.html'], ['Terminerinnerung', 'erinnerung.html']].concat(KA_DOCS.filter(function (d) { return d.typ === 'info'; }).map(function (d) { return [d.name, 'info.html?d=' + d.id]; }));
 function webfUrl(f) { try { return new URL(f, location.href).href; } catch (x) { return f; } }
 function renderWebf() {
   var box = document.getElementById('wf-list'); if (!box) return; box.innerHTML = '';
   var ic = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>';
+  fNamen();
   WEBF.forEach(function (w) {
     var url = webfUrl(w[1]), r = mk('div', 'wf-row');
     r.appendChild(mk('b', 'wf-t', w[0]));
     var ln = mk('div', 'wf-ln'), a = mk('a', 'wf-a', url); a.href = url; a.target = '_blank'; a.rel = 'noopener'; ln.appendChild(a);
-    var cp = mk('button', 'wf-cp'); cp.type = 'button'; cp.innerHTML = ic; cp.title = 'Link kopieren'; cp.setAttribute('aria-label', 'Link kopieren');
-    cp.onclick = function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, function () { prompt('Link zum Kopieren:', url); }); };
-    ln.appendChild(cp); r.appendChild(ln); box.appendChild(r);
+    var ib = function (svg, ttl, fn) { var b = mk('button', 'wf-cp'); b.type = 'button'; b.innerHTML = svg; b.title = ttl; b.setAttribute('aria-label', ttl); b.onclick = fn; ln.appendChild(b); return b; };
+    var cp = ib(ic, 'Link kopieren', function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, function () { prompt('Link zum Kopieren:', url); }); });
+    ib('<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>', 'Formular bearbeiten', function () { fvOpen(w); });
+    ib('<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>', 'Weitere Aktionen', function (ev) {
+      var it = []; if (FNAME_DEF[String(w[1]).replace(/\.html.*/, '')]) it.push(['Umbenennen', function () { fRename(w); }]);
+      it.push(['Texte als Liste', function () { ftOpen(w); }]);
+      if (/^(anmeldung|anamnese|erinnerung)\.html/.test(w[1])) it.push(['Felder als Liste', function () { ffOpen(w); }]);
+      tlMenu(ev, it);
+    });
+    r.appendChild(ln);
+    box.appendChild(r);
   });
+}
+/* Felder der Webformulare: ausblenden, Pflicht, eigene Zusatzfragen. settings.formFelder[Formular] = { hide, req, extra } */
+var ffCur = '', ffDesc = null, ffExtra = [];
+var FF_TYPEN = [['text', 'Kurzer Text'], ['lang', 'Langer Text'], ['jn', 'Ja / Nein'], ['wahl', 'Auswahl'], ['datum', 'Datum'], ['haken', 'Haken (Bestätigung)']];
+function ffOpen(w) {
+  ffCur = w[1].replace(/\.html.*/, ''); ffDesc = null;
+  document.getElementById('ff-title').textContent = 'Felder: ' + w[0];
+  var body = document.getElementById('ff-body'); body.innerHTML = ''; body.appendChild(mk('div', 'hm-empty', 'Felder werden gelesen ...')); document.getElementById('ff-save').disabled = true; openModal('modal-ffeld');
+  var fr = document.createElement('iframe'), url = webfUrl(w[1]); url += (url.indexOf('?') >= 0 ? '&' : '?') + 'ed=1';
+  fr.style.cssText = 'position:fixed; left:-9999px; top:0; width:480px; height:800px; border:0; visibility:hidden;';
+  var done = false, fin = function (msg) { if (done) return; done = true; try { fr.remove(); } catch (x) {} if (msg) { body.innerHTML = ''; body.appendChild(mk('div', 'hm-empty', msg)); } };
+  fr.onload = function () {
+    setTimeout(function () {
+      if (done) return;
+      try {
+        var K = fr.contentWindow.KF; if (!K || !K.describe) { fin('Die Seite ist noch nicht auf dem neuesten Stand. Bitte in ein bis zwei Minuten noch einmal versuchen.'); return; }
+        ffDesc = K.describe(fr.contentWindow); fin();
+        var cur = (settings.formFelder || {})[ffCur] || {}; ffExtra = JSON.parse(JSON.stringify(cur.extra || [])); ffRender();
+      } catch (x) { fin('Die Felder konnten nicht gelesen werden.'); }
+    }, 500);
+  };
+  fr.onerror = function () { fin('Die Seite konnte nicht geladen werden.'); };
+  document.body.appendChild(fr); fr.src = url;
+}
+function ffRender() {
+  var body = document.getElementById('ff-body'); body.innerHTML = ''; var cur = (settings.formFelder || {})[ffCur] || {}, hide = cur.hide || [], req = cur.req || {};
+  var rows = ffDesc.units.map(function (u) { return { k: u.k, t: u.t, lock: u.lock, pf: true, req: u.req }; }).concat(ffDesc.groups.map(function (g) { return { k: g.k, t: g.t, lock: g.lock, pf: false }; }));
+  if (rows.length) {
+    body.appendChild(mk('div', 'ak-h', ffDesc.groups.length ? 'Fragengruppen' : 'Vorhandene Felder'));
+    var tb = mk('div'); tb.id = 'ff-rows';
+    rows.forEach(function (r) {
+      var row = mk('div', 'ff-row'); row.dataset.k = r.k; row.dataset.dreq = r.req ? '1' : ''; row.style.cssText = 'display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid #eef2f6;';
+      var nm = mk('span', '', r.t); nm.style.cssText = 'flex:1; min-width:0;'; row.appendChild(nm);
+      var cb = function (cls, txt, on, dis) { var l = mk('label'); l.style.cssText = 'display:flex; align-items:center; gap:4px; font-size:12.5px; font-weight:400; color:#475569; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.className = cls; c.checked = on; c.disabled = !!dis; l.appendChild(c); l.appendChild(document.createTextNode(txt)); return l; };
+      row.appendChild(cb('ff-show', 'Anzeigen', hide.indexOf(r.k) < 0, r.lock));
+      if (r.pf) row.appendChild(cb('ff-req', 'Pflicht', req[r.k] != null ? !!req[r.k] : r.req, r.lock));
+      if (r.lock) { var lk = mk('small', '', 'nötig'); lk.style.color = '#94a3b8'; row.appendChild(lk); }
+      tb.appendChild(row);
+    });
+    body.appendChild(tb);
+  }
+  body.appendChild(mk('div', 'ak-h', 'Eigene Zusatzfragen')); body.lastChild.style.marginTop = '16px';
+  var hint = mk('div', '', 'Erscheinen am Ende des Formulars. Die Antworten stehen im PDF und als Notiz in der Akte.'); hint.style.cssText = 'font-size:12.5px; color:#64748b; margin-bottom:8px;'; body.appendChild(hint);
+  var xl = mk('div'); xl.id = 'ff-extra'; body.appendChild(xl); ffRenderExtra();
+  var add = mk('div', 'add-row', '+ Frage hinzufügen'); add.onclick = function () { ffExtraSync(); ffExtra.push({ id: 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), label: '', typ: 'text', req: false, opts: [] }); ffRenderExtra(); var ins = document.querySelectorAll('#ff-extra .ffx-l'); if (ins.length) ins[ins.length - 1].focus(); }; body.appendChild(add);
+  document.getElementById('ff-save').disabled = false;
+}
+function ffExtraSync() {
+  [].forEach.call(document.querySelectorAll('#ff-extra .ffx'), function (r, i) {
+    var f = ffExtra[i]; if (!f) return;
+    f.label = r.querySelector('.ffx-l').value.trim(); f.typ = r.querySelector('.ffx-t').value; f.req = r.querySelector('.ffx-r').checked;
+    f.opts = r.querySelector('.ffx-o').value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+  });
+}
+function ffRenderExtra() {
+  var xl = document.getElementById('ff-extra'); xl.innerHTML = '';
+  ffExtra.forEach(function (f, i) {
+    var r = mk('div', 'ffx'); r.style.cssText = 'border:1px solid #dbe2ea; border-radius:10px; padding:8px 10px; margin-bottom:8px; background:#f8fafc;';
+    var l = mk('input', 'form-control ffx-l'); l.type = 'text'; l.placeholder = 'Frage oder Beschriftung'; l.value = f.label; r.appendChild(l);
+    var row = mk('div'); row.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap;';
+    var t = mk('select', 'form-control ffx-t'); t.style.cssText = 'width:auto; flex:1 1 140px;'; FF_TYPEN.forEach(function (o) { var op = mk('option', '', o[1]); op.value = o[0]; t.appendChild(op); }); t.value = f.typ;
+    var o = mk('textarea', 'form-control ffx-o'); o.rows = 3; o.placeholder = 'Eine Antwort pro Zeile'; o.value = (f.opts || []).join('\n'); o.style.cssText = 'margin-top:6px;' + (f.typ === 'wahl' ? '' : 'display:none;');
+    t.onchange = function () { o.style.display = t.value === 'wahl' ? '' : 'none'; };
+    var rl = mk('label'); rl.style.cssText = 'display:flex; align-items:center; gap:4px; font-size:12.5px; font-weight:400; margin:0;'; var rc = mk('input', 'ffx-r'); rc.type = 'checkbox'; rc.checked = !!f.req; rl.appendChild(rc); rl.appendChild(document.createTextNode('Pflicht'));
+    var mkb = function (txt, ttl, fn) { var b = mk('button', 'x-btn', txt); b.type = 'button'; b.title = ttl; b.setAttribute('aria-label', ttl); b.onclick = fn; return b; };
+    row.appendChild(t); row.appendChild(rl);
+    row.appendChild(mkb('↑', 'Nach oben', function () { ffExtraSync(); if (i > 0) { var x = ffExtra.splice(i, 1)[0]; ffExtra.splice(i - 1, 0, x); ffRenderExtra(); } }));
+    row.appendChild(mkb('↓', 'Nach unten', function () { ffExtraSync(); if (i < ffExtra.length - 1) { var x = ffExtra.splice(i, 1)[0]; ffExtra.splice(i + 1, 0, x); ffRenderExtra(); } }));
+    row.appendChild(mkb('×', 'Entfernen', function () { ffExtraSync(); ffExtra.splice(i, 1); ffRenderExtra(); }));
+    r.appendChild(row); r.appendChild(o); xl.appendChild(r);
+  });
+}
+async function ffSave() {
+  ffExtraSync();
+  var extra = ffExtra.filter(function (f) { return f.label; });
+  if (extra.some(function (f) { return f.typ === 'wahl' && !(f.opts || []).length; })) { alert('Bei einer Auswahl brauchst Du mindestens eine Antwort (eine pro Zeile).'); return; }
+  var hide = [], req = {};
+  [].forEach.call(document.querySelectorAll('#ff-rows .ff-row'), function (r) {
+    var k = r.dataset.k, sh = r.querySelector('.ff-show'), rq = r.querySelector('.ff-req');
+    if (!sh.checked && !sh.disabled) hide.push(k);
+    if (rq && !rq.disabled && sh.checked && rq.checked !== (r.dataset.dreq === '1')) req[k] = rq.checked;
+  });
+  var nm0 = ((settings.formFelder || {})[ffCur] || {}).name; settings.formFelder = settings.formFelder || {}; settings.formFelder[ffCur] = { hide: hide, req: req, extra: extra }; if (nm0) settings.formFelder[ffCur].name = nm0;
+  persist(); closeModal('modal-ffeld');
+  try { await KS.txtset(settings.formTexte || {}, settings.formFelder); alert('Gespeichert und veröffentlicht. Das Formular zeigt die neuen Felder beim nächsten Öffnen.'); }
+  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
+}
+/* Eigene Texte der Webformulare: Originaltext -> eigener Text, gespeichert in settings.formTexte und auf dem Server veröffentlicht */
+/* Visueller Editor: das echte Formular im Rahmen, Änderungen per Antippen */
+var FV = { form: '' };
+function ffvInit() { var fe = (settings.formFelder || {})[FV.form] || {}; return { texte: JSON.parse(JSON.stringify(settings.formTexte || {})), felder: JSON.parse(JSON.stringify(fe)) }; }
+function fvOpen(w) {
+  FV.form = /^(anmeldung|anamnese|erinnerung)\.html/.test(w[1]) ? w[1].replace(/\.html.*/, '') : '';
+  document.getElementById('fv-title').textContent = w[0]; var url = webfUrl(w[1]); url += (url.indexOf('?') >= 0 ? '&' : '?') + 'ed=1&vis=1';
+  var fr = document.getElementById('fv-frame'); fr.removeAttribute('src'); openModal('modal-fvis'); fr.src = url;
+}
+async function fvSave() {
+  var fr = document.getElementById('fv-frame'), K = null; try { K = fr.contentWindow.KE; } catch (x) {}
+  if (!K) { alert('Der Editor ist noch nicht geladen, oder die Seite ist noch nicht auf dem neuesten Stand. Bitte kurz warten und noch einmal versuchen.'); return; }
+  var res = K.result(); if (res.error) { alert(res.error); return; }
+  settings.formTexte = res.texte;
+  if (FV.form) { settings.formFelder = settings.formFelder || {}; var nm1 = (settings.formFelder[FV.form] || {}).name; settings.formFelder[FV.form] = res.felder; if (nm1) res.felder.name = nm1; else delete res.felder.name; }
+  persist(); closeModal('modal-fvis');
+  try { await KS.txtset(settings.formTexte || {}, settings.formFelder || {}); alert('Gespeichert und veröffentlicht. Das Formular zeigt die Änderungen beim nächsten Öffnen.'); }
+  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
+}
+var ftCur = null, ftKeys = [];
+function ftNorm(t) { return String(t == null ? '' : t).replace(/\s+/g, ' ').trim(); }
+function ftOpen(w) {
+  ftCur = w; document.getElementById('ft-title').textContent = 'Texte: ' + w[0];
+  var lst = document.getElementById('ft-list'); lst.innerHTML = ''; document.getElementById('ft-q').value = '';
+  lst.appendChild(mk('div', 'hm-empty', 'Texte werden gelesen ...')); document.getElementById('ft-save').disabled = true; openModal('modal-ftxt');
+  var fr = document.createElement('iframe'), url = webfUrl(w[1]); url += (url.indexOf('?') >= 0 ? '&' : '?') + 'ed=1';
+  fr.style.cssText = 'position:fixed; left:-9999px; top:0; width:480px; height:800px; border:0; visibility:hidden;';
+  var done = false, fin = function (msg) { if (done) return; done = true; try { fr.remove(); } catch (x) {} if (msg) { lst.innerHTML = ''; lst.appendChild(mk('div', 'hm-empty', msg)); } };
+  fr.onload = function () {
+    setTimeout(function () {
+      if (done) return;
+      try {
+        var KTw = fr.contentWindow.KT; if (!KTw) { fin('Die Seite ist noch nicht auf dem neuesten Stand. Bitte in ein bis zwei Minuten noch einmal versuchen.'); return; }
+        ftKeys = KTw.collect(fr.contentDocument.body); fin(); ftRender();
+      } catch (x) { fin('Die Texte konnten nicht gelesen werden.'); }
+    }, 1200);
+  };
+  fr.onerror = function () { fin('Die Seite konnte nicht geladen werden.'); };
+  document.body.appendChild(fr); fr.src = url;
+}
+function ftRender() {
+  var lst = document.getElementById('ft-list'); lst.innerHTML = ''; var map = settings.formTexte || {};
+  ftKeys.forEach(function (k) {
+    var row = mk('div', 'ft-row'); row.dataset.k = k; row.style.cssText = 'margin-bottom:10px;';
+    var ta = mk('textarea', 'form-control'); ta.rows = k.length > 90 ? Math.min(8, Math.ceil(k.length / 55)) : 1; ta.value = map[k] != null ? map[k] : k; ta.style.cssText = 'resize:vertical; min-height:38px;';
+    var top = mk('div'); top.style.cssText = 'display:flex; gap:6px; align-items:center; font-size:11.5px; color:#94a3b8; margin-bottom:2px;';
+    var lb = mk('span', '', 'Original: ' + (k.length > 70 ? k.slice(0, 69) + '…' : k)); lb.style.cssText = 'flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'; top.appendChild(lb);
+    var rs = mk('button', 'x-btn', '↺'); rs.type = 'button'; rs.title = 'Original wiederherstellen'; rs.setAttribute('aria-label', 'Original wiederherstellen'); rs.onclick = function () { ta.value = k; mark(); };
+    top.appendChild(rs);
+    var mark = function () { var ch = ftNorm(ta.value) !== k && ftNorm(ta.value) !== ''; ta.style.borderColor = ch ? '#16a34a' : ''; rs.style.visibility = ch ? 'visible' : 'hidden'; };
+    ta.oninput = mark; mark(); row.appendChild(top); row.appendChild(ta); lst.appendChild(row);
+  });
+  if (!ftKeys.length) lst.appendChild(mk('div', 'hm-empty', 'Keine Texte gefunden.'));
+  document.getElementById('ft-save').disabled = false;
+}
+function ftFilter() {
+  var q = ftNorm(document.getElementById('ft-q').value).toLowerCase();
+  [].forEach.call(document.querySelectorAll('#ft-list .ft-row'), function (r) { var ta = r.querySelector('textarea'); r.style.display = !q || (r.dataset.k + ' ' + ta.value).toLowerCase().indexOf(q) >= 0 ? '' : 'none'; });
+}
+async function ftSave() {
+  var map = settings.formTexte = settings.formTexte || {};
+  [].forEach.call(document.querySelectorAll('#ft-list .ft-row'), function (r) { var k = r.dataset.k, v = ftNorm(r.querySelector('textarea').value); if (!v || v === k) delete map[k]; else map[k] = v; });
+  persist(); closeModal('modal-ftxt');
+  try { await KS.txtset(map, settings.formFelder || {}); alert('Gespeichert und veröffentlicht. Die Formulare zeigen die neuen Texte beim nächsten Öffnen.'); }
+  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere die Texte noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
 }
 /* Ausgefüllte Formulare (.json und .pdf) in die Akten übernehmen */
 function fIsDob(a, b) { return String(a || '').trim() === String(b || '').trim(); }
@@ -6034,6 +6451,7 @@ async function formularImport(entries) {
       var hw = (z.hinweise || []); if (hw.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese, Hinweise:\n' + hw.join('\n') });
       p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnesebogen übernommen (Unterschrift vor Ort noch nötig)' + (created ? ' (Patient angelegt)' : '') });
     }
+    if (Array.isArray(d.extra) && d.extra.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Zusatzangaben (' + ({ anmeldung: 'Anmeldung', anamnese: 'Anamnese', erinnerung: 'Terminerinnerung' }[d.typ] || d.typ) + '):\n' + d.extra.map(function (x) { return x.label + ': ' + (x.wert || '-'); }).join('\n') });
     formMark(p, d.typ, 'got');
     if (pdf) {
       var id = newId(); await fPut(id, pdf.name, pdf);
@@ -6395,7 +6813,9 @@ function openProdukt(id) {
       var r = mk('div', ''); r.style.cssText = 'display:flex; gap:8px; align-items:center; justify-content:space-between; padding:6px 0; border-top:1px solid #e2e8f0; font-size:13px;';
       r.appendChild(mk('span', '', 'Charge ' + (c.nr || '-') + (c.verfall ? ' · bis ' + fmtD(c.verfall) : '')));
       var inp = mk('input', 'form-control'); inp.type = 'text'; inp.setAttribute('inputmode', 'decimal'); inp.style.cssText = 'width:90px;'; inp.value = qty(c.rest); inp.setAttribute('data-cid', c.id); inp.title = 'Restmenge korrigieren';
-      r.appendChild(inp); list.appendChild(r);
+      var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Charge bearbeiten'; pe.setAttribute('aria-label', 'Charge bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:16px;height:16px;'; pe.onclick = function () { openWare(c.id); };
+      var rr = mk('span'); rr.style.cssText = 'display:inline-flex; gap:6px; align-items:center;'; rr.appendChild(inp); rr.appendChild(pe);
+      r.appendChild(rr); list.appendChild(r);
     });
     lpHistN = 10; lpHistory();
   } else box.style.display = 'none';
@@ -6456,13 +6876,22 @@ function deleteProdukt() {
   lager.chargen = lager.chargen.filter(function (c) { return c.pid !== id; });
   persist(); renderLager(); closeModal('modal-produkt');
 }
-function openWare() {
+var wareCur = null;
+function openWare(cid) {
+  wareCur = null;
   if (!lager.produkte.length) { alert('Bitte zuerst ein Produkt anlegen.'); openProdukt(null); return; }
   var sel = document.getElementById('lw-prod'); sel.innerHTML = '';
   lager.produkte.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); }).forEach(function (p) { var o = mk('option', '', p.name); o.value = p.id; sel.appendChild(o); });
   ['lw-nr', 'lw-verfall', 'lw-menge'].forEach(function (i) { document.getElementById(i).value = ''; });
   document.getElementById('lw-datum').value = iso(new Date());
-  wareProdChanged(); openModal('modal-ware');
+  document.getElementById('lw-title').textContent = 'Wareneingang'; document.getElementById('lw-del').style.display = 'none'; document.getElementById('lw-prod').disabled = false;
+  wareProdChanged();
+  var c0 = cid ? lager.chargen.filter(function (x) { return x.id === cid; })[0] : null;
+  if (c0) {
+    wareCur = c0; document.getElementById('lw-prod').value = c0.pid; document.getElementById('lw-prod').disabled = true; document.getElementById('lw-title').textContent = 'Charge bearbeiten'; document.getElementById('lw-del').style.display = '';
+    document.getElementById('lw-nr').value = c0.nr || ''; document.getElementById('lw-verfall').value = c0.verfall || ''; document.getElementById('lw-menge').value = qty(c0.menge); document.getElementById('lw-ek').value = c0.ek === null || c0.ek === undefined || c0.ek === '' ? '' : qty(c0.ek); document.getElementById('lw-datum').value = c0.datum || '';
+  }
+  openModal('modal-ware');
 }
 function wareProdChanged() {
   var p = prodOf(document.getElementById('lw-prod').value), ek = p ? lastEk(p) : null;
@@ -6474,19 +6903,32 @@ function saveWare() {
   if (!nr) { alert('Bitte die Chargennummer eingeben. Sie wird für die Dokumentation beim Patienten gebraucht.'); return; }
   if (m === null || m <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
   if (ekv !== '' && (ek === null || ek < 0)) { alert('Bitte den Einkaufspreis prüfen.'); return; }
-  lager.chargen.push({ id: lid(), pid: p.id, nr: nr, verfall: document.getElementById('lw-verfall').value || '', menge: m, rest: m, ek: ek, datum: document.getElementById('lw-datum').value || iso(new Date()) });
-  persist(); renderLager(); closeModal('modal-ware');
+  if (wareCur) {
+    var c1 = wareCur, d = m - (+c1.menge || 0);
+    c1.nr = nr; c1.verfall = document.getElementById('lw-verfall').value || ''; c1.ek = ek; c1.datum = document.getElementById('lw-datum').value || c1.datum;
+    c1.menge = m; c1.rest = Math.max(0, Math.round(((+c1.rest || 0) + d) * 1000) / 1000);
+    lager.verbrauch.forEach(function (v) { if (v.chId === c1.id) { v.nr = nr; v.verfall = c1.verfall; } });
+    wareCur = null;
+  } else lager.chargen.push({ id: lid(), pid: p.id, nr: nr, verfall: document.getElementById('lw-verfall').value || '', menge: m, rest: m, ek: ek, datum: document.getElementById('lw-datum').value || iso(new Date()) });
+  persist(); renderLager(); closeModal('modal-ware'); if (curProd && document.getElementById('modal-produkt').classList.contains('active')) openProdukt(curProd.id);
+}
+function deleteWare() {
+  var c = wareCur; if (!c) return;
+  if (lager.verbrauch.some(function (v) { return v.chId === c.id; })) { alert('Von dieser Charge wurde schon etwas verwendet. Sie kann deshalb nicht gelöscht werden. Setze stattdessen die Restmenge auf 0.'); return; }
+  if (!confirm('Charge ' + (c.nr || '-') + ' löschen? Der Bestand sinkt um ' + qty(c.rest) + '.')) return;
+  lager.chargen = lager.chargen.filter(function (x) { return x !== c; }); wareCur = null;
+  persist(); renderLager(); closeModal('modal-ware'); if (curProd && document.getElementById('modal-produkt').classList.contains('active')) openProdukt(curProd.id);
 }
 function openVb(eid) {
   if (!curP) return;
   var prods = lager.produkte.filter(function (p) { return chargenOf(p.id).length; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); });
   if (!prods.length) { alert('Im Lager ist kein Bestand vorhanden. Bitte zuerst im Reiter Lager einen Wareneingang erfassen.'); return; }
-  document.getElementById('vb-pat').textContent = 'Patient: ' + nameKey(curP);
+  document.getElementById('vb-pat').textContent = 'Patient: ' + dnP(curP);
   var sel = document.getElementById('vb-prod'); sel.innerHTML = '';
   prods.forEach(function (p) { var o = mk('option', '', p.name + ' (' + qty(bestand(p.id)) + ' ' + (p.einheit || '') + ')'); o.value = p.id; sel.appendChild(o); });
   var ts = document.getElementById('vb-termin'); ts.innerHTML = '';
   var o0 = mk('option', '', 'Kein Termin'); o0.value = ''; ts.appendChild(o0);
-  events.filter(function (e) { return e.patient === nameKey(curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung')); o.value = e.id; ts.appendChild(o); });
+  events.filter(function (e) { return e.patient === nameKey(curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = e.id; ts.appendChild(o); });
   ts.value = eid ? String(eid) : '';
   document.getElementById('vb-menge').value = '';
   vbProdChanged(); openModal('modal-vb');
@@ -6508,13 +6950,17 @@ function vbChChanged() {
 }
 function saveVb() {
   var p = prodOf(document.getElementById('vb-prod').value), c = lager.chargen.filter(function (x) { return x.id === document.getElementById('vb-ch').value; })[0], m = num(document.getElementById('vb-menge').value);
+  var eidv = document.getElementById('vb-termin').value;
+  var stage = !!(dkEv && !dkEv.pseudo && document.getElementById('modal-dok').classList.contains('active') && eidv === String(dkEv.id));
   if (!p || !c) { alert('Bitte Produkt und Charge wählen. Abgelaufene Chargen können nicht verwendet werden.'); return; }
   if (c.verfall && daysTo(c.verfall) < 0) { alert('Diese Charge ist abgelaufen.'); return; }
   if (m === null || m <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
-  if (m > (+c.rest || 0) + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(c.rest) + ' ' + (p.einheit || '') + ' da.'); return; }
+  var frei = (+c.rest || 0) - (stage ? dkPend.filter(function (x) { return x.chId === c.id; }).reduce(function (t, x) { return t + x.menge; }, 0) : 0);
+  if (m > frei + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(frei) + ' ' + (p.einheit || '') + ' da.'); return; }
+  var vb = { id: lid(), ts: Date.now(), pid: curP.id, prodId: p.id, chId: c.id, name: p.name, einheit: p.einheit || '', nr: c.nr || '', verfall: c.verfall || '', menge: m, ek: c.ek, eid: eidv ? +eidv : null };
+  if (stage) { dkPend.push(vb); closeModal('modal-vb'); dkRenderProd(); return; }
   c.rest = Math.round(((+c.rest || 0) - m) * 1000) / 1000;
-  var eidv = document.getElementById('vb-termin').value;
-  lager.verbrauch.push({ id: lid(), ts: Date.now(), pid: curP.id, prodId: p.id, chId: c.id, name: p.name, einheit: p.einheit || '', nr: c.nr || '', verfall: c.verfall || '', menge: m, ek: c.ek, eid: eidv ? +eidv : null });
+  lager.verbrauch.push(vb);
   persist(); renderVerlauf(); renderLager(); closeModal('modal-vb'); if (dkEv) dkRenderProd();
 }
 
@@ -6913,11 +7359,33 @@ function savePatient() {
   patients.push({ anrede: g('p-anrede'), vorname: g('p-vorname'), nachname: g('p-nachname'), dob: g('p-dob'), phone: g('p-phone'), email: g('p-email'), adresse: addrRead('p-adr-'), allergien: g('p-allergien'), notizen: g('p-notizen') });
   ensurePatients(); persist(); renderPatients();
   var newP = patients[patients.length - 1];
+  if (patFromTermin) { patFromTermin = false; document.getElementById('t-patient').value = nameKey(newP); }
   ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen', 'p-adr-str', 'p-adr-nr', 'p-adr-plz', 'p-adr-ort'].forEach(function (id) { document.getElementById(id).value = ''; });
   closeModal('modal-patient');
   offerNeu(newP);
 }
 
+function tPatDDHide() { var d = document.getElementById('t-pat-dd'); if (d) d.style.display = 'none'; }
+function tPatDD() {
+  var inp = document.getElementById('t-patient'), d = document.getElementById('t-pat-dd'), q = inp.value.trim().toLowerCase().replace(/\s+/g, ' ');
+  d.innerHTML = '';
+  if (!q) { d.style.display = 'none'; return; }
+  var hit = patients.filter(function (p) { var n = nameKey(p).toLowerCase(); return n.indexOf(q) === 0 || (' ' + n).indexOf(' ' + q) >= 0 || (p.nachname + ' ' + p.vorname).toLowerCase().indexOf(q) === 0; }).sort(function (a, b) { return nameKey(a).localeCompare(nameKey(b), 'de'); }).slice(0, 8);
+  hit.forEach(function (p) { var b = mk('button', '', nameKey(p) + (p.dob ? ' · ' + p.dob : '')); b.type = 'button'; b.onmousedown = function (ev) { ev.preventDefault(); }; b.onclick = function () { inp.value = nameKey(p); d.style.display = 'none'; }; d.appendChild(b); });
+  var exact = patients.some(function (p) { return nameKey(p).toLowerCase() === q; });
+  if (!exact) {
+    var nb = mk('button', 'pd-new', '+ Neuen Patienten anlegen: ' + inp.value.trim()); nb.type = 'button'; nb.onmousedown = function (ev) { ev.preventDefault(); };
+    nb.onclick = function () {
+      d.style.display = 'none';
+      ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen', 'p-adr-str', 'p-adr-nr', 'p-adr-plz', 'p-adr-ort'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; });
+      var w = inp.value.trim().split(/\s+/), n = w.length > 1 ? w.pop() : ''; document.getElementById('p-vorname').value = w.join(' '); document.getElementById('p-nachname').value = n;
+      patFromTermin = true; openModal('modal-patient');
+    };
+    d.appendChild(nb);
+  }
+  d.style.display = 'block';
+}
+var patFromTermin = false;
 function saveTermin() {
   var datum = document.getElementById('t-datum').value;
   var ganz = document.getElementById('t-ganztag').checked;
@@ -6936,7 +7404,7 @@ function saveTermin() {
   var ev = {
     date: datum, time: zeit, dur: dur,
     patient: pname,
-    behandlung: tLeist.join(', ') || 'Beratung',
+    behandlung: tLeist.join(', '),
     notiz: document.getElementById('t-notiz').value,
     color: document.getElementById('t-farbe').value,
     leistung: tLeist[0] || '',
