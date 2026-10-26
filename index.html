@@ -557,6 +557,7 @@ body { overflow-x:clip; }
 .pt-dr { display:flex; flex-direction:column; gap:1px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
 .pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:center; min-height:30px; } .pt-l .pt-dr { margin-top:-4px; } .pt .pidb { margin-top:3px; }
 .pn-l { white-space:nowrap; } .pn-f { display:inline-block; }
+.pt td.pc-er { line-height:30px; padding-top:5px; vertical-align:top; }
 .pt-tit2 { font-size:11px; font-weight:400; color:#64748b; margin-left:5px; }
 .pt-info, .pt-acts .pt-wide-b, .pt-hi, .pt-ha { display:none; }
 @media (min-width:700px) { .pt-hg { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 96px; gap:14px; } .pt-hi, .pt-ha { display:block; cursor:default; } .pt-wrap { grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 96px; align-items:start; gap:14px; } .pt-info { display:grid; grid-template-rows:30px 30px; gap:3px; min-width:0; font-size:12.5px; color:#64748b; } .pt-i1, .pt-i2 { display:flex; align-items:center; gap:12px; min-width:0; white-space:nowrap; overflow:hidden; } .pt-acts .pt-wide-b { display:inline-flex; } .pt-wrap .pt-acts { grid-template-columns:repeat(3,30px); } .pt-chip { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#fee2e2; color:#b91c1c; border-radius:6px; padding:1px 8px; font-size:12px; flex:none; } .pt-ct a { color:#5b6f95; text-decoration:none; } .pt-ct a:hover { text-decoration:underline; } .pt-ct { display:contents; } }
@@ -1984,7 +1985,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zm';
+var KA_V = '2026-10-29-zn';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2399,8 +2400,6 @@ function renderPatients() {
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
     var info = mk('div', 'pt-info'), i1 = mk('div', 'pt-i1'), i2 = mk('div', 'pt-i2'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
     if (String(p.allergien || '').trim()) { var al = mk('span', 'pt-chip', 'Allergie: ' + cut(p.allergien, 30)); al.title = 'Allergie: ' + p.allergien; i1.appendChild(al); }
-    if (em.next) i1.appendChild(mk('span', 'pt-ev next', 'Nächster Termin ' + fmtS(em.next.t) + (em.next.e.behandlung ? ' · ' + cut(em.next.e.behandlung, 24) : '')));
-    else if (em.last) i1.appendChild(mk('span', 'pt-ev', 'Zuletzt ' + fmtS(em.last.t)));
     if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; pa.style.cssText = 'color:#5b6f95; text-decoration:none;'; i2.appendChild(pa); }
     if (p.email) { var ea = mk('a', '', p.email); ea.href = 'mailto:' + p.email; ea.onclick = function (e) { e.stopPropagation(); }; ea.style.cssText = 'color:#5b6f95; text-decoration:none; overflow:hidden; text-overflow:ellipsis;'; i2.appendChild(ea); }
     info.appendChild(i1); info.appendChild(i2);
@@ -5342,7 +5341,7 @@ function renderZahlungen() {
   tin.innerHTML = '';
   pays.forEach(function (p) {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
-    var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 5) + '</span>'; c0.className = 'nw'; c1.textContent = p.inv.name; c4.className = 'nw';
+    var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 6) + zd.slice(8) + '</span>'; c0.className = 'nw'; c1.textContent = String(p.inv.name || '').replace(/^(Frau|Herr|Divers)\s+/, ''); c4.className = 'nw';
     var b = mk('button', 'pn'); b.type = 'button'; var nrm = /^(.*?-)(\d+)$/.exec(String(p.inv.nr || '')); if (nrm) { b.appendChild(document.createTextNode(nrm[1])); b.appendChild(document.createElement('br')); b.appendChild(document.createTextNode(nrm[2])); } else b.textContent = p.inv.nr; b.style.lineHeight = '1.25'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar);
     var cw = mk('span'); cw.style.cssText = 'display:flex; align-items:flex-start; justify-content:space-between; gap:8px;'; cw.appendChild(mk('span', '', eur(p.amount)));
@@ -5357,7 +5356,7 @@ function renderZahlungen() {
     var b0 = mk('button', 'btn btn-secondary btn-sm', 'Zahlung'); b0.type = 'button'; b0.onclick = function (ev) { ev.stopPropagation(); viewInvId = i.id; openPay(); };
     var b = mk('span'); b.style.cssText = 'display:inline-flex; flex-direction:column; align-items:flex-end; gap:5px; flex:none;'; var am = mk('b', '', eur(i.total - paidSum(i))); am.style.cssText = 'white-space:nowrap; color:#b45309;'; b.appendChild(am); b.appendChild(b0);
     var late = invLate(i), d = invDaysOld(i), row = hmRow(fmtD(i.date), i.name, i.nr + ' · offen' + (late ? ' · seit ' + d + ' Tagen überfällig' : ''), function () { viewInvoice(i.id); }, b);
-    var tm0 = row.querySelector('.hm-time'); if (tm0) { var zd0 = fmtD(i.date); tm0.innerHTML = '<span class="hm-l">' + zd0 + '</span><span class="hm-s">' + zd0.slice(0, 5) + '</span>'; }
+    var tm0 = row.querySelector('.hm-time'); if (tm0) { var zd0 = fmtD(i.date); tm0.innerHTML = '<span class="hm-l">' + zd0 + '</span><span class="hm-s">' + zd0.slice(0, 6) + zd0.slice(8) + '</span>'; }
     row.classList.add(late ? 'hm-late' : 'hm-openp'); op.appendChild(row);
   });
   if (!open.length) op.appendChild(mk('div', 'hm-empty', 'Keine offenen Rechnungen. Alles bezahlt.'));
