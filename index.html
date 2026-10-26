@@ -553,7 +553,9 @@ body { overflow-x:clip; }
 .addr-block { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; } .addr-str { grid-column:1 / 3; } .addr-nr { grid-column:3; } .addr-plz { grid-column:1; } .addr-ort { grid-column:2 / 4; }
 .pt-tit { font-size:12px; color:#64748b; margin-left:8px; white-space:nowrap; flex:none; }
 .pt-dr { display:flex; flex-direction:column; gap:1px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
-.pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:center; min-height:30px; margin-bottom:3px; } .pt-l .pt-dr { min-height:30px; justify-content:center; } .pt-l .pt-dr:only-child { margin-top:-3px; } .pt .pidb { margin-top:3px; } .pn-l { white-space:nowrap; } .pn-f { display:inline-block; } .pt-tit2 { font-size:11px; font-weight:400; color:#64748b; margin-left:5px; }
+.pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:center; min-height:30px; } .pt-l .pt-dr { margin-top:-4px; } .pt .pidb { margin-top:3px; }
+.pt-info, .pt-acts .pt-wide-b { display:none; }
+@media (min-width:700px) { .pt-wrap { grid-template-columns:minmax(0,1.7fr) minmax(0,1.3fr) auto; align-items:center; } .pt-info { display:flex; flex-direction:column; gap:3px; min-width:0; font-size:12.5px; color:#64748b; } .pt-acts .pt-wide-b { display:inline-flex; } .pt-wrap .pt-acts { grid-template-columns:repeat(6,30px); } .pt-l .pn-row { min-height:0; } .pt-l .pt-dr { margin-top:0; } .pt-chip { align-self:flex-start; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#fee2e2; color:#b91c1c; border-radius:6px; padding:1px 8px; font-size:12px; } .pt-ct { display:flex; gap:12px; flex-wrap:wrap; } .pt-ct a { color:#5b6f95; text-decoration:none; } .pt-ct a:hover { text-decoration:underline; } } .pn-l { white-space:nowrap; } .pn-f { display:inline-block; } .pt-tit2 { font-size:11px; font-weight:400; color:#64748b; margin-left:5px; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
@@ -883,10 +885,11 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Patienten</span>
+        <button type="button" class="btn btn-sm btn-secondary" style="margin-left:auto" onclick="var l=document.getElementById('pt-leg'); l.style.display = l.style.display === 'none' ? 'flex' : 'none';" title="Legende der Punkte" aria-label="Legende der Punkte">ⓘ</button>
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
       <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="display:none;">
-      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span><span><i style="background:#16a34a"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
+      <div class="pt-leg" id="pt-leg" style="display:none"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span><span><i style="background:#16a34a"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
       <div class="scroll">
         <table class="pt">
           <thead><tr>
@@ -1906,7 +1909,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-za';
+var KA_V = '2026-10-29-zb';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2291,7 +2294,7 @@ function renderPatients() {
     var nl1 = mk('span', 'pn-l'); nl1.appendChild(document.createTextNode(noT(p.nachname) + ','));
     nb.appendChild(nl1); nb.appendChild(document.createTextNode(' ')); var nl2 = mk('span', 'pn-f', noT(p.vorname)); if (p.titel) nl2.appendChild(mk('small', 'pt-tit2', p.titel)); nb.appendChild(nl2); nrow.appendChild(nb);
     c1.appendChild(nrow);
-    var sub = p.dob ? 'geb. ' + p.dob : '';
+    var sub = p.dob || '';
     var em = evMap[nameKey(p)] || {};
     if (sub) { var dr = mk('div', 'pt-dr'); dr.appendChild(mk('span', 'pt-dob', sub)); c1.appendChild(dr); }
     var inv0 = em.last ? invoices.filter(function (i) { return i.eid === em.last.e.id || (i.pid === p.id && i.date === em.last.e.date); })[0] : null;
@@ -2308,10 +2311,23 @@ function renderPatients() {
       tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]].concat(formMenuItems(p)));
     });
     acts.lastChild.classList.add('st-' + fst.s);
+    ib('euro', 'Rechnung', function (ev) {
+      curP = p; var it = [['Rechnung erstellen', function () { openInvoice(p); }], ['Kostenvoranschlag erstellen', function () { openInvoiceKind(p, 'kv'); }]];
+      invoices.filter(function (i) { return i.pid === p.id && !i.kind && !(invState(i).full || i.sentAt); }).slice(0, 4).forEach(function (i) { it.push(['Rechnung ' + (i.nr || '') + ' ansehen und senden', function () { curP = p; viewInvoice(i.id); }]); });
+      tlMenu(ev, it);
+    });
+    acts.lastChild.classList.add('pt-wide-b');
+    ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); });
+    acts.lastChild.classList.add('pt-wide-b');
     ib('plus', 'Alle Aktionen', function (ev) { ptAMenu(ev, p); });
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
-    wrap.appendChild(left); wrap.appendChild(acts); c1.appendChild(wrap);
+    var info = mk('div', 'pt-info'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+    if (String(p.allergien || '').trim()) { var al = mk('span', 'pt-chip', 'Allergie: ' + cut(p.allergien, 36)); al.title = 'Allergie: ' + p.allergien; info.appendChild(al); }
+    if (em.next) info.appendChild(mk('span', 'pt-ev next', 'Nächster Termin ' + fmtS(em.next.t) + (em.next.e.behandlung ? ' · ' + cut(em.next.e.behandlung, 28) : '')));
+    else if (em.last) info.appendChild(mk('span', 'pt-ev', 'Zuletzt ' + fmtS(em.last.t)));
+    if (p.phone || p.email) { var ct = mk('span', 'pt-ct'); if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; ct.appendChild(pa); } if (p.email) { var ea = mk('a', '', p.email); ea.href = 'mailto:' + p.email; ea.onclick = function (e) { e.stopPropagation(); }; ct.appendChild(ea); } info.appendChild(ct); }
+    wrap.appendChild(left); wrap.appendChild(info); wrap.appendChild(acts); c1.appendChild(wrap);
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
   });
   if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
