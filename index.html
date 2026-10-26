@@ -81,7 +81,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .logo { width:36px; height:36px; background:#0f172a; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:18px; }
 .title-text h1 { font-size:17px; letter-spacing:.2px; } .title-text p { font-size:12px; color:#64748b; }
 nav { background:#fff; border-bottom:1px solid #e2e8f0; display:flex; overflow-x:auto; }
-@media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 1 0; min-width:0; padding-left:1px; padding-right:1px; text-align:center; font-size:13px; } }
+@media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 0 auto; min-width:0; padding-left:1px; padding-right:1px; text-align:center; font-size:13px; } }
 .nav-meas .nav-btn { flex:none !important; }
 .nav-more { flex:0 0 auto !important; padding-left:12px !important; padding-right:12px !important; display:inline-flex; align-items:center; justify-content:center; } .nav-badge { margin-left:2px; padding:1px 5px; }
 nav > :first-child { margin-left:auto; } nav > :last-child { margin-right:auto; }
@@ -1892,7 +1892,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-m';
+var KA_V = '2026-10-29-n';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -1912,7 +1912,7 @@ function navFit() {
   var fixed = [].filter.call(nav.querySelectorAll('.nav-btn:not(.nav-x)'), function (b) { return b !== more; }), xs = [].slice.call(nav.querySelectorAll('.nav-x'));
   nav.classList.add('nav-meas'); xs.forEach(function (b) { b.style.display = ''; });
   var used = more.offsetWidth + fixed.reduce(function (t, b) { return t + b.offsetWidth; }, 0), avail = nav.clientWidth, n = 0;
-  for (var i = 0; i < xs.length; i++) { var w = xs[i].offsetWidth; if (used + w > avail - 2) break; used += w; n++; }
+  for (var i = 0; i < xs.length; i++) { var w = xs[i].offsetWidth; if (used + w > avail - 10) break; used += w; n++; }
   xs.forEach(function (b, i) { b.style.display = i < n ? '' : 'none'; });
   nav.classList.remove('nav-meas');
   var cur = document.querySelector('.tab-content.active'); if (cur) { var id = cur.id.replace(/^tab-/, ''), nb = document.getElementById('btn-' + id), vis = nb && nb.style.display !== 'none'; [].forEach.call(nav.querySelectorAll('.nav-btn'), function (b) { b.classList.remove('active'); }); var t = vis ? nb : (PRAXIS_TABS.indexOf(id) >= 0 ? more : null); if (t) t.classList.add('active'); }
@@ -1929,6 +1929,7 @@ function fillNavMenu() {
   var sps = box.querySelectorAll('.nav-sep'); if (sps.length && box.lastChild === sps[sps.length - 1]) box.removeChild(sps[sps.length - 1]);
   var vf = document.createElement('div'); vf.className = 'nav-ver'; vf.textContent = kaVersion(); box.appendChild(vf);
 }
+try { document.fonts.ready.then(navFit); } catch (x) {}
 window.addEventListener('resize', navFit); window.addEventListener('orientationchange', navFit); window.addEventListener('load', navFit); setTimeout(navFit, 0);
 var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', todos: 'renderTodos' };
 PRAXIS_NAV.forEach(function (x) { if (x[0]) TAB_RENDER[x[0]] = x[2]; });
