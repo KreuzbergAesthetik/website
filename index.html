@@ -622,6 +622,16 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box img { width:72px; height:72px; margin-bottom:8px; } .al-box h2 { font-size:17px; margin-bottom:14px; } .al-box input { text-align:center; }
 .al-msg { color:#b91c1c; font-size:13px; min-height:18px; margin-top:8px; }
 @media (max-width:760px) { header .nav-btn { padding-left:1px; padding-right:1px; font-size:12.5px; } header .nav-btn.nav-more { padding-left:10px; padding-right:10px; } }
+
+/* Kalender im Querformat: eine Werkzeugzeile, breite Karte, Raster mit eigener Bildlaufleiste und fester Tageszeile */
+@media (min-width:700px) {
+  main:has(#tab-kalender.active) { max-width:min(1500px,100%); }
+  .cal-top { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+  .cal-top .card-header { display:contents; }
+  .cal-top .card-title { order:0; } .cal-top .seg-hd { order:1; flex:0 0 250px; } .cal-top .cal-bar { order:2; flex:1; margin:0; justify-content:center !important; } .cal-top .cal-plus { order:3; }
+  #cal-body { max-height:max(240px, calc(100vh - var(--hdh,112px) - 140px)); overflow-y:auto; }
+  #cal-body .tg-row:first-child { position:sticky; top:0; z-index:6; background:#fff; }
+}
 </style>
 <script src="docs.js"></script>
 <script src="sync.js"></script>
@@ -865,6 +875,7 @@ function kaStart() {
 
   <div id="tab-kalender" class="tab-content">
     <div class="card">
+      <div class="cal-top">
       <div class="card-header">
         <span class="card-title">Kalender</span>
         <div class="seg seg-hd">
@@ -881,6 +892,7 @@ function kaStart() {
           <button type="button" class="btn btn-secondary" onclick="step(1)">&rsaquo;</button>
           <button type="button" class="btn btn-secondary" onclick="goToday()">Heute</button>
         </div>
+      </div>
       </div>
       <div class="scroll" id="cal-body"></div>
       <div id="cal-legend" style="margin:12px 0 0;"></div>
@@ -1972,7 +1984,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zl';
+var KA_V = '2026-10-29-zm';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2595,7 +2607,11 @@ function renderCal() {
   }
   calLegend();
   document.getElementById('cal-title').innerText = title; saveLast();
-  document.getElementById('cal-body').innerHTML = body;
+  var cb = document.getElementById('cal-body'); cb.innerHTML = body;
+  if (view !== 'monat' && cb.scrollHeight > cb.clientHeight + 4) {
+    var nw = new Date(), hr = nw.getHours(), isNowView = !!cb.querySelector('.now-line'), t0 = isNowView ? hr - 1 : START + 0;
+    var first = (cb.querySelector('.ev') || {}).offsetTop; cb.scrollTop = isNowView ? Math.max(0, (t0 - START) * H) : (first != null ? Math.max(0, Math.floor((first - 20) / H) * H) : 0);
+  }
 }
 function setView(v) { view = v; renderCal(); }
 function step(n) {
