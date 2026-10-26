@@ -373,8 +373,9 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .iv-bar { display:flex; gap:6px; align-items:flex-start; margin-bottom:14px; } .iv-sp { flex:1; }
 .iv-b { width:48px; border:none; border-radius:12px; padding:7px 0 5px; cursor:pointer; display:inline-flex; flex-direction:column; align-items:center; gap:2px; font-size:10px; font-weight:600; line-height:1.1; } .iv-b svg { width:20px; height:20px; } .iv-b span { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .iv-grey { background:#eef2f7; color:#475569; } .iv-navy { background:#eef1fa; color:#1e3a8a; } .iv-orange { background:#fdf5ea; color:#b45309; } .iv-violet { background:#f5f1ff; color:#7c3aed; } .iv-green { background:#16a34a; color:#fff; } .iv-del { background:none; color:#dc2626; border:1px solid #fecaca; padding:10px 0; width:40px; }
-.inv-card { background:#f8fafc; border:1px solid #d5dde7; border-radius:12px; padding:10px; margin-bottom:10px; } .ic-top { display:grid; grid-template-columns:minmax(0,1fr) auto 26px 24px; gap:8px; align-items:center; margin-bottom:6px; } .inv-amt { font-size:13px; font-weight:600; white-space:nowrap; }
-.ic-mid { display:grid; grid-template-columns:42px 64px 58px minmax(0,1fr); gap:5px; margin-bottom:6px; } .ic-mid .form-control { padding-left:8px; padding-right:4px; font-size:14px; } .ic-mid input[type=date] { font-size:12px; min-width:0; padding-left:5px; padding-right:2px; } .ic-nb { width:26px; height:26px; border:none; border-radius:8px; background:#eef2f7; color:#94a3b8; padding:0; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; } .ic-nb.on { background:#dbeafe; color:#2563eb; } .ic-mid.rab { grid-template-columns:70px 1fr 80px; align-items:center; } .ic-rl { font-size:12px; color:#64748b; } .ic-note { font-size:13px; }
+.inv-card { background:#f8fafc; border:1px solid #d5dde7; border-radius:12px; padding:10px; margin-bottom:10px; } .inv-card.rab { background:#fff7ed; border-color:#fed7aa; } .inv-addbar { background:#f1f5f9; border:1px dashed #94a3b8; border-radius:12px; padding:10px; margin:4px 0 10px; } .ic-btns { display:flex; gap:6px; flex-wrap:wrap; } .ic-add { border:1px dashed #94a3b8; background:#fff; color:#475569; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; cursor:pointer; } .ic-add.on { border-style:solid; border-color:#2563eb; color:#2563eb; background:#eff4ff; } .ic-fields { margin-bottom:6px; } .ic-f { margin-bottom:6px; } .ic-f.two { display:flex; gap:6px; }
+.ic-top { display:grid; grid-template-columns:minmax(0,1fr) auto 24px; gap:8px; align-items:center; margin-bottom:6px; } .inv-amt { font-size:13px; font-weight:600; white-space:nowrap; }
+.ic-mid { display:grid; grid-template-columns:56px 90px 72px; gap:6px; margin-bottom:8px; } .ic-mid .form-control { padding-left:8px; padding-right:4px; font-size:14px; } .ic-mid input[type=date] { font-size:12px; min-width:0; padding-left:5px; padding-right:2px; } .ic-nb { width:26px; height:26px; border:none; border-radius:8px; background:#eef2f7; color:#94a3b8; padding:0; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; } .ic-nb.on { background:#dbeafe; color:#2563eb; } .ic-mid.rab { grid-template-columns:70px 1fr 80px; align-items:center; } .ic-rl { font-size:12px; color:#64748b; } .ic-note { font-size:13px; }
 .inv-row { display:grid; grid-template-columns:1fr 58px 86px 66px 80px 24px; gap:6px; align-items:center; margin-bottom:6px; }
 .inv-row .form-control { min-width:0; }
 .inv-tab { width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
@@ -1394,10 +1395,7 @@ function kaStart() {
     <div class="dk-sec dk-fold closed" id="iv-f-vor"><div class="dk-h dk-fh" onclick="ivFold(this)">Text vor der Tabelle</div><textarea id="inv-vortext" class="form-control dk-grow" rows="1" oninput="autoGrow(this)" placeholder="z.B. Vielen Dank für Ihr Vertrauen. Hiermit berechne ich Ihnen folgende Leistungen:"></textarea></div>
     <div class="ak-h">Positionen (Preise brutto in Euro)</div>
     <div id="inv-pos"></div>
-    <div style="display:flex; gap:6px;">
-      <div class="add-row" style="flex:1;" onclick="addInvRow('pos')">+ Position</div>
-      <div class="add-row" style="flex:1;" onclick="addInvRow('rabatt')">+ Rabatt in %</div>
-    </div>
+    <div class="inv-addbar"><div class="dk-lwrap"><input type="text" id="inv-add" class="form-control" placeholder="Leistung hinzufügen: eintippen oder wählen" autocomplete="off" aria-label="Leistung hinzufügen"><div class="dk-dd" id="inv-add-dd"></div></div></div>
     <div id="inv-0info" style="display:none; font-size:12px; margin:6px 0; padding:8px 10px; border-radius:8px; background:#fef3c7; color:#92400e;"></div>
     <div id="inv-rab" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:2px 0 4px;"></div>
     <div style="text-align:right; font-weight:700; margin:10px 0;">Gesamt: <span id="inv-total">€ 0,00</span></div>
@@ -1846,7 +1844,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-m';
+var KA_V = '2026-10-28-n';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2929,12 +2927,13 @@ function fmtLong(d) { var p = String(d || '').split('-'); return p.length === 3 
 function rowAmount(i) {
   var r = invRows[i];
   if (r.type === 'rabatt') {
-    var base = 0; for (var k = 0; k < i; k++) if (invRows[k].type !== 'rabatt') base += numIn(invRows[k].qty) * numIn(invRows[k].price);
+    var base = 0; for (var k = 0; k < i; k++) if (invRows[k].type !== 'rabatt') base += numIn(invRows[k].qty) * numIn(invRows[k].price) - posRab(k);
     return -r2(base * numIn(r.pct) / 100);
   }
   return r2(numIn(r.qty) * numIn(r.price));
 }
-function invTotal() { var t = 0; for (var i = 0; i < invRows.length; i++) t += rowAmount(i); return r2(t); }
+function posRab(i) { var r = invRows[i]; if (!r || r.type === 'rabatt') return 0; return r2(r2(numIn(r.qty) * numIn(r.price)) * Math.min(100, numIn(r.rab)) / 100); }
+function invTotal() { var t = 0; for (var i = 0; i < invRows.length; i++) t += rowAmount(i) - posRab(i); return r2(t); }
 function paidSum(inv) { return (inv.payments || []).reduce(function (a, p) { return a + p.amount; }, 0); }
 function invState(inv) {
   var n = (inv.payments || []).length, sum = paidSum(inv);
@@ -3169,7 +3168,7 @@ function nextPayNr(date) {
   invoices.forEach(function (i) { (i.payments || []).forEach(function (p) { var m = /^B(\d{4})-(\d+)$/.exec(p.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); }); });
   return 'B' + yr + '-' + String(seq + 1).padStart(5, '0');
 }
-function newRow(type) { var ld = document.getElementById('inv-leistung'), d0 = (ld && ld.value) || iso(new Date()); return type === 'rabatt' ? { type: 'rabatt', text: 'Rabatt', pct: '', rate: '19' } : { type: 'pos', text: '', qty: '1', price: '', rate: '19', datum: d0, note: '' }; }
+function newRow(type) { return type === 'rabatt' ? { type: 'rabatt', text: 'Rabatt', pct: '', rate: '19' } : { type: 'pos', text: '', qty: '1', price: '', rate: '19', datum: '', note: '', rab: '', rabText: 'Rabatt' }; }
 var invEdit = null, invMode = 'rechnung', invTab = 'rechnung', invKeepMode = false;
 var DRAFT = { kv: { name: 'Kostenvoranschlag', kopf: 'KOSTENVORANSCHLAG', datei: 'Kostenvoranschlag', neu: 'Kostenvoranschlag erstellen', liste: 'Kostenvoranschläge' }, test: { name: 'Test-Rechnung', kopf: 'RECHNUNG', datei: 'Test-Rechnung', neu: 'Test-Rechnung erstellen', liste: 'Test-Rechnungen' } };
 function invCur() { return invoices.concat(entw).filter(function (i) { return i.id === viewInvId; })[0]; }
@@ -3193,12 +3192,15 @@ function fillInvForm(inv) {
   g('inv-adresse').value = inv.adresse || ''; g('inv-datum').value = inv.date || ''; g('inv-leistung').value = inv.leistung || inv.date || '';
   g('inv-vortext').value = inv.vortext || ''; g('inv-doku').value = inv.doku || ''; g('inv-zahlung').value = inv.zahlung || '';
   if (inv.eid) g('inv-termin').value = String(inv.eid);
-  invRows = (inv.items || []).map(function (it) {
-    var c = function (v) { return String(v).replace('.', ','); };
-    if (it.rabatt) return { type: 'rabatt', text: String(it.text || '').replace(/\s*-[\d,.]+%$/, ''), pct: c(it.pct), rate: String(it.rate) };
-    return { type: 'pos', text: it.text, qty: c(it.qty), price: c(it.price), rate: String(it.rate), datum: it.datum || inv.leistung || inv.date, note: it.note || '' };
+  invRows = [];
+  var c = function (v) { return String(v).replace('.', ','); };
+  (inv.items || []).forEach(function (it) {
+    var last = invRows[invRows.length - 1];
+    if (it.rabatt && it.perPos && last && last.type === 'pos') { last.rab = c(it.pct); last.rabText = String(it.text || '').replace(/\s*-[\d,.]+%$/, '') || 'Rabatt'; return; }
+    if (it.rabatt) { invRows.push({ type: 'rabatt', text: String(it.text || '').replace(/\s*-[\d,.]+%$/, ''), pct: c(it.pct), rate: String(it.rate) }); return; }
+    var dd0 = it.datum || inv.leistung || inv.date;
+    invRows.push({ type: 'pos', text: it.text, qty: c(it.qty), price: c(it.price), rate: String(it.rate), datum: dd0 && dd0 !== inv.date ? dd0 : '', note: it.note || '', rab: '', rabText: 'Rabatt' });
   });
-  if (!invRows.length) invRows = [newRow('pos')];
   g('inv-show-hint').checked = inv.showHint !== false; g('inv-show-qr').checked = inv.showQr !== false;
   renderInvRows(); ivFoldSync();
 }
@@ -3219,7 +3221,7 @@ function openInvoice(p) {
   document.getElementById('inv-vortext').value = '';
   document.getElementById('inv-paydatum').value = ''; document.getElementById('inv-paybetrag').value = ''; setInvPay('');
   document.getElementById('inv-zahlung').value = settings.zahlung || '';
-  invRows = [newRow('pos')];
+  invRows = []; invAddInit();
   document.getElementById('inv-doku').value = ''; invDokEv = null; document.getElementById('inv-doku-btn').style.display = 'none';
   fillTermine(p);
   renderInvRows();
@@ -3249,12 +3251,12 @@ function invTerminChanged() {
   var lst = evLeistungen(e).filter(function (n) { return findKat(n); });
   if (lst.length > 1 || (lst.length === 1 && lst[0] !== e.behandlung)) {
     var f0 = invRows[0]; if (invRows.length === 1 && f0.type === 'pos' && !f0.text.trim() && !f0.price) invRows = [];
-    lst.forEach(function (n) { if (invRows.some(function (r) { return r.text === n; })) return; var k = findKat(n), r = newRow('pos'); r.text = k.name; r.price = String(k.price).replace('.', ','); r.rate = String(k.rate); invRows.push(r); });
+    lst.forEach(function (n) { if (invRows.some(function (r) { return r.text === n; })) return; var k = findKat(n), r = newRow('pos'); r.datum = e.date; r.text = k.name; r.price = String(k.price).replace('.', ','); r.rate = String(k.rate); invRows.push(r); });
     renderInvRows(); return;
   }
   var first = invRows[0];
-  if (invRows.length === 1 && first.type === 'pos' && !first.text.trim() && !first.price) { first.text = e.behandlung || 'Beratung'; }
-  else if (!invRows.some(function (r) { return r.text === e.behandlung; })) { var r = newRow('pos'); r.text = e.behandlung || 'Beratung'; invRows.push(r); }
+  if (invRows.length === 1 && first.type === 'pos' && !first.text.trim() && !first.price) { first.text = e.behandlung || 'Beratung'; first.datum = e.date; }
+  else if (!invRows.some(function (r) { return r.text === e.behandlung; })) { var r = newRow('pos'); r.datum = e.date; r.text = e.behandlung || 'Beratung'; invRows.push(r); }
   renderInvRows();
 }
 function invPatientChanged() {
@@ -3305,48 +3307,48 @@ function renderInvRows() {
   renderInvRab();
   var box = document.getElementById('inv-pos'); box.innerHTML = '';
   invRows.forEach(function (r, i) {
-    var card = mk('div', 'inv-card'), top = mk('div', 'ic-top'), mid = mk('div', 'ic-mid');
-    var a = mk('input', 'form-control'); a.type = 'text'; a.placeholder = r.type === 'rabatt' ? 'Bezeichnung' : 'Leistung'; a.value = r.text;
-    if (r.type !== 'rabatt') a.setAttribute('list', 't-leistung-list');
+    var isR = r.type === 'rabatt', card = mk('div', 'inv-card' + (isR ? ' rab' : '')), top = mk('div', 'ic-top'), mid = mk('div', 'ic-mid' + (isR ? ' rab' : ''));
+    var a = mk('input', 'form-control'); a.type = 'text'; a.placeholder = isR ? 'Bezeichnung' : 'Leistung'; a.value = r.text;
+    if (!isR) a.setAttribute('list', 't-leistung-list');
     a.oninput = function () { r.text = a.value; };
-    if (r.type !== 'rabatt') a.onchange = function () { var k = findKat(a.value); if (k && !numIn(r.price)) { r.text = k.name; r.price = String(k.price).replace('.', ','); r.rate = String(k.rate); renderInvRows(); } };
-    var q = mk('input', 'form-control'); q.type = 'text'; q.inputMode = 'decimal'; q.setAttribute('aria-label', r.type === 'rabatt' ? 'Prozent' : 'Menge');
-    var pr = null, dt = null;
-    if (r.type === 'rabatt') { q.value = r.pct; q.placeholder = '%'; }
-    else {
-      q.value = r.qty; q.placeholder = 'Menge';
-      pr = mk('input', 'form-control'); pr.type = 'text'; pr.inputMode = 'decimal'; pr.value = r.price; pr.placeholder = 'Preis €'; pr.setAttribute('aria-label', 'Preis');
-      dt = mk('input', 'form-control'); dt.type = 'date'; dt.value = r.datum || ''; dt.title = 'Datum der Leistung'; dt.setAttribute('aria-label', 'Datum der Leistung'); dt.onchange = function () { r.datum = dt.value; };
-    }
+    if (!isR) a.onchange = function () { var k = findKat(a.value); if (k && !numIn(r.price)) { r.text = k.name; r.price = String(k.price).replace('.', ','); r.rate = String(k.rate); renderInvRows(); } };
+    var q = mk('input', 'form-control'); q.type = 'text'; q.inputMode = 'decimal'; q.setAttribute('aria-label', isR ? 'Prozent' : 'Menge');
+    var pr = null;
+    if (isR) { q.value = r.pct; q.placeholder = '%'; }
+    else { q.value = r.qty; q.placeholder = 'Menge'; pr = mk('input', 'form-control'); pr.type = 'text'; pr.inputMode = 'decimal'; pr.value = r.price; pr.placeholder = 'Preis €'; pr.setAttribute('aria-label', 'Preis'); }
     var rt = mk('select', 'form-control');
     ['19', '7', '0'].forEach(function (v) { var o = mk('option', '', v + ' %'); o.value = v; rt.appendChild(o); });
     rt.value = r.rate; rt.onchange = function () { r.rate = rt.value; updZeroInfo(); };
-    var sum = mk('div', 'inv-amt', eurP(rowAmount(i)));
+    var sum = mk('div', 'inv-amt', eurP(rowAmount(i) - posRab(i)));
     var upd = function () {
-      if (r.type === 'rabatt') r.pct = q.value; else { r.qty = q.value; r.price = pr.value; }
-      box.querySelectorAll('.inv-amt').forEach(function (el, k) { el.textContent = eurP(rowAmount(k)); });
+      if (isR) r.pct = q.value; else { r.qty = q.value; r.price = pr.value; }
+      box.querySelectorAll('.inv-amt').forEach(function (el, k) { el.textContent = eurP(rowAmount(k) - posRab(k)); });
       document.getElementById('inv-total').textContent = eurP(invTotal()); syncInvPay();
     };
     q.oninput = upd; if (pr) pr.oninput = upd;
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Entfernen';
-    x.onclick = function () { if (invRows.length > 1) invRows.splice(i, 1); else invRows[0] = newRow('pos'); renderInvRows(); };
-    top.appendChild(a); top.appendChild(sum);
-    var nt = null;
-    if (r.type !== 'rabatt') {
-      var nb = mk('button', 'ic-nb' + (String(r.note || '').trim() ? ' on' : '')); nb.type = 'button'; nb.title = 'Anmerkung für die Tabelle (z. B. Charge)'; nb.setAttribute('aria-label', 'Anmerkung'); nb.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v12H9l-4 4z"/><path d="M9 8h6M9 12h4"/></svg>';
-      nb.onclick = function () { if (nt) { nt.style.display = nt.style.display === 'none' ? '' : 'none'; if (nt.style.display === '') nt.focus(); } };
-      top.appendChild(nb);
-    } else top.appendChild(mk('span'));
-    top.appendChild(x); card.appendChild(top);
-    if (r.type === 'rabatt') { mid.className = 'ic-mid rab'; mid.appendChild(q); mid.appendChild(mk('span', 'ic-rl', 'Rabatt in %')); mid.appendChild(rt); }
-    else { mid.appendChild(q); mid.appendChild(pr); mid.appendChild(rt); mid.appendChild(dt); }
-    card.appendChild(mid);
-    if (r.type !== 'rabatt') {
-      nt = mk('input', 'form-control ic-note'); nt.type = 'text'; nt.placeholder = 'Anmerkung für die Tabelle, z. B. Charge'; nt.value = r.note || ''; nt.oninput = function () { r.note = nt.value; nb.classList.toggle('on', !!nt.value.trim()); };
-      if (!String(r.note || '').trim()) nt.style.display = 'none';
-      card.appendChild(nt);
-    }
-    box.appendChild(card);
+    x.onclick = function () { invRows.splice(i, 1); renderInvRows(); };
+    top.appendChild(a); top.appendChild(sum); top.appendChild(x); card.appendChild(top);
+    if (isR) { mid.appendChild(q); mid.appendChild(mk('span', 'ic-rl', 'Rabatt in %')); mid.appendChild(rt); card.appendChild(mid); box.appendChild(card); return; }
+    mid.appendChild(q); mid.appendChild(pr); mid.appendChild(rt); card.appendChild(mid);
+    /* kleine Zusatzfelder je Position: Rabatt, Datum, Text */
+    var btns = mk('div', 'ic-btns'), fields = mk('div', 'ic-fields');
+    var shown = { rab: !!(String(r.rab || '').trim()), datum: !!r.datum, note: !!String(r.note || '').trim() };
+    var mkF = function (key, label, build) {
+      var f = mk('div', 'ic-f'), b = mk('button', 'ic-add' + (shown[key] ? ' on' : ''), (shown[key] ? '' : '+ ') + label); b.type = 'button';
+      build(f); f.style.display = shown[key] ? '' : 'none';
+      b.onclick = function () { shown[key] = !shown[key]; if (!shown[key]) { if (key === 'rab') { r.rab = ''; } else if (key === 'datum') r.datum = ''; else r.note = ''; renderInvRows(); return; } f.style.display = ''; b.className = 'ic-add on'; b.textContent = label; var fi = f.querySelector('input'); if (key === 'datum' && fi) r.datum = fi.value; if (fi) fi.focus(); };
+      btns.appendChild(b); fields.appendChild(f);
+    };
+    mkF('rab', 'Rabatt', function (f) {
+      var pc = mk('input', 'form-control'); pc.type = 'text'; pc.inputMode = 'decimal'; pc.placeholder = '%'; pc.value = r.rab || ''; pc.style.maxWidth = '70px';
+      var nm = mk('input', 'form-control'); nm.type = 'text'; nm.placeholder = 'Bezeichnung'; nm.value = r.rabText || 'Rabatt';
+      pc.oninput = function () { r.rab = pc.value; upd(); }; nm.oninput = function () { r.rabText = nm.value; };
+      f.className = 'ic-f two'; f.appendChild(pc); f.appendChild(nm);
+    });
+    mkF('datum', 'Datum', function (f) { var dt = mk('input', 'form-control'); dt.type = 'date'; dt.value = r.datum || document.getElementById('inv-datum').value || ''; dt.title = 'Datum der Leistung'; dt.onchange = function () { r.datum = dt.value; }; f.appendChild(dt); });
+    mkF('note', 'Text', function (f) { var nt = mk('input', 'form-control'); nt.type = 'text'; nt.placeholder = 'Anmerkung für die Tabelle, z. B. Charge'; nt.value = r.note || ''; nt.oninput = function () { r.note = nt.value; }; f.appendChild(nt); });
+    card.appendChild(fields); card.appendChild(btns); box.appendChild(card);
   });
   document.getElementById('inv-total').textContent = eurP(invTotal()); syncInvPay(); updZeroInfo();
 }
@@ -3367,10 +3369,11 @@ function saveInvoice() {
     } else {
       var q = numIn(r.qty), pr = numIn(r.price);
       if (!r.text.trim() || q <= 0 || pr <= 0) { bad = true; return; }
-      items.push({ text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || leist, note: String(r.note || '').trim() });
+      items.push({ text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || datum, note: String(r.note || '').trim() });
+      var pcr = numIn(r.rab); if (pcr > 0 && pcr <= 100) { var pa = posRab(i); items.push({ rabatt: true, perPos: true, pct: pcr, text: String(r.rabText || 'Rabatt').trim() + ' -' + String(pcr).replace('.', ',') + '%', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }); } else if (pcr > 100) bad = true;
     }
   });
-  var pd = items.filter(function (x) { return x.datum; }).map(function (x) { return x.datum; }).sort(); if (pd.length) leist = pd[0];
+  var pd = items.filter(function (x) { return x.datum; }).map(function (x) { return x.datum; }).sort(); leist = pd.length ? pd[0] : datum;
   if (bad || !items.length) { alert('Bitte jede Position mit Leistung, Menge und Preis (Rabatt: Bezeichnung und Prozent) ausfüllen.'); return; }
   var hinweis = items.some(function (i) { return i.rate === 0; }) ? (settings.hinweis || '').trim() : '';
   if (!settings.steuernr && !settings.ustid && !confirm('In den Praxisdaten fehlt die Steuernummer oder USt-IdNr. Die Rechnung wäre unvollständig. Trotzdem erstellen?')) return;
@@ -3444,6 +3447,24 @@ function invCmp(a, b) {
   else if (k === 'total') d = a.total - b.total;
   else d = invState(a).txt.localeCompare(invState(b).txt, 'de');
   return d * invSort.dir;
+}
+var invAddReady = false;
+function invAddPos(text, price, rate) {
+  if (invRows.length === 1 && invRows[0].type === 'pos' && !invRows[0].text.trim() && !numIn(invRows[0].price)) invRows = [];
+  var r = newRow('pos'); r.text = text; if (price != null) r.price = String(price).replace('.', ','); if (rate != null) r.rate = String(rate); invRows.push(r); renderInvRows();
+}
+function invAddInit() {
+  if (invAddReady) return; invAddReady = true;
+  var inp = document.getElementById('inv-add'), dd = document.getElementById('inv-add-dd');
+  var show = function () {
+    var q = inp.value.trim().toLowerCase(), cat = (settings.katalog || []).filter(function (k) { return !q || k.name.toLowerCase().indexOf(q) >= 0; }).slice(0, 12);
+    dd.innerHTML = '';
+    cat.forEach(function (k) { var b = mk('button', 'dk-ddi', k.name + ' · ' + eur(k.price)); b.type = 'button'; b.onmousedown = function (ev) { ev.preventDefault(); invAddPos(k.name, k.price, k.rate); inp.value = ''; dd.style.display = 'none'; }; dd.appendChild(b); });
+    var raw = inp.value.trim(); if (raw && !cat.some(function (k) { return k.name.toLowerCase() === raw.toLowerCase(); })) { var o = mk('button', 'dk-ddi dk-own', '„' + raw + '“ als freie Leistung'); o.type = 'button'; o.onmousedown = function (ev) { ev.preventDefault(); invAddPos(raw); inp.value = ''; dd.style.display = 'none'; }; dd.appendChild(o); }
+    dd.style.display = dd.children.length ? 'block' : 'none';
+  };
+  inp.addEventListener('input', show); inp.addEventListener('focus', show); inp.addEventListener('blur', function () { dd.style.display = 'none'; });
+  inp.addEventListener('keydown', function (ev) { if (ev.key !== 'Enter') return; ev.preventDefault(); var q = inp.value.trim().toLowerCase(), hit = (settings.katalog || []).filter(function (k) { return k.name.toLowerCase().indexOf(q) >= 0; }); if (q && hit.length === 1) invAddPos(hit[0].name, hit[0].price, hit[0].rate); else if (q) invAddPos(inp.value.trim()); inp.value = ''; dd.style.display = 'none'; });
 }
 function ivFold(h) { h.parentNode.classList.toggle('closed'); var t = h.parentNode.querySelector('textarea'); if (t && !h.parentNode.classList.contains('closed')) { autoGrow(t); t.focus(); } }
 /* Abschnitte auf, wenn Text drinsteht; Textfelder wachsen mit */
