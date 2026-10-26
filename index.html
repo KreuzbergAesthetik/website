@@ -1873,6 +1873,34 @@ function kaStart() {
   </div>
 </div>
 
+<!-- MODAL: DATUM UND UHRZEIT -->
+<div id="modal-dt" class="modal-overlay">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-header"><strong>Datum und Uhrzeit</strong><button type="button" class="close-btn" onclick="closeModal('modal-dt')">&times;</button></div>
+    <div class="form-group"><input type="datetime-local" id="dt-in" class="form-control"></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-dt')">Abbrechen</button><button type="button" class="btn btn-save" onclick="dtSave()">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: PRODUKTBUCHUNG BEARBEITEN -->
+<div id="modal-vbe" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Produktbuchung bearbeiten</strong><button type="button" class="close-btn" onclick="closeModal('modal-vbe')">&times;</button></div>
+    <div id="vbe-info" style="font-size:13px; color:#475569; margin-bottom:8px;"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Datum</label><input type="date" id="vbe-datum" class="form-control"></div>
+      <div class="form-group"><label>Uhrzeit</label><input type="time" id="vbe-zeit" class="form-control"></div>
+    </div>
+    <div class="form-group"><label>Charge</label><select id="vbe-ch" class="form-control"></select></div>
+    <div class="form-group"><label>Menge</label><input type="text" id="vbe-menge" class="form-control" inputmode="decimal"></div>
+    <div class="form-group" id="vbe-tgrp"><label>Zum Termin</label><select id="vbe-termin" class="form-control"></select></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-vbe')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveVbEdit()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: E-MAIL -->
 <div id="modal-mail" class="modal-overlay">
   <div class="modal-box">
@@ -1910,7 +1938,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zc';
+var KA_V = '2026-10-29-zd';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4487,12 +4515,63 @@ function viewAkte(p) {
 }
 
 /* Rezept: Medikamente wählen, A6 quer (148 x 105 mm) als PDF für den Vordruck */
-var rxRows = [], rxZu = null;
-function openRx(zu) {
-  rxZu = zu || null;
+/* Datum und Uhrzeit eines Eintrags ändern */
+var dtCb = null;
+function askDateTime(ts, cb) {
+  var d = new Date(ts); dtCb = cb;
+  document.getElementById('dt-in').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  openModal('modal-dt');
+}
+function dtSave() {
+  var t = new Date(document.getElementById('dt-in').value).getTime(); if (isNaN(t)) { alert('Bitte Datum und Uhrzeit angeben.'); return; }
+  var cb = dtCb; dtCb = null; closeModal('modal-dt'); if (cb) cb(t);
+}
+/* Produktbuchung vollständig bearbeiten: Zeitpunkt, Charge, Menge, Termin; der Lagerbestand wird mit korrigiert */
+var vbeCur = null;
+function openVbEdit(vb) {
+  vbeCur = vb; var d = new Date(vb.ts);
+  document.getElementById('vbe-info').textContent = vb.name + (vb.pid ? '' : ' · Ausbuchung' + (vb.grund ? ' (' + vb.grund + ')' : ''));
+  document.getElementById('vbe-datum').value = iso(d); document.getElementById('vbe-zeit').value = pad(d.getHours()) + ':' + pad(d.getMinutes());
+  var sel = document.getElementById('vbe-ch'); sel.innerHTML = '';
+  lager.chargen.filter(function (c) { return c.pid === vb.prodId; }).forEach(function (c) { var o = mk('option', '', 'Charge ' + (c.nr || '-') + (c.verfall ? ' · bis ' + fmtD(c.verfall) : '') + ' · Rest ' + qty(c.id === vb.chId ? (+c.rest || 0) + vb.menge : c.rest)); o.value = c.id; sel.appendChild(o); });
+  sel.value = vb.chId; document.getElementById('vbe-menge').value = qty(vb.menge);
+  var tg = document.getElementById('vbe-tgrp'), ts = document.getElementById('vbe-termin'); ts.innerHTML = '';
+  tg.style.display = vb.pid ? '' : 'none';
+  if (vb.pid) {
+    var pt = patients.filter(function (x) { return x.id === vb.pid; })[0], o0 = mk('option', '', 'Kein Termin'); o0.value = ''; ts.appendChild(o0);
+    events.filter(function (e) { return pt && e.patient === nameKey(pt); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = e.id; ts.appendChild(o); });
+    ts.value = vb.eid ? String(vb.eid) : '';
+  }
+  openModal('modal-vbe');
+}
+function saveVbEdit() {
+  var vb = vbeCur; if (!vb) return;
+  var m = num(document.getElementById('vbe-menge').value), nc = lager.chargen.filter(function (c) { return c.id === document.getElementById('vbe-ch').value; })[0], oc = lager.chargen.filter(function (c) { return c.id === vb.chId; })[0];
+  var dd = document.getElementById('vbe-datum').value, tt = document.getElementById('vbe-zeit').value || '12:00';
+  if (!dd) { alert('Bitte ein Datum angeben.'); return; } if (m === null || m <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; } if (!nc) { alert('Bitte eine Charge wählen.'); return; }
+  var avail = (+nc.rest || 0) + (nc === oc ? vb.menge : 0); if (m > avail + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(avail) + ' ' + (vb.einheit || '') + ' da.'); return; }
+  var rd = function (x) { return Math.round(x * 1000) / 1000; };
+  if (oc) oc.rest = rd((+oc.rest || 0) + vb.menge); nc.rest = rd((+nc.rest || 0) - m);
+  vb.chId = nc.id; vb.nr = nc.nr || ''; vb.verfall = nc.verfall || ''; vb.ek = nc.ek; vb.menge = m; vb.ts = new Date(dd + 'T' + tt + ':00').getTime();
+  if (vb.pid) { var ev = document.getElementById('vbe-termin').value; vb.eid = ev ? +ev : null; }
+  vbeCur = null; persist(); closeModal('modal-vbe'); if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf(); renderLager();
+}
+var rxRows = [], rxZu = null, rxEdit = null;
+function rxDocOf(lg) {
+  var ds = curP.dokumente || [];
+  return ds.filter(function (d) { return d.id === lg.docId; })[0] || ds.filter(function (d) { return d.kat === 'Rezept' && Math.abs((d.ts || 0) - lg.ts) < 15000; })[0] || null;
+}
+function openRx(zu, edit) {
+  rxEdit = edit || null; rxZu = zu || null;
   rxRows = (curP.medikation || []).map(function (m) { return { on: false, text: m, neu: false }; });
-  document.getElementById('rx-title').textContent = 'Rezept · ' + dnP(curP);
-  document.getElementById('rx-datum').value = iso(new Date());
+  var dat = iso(new Date());
+  if (edit) {
+    var od = rxDocOf(edit); if (od && od.zu) rxZu = od.zu;
+    (edit.items || String(edit.text || '').replace(/^Rezept erstellt:\s*/, '').split(/;\s*/)).filter(Boolean).forEach(function (t) { var r = rxRows.filter(function (x) { return x.text === t; })[0]; if (r) r.on = true; else rxRows.push({ on: true, text: t, neu: true }); });
+    dat = edit.datum || iso(new Date(edit.ts));
+  }
+  document.getElementById('rx-title').textContent = (edit ? 'Rezept bearbeiten · ' : 'Rezept · ') + dnP(curP);
+  document.getElementById('rx-datum').value = dat;
   document.getElementById('rx-new').value = '';
   var o = settings.rx || {}; document.getElementById('rx-dx').value = o.dx || 0; document.getElementById('rx-dy').value = o.dy || 0;
   document.getElementById('rx-label').checked = o.label !== false;
@@ -4555,9 +4634,14 @@ async function rxMake() {
     var bytes = await doc.save(), blob = new Blob([bytes], { type: 'application/pdf' });
     var name = 'Rezept ' + dp[2] + '.' + dp[1] + '.' + dp[0] + '.pdf', id = newId();
     var ok = await fPut(id, name, blob); if (!ok) throw new Error('save');
-    p.dokumente = (p.dokumente || []).concat([{ id: id, ts: Date.now(), name: name, kat: 'Rezept', zu: rxZu || undefined }]);
+    var oldDoc = rxEdit ? rxDocOf(rxEdit) : null;
+    if (oldDoc) { try { await fDel(oldDoc.id); } catch (x) {} p.dokumente = p.dokumente.filter(function (d) { return d !== oldDoc; }); }
+    p.dokumente = (p.dokumente || []).concat([{ id: id, ts: oldDoc ? oldDoc.ts : Date.now(), name: name, kat: 'Rezept', zu: rxZu || undefined }]);
     rxRows.forEach(function (r) { if (r.on && r.neu && document.getElementById('rx-merk').checked && (p.medikation || []).indexOf(r.text.trim()) < 0) { p.medikation = (p.medikation || []).concat([r.text.trim()]); } });
-    p.log = (p.log || []).concat([{ ts: Date.now(), type: 'rezept', text: 'Rezept erstellt: ' + sel.map(function (r) { return r.text.trim(); }).join('; ') }]);
+    var items = sel.map(function (r) { return r.text.trim(); }), rtext = 'Rezept erstellt: ' + items.join('; ');
+    if (rxEdit) { rxEdit.text = rtext; rxEdit.items = items; rxEdit.docId = id; rxEdit.datum = datum; }
+    else p.log = (p.log || []).concat([{ ts: Date.now(), type: 'rezept', text: rtext, items: items, docId: id, datum: datum }]);
+    rxEdit = null;
     persist(); closeModal('modal-rx'); renderHead(); renderVerlauf();
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
   } catch (x) { alert('Das Rezept konnte nicht erstellt werden.'); }
@@ -4693,13 +4777,7 @@ function tlRow(it) {
       lager.verbrauch = lager.verbrauch.filter(function (y) { return y.id !== vb.id; }); persist(); renderVerlauf(); renderLager();
     }));
     var ev0 = vb.eid ? events.filter(function (x) { return x.id === vb.eid; })[0] : null;
-    tlPlus(sh, [['Menge ändern', function () {
-      var v = prompt('Neue Menge für ' + vb.name + ' (' + (vb.einheit || 'Stk') + '):', qty(vb.menge)); if (v === null) return; var n = num(v);
-      if (n === null || n <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
-      var ch = lager.chargen.filter(function (c) { return c.id === vb.chId; })[0], d = n - vb.menge;
-      if (ch && d > (+ch.rest || 0) + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(ch.rest) + ' da.'); return; }
-      if (ch) ch.rest = Math.round(((+ch.rest || 0) - d) * 1000) / 1000; vb.menge = n; persist(); renderVerlauf(); renderLager();
-    }]]);
+    tlPlus(sh, [['Bearbeiten', function () { openVbEdit(vb); }]]);
     sh.body.appendChild(mk('div', '', vb.name + ': ' + qty(vb.menge) + ' ' + (vb.einheit || '') + ' · Charge ' + (vb.nr || '-') + (vb.verfall ? ' · verwendbar bis ' + fmtD(vb.verfall) : '') + (ev0 ? ' · Termin ' + fmtTermin(ev0) : '')));
   } else if (it.t === 'doku') {
     var d = it.d;
@@ -4712,7 +4790,9 @@ function tlRow(it) {
     if (d.text) { dtb.style.color = '#0f172a'; dtb.textContent = d.text; } else { dtb.style.color = '#94a3b8'; dtb.textContent = 'Dokumentation hinzufügen'; }
     dtb.onclick = function () { openDokFree(d); }; sh.body.appendChild(dtb);
     sh.body.appendChild(attachBlock(curP, 'd' + d.ts));
-    tlPlus(sh, [['Mit Termin verknüpfen', function () { openDkPick(d); }]].concat(attItems('d' + d.ts), attMove('d' + d.ts)));
+    tlPlus(sh, [['Mit Termin verknüpfen', function () { openDkPick(d); }], ['Datum und Uhrzeit ändern', function () {
+      askDateTime(d.ts, function (t) { var oz = 'd' + d.ts, nz = 'd' + t; [curP.bilder, curP.dokumente].forEach(function (l) { (l || []).forEach(function (x) { if (x.zu === oz) x.zu = nz; }); }); d.ts = t; persist(); renderVerlauf(); });
+    }]].concat(attItems('d' + d.ts), attMove('d' + d.ts)));
   } else if (it.t === 'rechnung') {
     var iv = it.inv;
     sh = tlShell(it.k, 'Rechnung');
@@ -4737,7 +4817,7 @@ function tlRow(it) {
     } else {
       var tx = mk('div', '', it.t === 'med' ? String(lg.text).replace(/^Medikament hinzugefügt:\s*/, '') : lg.text);
       tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
-      tlPlus(sh, [['Bearbeiten', function () { tlEditLog = lg; renderVerlauf(); }], ['Löschen', function () {
+      tlPlus(sh, [['Bearbeiten', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { lg.ts = t; persist(); renderVerlauf(); }); }], ['Löschen', function () {
         if (!confirm('Eintrag aus dem Zeitstrahl löschen?')) return;
         curP.log = (curP.log || []).filter(function (y) { return y !== lg; }); persist(); renderVerlauf();
       }]]);
