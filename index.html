@@ -56,7 +56,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .td-chk { width:22px; height:22px; margin-top:1px; flex:none; accent-color:#0f172a; }
 .td-main { flex:1; min-width:0; cursor:pointer; } .td-text { font-size:14.5px; } .td-sub { font-size:12px; color:#64748b; margin-top:2px; }
 .fl { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:6px; vertical-align:middle; line-height:16px; border:none; font-family:inherit; }
-.fl-red { background:#dc2626; color:#fff; } .fl-blue { background:#1e3a8a; color:#fff; } .fl-ico { display:inline-flex; align-items:center; padding:2px 5px; } .fl-ico svg { width:13px; height:13px; stroke-width:2.4; } .fl-amb { background:#e2e8f0; color:#475569; }
+.fl-orange { background:#ea580c; color:#fff; } .fl-red { background:#dc2626; color:#fff; } .fl-blue { background:#1e3a8a; color:#fff; } .fl-ico { display:inline-flex; align-items:center; padding:2px 5px; } .fl-ico svg { width:13px; height:13px; stroke-width:2.4; } .fl-amb { background:#e2e8f0; color:#475569; }
 .pt .fl { margin:3px 4px 0 0; }
 .a-flagcard { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:8px 12px; margin-bottom:12px; } .a-flagcard .fl { margin:0; font-size:12px; padding:3px 10px; cursor:pointer; text-align:left; } .a-fl-t { font-size:12px; font-weight:700; color:#64748b; }
 .a-flagbtn { position:fixed; right:0; top:calc(var(--hdh,112px) + 70px); z-index:41; width:34px; height:42px; border:none; border-radius:12px 0 0 12px; align-items:center; justify-content:center; cursor:pointer; box-shadow:-2px 3px 10px rgba(15,23,42,.3); } .a-flagbtn.red { background:#dc2626; color:#fff; } .a-flagbtn.amb { background:#94a3b8; color:#fff; }
@@ -540,7 +540,7 @@ body { overflow-x:clip; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
 .pt-acts { display:grid; grid-template-columns:repeat(3,32px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:32px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
-.pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; }
+.pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; } .pt-dot.d-rem { background:#ea580c; } .pt-dot.d-next { background:#16a34a; }
 .pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
 #tab-patienten .pt { border-collapse:separate; border-spacing:0 8px; }
@@ -872,7 +872,7 @@ function kaStart() {
           <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
         </div>
       </div>
-      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span></div>
+      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span><span><i style="background:#16a34a"></i>Termin gebucht</span></div>
       <div class="scroll">
         <table class="pt">
           <thead><tr>
@@ -1825,7 +1825,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-c';
+var KA_V = '2026-10-28-d';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -1945,6 +1945,14 @@ function flagsMap() {
       var p = byName[e.patient]; if (seen[p.id]) return; seen[p.id] = 1;
       var ai = anamInfo(p); if (ai.state !== 'ok') m.byId[p.id].anam = { info: ai, e: e };
     });
+  /* nächster gebuchter Termin; Erinnerung fällig, wenn er innerhalb von settings.remDays Tagen liegt und noch nicht erinnert wurde */
+  var remLim = iso(new Date(now + (settings.remDays == null ? 2 : +settings.remDays) * 86400000));
+  events.forEach(function (e) {
+    var p = byName[e.patient]; if (!p || e.phase === 'Abgesagt') return;
+    var t = new Date(e.date + 'T' + e.time + ':00').getTime(); if (!(t >= now)) return;
+    var q = m.byId[p.id]; if (!q.next || t < q.nextT) { q.next = e; q.nextT = t; }
+  });
+  Object.keys(m.byId).forEach(function (k) { var q = m.byId[k]; if (q.next && q.next.date <= remLim && !bestLast(patients.filter(function (x) { return String(x.id) === k; })[0] || {}, 'termin:' + q.next.id, 'sent')) q.rem = q.next; });
   Object.keys(m.byId).forEach(function (k) { m.byId[k].unb.sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }); });
   m.get = function (p) { return (p && m.byId[p.id]) || { todos: [], unb: [] }; };
   FLC = m; FLT = now; return m;
@@ -1972,6 +1980,11 @@ function flagPills(p, noTodo) {
 function flagItems(p) {
   var f = flagsMap().get(p), out = [];
   if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
+  if (f.rem) {
+    var re = f.rem, rtx = fillPlatzhalter('{AnredeInformell},\n\nwir erinnern Dich an Deinen Termin am ' + fmtD(re.date) + ' um ' + re.time + ' Uhr bei Kreuzberg Ästhetik.\n\nSolltest Du den Termin nicht wahrnehmen können, gib uns bitte rechtzeitig Bescheid.\n\nManuel - Kreuzberg Ästhetik', p);
+    var rmark = function () { bestAdd(p, 'termin:' + re.id, 'sent'); p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'Terminerinnerung gesendet für ' + fmtTermin(re) }]); persist(); if (curP === p) { renderVerlauf(); renderHead(); } };
+    out.push({ cls: 'fl-orange', label: 'Terminerinnerung: ' + fmtTermin(re), menu: [['Per E-Mail senden', function () { rmark(); tvMail(p, '', ['Terminerinnerung', rtx]); }], ['Per WhatsApp senden', function () { rmark(); waOpen(p, rtx); }], ['Schon erinnert (vor Ort oder telefonisch)', rmark]] });
+  }
   f.todos.slice(0, 5).forEach(function (t) { out.push({ cls: 'fl-red', label: 'To-Do: ' + (t.text.length > 60 ? t.text.slice(0, 59) + '…' : t.text) + (t.due ? ' · fällig ' + fmtD(t.due) : ''), fn: function () { openTodo(t.id); } }); });
   if (f.todos.length > 5) out.push({ cls: 'fl-red', label: '+' + (f.todos.length - 5) + ' weitere To-Dos', fn: function () { switchTab('todos'); closeModal('modal-akte'); } });
   f.unb.slice(0, 5).forEach(function (e) {
@@ -2140,6 +2153,8 @@ function renderPatients() {
     if (fl0.todos.length) addDot('d-todo', 'Offene To-Dos: ' + fl0.todos.map(function (t) { return t.text; }).join(', '));
     if (fl0.unb.length) addDot('d-inv', 'Rechnung offen: vergangene Termine ohne Rechnung (' + fl0.unb.length + ')');
     if (fl0.anam) addDot('d-anam', anamText(fl0.anam.info));
+    if (fl0.rem) addDot('d-rem', 'Terminerinnerung fällig: ' + fmtTermin(fl0.rem));
+    if (fl0.next) addDot('d-next', 'Nächster Termin gebucht: ' + fmtTermin(fl0.next));
     if (dots.childNodes.length) c1.appendChild(dots);
     var nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
     if (p.titel) nrow.appendChild(mk('span', 'pt-tit', p.titel));
