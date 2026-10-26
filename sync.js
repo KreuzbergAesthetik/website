@@ -271,5 +271,6 @@ var KS = (function () {
     window.addEventListener('online', function () { run(false); });
     S.poll = setInterval(function () { if (document.visibilityState === 'visible') run(false); }, 180000);
   }
-  return { init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  async function txtset(obj) { var c = cfg(); if (!c) throw new Error('Der Geräte-Abgleich ist nicht eingerichtet.'); await api('txtset', { k: JSON.stringify(obj || {}), _c: c }); }
+  return { txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();
