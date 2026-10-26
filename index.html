@@ -266,7 +266,7 @@ body.akte-open main { display:none; }
 .a-tile ul { border:1px solid #94a3b8; border-radius:8px; overflow:hidden; background:#fff; margin-top:6px; } .a-tile ul li { display:flex; justify-content:space-between; gap:6px; padding:7px 10px; font-size:14px; line-height:1.35; } .a-tile ul li + li { border-top:1px solid #cbd5e1; } .a-tile .med-n { font-weight:600; } .a-tile .med-d { color:#64748b; }
 .a-tile ul li button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
 @media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:20px; } .a-tabs button { font-size:15px; } }
-@media (max-width:440px) { .a-tile { min-height:0; } } .a-tile.a-wide { grid-column:1 / -1; } .a-tiles { gap:8px; } @media (max-width:640px) { .a-tiles { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); } .a-tile { padding:9px 26px 9px 10px; font-size:13.5px; } .a-tile h4 { font-size:12px; } .a-tile .tl-ln { gap:5px; margin-top:3px; } .a-tile .tl-ln svg { width:15px; height:15px; } .a-tile .tl-ln a { font-size:12.5px; letter-spacing:-.1px; } .a-tile.a-kt { padding-right:8px; } .a-tile.a-kt h4 { padding-right:22px; } }
+@media (max-width:440px) { .a-tile { min-height:0; } } .a-tiles { gap:8px; } @media (max-width:640px) { .a-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); } .a-tile { grid-column:1 / -1; min-height:0; padding:9px 28px 9px 10px; font-size:13.5px; } .a-tile.a-half { grid-column:auto; } .a-tile.ed, .a-tile.ed.a-half { grid-column:1 / -1; } .a-tile h4 { font-size:12px; } }
 .a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; color:#0f172a; border:1px solid #dbe2ea; border-left:6px solid #1e3a8a; border-radius:14px; padding:8px 12px; margin-bottom:12px; box-shadow:0 3px 10px rgba(15,23,42,.12); }
 .a-sex { font-size:17px; color:#64748b; margin-left:8px; font-weight:400; }
 .a-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:40; }
@@ -1904,7 +1904,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-t';
+var KA_V = '2026-10-29-u';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4354,9 +4354,10 @@ function renderHead() {
       var ok = mk('button', 'btn btn-save', 'Fertig'); ok.type = 'button'; ok.onclick = function () { tileEdit = ''; renderHead(); }; fb.appendChild(ok); t.appendChild(fb);
     }
   }));
-  tiles.appendChild(txtTile('allergien', 'Allergien', hasWarn(p) ? 'a-warn' : '', 'Keine Angabe'));
+  var tAl = txtTile('allergien', 'Allergien', (hasWarn(p) ? 'a-warn ' : '') + 'a-half', 'Keine Angabe'), tAd = txtTile('adresse', 'Anschrift', 'a-half', 'Keine Anschrift');
+  tiles.appendChild(tAl); tiles.appendChild(tAd);
+  if ([tAl, tAd].filter(function (x) { return x.style.display !== 'none'; }).length === 1) { tAl.classList.remove('a-half'); tAd.classList.remove('a-half'); }
   tiles.appendChild(txtTile('diagnosen', 'Erkrankungen / Diagnosen', '', 'Keine Angabe'));
-  tiles.appendChild(txtTile('adresse', 'Anschrift', '', 'Keine Anschrift'));
   box.appendChild(tiles);
 }
 function hdH() { var h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdh', h.offsetHeight + 'px'); }
