@@ -1747,6 +1747,18 @@ function kaStart() {
   </div>
 </div>
 
+<!-- MODAL: WEBFORMULAR-FELDER -->
+<div id="modal-ffeld" class="modal-overlay">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header"><strong id="ff-title">Felder</strong><button type="button" class="close-btn" onclick="closeModal('modal-ffeld')">&times;</button></div>
+    <div id="ff-body" style="max-height:62vh; overflow-y:auto; padding-right:2px;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ffeld')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="ff-save" onclick="ffSave()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: PRODUKT -->
 <div id="modal-produkt" class="modal-overlay">
   <div class="modal-box" style="max-width:600px;">
@@ -1880,7 +1892,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-l';
+var KA_V = '2026-10-29-m';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -6082,8 +6094,96 @@ function renderWebf() {
     cp.onclick = function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, function () { prompt('Link zum Kopieren:', url); }); };
     ln.appendChild(cp); r.appendChild(ln);
     var eb = mk('button', 'btn btn-secondary btn-sm', 'Texte bearbeiten'); eb.type = 'button'; eb.style.marginTop = '8px'; eb.onclick = function () { ftOpen(w); };
-    r.appendChild(eb); box.appendChild(r);
+    r.appendChild(eb);
+    if (/^(anmeldung|anamnese|erinnerung)\.html/.test(w[1])) { var fb = mk('button', 'btn btn-secondary btn-sm', 'Felder bearbeiten'); fb.type = 'button'; fb.style.cssText = 'margin-top:8px; margin-left:8px;'; fb.onclick = function () { ffOpen(w); }; r.appendChild(fb); }
+    box.appendChild(r);
   });
+}
+/* Felder der Webformulare: ausblenden, Pflicht, eigene Zusatzfragen. settings.formFelder[Formular] = { hide, req, extra } */
+var ffCur = '', ffDesc = null, ffExtra = [];
+var FF_TYPEN = [['text', 'Kurzer Text'], ['lang', 'Langer Text'], ['jn', 'Ja / Nein'], ['wahl', 'Auswahl'], ['datum', 'Datum'], ['haken', 'Haken (Bestätigung)']];
+function ffOpen(w) {
+  ffCur = w[1].replace(/\.html.*/, ''); ffDesc = null;
+  document.getElementById('ff-title').textContent = 'Felder: ' + w[0];
+  var body = document.getElementById('ff-body'); body.innerHTML = ''; body.appendChild(mk('div', 'hm-empty', 'Felder werden gelesen ...')); document.getElementById('ff-save').disabled = true; openModal('modal-ffeld');
+  var fr = document.createElement('iframe'), url = webfUrl(w[1]); url += (url.indexOf('?') >= 0 ? '&' : '?') + 'ed=1';
+  fr.style.cssText = 'position:fixed; left:-9999px; top:0; width:480px; height:800px; border:0; visibility:hidden;';
+  var done = false, fin = function (msg) { if (done) return; done = true; try { fr.remove(); } catch (x) {} if (msg) { body.innerHTML = ''; body.appendChild(mk('div', 'hm-empty', msg)); } };
+  fr.onload = function () {
+    setTimeout(function () {
+      if (done) return;
+      try {
+        var K = fr.contentWindow.KF; if (!K || !K.describe) { fin('Die Seite ist noch nicht auf dem neuesten Stand. Bitte in ein bis zwei Minuten noch einmal versuchen.'); return; }
+        ffDesc = K.describe(fr.contentWindow); fin();
+        var cur = (settings.formFelder || {})[ffCur] || {}; ffExtra = JSON.parse(JSON.stringify(cur.extra || [])); ffRender();
+      } catch (x) { fin('Die Felder konnten nicht gelesen werden.'); }
+    }, 500);
+  };
+  fr.onerror = function () { fin('Die Seite konnte nicht geladen werden.'); };
+  document.body.appendChild(fr); fr.src = url;
+}
+function ffRender() {
+  var body = document.getElementById('ff-body'); body.innerHTML = ''; var cur = (settings.formFelder || {})[ffCur] || {}, hide = cur.hide || [], req = cur.req || {};
+  var rows = ffDesc.units.map(function (u) { return { k: u.k, t: u.t, lock: u.lock, pf: true, req: u.req }; }).concat(ffDesc.groups.map(function (g) { return { k: g.k, t: g.t, lock: g.lock, pf: false }; }));
+  if (rows.length) {
+    body.appendChild(mk('div', 'ak-h', ffDesc.groups.length ? 'Fragengruppen' : 'Vorhandene Felder'));
+    var tb = mk('div'); tb.id = 'ff-rows';
+    rows.forEach(function (r) {
+      var row = mk('div', 'ff-row'); row.dataset.k = r.k; row.dataset.dreq = r.req ? '1' : ''; row.style.cssText = 'display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid #eef2f6;';
+      var nm = mk('span', '', r.t); nm.style.cssText = 'flex:1; min-width:0;'; row.appendChild(nm);
+      var cb = function (cls, txt, on, dis) { var l = mk('label'); l.style.cssText = 'display:flex; align-items:center; gap:4px; font-size:12.5px; font-weight:400; color:#475569; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.className = cls; c.checked = on; c.disabled = !!dis; l.appendChild(c); l.appendChild(document.createTextNode(txt)); return l; };
+      row.appendChild(cb('ff-show', 'Anzeigen', hide.indexOf(r.k) < 0, r.lock));
+      if (r.pf) row.appendChild(cb('ff-req', 'Pflicht', req[r.k] != null ? !!req[r.k] : r.req, r.lock));
+      if (r.lock) { var lk = mk('small', '', 'nötig'); lk.style.color = '#94a3b8'; row.appendChild(lk); }
+      tb.appendChild(row);
+    });
+    body.appendChild(tb);
+  }
+  body.appendChild(mk('div', 'ak-h', 'Eigene Zusatzfragen')); body.lastChild.style.marginTop = '16px';
+  var hint = mk('div', '', 'Erscheinen am Ende des Formulars. Die Antworten stehen im PDF und als Notiz in der Akte.'); hint.style.cssText = 'font-size:12.5px; color:#64748b; margin-bottom:8px;'; body.appendChild(hint);
+  var xl = mk('div'); xl.id = 'ff-extra'; body.appendChild(xl); ffRenderExtra();
+  var add = mk('div', 'add-row', '+ Frage hinzufügen'); add.onclick = function () { ffExtraSync(); ffExtra.push({ id: 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), label: '', typ: 'text', req: false, opts: [] }); ffRenderExtra(); var ins = document.querySelectorAll('#ff-extra .ffx-l'); if (ins.length) ins[ins.length - 1].focus(); }; body.appendChild(add);
+  document.getElementById('ff-save').disabled = false;
+}
+function ffExtraSync() {
+  [].forEach.call(document.querySelectorAll('#ff-extra .ffx'), function (r, i) {
+    var f = ffExtra[i]; if (!f) return;
+    f.label = r.querySelector('.ffx-l').value.trim(); f.typ = r.querySelector('.ffx-t').value; f.req = r.querySelector('.ffx-r').checked;
+    f.opts = r.querySelector('.ffx-o').value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+  });
+}
+function ffRenderExtra() {
+  var xl = document.getElementById('ff-extra'); xl.innerHTML = '';
+  ffExtra.forEach(function (f, i) {
+    var r = mk('div', 'ffx'); r.style.cssText = 'border:1px solid #dbe2ea; border-radius:10px; padding:8px 10px; margin-bottom:8px; background:#f8fafc;';
+    var l = mk('input', 'form-control ffx-l'); l.type = 'text'; l.placeholder = 'Frage oder Beschriftung'; l.value = f.label; r.appendChild(l);
+    var row = mk('div'); row.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap;';
+    var t = mk('select', 'form-control ffx-t'); t.style.cssText = 'width:auto; flex:1 1 140px;'; FF_TYPEN.forEach(function (o) { var op = mk('option', '', o[1]); op.value = o[0]; t.appendChild(op); }); t.value = f.typ;
+    var o = mk('textarea', 'form-control ffx-o'); o.rows = 3; o.placeholder = 'Eine Antwort pro Zeile'; o.value = (f.opts || []).join('\n'); o.style.cssText = 'margin-top:6px;' + (f.typ === 'wahl' ? '' : 'display:none;');
+    t.onchange = function () { o.style.display = t.value === 'wahl' ? '' : 'none'; };
+    var rl = mk('label'); rl.style.cssText = 'display:flex; align-items:center; gap:4px; font-size:12.5px; font-weight:400; margin:0;'; var rc = mk('input', 'ffx-r'); rc.type = 'checkbox'; rc.checked = !!f.req; rl.appendChild(rc); rl.appendChild(document.createTextNode('Pflicht'));
+    var mkb = function (txt, ttl, fn) { var b = mk('button', 'x-btn', txt); b.type = 'button'; b.title = ttl; b.setAttribute('aria-label', ttl); b.onclick = fn; return b; };
+    row.appendChild(t); row.appendChild(rl);
+    row.appendChild(mkb('↑', 'Nach oben', function () { ffExtraSync(); if (i > 0) { var x = ffExtra.splice(i, 1)[0]; ffExtra.splice(i - 1, 0, x); ffRenderExtra(); } }));
+    row.appendChild(mkb('↓', 'Nach unten', function () { ffExtraSync(); if (i < ffExtra.length - 1) { var x = ffExtra.splice(i, 1)[0]; ffExtra.splice(i + 1, 0, x); ffRenderExtra(); } }));
+    row.appendChild(mkb('×', 'Entfernen', function () { ffExtraSync(); ffExtra.splice(i, 1); ffRenderExtra(); }));
+    r.appendChild(row); r.appendChild(o); xl.appendChild(r);
+  });
+}
+async function ffSave() {
+  ffExtraSync();
+  var extra = ffExtra.filter(function (f) { return f.label; });
+  if (extra.some(function (f) { return f.typ === 'wahl' && !(f.opts || []).length; })) { alert('Bei einer Auswahl brauchst Du mindestens eine Antwort (eine pro Zeile).'); return; }
+  var hide = [], req = {};
+  [].forEach.call(document.querySelectorAll('#ff-rows .ff-row'), function (r) {
+    var k = r.dataset.k, sh = r.querySelector('.ff-show'), rq = r.querySelector('.ff-req');
+    if (!sh.checked && !sh.disabled) hide.push(k);
+    if (rq && !rq.disabled && sh.checked && rq.checked !== (r.dataset.dreq === '1')) req[k] = rq.checked;
+  });
+  settings.formFelder = settings.formFelder || {}; settings.formFelder[ffCur] = { hide: hide, req: req, extra: extra };
+  persist(); closeModal('modal-ffeld');
+  try { await KS.txtset(settings.formTexte || {}, settings.formFelder); alert('Gespeichert und veröffentlicht. Das Formular zeigt die neuen Felder beim nächsten Öffnen.'); }
+  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
 }
 /* Eigene Texte der Webformulare: Originaltext -> eigener Text, gespeichert in settings.formTexte und auf dem Server veröffentlicht */
 var ftCur = null, ftKeys = [];
@@ -6130,7 +6230,7 @@ async function ftSave() {
   var map = settings.formTexte = settings.formTexte || {};
   [].forEach.call(document.querySelectorAll('#ft-list .ft-row'), function (r) { var k = r.dataset.k, v = ftNorm(r.querySelector('textarea').value); if (!v || v === k) delete map[k]; else map[k] = v; });
   persist(); closeModal('modal-ftxt');
-  try { await KS.txtset(map); alert('Gespeichert und veröffentlicht. Die Formulare zeigen die neuen Texte beim nächsten Öffnen.'); }
+  try { await KS.txtset(map, settings.formFelder || {}); alert('Gespeichert und veröffentlicht. Die Formulare zeigen die neuen Texte beim nächsten Öffnen.'); }
   catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere die Texte noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
 }
 /* Ausgefüllte Formulare (.json und .pdf) in die Akten übernehmen */
@@ -6193,6 +6293,7 @@ async function formularImport(entries) {
       var hw = (z.hinweise || []); if (hw.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese, Hinweise:\n' + hw.join('\n') });
       p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnesebogen übernommen (Unterschrift vor Ort noch nötig)' + (created ? ' (Patient angelegt)' : '') });
     }
+    if (Array.isArray(d.extra) && d.extra.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Zusatzangaben (' + ({ anmeldung: 'Anmeldung', anamnese: 'Anamnese', erinnerung: 'Terminerinnerung' }[d.typ] || d.typ) + '):\n' + d.extra.map(function (x) { return x.label + ': ' + (x.wert || '-'); }).join('\n') });
     formMark(p, d.typ, 'got');
     if (pdf) {
       var id = newId(); await fPut(id, pdf.name, pdf);

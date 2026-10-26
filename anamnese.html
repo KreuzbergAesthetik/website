@@ -7,7 +7,7 @@
 <title>Anamnese Kreuzberg Ästhetik</title>
 <link rel="stylesheet" href="forms.css">
 </head>
-<body>
+<body data-form="anamnese">
 <div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
 <div class="wrap" id="formbox">
   <form id="f" novalidate autocomplete="on">
@@ -19,6 +19,7 @@
     <div id="codebox"></div>
 
     <div id="fragen"></div>
+    <div id="extras"></div>
 
     <div class="card" style="margin-top:20px">
       <label class="chk" id="g-ok"><input type="checkbox" id="ok"><span>Die Fragen zu den Vorerkrankungen habe ich nach bestem Wissen und Gewissen beantwortet. <span style="color:#dc2626">*</span></span></label>
@@ -34,6 +35,7 @@
   </form>
 </div>
 <script src="forms.js"></script>
+<script src="ftexte.js"></script>
 <script>
 /* Fragen nach dem Anamnesebogen der Praxis. dep = Unterfrage erscheint nur, wenn Frage dep mit Ja beantwortet ist. */
 var QS = [
@@ -68,8 +70,14 @@ var GATE = {
 };
 /* Gruppen, die bei "Nein" in der Sammelfrage automatisch mit Nein beantwortet werden */
 var AUTO = [3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-var qbox = $('fragen'), ui = [];
+var qbox = $('fragen'), ui = [], EX = null;
 var sammel = ynToggle('sammel', function () { applySammel(); });
+function applySammel() {
+  var off = sammel.get() === false;
+  AUTO.forEach(function (n) { var u = ui.filter(function (x) { return x.n === n; })[0]; if (u) { u.sammelOff = off; u.card.style.display = off ? 'none' : ''; } });
+}
+function buildQs() {
+  QS = QS.filter(function (q) { return !KF.hidden('q' + q.n); });
 (function () {
   var c = el('div', { class: 'q' });
   c.appendChild(el('h3', { text: 'Vorerkrankungen und Medikamente' }));
@@ -77,14 +85,10 @@ var sammel = ynToggle('sammel', function () { applySammel(); });
   c.appendChild(r); c.appendChild(el('div', { class: 'small', text: 'Bei „Nein“ überspringst Du die Fragen 3 und 5 bis 17. Bei „Ja“ gehst Du sie einzeln durch.' }));
   qbox.appendChild(c);
 })();
-function applySammel() {
-  var off = sammel.get() === false;
-  AUTO.forEach(function (n) { var u = ui[n - 1]; if (u) { u.sammelOff = off; u.card.style.display = off ? 'none' : ''; } });
-}
 QS.forEach(function (q, qi) {
   var card = el('div', { class: 'q ' + (q.cls || '') });
   card.appendChild(el('h3', { text: q.n + '. ' + q.t }));
-  var gt = GATE[q.n], u = { items: [], rows: [], follows: [], follow: null, gate: null, sammelOff: false };
+  var gt = GATE[q.n], u = { n: q.n, items: [], rows: [], follows: [], follow: null, gate: null, sammelOff: false };
   /* Knopf: Beispiele bzw. enthaltene Unterpunkte ansehen, ohne etwas zu beantworten */
   var exTxt = [];
   if (gt) exTxt.push('Dazu gehören: ' + q.items.filter(function (x) { return x.dep == null; }).map(function (x) { return x.t; }).join('; ') + '.');
@@ -126,6 +130,8 @@ QS.forEach(function (q, qi) {
   }
   u.refresh = refresh; u.vis = vis; u.card = card; ui.push(u); qbox.appendChild(card); refresh();
 });
+}
+KF.ready(function () { KF.apply(); buildQs(); EX = KF.extras($('extras')); });
 $('datenschutz').appendChild(datenschutzBlock());
 var CODE = (new URLSearchParams(location.search).get('c') || '').toUpperCase().trim();
 if (!/^[A-Z2-9]{6}$/.test(CODE)) CODE = '';
@@ -153,6 +159,7 @@ function collect() {
     var any = items.some(function (x) { return x.visible && x.ja; });
     return { n: q.n, t: q.t, intro: q.intro || '', hint: q.hint || '', followLabel: q.follow || '', items: items, follow: q.follow && any ? u.follow.querySelector('textarea').value.trim() : '', any: any };
   });
+  var ex = EX ? EX.collect() : { bad: [], list: [] }; bad = bad.concat(ex.bad); d.extra = ex.list;
   if (!$('ok').checked) bad.push($('g-ok'));
   return { d: d, bad: bad };
 }
@@ -178,6 +185,7 @@ async function buildAnamnese(d, data) {
     if (q.followLabel && q.any) { P.text('-> wenn ja: ' + q.followLabel, { size: 9, bold: true, x: P.M + 8 }); P.text(q.follow || '(keine Angabe)', { size: 9.5, x: P.M + 22, gap: 2 }); }
     P.rule(4);
   });
+  KF.pdf(P, d.extra);
   P.ensure(150); P.y -= 4;
   var y0 = P.y; P.page.drawRectangle({ x: P.M, y: y0 - 10, width: 10, height: 10, borderColor: P.black, borderWidth: 1 });
   P.page.drawLine({ start: { x: P.M + 2, y: y0 - 8 }, end: { x: P.M + 8, y: y0 - 2 }, thickness: 1.4, color: P.black }); P.page.drawLine({ start: { x: P.M + 2, y: y0 - 2 }, end: { x: P.M + 8, y: y0 - 8 }, thickness: 1.4, color: P.black });
@@ -192,8 +200,8 @@ async function buildAnamnese(d, data) {
 function summary(d) {
   var by = function (n) { return d.q.filter(function (q) { return q.n === n; })[0]; };
   var out = { allergien: '', medikamente: '', diagnosen: [], hinweise: [] };
-  var a = by(4); if (a.any) out.allergien = a.follow || 'ja (ohne nähere Angabe)';
-  var m = by(3); if (m.any) out.medikamente = m.follow || 'ja (ohne nähere Angabe)';
+  var a = by(4); if (a && a.any) out.allergien = a.follow || 'ja (ohne nähere Angabe)';
+  var m = by(3); if (m && m.any) out.medikamente = m.follow || 'ja (ohne nähere Angabe)';
   d.q.forEach(function (q) {
     if (!q.any || q.n === 3 || q.n === 4) return;
     var pos = q.items.filter(function (i) { return i.visible && i.ja; }).map(function (i) { return i.t + (i.follow ? ' (' + i.follow + ')' : ''); });
@@ -211,13 +219,12 @@ $('f').addEventListener('submit', async function (ev) {
   var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
   try {
     var d = r.d;
-    var data = { format: 'ka-formular', version: 1, typ: 'anamnese', erstellt: new Date().toISOString(), patient: { code: d.code }, antworten: d.q, zusammenfassung: summary(d) };
+    var data = { format: 'ka-formular', version: 1, typ: 'anamnese', erstellt: new Date().toISOString(), patient: { code: d.code }, antworten: d.q, zusammenfassung: summary(d), extra: d.extra };
     var pdf = await buildAnamnese(d, data);
     await deliver('anamnese', 'Anamnese', d.code, data, pdf, $('website').value);
     showDone('Anamnesebogen');
   } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
 });
 </script>
-<script src="ftexte.js"></script>
 </body>
 </html>

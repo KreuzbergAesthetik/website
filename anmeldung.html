@@ -7,7 +7,7 @@
 <title>Patientenanmeldung Kreuzberg Ästhetik</title>
 <link rel="stylesheet" href="forms.css">
 </head>
-<body>
+<body data-form="anmeldung">
 <div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
 <div class="wrap" id="formbox">
   <form id="f" novalidate autocomplete="on">
@@ -20,11 +20,13 @@
 
     <h2>Zur Person</h2>
     <div class="card">
+      <div data-fk="geschlecht" data-fl="Geschlecht" data-req="1">
       <label class="l">Ich identifiziere mich … <span class="req">*</span></label>
       <div class="radios" id="g-geschlecht">
         <label><input type="radio" name="geschlecht" value="Divers"> nicht binär</label>
         <label><input type="radio" name="geschlecht" value="Herr"> männlich</label>
         <label><input type="radio" name="geschlecht" value="Frau"> weiblich</label>
+      </div>
       </div>
 
       <label class="l">Geburtsdatum <span class="req">*</span></label>
@@ -35,13 +37,14 @@
       </div>
 
       <div class="grid3" style="grid-template-columns:.7fr 1fr 1fr; margin-top:0;">
-        <div><label class="l">Titel</label><input type="text" id="titel" placeholder="Dr., Prof., ..." autocomplete="honorific-prefix"></div>
+        <div data-fk="titel" data-fl="Titel"><label class="l">Titel</label><input type="text" id="titel" placeholder="Dr., Prof., ..." autocomplete="honorific-prefix"></div>
         <div><label class="l">Vorname(n) <span class="req">*</span></label><input type="text" id="vorname" autocomplete="given-name"></div>
         <div><label class="l">Nachname(n) <span class="req">*</span></label><input type="text" id="nachname" autocomplete="family-name"></div>
       </div>
 
     </div>
 
+    <div data-fk="anschrift" data-fl="Anschrift" data-req="1">
     <h2>Anschrift</h2>
     <div class="card">
       <div class="row-sn">
@@ -53,23 +56,30 @@
         <div><label class="l">Stadt <span class="req">*</span></label><input type="text" id="stadt" autocomplete="address-level2"></div>
       </div>
     </div>
+    </div>
 
     <h2>Kontakt</h2>
     <div class="card">
       <div class="grid2">
-        <div>
+        <div data-fk="phone" data-fl="Telefonnummer" data-req="1">
           <label class="l">Telefonnummer <span class="req">*</span></label>
           <div class="phone"><span class="pre">+49</span><input type="tel" id="phone" placeholder="01512 3456789" autocomplete="tel-national"></div>
           <div class="hint">Bitte ohne Ländervorwahl eingeben (z. B. 0173 2774413)</div>
         </div>
-        <div><label class="l">E-Mail-Adresse <span class="req">*</span></label><input type="email" id="email" autocomplete="email"></div>
+        <div data-fk="email" data-fl="E-Mail-Adresse" data-req="1"><label class="l">E-Mail-Adresse <span class="req">*</span></label><input type="email" id="email" autocomplete="email"></div>
       </div>
+      <div data-fk="notfall" data-fl="Notfallkontakt">
       <label class="l">Notfallkontakt (Name &amp; Telefonnummer)</label>
       <input type="text" id="notfall">
+      </div>
     </div>
 
+    <div data-fk="quelle" data-fl="Aufmerksam geworden durch">
     <h2>Noch eine Frage</h2>
     <div class="card" id="weitere"></div>
+    </div>
+
+    <div id="extras"></div>
 
     <h2>Unterschrift</h2>
     <div class="card">
@@ -88,6 +98,7 @@
   </form>
 </div>
 <script src="forms.js"></script>
+<script src="ftexte.js"></script>
 <script>
 var weitere = $('weitere');
 weitere.appendChild(el('label', { class: 'l', text: 'Wie bist Du auf die Praxis aufmerksam geworden?' }));
@@ -98,6 +109,8 @@ var sig = makeSig($('sig'));
 $('sig-clear').onclick = function () { sig.clear(); };
 $('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); });
 
+var EX = null;
+KF.ready(function () { KF.apply(); EX = KF.extras($('extras')); });
 function val(id) { return $(id).value.trim(); }
 function mark(node) { node.classList.add('invalid'); }
 function collect() {
@@ -105,14 +118,15 @@ function collect() {
   document.querySelectorAll('.seg.err').forEach(function (n) { n.classList.remove('err'); });
   var bad = [], d = {};
   d.geschlecht = (document.querySelector('input[name=geschlecht]:checked') || {}).value || '';
-  if (!d.geschlecht) bad.push($('g-geschlecht'));
+  if (!d.geschlecht && KF.need('geschlecht', true)) bad.push($('g-geschlecht'));
   d.dob = dobFromParts(val('dob-t'), $('dob-m').value, val('dob-j')); if (!d.dob) bad.push($('g-dob'));
-  [['vorname', 'vorname'], ['nachname', 'nachname'], ['strasse', 'strasse'], ['nr', 'nr'], ['plz', 'plz'], ['stadt', 'stadt']].forEach(function (k) { d[k[0]] = val(k[1]); if (!d[k[0]]) bad.push($(k[1])); });
+  [['vorname', 'vorname'], ['nachname', 'nachname'], ['strasse', 'strasse'], ['nr', 'nr'], ['plz', 'plz'], ['stadt', 'stadt']].forEach(function (k) { d[k[0]] = val(k[1]); if (!d[k[0]] && (k[0] === 'vorname' || k[0] === 'nachname' || KF.need('anschrift', true))) bad.push($(k[1])); });
   d.titel = val('titel');
-  var ph = val('phone').replace(/[^\d+]/g, ''); if (ph.length < 6) bad.push($('phone')); else d.phone = ph.charAt(0) === '+' ? ph : '+49' + ph.replace(/^0+/, '');
-  d.email = val('email'); if (!isEmail(d.email)) bad.push($('email'));
-  d.notfall = val('notfall');
-  d.quelle = $('quelle').value;
+  var ph = val('phone').replace(/[^\d+]/g, ''); d.phone = ''; if (ph) { if (ph.length < 6) bad.push($('phone')); else d.phone = ph.charAt(0) === '+' ? ph : '+49' + ph.replace(/^0+/, ''); } else if (KF.need('phone', true)) bad.push($('phone'));
+  d.email = val('email'); if (d.email ? !isEmail(d.email) : KF.need('email', true)) bad.push($('email'));
+  d.notfall = val('notfall'); if (!d.notfall && KF.need('notfall', false)) bad.push($('notfall'));
+  d.quelle = $('quelle').value; if (!d.quelle && KF.need('quelle', false)) bad.push($('quelle'));
+  var ex = EX ? EX.collect() : { bad: [], list: [] }; bad = bad.concat(ex.bad); d.extra = ex.list;
   if (sig.isEmpty()) bad.push($('sig'));
   return { d: d, bad: bad };
 }
@@ -128,10 +142,10 @@ async function buildAnmeldung(d, data) {
     P.y -= lh * rows + 4;
   }
   sec('Persönliche Angaben');
-  kv('Name', who); kv('Geschlecht', { Frau: 'weiblich', Herr: 'männlich', Divers: 'nicht binär' }[d.geschlecht]); kv('Geburtsdatum', d.dob);
-  kv('Anschrift', d.strasse + ' ' + d.nr + '\n' + d.plz + ' ' + d.stadt); kv('Telefon', d.phone); kv('E-Mail', d.email); kv('Notfallkontakt', d.notfall);
-  sec('Weitere Angaben');
-  kv('Aufmerksam geworden durch', d.quelle);
+  kv('Name', who); if (!KF.hidden('geschlecht')) kv('Geschlecht', { Frau: 'weiblich', Herr: 'männlich', Divers: 'nicht binär' }[d.geschlecht]); kv('Geburtsdatum', d.dob);
+  if (!KF.hidden('anschrift')) kv('Anschrift', d.strasse + ' ' + d.nr + '\n' + d.plz + ' ' + d.stadt); if (!KF.hidden('phone')) kv('Telefon', d.phone); if (!KF.hidden('email')) kv('E-Mail', d.email); if (!KF.hidden('notfall')) kv('Notfallkontakt', d.notfall);
+  if (!KF.hidden('quelle')) { sec('Weitere Angaben'); kv('Aufmerksam geworden durch', d.quelle); }
+  KF.pdf(P, d.extra);
   P.y -= 6; P.text('Mit meiner Unterschrift bestätige ich die Richtigkeit meiner Angaben und habe die Datenschutzhinweise zur Kenntnis genommen.', { size: 9, italic: true, color: P.gray, gap: 8 });
   await P.sign(sig.png(), 'Unterschrift', who);
   return await P.finish(data);
@@ -144,13 +158,12 @@ $('f').addEventListener('submit', async function (ev) {
   var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
   try {
     var d = r.d;
-    var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: new Date().toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { quelle: d.quelle } };
+    var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: new Date().toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { quelle: d.quelle }, extra: d.extra };
     var pdf = await buildAnmeldung(d, data);
     await deliver('anmeldung', 'Patientenanmeldung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
     showDone('Anmeldebogen');
   } catch (x) { go.disabled = false; go.textContent = 'Anmelden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
 });
 </script>
-<script src="ftexte.js"></script>
 </body>
 </html>
