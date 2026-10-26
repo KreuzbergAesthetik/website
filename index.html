@@ -370,6 +370,12 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 @media (max-width:520px) { .foot-bar { flex-wrap:wrap; gap:8px; } .foot-bar .btn { min-width:0; flex:1 1 90px; padding-left:10px; padding-right:10px; } }
 .icon-btn { width:38px; height:36px; padding:0 !important; display:inline-flex; align-items:center; justify-content:center; }
 .icon-btn svg { width:20px; height:20px; }
+.iv-bar { display:flex; gap:6px; align-items:flex-start; margin-bottom:14px; } .iv-sp { flex:1; }
+.iv-b { width:48px; border:none; border-radius:12px; padding:7px 0 5px; cursor:pointer; display:inline-flex; flex-direction:column; align-items:center; gap:2px; font-size:10px; font-weight:600; line-height:1.1; } .iv-b svg { width:20px; height:20px; } .iv-b span { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.iv-grey { background:#eef2f7; color:#475569; } .iv-navy { background:#eef1fa; color:#1e3a8a; } .iv-orange { background:#fdf5ea; color:#b45309; } .iv-violet { background:#f5f1ff; color:#7c3aed; } .iv-green { background:#16a34a; color:#fff; } .iv-del { background:none; color:#dc2626; border:1px solid #fecaca; padding:10px 0; width:40px; }
+.inv-card { background:#f8fafc; border:1px solid #d5dde7; border-radius:12px; padding:10px; margin-bottom:10px; } .ic-top { display:grid; grid-template-columns:minmax(0,1fr) auto 24px; gap:8px; align-items:center; margin-bottom:6px; } .inv-amt { font-size:13px; font-weight:600; white-space:nowrap; }
+.ic-mid { display:grid; grid-template-columns:56px 84px 70px minmax(0,1fr); gap:6px; margin-bottom:6px; } .ic-mid.rab { grid-template-columns:70px 1fr 80px; align-items:center; } .ic-rl { font-size:12px; color:#64748b; } .ic-note { font-size:13px; }
+@media (max-width:420px) { .ic-mid { grid-template-columns:56px 1fr 70px; } .ic-mid input[type=date] { grid-column:1 / -1; } }
 .inv-row { display:grid; grid-template-columns:1fr 58px 86px 66px 80px 24px; gap:6px; align-items:center; margin-bottom:6px; }
 .inv-row .form-control { min-width:0; }
 .inv-tab { width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
@@ -539,6 +545,7 @@ body { overflow-x:clip; }
 .pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:flex-start; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:8px 4px; font-size:12.5px; white-space:normal; line-height:1.2; }
+.inv-plus { font-size:22px; line-height:1; padding:4px 14px; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
 .pt-acts { display:grid; grid-template-columns:repeat(3,32px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:32px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
@@ -564,7 +571,7 @@ body { overflow-x:clip; }
 .pt th[data-sd="1"]::after { content:' \25B2'; font-size:9px; } .pt th[data-sd="-1"]::after { content:' \25BC'; font-size:9px; }
 .open-box { display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#fff7ed; border:1px solid #fed7aa; border-left:6px solid #ea580c; border-radius:12px; padding:10px 14px; margin:0 0 12px; } .open-box.late { background:#fef2f2; border-color:#fecaca; border-left-color:#dc2626; }
 .open-box .ob-l { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#9a3412; } .open-box b { font-size:22px; color:#9a3412; } .open-box.late .ob-l, .open-box.late b { color:#991b1b; } .open-box .ob-t { font-size:13.5px; color:#475569; flex:1; min-width:180px; }
-.pt tr.t-open td { background:#fffaf5; } .pt tr.t-late td { background:#fef2f2; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
+.pt tr.t-open td { background:#fffaf5; } .pt tr.t-late td { background:#fef2f2; } .pt tr.t-open td:first-child, .pt tr.t-late td:first-child { padding-left:16px; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
 .badge-red { background:#fee2e2; color:#991b1b; font-weight:700; }
 .ak-h-open { color:#9a3412; border-bottom-color:#fed7aa; }
 .hm-openp { background:#fffaf5 !important; border-left:4px solid #ea580c; } .hm-late { background:#fef2f2 !important; border-left:4px solid #dc2626; }
@@ -891,18 +898,17 @@ function kaStart() {
   <!-- TAB 4: RECHNUNGEN -->
   <div id="tab-rechnungen" class="tab-content">
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">Rechnungen</span>
-        <div class="row-actions">
-          <button type="button" class="btn btn-secondary btn-sm" id="inv-b-check" onclick="invCheck()">Prüfen</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="inv-b-imp" onclick="document.getElementById('rimp-file').click()">Import</button>
-          <input type="file" id="rimp-file" accept="application/pdf,.pdf,application/zip,.zip" multiple style="display:none" onchange="rechnungenImport(this)">
-          <button type="button" class="btn btn-sm" id="inv-b-new" onclick="invNew()">+ Rechnung</button>
-        </div>
+      <div class="card-header" style="gap:8px;">
+        <div class="seg" id="inv-kind" style="flex:1; min-width:0;"></div>
+        <button type="button" class="btn btn-sm inv-plus" id="inv-b-new" onclick="invNew()" title="Neue Rechnung" aria-label="Neue Rechnung">+</button>
       </div>
-      <div class="seg" id="inv-kind" style="margin-bottom:10px;"></div>
       <div id="entw-list" style="display:none"></div>
       <div id="inv-main">
+      <div class="row-actions" style="justify-content:flex-end; margin-bottom:8px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="inv-b-check" onclick="invCheck()">Prüfen</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="inv-b-imp" onclick="document.getElementById('rimp-file').click()">Import</button>
+        <input type="file" id="rimp-file" accept="application/pdf,.pdf,application/zip,.zip" multiple style="display:none" onchange="rechnungenImport(this)">
+      </div>
       <div id="inv-open"></div>
       <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
       <div id="inv-seg" class="za-seg" style="margin-bottom:10px;"></div>
@@ -1377,14 +1383,16 @@ function kaStart() {
 <div id="modal-inv" class="modal-overlay">
   <div class="modal-box" style="max-width:680px;">
     <div class="modal-header"><strong id="inv-title">Rechnung erstellen</strong><button type="button" class="close-btn" onclick="closeModal('modal-inv')">&times;</button></div>
-    <div class="form-group"><label>Patient *</label><input type="text" id="inv-patient" class="form-control" list="t-patient-list" placeholder="Name eingeben..." autocomplete="off" onchange="invPatientChanged()"></div>
-    <div class="form-group"><label>Termin übernehmen (Leistung, Datum und Dokumentation)</label><select id="inv-termin" class="form-control" onchange="invTerminChanged()"></select></div>
-    <div class="form-group"><label>Anschrift *</label><textarea id="inv-adresse" class="form-control" rows="3" placeholder="Straße Hausnummer&#10;PLZ Ort&#10;Land"></textarea></div>
     <div class="grid-2">
-      <div class="form-group"><label>Rechnungsdatum *</label><input type="date" id="inv-datum" class="form-control"></div>
-      <div class="form-group"><label>Leistungsdatum *</label><input type="date" id="inv-leistung" class="form-control"></div>
+      <div class="form-group"><label>Patient *</label><input type="text" id="inv-patient" class="form-control" list="t-patient-list" placeholder="Name eingeben..." autocomplete="off" onchange="invPatientChanged()"></div>
+      <div class="form-group"><label>Termin übernehmen</label><select id="inv-termin" class="form-control" onchange="invTerminChanged()"></select></div>
     </div>
-    <div class="form-group"><label>Text vor der Tabelle (optional)</label><textarea id="inv-vortext" class="form-control" rows="2" placeholder="z.B. Vielen Dank für Ihr Vertrauen. Hiermit berechne ich Ihnen folgende Leistungen:"></textarea></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Anschrift *</label><textarea id="inv-adresse" class="form-control dk-grow" rows="1" placeholder="Straße Hausnummer, PLZ Ort" oninput="autoGrow(this)"></textarea></div>
+      <div class="form-group"><label>Rechnungsdatum *</label><input type="date" id="inv-datum" class="form-control"></div>
+    </div>
+    <input type="date" id="inv-leistung" style="display:none">
+    <div class="dk-sec dk-fold closed" id="iv-f-vor"><div class="dk-h dk-fh" onclick="ivFold(this)">Text vor der Tabelle</div><textarea id="inv-vortext" class="form-control dk-grow" rows="1" oninput="autoGrow(this)" placeholder="z.B. Vielen Dank für Ihr Vertrauen. Hiermit berechne ich Ihnen folgende Leistungen:"></textarea></div>
     <div class="ak-h">Positionen (Preise brutto in Euro)</div>
     <div id="inv-pos"></div>
     <div style="display:flex; gap:6px;">
@@ -1406,8 +1414,12 @@ function kaStart() {
       <div class="form-group"><label>Betrag in Euro</label><input type="text" id="inv-paybetrag" class="form-control" inputmode="decimal" oninput="invPayAuto = false"></div>
       <div class="form-group"><label>Zahlungsdatum</label><input type="date" id="inv-paydatum" class="form-control"></div>
     </div>
-    <div class="form-group"><label>Text zur Behandlung (optional, wird auf der Rechnung gedruckt)</label><textarea id="inv-doku" class="form-control" rows="3"></textarea><button type="button" id="inv-doku-btn" class="btn btn-secondary btn-sm" style="display:none; margin-top:6px;" onclick="invDokuEinfuegen()">Text aus der Dokumentation einfügen</button></div>
-    <div class="form-group"><label>Zahlungshinweis (wird bei offenen Rechnungen gedruckt)</label><textarea id="inv-zahlung" class="form-control" rows="2"></textarea></div>
+    <div id="iv-zahlwrap">
+      <div class="ak-h">Auf der Rechnung zeigen</div>
+      <div class="dk-vgrid"><label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin:0;"><input type="checkbox" id="inv-show-hint" checked> Zahlungshinweis</label><label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin:0;"><input type="checkbox" id="inv-show-qr" checked> QR-Codes und Kontodaten</label></div>
+      <div class="dk-sec dk-fold closed" id="iv-f-zahl"><div class="dk-h dk-fh" onclick="ivFold(this)">Text des Zahlungshinweises</div><textarea id="inv-zahlung" class="form-control dk-grow" rows="1" oninput="autoGrow(this)"></textarea></div>
+    </div>
+    <div class="dk-sec dk-fold closed" id="iv-f-doku"><div class="dk-h dk-fh" onclick="ivFold(this)">Text zur Behandlung (wird gedruckt)</div><textarea id="inv-doku" class="form-control dk-grow" rows="1" oninput="autoGrow(this)"></textarea><button type="button" id="inv-doku-btn" class="btn btn-secondary btn-sm" style="display:none; margin-top:6px;" onclick="invDokuEinfuegen()">Text aus der Dokumentation einfügen</button></div>
     <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-inv')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveInvoice()" id="inv-savebtn">Rechnung erstellen</button></div>
   </div>
 </div>
@@ -1603,14 +1615,15 @@ function kaStart() {
 <!-- MODAL: RECHNUNG ANSEHEN -->
 <div id="modal-invview" class="modal-overlay">
   <div class="modal-box" style="max-width:800px; background:#fff;">
-    <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
-      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-invview')">&lsaquo; Zurück</button>
-      <button type="button" class="btn btn-secondary" id="inv-pay-btn" onclick="openPay()">Zahlung erfassen</button>
-      <button type="button" class="btn btn-secondary" onclick="editInvoice()">Bearbeiten</button>
-      <button type="button" class="btn btn-secondary" id="inv-kv-btn" style="display:none" onclick="kvToInvoice()">In Rechnung umwandeln</button>
-      <button type="button" class="btn btn-save" id="inv-send-btn" onclick="sendInvoice()">Rechnung senden</button>
-      <button type="button" class="btn btn-secondary" onclick="savePdf()">Als PDF speichern</button>
-      <button type="button" class="btn btn-del btn-ico" style="margin-left:auto;" title="Rechnung löschen" aria-label="Rechnung löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+    <div class="no-print iv-bar">
+      <button type="button" class="iv-b iv-grey" title="Zurück" aria-label="Zurück" onclick="closeModal('modal-invview')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>Zurück</span></button>
+      <span class="iv-sp"></span>
+      <button type="button" class="iv-b iv-navy" id="inv-pay-btn" title="Zahlung erfassen" aria-label="Zahlung erfassen" onclick="openPay()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7a6 6 0 100 10M5 10h9M5 14h9"/></svg><span>Zahlung</span></button>
+      <button type="button" class="iv-b iv-grey" title="Bearbeiten" aria-label="Bearbeiten" onclick="editInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg><span>Bearbeiten</span></button>
+      <button type="button" class="iv-b iv-violet" id="inv-kv-btn" style="display:none" title="In Rechnung umwandeln" aria-label="In Rechnung umwandeln" onclick="kvToInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 14h5M13 11l3 3-3 3"/></svg><span>Rechnung</span></button>
+      <button type="button" class="iv-b iv-orange" title="Als PDF speichern" aria-label="Als PDF speichern" onclick="savePdf()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>PDF</span></button>
+      <button type="button" class="iv-b iv-green" id="inv-send-btn" title="Rechnung senden" aria-label="Rechnung senden" onclick="sendInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg><span id="inv-send-cap">Senden</span></button>
+      <button type="button" class="iv-b iv-del" title="Löschen" aria-label="Löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
     </div>
     <div id="inv-view"></div>
   </div>
@@ -1834,7 +1847,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-j';
+var KA_V = '2026-10-28-l';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3157,7 +3170,7 @@ function nextPayNr(date) {
   invoices.forEach(function (i) { (i.payments || []).forEach(function (p) { var m = /^B(\d{4})-(\d+)$/.exec(p.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); }); });
   return 'B' + yr + '-' + String(seq + 1).padStart(5, '0');
 }
-function newRow(type) { return type === 'rabatt' ? { type: 'rabatt', text: 'Rabatt', pct: '', rate: '19' } : { type: 'pos', text: '', qty: '1', price: '', rate: '19' }; }
+function newRow(type) { var ld = document.getElementById('inv-leistung'), d0 = (ld && ld.value) || iso(new Date()); return type === 'rabatt' ? { type: 'rabatt', text: 'Rabatt', pct: '', rate: '19' } : { type: 'pos', text: '', qty: '1', price: '', rate: '19', datum: d0, note: '' }; }
 var invEdit = null, invMode = 'rechnung', invTab = 'rechnung', invKeepMode = false;
 var DRAFT = { kv: { name: 'Kostenvoranschlag', kopf: 'KOSTENVORANSCHLAG', datei: 'Kostenvoranschlag', neu: 'Kostenvoranschlag erstellen', liste: 'Kostenvoranschläge' }, test: { name: 'Test-Rechnung', kopf: 'RECHNUNG', datei: 'Test-Rechnung', neu: 'Test-Rechnung erstellen', liste: 'Test-Rechnungen' } };
 function invCur() { return invoices.concat(entw).filter(function (i) { return i.id === viewInvId; })[0]; }
@@ -3168,7 +3181,7 @@ function invEditUi(on) {
   document.getElementById('inv-savebtn').textContent = on ? 'Speichern' : dr ? nm + ' erstellen' : 'Rechnung erstellen';
   var hidePay = on || !!dr;
   ['inv-payh', 'inv-payseg', 'inv-paybox'].forEach(function (id) { var e = document.getElementById(id); if (e) e.style.display = hidePay ? 'none' : (id === 'inv-paybox' ? (invPayArt ? 'grid' : 'none') : ''); });
-  var zg = document.getElementById('inv-zahlung'); if (zg && zg.parentNode) zg.parentNode.style.display = dr ? 'none' : '';
+  var zw = document.getElementById('iv-zahlwrap'); if (zw) zw.style.display = dr ? 'none' : '';
 }
 /* Bestehende Rechnung ändern: Nummer und Zahlungen bleiben erhalten */
 function editInvoice() {
@@ -3184,10 +3197,11 @@ function fillInvForm(inv) {
   invRows = (inv.items || []).map(function (it) {
     var c = function (v) { return String(v).replace('.', ','); };
     if (it.rabatt) return { type: 'rabatt', text: String(it.text || '').replace(/\s*-[\d,.]+%$/, ''), pct: c(it.pct), rate: String(it.rate) };
-    return { type: 'pos', text: it.text, qty: c(it.qty), price: c(it.price), rate: String(it.rate) };
+    return { type: 'pos', text: it.text, qty: c(it.qty), price: c(it.price), rate: String(it.rate), datum: it.datum || inv.leistung || inv.date, note: it.note || '' };
   });
   if (!invRows.length) invRows = [newRow('pos')];
-  renderInvRows();
+  g('inv-show-hint').checked = inv.showHint !== false; g('inv-show-qr').checked = inv.showQr !== false;
+  renderInvRows(); ivFoldSync();
 }
 function openInvoiceKind(p, kind) { invMode = kind || 'rechnung'; invKeepMode = true; openInvoice(p); }
 function kvToInvoice() {
@@ -3210,7 +3224,8 @@ function openInvoice(p) {
   document.getElementById('inv-doku').value = ''; invDokEv = null; document.getElementById('inv-doku-btn').style.display = 'none';
   fillTermine(p);
   renderInvRows();
-  openModal('modal-inv');
+  document.getElementById('inv-show-hint').checked = true; document.getElementById('inv-show-qr').checked = true;
+  openModal('modal-inv'); ivFoldSync();
 }
 function fillTermine(p) {
   var sel = document.getElementById('inv-termin'); sel.innerHTML = '';
@@ -3291,29 +3306,40 @@ function renderInvRows() {
   renderInvRab();
   var box = document.getElementById('inv-pos'); box.innerHTML = '';
   invRows.forEach(function (r, i) {
-    var row = mk('div', 'inv-row');
+    var card = mk('div', 'inv-card'), top = mk('div', 'ic-top'), mid = mk('div', 'ic-mid');
     var a = mk('input', 'form-control'); a.type = 'text'; a.placeholder = r.type === 'rabatt' ? 'Bezeichnung' : 'Leistung'; a.value = r.text;
     if (r.type !== 'rabatt') a.setAttribute('list', 't-leistung-list');
     a.oninput = function () { r.text = a.value; };
     if (r.type !== 'rabatt') a.onchange = function () { var k = findKat(a.value); if (k && !numIn(r.price)) { r.text = k.name; r.price = String(k.price).replace('.', ','); r.rate = String(k.rate); renderInvRows(); } };
-    var q = mk('input', 'form-control'); q.type = 'text'; q.inputMode = 'decimal';
-    var pr = r.type === 'rabatt' ? mk('div') : mk('input', 'form-control');
-    if (r.type === 'rabatt') { q.value = r.pct; q.placeholder = '%'; pr.textContent = 'Rabatt'; pr.style.cssText = 'font-size:12px; color:#64748b;'; }
-    else { q.value = r.qty; q.placeholder = 'Menge'; pr.type = 'text'; pr.inputMode = 'decimal'; pr.value = r.price; pr.placeholder = 'Preis €'; }
+    var q = mk('input', 'form-control'); q.type = 'text'; q.inputMode = 'decimal'; q.setAttribute('aria-label', r.type === 'rabatt' ? 'Prozent' : 'Menge');
+    var pr = null, dt = null;
+    if (r.type === 'rabatt') { q.value = r.pct; q.placeholder = '%'; }
+    else {
+      q.value = r.qty; q.placeholder = 'Menge';
+      pr = mk('input', 'form-control'); pr.type = 'text'; pr.inputMode = 'decimal'; pr.value = r.price; pr.placeholder = 'Preis €'; pr.setAttribute('aria-label', 'Preis');
+      dt = mk('input', 'form-control'); dt.type = 'date'; dt.value = r.datum || ''; dt.title = 'Datum der Leistung'; dt.setAttribute('aria-label', 'Datum der Leistung'); dt.onchange = function () { r.datum = dt.value; };
+    }
     var rt = mk('select', 'form-control');
     ['19', '7', '0'].forEach(function (v) { var o = mk('option', '', v + ' %'); o.value = v; rt.appendChild(o); });
     rt.value = r.rate; rt.onchange = function () { r.rate = rt.value; updZeroInfo(); };
-    var sum = mk('div', '', eurP(rowAmount(i))); sum.style.cssText = 'text-align:right; font-size:13px;';
+    var sum = mk('div', 'inv-amt', eurP(rowAmount(i)));
     var upd = function () {
       if (r.type === 'rabatt') r.pct = q.value; else { r.qty = q.value; r.price = pr.value; }
-      box.querySelectorAll('.inv-row').forEach(function (rw, k) { rw.children[4].textContent = eurP(rowAmount(k)); });
+      box.querySelectorAll('.inv-amt').forEach(function (el, k) { el.textContent = eurP(rowAmount(k)); });
       document.getElementById('inv-total').textContent = eurP(invTotal()); syncInvPay();
     };
-    q.oninput = upd; if (r.type !== 'rabatt') pr.oninput = upd;
+    q.oninput = upd; if (pr) pr.oninput = upd;
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Entfernen';
     x.onclick = function () { if (invRows.length > 1) invRows.splice(i, 1); else invRows[0] = newRow('pos'); renderInvRows(); };
-    [a, q, pr, rt, sum, x].forEach(function (c) { row.appendChild(c); });
-    box.appendChild(row);
+    top.appendChild(a); top.appendChild(sum); top.appendChild(x); card.appendChild(top);
+    if (r.type === 'rabatt') { mid.className = 'ic-mid rab'; mid.appendChild(q); mid.appendChild(mk('span', 'ic-rl', 'Rabatt in %')); mid.appendChild(rt); }
+    else { mid.appendChild(q); mid.appendChild(pr); mid.appendChild(rt); mid.appendChild(dt); }
+    card.appendChild(mid);
+    if (r.type !== 'rabatt') {
+      var nt = mk('input', 'form-control ic-note'); nt.type = 'text'; nt.placeholder = 'Anmerkung für die Tabelle, z. B. Charge'; nt.value = r.note || ''; nt.oninput = function () { r.note = nt.value; };
+      card.appendChild(nt);
+    }
+    box.appendChild(card);
   });
   document.getElementById('inv-total').textContent = eurP(invTotal()); syncInvPay(); updZeroInfo();
 }
@@ -3334,9 +3360,10 @@ function saveInvoice() {
     } else {
       var q = numIn(r.qty), pr = numIn(r.price);
       if (!r.text.trim() || q <= 0 || pr <= 0) { bad = true; return; }
-      items.push({ text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10) });
+      items.push({ text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || leist, note: String(r.note || '').trim() });
     }
   });
+  var pd = items.filter(function (x) { return x.datum; }).map(function (x) { return x.datum; }).sort(); if (pd.length) leist = pd[0];
   if (bad || !items.length) { alert('Bitte jede Position mit Leistung, Menge und Preis (Rabatt: Bezeichnung und Prozent) ausfüllen.'); return; }
   var hinweis = items.some(function (i) { return i.rate === 0; }) ? (settings.hinweis || '').trim() : '';
   if (!settings.steuernr && !settings.ustid && !confirm('In den Praxisdaten fehlt die Steuernummer oder USt-IdNr. Die Rechnung wäre unvollständig. Trotzdem erstellen?')) return;
@@ -3360,7 +3387,7 @@ function saveInvoice() {
     var changed = JSON.stringify(ie.items) !== JSON.stringify(items) || ie.date !== datum || ie.adresse !== adresse || ie.vortext !== document.getElementById('inv-vortext').value.trim();
     ie.date = datum; ie.leistung = leist; ie.pid = p.id; ie.name = (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname; ie.adresse = adresse; ie.items = items;
     ie.doku = document.getElementById('inv-doku').value.trim(); ie.eid = parseInt(document.getElementById('inv-termin').value, 10) || null; ie.hinweis = hinweis; ie.zahlung = document.getElementById('inv-zahlung').value.trim();
-    ie.vortext = document.getElementById('inv-vortext').value.trim(); ie.total = totE;
+    ie.vortext = document.getElementById('inv-vortext').value.trim(); ie.total = totE; ie.showHint = document.getElementById('inv-show-hint').checked; ie.showQr = document.getElementById('inv-show-qr').checked;
     if (changed) ie.sentAt = null;
     p.adresse = adresse; invEdit = null; persist(); closeModal('modal-inv'); renderInvoices();
     if (curP === p) { renderHead(); renderVerlauf(); }
@@ -3374,7 +3401,7 @@ function saveInvoice() {
   var inv = { id: newId(), nr: nr, date: datum, leistung: leist, pid: p.id,
     name: (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname, adresse: adresse,
     items: items, doku: document.getElementById('inv-doku').value.trim(), eid: parseInt(document.getElementById('inv-termin').value, 10) || null, hinweis: hinweis, zahlung: document.getElementById('inv-zahlung').value.trim(),
-    vortext: document.getElementById('inv-vortext').value.trim(),
+    vortext: document.getElementById('inv-vortext').value.trim(), showHint: document.getElementById('inv-show-hint').checked, showQr: document.getElementById('inv-show-qr').checked,
     total: total, payments: [], created: Date.now() };
   if (invPayArt) inv.payments.push({ nr: nextPayNr(payDate), art: invPayArt, amount: payAmount, date: payDate });
   p.adresse = adresse;
@@ -3411,6 +3438,13 @@ function invCmp(a, b) {
   else d = invState(a).txt.localeCompare(invState(b).txt, 'de');
   return d * invSort.dir;
 }
+function ivFold(h) { h.parentNode.classList.toggle('closed'); var t = h.parentNode.querySelector('textarea'); if (t && !h.parentNode.classList.contains('closed')) { autoGrow(t); t.focus(); } }
+/* Abschnitte auf, wenn Text drinsteht; Textfelder wachsen mit */
+function ivFoldSync() {
+  [['iv-f-vor', 'inv-vortext'], ['iv-f-doku', 'inv-doku']].forEach(function (f) { var el = document.getElementById(f[0]), ta = document.getElementById(f[1]); if (el && ta) el.classList.toggle('closed', !String(ta.value).trim()); });
+  [].forEach.call(document.querySelectorAll('#modal-inv textarea.dk-grow'), function (t) { if (t.offsetParent) autoGrow(t); });
+  setTimeout(function () { [].forEach.call(document.querySelectorAll('#modal-inv textarea.dk-grow'), function (t) { if (t.offsetParent) autoGrow(t); }); }, 0);
+}
 function invNew() { if (invTab === 'rechnung') openInvoice(null); else openInvoiceKind(null, invTab); }
 /* Reiter Rechnungen | Kostenvoranschläge | Test-Rechnungen: Kostenvoranschläge und Test-Rechnungen haben keine Nummer und zählen nicht in Statistik und Zahlungen */
 function renderEntw() {
@@ -3420,8 +3454,7 @@ function renderEntw() {
   });
   var dr = DRAFT[invTab], main = document.getElementById('inv-main'), box = document.getElementById('entw-list');
   main.style.display = dr ? 'none' : ''; box.style.display = dr ? '' : 'none';
-  document.getElementById('inv-b-check').style.display = document.getElementById('inv-b-imp').style.display = dr ? 'none' : '';
-  document.getElementById('inv-b-new').textContent = '+ ' + (dr ? dr.name : 'Rechnung');
+  var nb = document.getElementById('inv-b-new'); nb.title = nb.getAttribute('aria-label').replace(/.*/, 'Neu: ' + (dr ? dr.name : 'Rechnung')); nb.setAttribute('aria-label', nb.title);
   if (!dr) return;
   box.innerHTML = '';
   var list = entw.filter(function (e) { return e.kind === invTab; }).sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
@@ -3559,9 +3592,10 @@ function invoiceDOM(inv) {
   th.appendChild(hr); tab.appendChild(th); var tb = mk('tbody');
   inv.items.forEach(function (it) {
     var tr = mk('tr'), rate = it.rate != null ? it.rate : 0, amt = it.amount != null ? it.amount : r2(it.qty * it.price);
-    tr.appendChild(mk('td', '', it.rabatt ? '' : fmtD(inv.leistung)));
+    tr.appendChild(mk('td', '', it.rabatt ? '' : fmtD(it.datum || inv.leistung)));
     tr.appendChild(mk('td', 'c', it.rabatt ? '' : String(it.qty).replace('.', ',')));
-    tr.appendChild(mk('td', '', it.text)); tr.appendChild(mk('td', 'c', rate + '%')); tr.appendChild(mk('td', 'r', eurP(amt)));
+    var ptd = mk('td', '', it.text); if (it.note) { var pn = mk('div', '', it.note); pn.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px; white-space:pre-wrap;'; ptd.appendChild(pn); }
+    tr.appendChild(ptd); tr.appendChild(mk('td', 'c', rate + '%')); tr.appendChild(mk('td', 'r', eurP(amt)));
     tb.appendChild(tr);
   });
   tab.appendChild(tb); w.appendChild(tab);
@@ -3589,8 +3623,8 @@ function invoiceDOM(inv) {
   if (inv.hinweis) { var hd = mk('div', '', inv.hinweis); hd.style.cssText = 'white-space:pre-wrap; margin-top:12px;'; w.appendChild(hd); }
   if (inv.doku) { var dk = mk('div'); dk.style.cssText = 'margin-top:12px; font-size:12.5px;'; dk.appendChild(mk('b', '', 'Behandlungsdokumentation')); var dt = mk('div', '', inv.doku); dt.style.whiteSpace = 'pre-wrap'; dk.appendChild(dt); w.appendChild(dk); }
   if (!st.full) {
-    if (inv.zahlung) { var zd = mk('div', '', inv.zahlung); zd.style.cssText = 'white-space:pre-wrap; margin-top:12px;'; w.appendChild(zd); }
-    var hasI = !!settings.iban, hasP = !!settings.paypal;
+    if (inv.zahlung && inv.showHint !== false) { var zd = mk('div', '', inv.zahlung); zd.style.cssText = 'white-space:pre-wrap; margin-top:12px;'; w.appendChild(zd); }
+    var hasI = !!settings.iban && inv.showQr !== false, hasP = !!settings.paypal && inv.showQr !== false;
     if (hasI || hasP) {
       var ps = mk('div', '', 'Den Betrag kannst Du auf mein Konto' + (hasP ? ' oder via PayPal' : '') + ' überweisen.'); ps.style.cssText = 'text-align:center; margin-top:18px; font-size:13px;'; w.appendChild(ps);
       var bx = mk('div'); bx.style.cssText = 'display:flex; margin-top:8px;';
@@ -3613,7 +3647,7 @@ function viewInvoice(id) {
   var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv));
   document.getElementById('inv-pay-btn').style.display = invIsDraft(inv) || invState(inv).full ? 'none' : 'inline-block';
   document.getElementById('inv-kv-btn').style.display = inv.kind === 'kv' ? '' : 'none';
-  document.getElementById('inv-send-btn').textContent = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden';
+  var sb = document.getElementById('inv-send-btn'), sl = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden'; sb.title = sl; sb.setAttribute('aria-label', sl);
   openModal('modal-invview');
 }
 function deleteInvoice() {
@@ -3827,7 +3861,7 @@ function buildInvoicePdf(inv, logo) {
   var PW = 595, PH = 842, L = 60, R = 543, pages = [], cur, y, st = invIsDraft(inv) ? { full: true } : invState(inv), pays = inv.payments || [];
   var imgs = [];
   if (logo) imgs.push({ n: 'Im1', w: logo.w, h: logo.h, bytes: logo.bytes });
-  var q1 = (!!settings.iban && !st.full) ? qrMake(epcFor(inv)) : null, useQ1 = !!q1, useQ2 = qrPaypal() && !st.full;
+  var q1 = (!!settings.iban && !st.full && inv.showQr !== false) ? qrMake(epcFor(inv)) : null, useQ1 = !!q1, useQ2 = qrPaypal() && !st.full && inv.showQr !== false;
   function np() { cur = []; pages.push(cur); y = 60; }
   function Y(v) { return (PH - v).toFixed(2); }
   function txt(x, v, s, size, bold, gray, font) { cur.push((gray != null ? gray : 0.1) + ' g BT /' + (font || (bold ? 'F2' : 'F1')) + ' ' + size + ' Tf ' + x.toFixed(2) + ' ' + Y(v) + ' Td (' + pdfEnc(s) + ') Tj ET'); }
@@ -3866,11 +3900,12 @@ function buildInvoicePdf(inv, logo) {
   y += 23;
   inv.items.forEach(function (it) {
     var amt = it.amount != null ? it.amount : r2(it.qty * it.price), rate = it.rate != null ? it.rate : 0;
-    var ls = pdfWrap(it.text, false, 9.5, 212), h = Math.max(25, ls.length * 12 + 12);
+    var ls = pdfWrap(it.text, false, 9.5, 212), ns = it.note ? pdfWrap(it.note, false, 8.5, 212) : [], h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
     if (y + h > 770) np();
     row(y, h);
-    if (!it.rabatt) { txt(66, y + 16, fmtD(inv.leistung), 9.5); txtC((cx[1] + cx[2]) / 2, y + 16, String(it.qty).replace('.', ','), 9.5); }
+    if (!it.rabatt) { txt(66, y + 16, fmtD(it.datum || inv.leistung), 9.5); txtC((cx[1] + cx[2]) / 2, y + 16, String(it.qty).replace('.', ','), 9.5); }
     ls.forEach(function (t, i) { txt(205, y + 16 + i * 12, t, 9.5); });
+    ns.forEach(function (t, i) { txt(205, y + 16 + (ls.length - 1) * 12 + 12 + i * 11, t, 8.5, false, 0.3); });
     txtC((cx[3] + cx[4]) / 2, y + 16, rate + '%', 9.5); txtR(537, y + 16, eurP(amt), 9.5);
     y += h;
   });
