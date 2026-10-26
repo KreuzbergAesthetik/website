@@ -82,6 +82,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .title-text h1 { font-size:17px; letter-spacing:.2px; } .title-text p { font-size:12px; color:#64748b; }
 nav { background:#fff; border-bottom:1px solid #e2e8f0; display:flex; overflow-x:auto; }
 @media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 1 0; min-width:0; padding-left:1px; padding-right:1px; text-align:center; font-size:13px; } }
+.nav-meas .nav-btn { flex:none !important; }
 .nav-more { flex:0 0 auto !important; padding-left:12px !important; padding-right:12px !important; display:inline-flex; align-items:center; justify-content:center; } .nav-badge { margin-left:2px; padding:1px 5px; }
 nav > :first-child { margin-left:auto; } nav > :last-child { margin-right:auto; }
 .nav-btn { background:none; border:none; padding:12px 16px; font-size:14px; font-weight:500; color:#64748b; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
@@ -262,7 +263,7 @@ body.akte-open main { display:none; }
 .a-tile .tl-ln svg { width:17px; height:17px; flex:none; color:#475569; }
 .a-tile .tl-ln a { color:#5b6f95; text-decoration:none; overflow-wrap:anywhere; }
 .a-tile ul { list-style:none; }
-.a-tile ul li { display:flex; justify-content:space-between; gap:6px; padding:7px 0 7px 9px; border-left:3px solid #7c3aed; margin-top:6px; background:#fff; border-radius:0 6px 6px 0; } .a-tile ul li:first-child { margin-top:2px; }
+.a-tile ul li { display:flex; justify-content:space-between; gap:6px; padding:5px 0; } .a-tile ul li + li { border-top:1px solid #dbe2ea; }
 .a-tile ul li button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
 @media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:20px; } .a-tabs button { font-size:15px; } }
 @media (max-width:440px) { .a-tiles { grid-template-columns:1fr; } .a-tile { min-height:0; } }
@@ -822,7 +823,6 @@ function kaStart() {
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
   <button type="button" class="nav-btn" id="btn-todos" onclick="switchTab('todos')">To-Dos <span id="todo-badge" class="nav-badge" style="display:none;"></span></button>
-  <button type="button" class="nav-btn" id="btn-rechnungen" onclick="switchTab('rechnungen')">Rechnungen</button>
   <button type="button" class="nav-btn nav-more" id="btn-praxis" onclick="toggleNavMenu(event)" title="Praxis" aria-label="Praxis"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
 </nav>
 </header>
@@ -1880,22 +1880,44 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-k';
+var KA_V = '2026-10-29-l';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
   ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung']];
 var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function (x) { return x[0]; });
+/* Navigationsleiste: so viele Seiten aus dem Praxis-Menü, wie in die Breite passen; der Rest steht hinter dem Pfeil */
 (function () {
-  var box = document.getElementById('nav-menu');
+  var nav = document.querySelector('header nav'), more = document.getElementById('btn-praxis');
   PRAXIS_NAV.forEach(function (x) {
-    if (x === '-') { var sp = document.createElement('div'); sp.className = 'nav-sep'; box.appendChild(sp); return; }
+    if (x === '-' || !x[0]) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'nav-btn nav-x'; b.id = 'btn-' + x[0]; b.textContent = x[1]; b.style.display = 'none'; b.onclick = function () { switchTab(x[0]); };
+    nav.insertBefore(b, more);
+  });
+})();
+function navFit() {
+  var nav = document.querySelector('header nav'), more = document.getElementById('btn-praxis'); if (!nav || !more) return;
+  var fixed = [].filter.call(nav.querySelectorAll('.nav-btn:not(.nav-x)'), function (b) { return b !== more; }), xs = [].slice.call(nav.querySelectorAll('.nav-x'));
+  nav.classList.add('nav-meas'); xs.forEach(function (b) { b.style.display = ''; });
+  var used = more.offsetWidth + fixed.reduce(function (t, b) { return t + b.offsetWidth; }, 0), avail = nav.clientWidth, n = 0;
+  for (var i = 0; i < xs.length; i++) { var w = xs[i].offsetWidth; if (used + w > avail - 2) break; used += w; n++; }
+  xs.forEach(function (b, i) { b.style.display = i < n ? '' : 'none'; });
+  nav.classList.remove('nav-meas');
+  var cur = document.querySelector('.tab-content.active'); if (cur) { var id = cur.id.replace(/^tab-/, ''), nb = document.getElementById('btn-' + id), vis = nb && nb.style.display !== 'none'; [].forEach.call(nav.querySelectorAll('.nav-btn'), function (b) { b.classList.remove('active'); }); var t = vis ? nb : (PRAXIS_TABS.indexOf(id) >= 0 ? more : null); if (t) t.classList.add('active'); }
+}
+function fillNavMenu() {
+  var box = document.getElementById('nav-menu'); box.innerHTML = ''; var last = '';
+  PRAXIS_NAV.forEach(function (x) {
+    if (x === '-') { if (last && last !== '-') { var sp = document.createElement('div'); sp.className = 'nav-sep'; box.appendChild(sp); last = '-'; } return; }
+    var vb = x[0] && document.getElementById('btn-' + x[0]); if (vb && vb.classList.contains('nav-x') && vb.style.display !== 'none') return;
     var b = document.createElement('button'); b.type = 'button';
     if (x[0]) { b.textContent = x[1]; b.onclick = function () { navGo(x[0]); }; } else { b.disabled = true; b.innerHTML = x[1] + ' <small>geplant</small>'; }
-    box.appendChild(b);
+    box.appendChild(b); last = 'b';
   });
+  var sps = box.querySelectorAll('.nav-sep'); if (sps.length && box.lastChild === sps[sps.length - 1]) box.removeChild(sps[sps.length - 1]);
   var vf = document.createElement('div'); vf.className = 'nav-ver'; vf.textContent = kaVersion(); box.appendChild(vf);
-})();
+}
+window.addEventListener('resize', navFit); window.addEventListener('orientationchange', navFit); window.addEventListener('load', navFit); setTimeout(navFit, 0);
 var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', todos: 'renderTodos' };
 PRAXIS_NAV.forEach(function (x) { if (x[0]) TAB_RENDER[x[0]] = x[2]; });
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
@@ -1910,6 +1932,7 @@ function hdRun(fn, name) { try { fn(); } catch (x) { errBanner(name + ': ' + (x 
 function toggleNavMenu(ev) {
   ev.stopPropagation(); var m = document.getElementById('nav-menu');
   if (m.style.display !== 'none') { m.style.display = 'none'; return; }
+  fillNavMenu();
   var r = ev.currentTarget.getBoundingClientRect(); m.style.display = 'block';
   m.style.top = (r.bottom + 4) + 'px'; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
@@ -1941,7 +1964,7 @@ function switchTab(tabId) {
   var b = document.querySelectorAll('.nav-btn');
   for (var j = 0; j < b.length; j++) b[j].classList.remove('active');
   document.getElementById('tab-' + tabId).classList.add('active');
-  var nb = document.getElementById(PRAXIS_TABS.indexOf(tabId) >= 0 && tabId !== 'rechnungen' ? 'btn-praxis' : 'btn-' + tabId); if (nb) nb.classList.add('active');
+  var nb = document.getElementById('btn-' + tabId); if (!nb || nb.style.display === 'none') nb = PRAXIS_TABS.indexOf(tabId) >= 0 ? document.getElementById('btn-praxis') : null; if (nb) nb.classList.add('active');
   if (tabId === 'start') histClean(); else histPush();
   saveLast();
 }
@@ -2876,7 +2899,7 @@ function addrBlock(pre, text) {
   return box;
 }
 function addrRead(pre) { var v = function (k) { return document.getElementById(pre + k).value; }; return addrJoin({ str: v('str'), nr: v('nr'), plz: v('plz'), ort: v('ort') }); }
-var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien']];
+var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien'],['diagnosen','Erkrankungen / Diagnosen']];
 var templates = [];
 try { var stp = JSON.parse(kaGet('ka_templates')); if (Array.isArray(stp)) templates = stp; } catch (x) {}
 function maskDob(el) {
@@ -4234,7 +4257,7 @@ var tileEdit = '', akTab = 'akte';
 function tilePen(fn) { var b = mk('button', 'a-pen'); b.type = 'button'; b.innerHTML = ICON_PEN; b.title = 'Bearbeiten'; b.setAttribute('aria-label', 'Bearbeiten'); b.onclick = fn; return b; }
 function tileBox(key, title, cls, fill) {
   var t = mk('div', 'a-tile' + (cls ? ' ' + cls : '')); t.appendChild(mk('h4', '', title));
-  if (tileEdit === key) { t.className += ' ed'; fill(t, true); } else { t.appendChild(tilePen(function () { stammEdit = false; tileEdit = key; renderHead(); var f = document.getElementById('a-tile-in') || document.getElementById('a-med-in'); if (f) f.focus(); })); fill(t, false); }
+  if (tileEdit === key) { t.className += ' ed'; fill(t, true); } else { t.appendChild(tilePen(function () { stammEdit = false; tileEdit = key; renderHead(); var f = document.getElementById('a-tile-in') || document.getElementById('a-med-in'); if (f) f.focus(); })); fill(t, false); if (t.querySelector('.a-none') && !t.querySelector('li')) t.style.display = 'none'; }
   return t;
 }
 function txtTile(key, title, cls, ph) {
@@ -4268,7 +4291,7 @@ function renderHead() {
       if (k[0] === 'anrede') {
         inp = mk('select', 'form-control');
         ['', 'Frau', 'Herr', 'Divers'].forEach(function (o) { var op = mk('option', '', o || 'Keine Angabe'); op.value = o; inp.appendChild(op); });
-      } else inp = mk('input', 'form-control');
+      } else if (k[0] === 'diagnosen') { inp = mk('textarea', 'form-control'); inp.rows = 2; g.style.gridColumn = '1 / -1'; } else inp = mk('input', 'form-control');
       inp.id = 'se-' + k[0]; inp.value = p[k[0]] || '';
       if (k[0] === 'dob') { inp.placeholder = 'TT.MM.JJJJ'; inp.inputMode = 'numeric'; inp.maxLength = 10; inp.oninput = function () { maskDob(inp); }; }
       g.appendChild(inp); grid.appendChild(g);
