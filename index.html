@@ -872,7 +872,7 @@ function kaStart() {
           <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
         </div>
       </div>
-      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span></div>
+      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span><span><i style="background:#16a34a"></i>Termin gebucht</span></div>
       <div class="scroll">
         <table class="pt">
           <thead><tr>
@@ -1600,7 +1600,8 @@ function kaStart() {
     <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
       <button type="button" class="btn btn-secondary" onclick="closeModal('modal-invview')">&lsaquo; Zurück</button>
       <button type="button" class="btn btn-secondary" id="inv-pay-btn" onclick="openPay()">Zahlung erfassen</button>
-      <button type="button" class="btn btn-save" onclick="savePdf()">Als PDF speichern</button>
+      <button type="button" class="btn btn-save" onclick="sendInvoice()">Rechnung senden</button>
+      <button type="button" class="btn btn-secondary" onclick="savePdf()">Als PDF speichern</button>
       <button type="button" class="btn btn-del btn-ico" style="margin-left:auto;" title="Rechnung löschen" aria-label="Rechnung löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
     </div>
     <div id="inv-view"></div>
@@ -1825,7 +1826,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-e';
+var KA_V = '2026-10-28-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2154,6 +2155,7 @@ function renderPatients() {
     if (fl0.unb.length) addDot('d-inv', 'Rechnung offen: vergangene Termine ohne Rechnung (' + fl0.unb.length + ')');
     if (fl0.anam) addDot('d-anam', anamText(fl0.anam.info));
     if (fl0.rem) addDot('d-rem', 'Terminerinnerung fällig: ' + fmtTermin(fl0.rem));
+    if (fl0.next) addDot('d-next', 'Nächster Termin gebucht: ' + fmtTermin(fl0.next));
     if (dots.childNodes.length) c1.appendChild(dots);
     var nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
     if (p.titel) nrow.appendChild(mk('span', 'pt-tit', p.titel));
@@ -3875,6 +3877,27 @@ async function savePdf() {
   } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); }
 }
 
+/* Rechnung als PDF über das Teilen-Menü des Geräts senden (Mail, WhatsApp usw.) und als versendet vermerken */
+async function sendInvoice() {
+  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
+  var p = patients.filter(function (x) { return x.id === inv.pid; })[0] || curP, name = 'Rechnung-' + inv.nr + '.pdf';
+  var betreff = 'Rechnung ' + inv.nr + ' - Kreuzberg Ästhetik', text = fillPlatzhalter('{AnredeInformell},\n\nanbei die Rechnung ' + inv.nr + '.\n\nManuel - Kreuzberg Ästhetik', p);
+  var file; try { file = new File([buildInvoicePdf(inv, getLogoJpeg())], name, { type: 'application/pdf' }); } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); return; }
+  var done = function (via) {
+    inv.sentAt = Date.now();
+    if (p) p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'Rechnung ' + inv.nr + ' gesendet (' + via + ')' }]);
+    persist(); try { renderPatients(); } catch (x) {} if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
+  };
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: betreff, text: text }); done('Teilen-Menü'); }
+    catch (x) { if (!x || x.name !== 'AbortError') alert('Das Teilen ist fehlgeschlagen. Bitte „Als PDF speichern“ nutzen und die Datei von Hand anhängen.'); }
+    return;
+  }
+  /* Computer: PDF laden und Mail vorbereiten, Anhang hängt der Nutzer selbst an */
+  var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  if (p && p.email) window.location.href = 'mailto:' + encodeURIComponent(p.email) + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
+  if (confirm('Die PDF wurde heruntergeladen. Bitte im Mailprogramm anhängen und senden.\n\nRechnung jetzt als versendet markieren?')) done('Mailprogramm');
+}
 function printInvoice() {
   try { window.print(); } catch (x) { alert('Drucken ist in dieser Ansicht nicht verfügbar.'); }
 }
