@@ -545,8 +545,10 @@ body { overflow-x:clip; }
 .pt-dr { display:flex; flex-direction:column; gap:1px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
 .pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:flex-start; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
-#inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:8px 4px; font-size:12.5px; white-space:normal; line-height:1.2; }
-.inv-plus { font-size:22px; line-height:1; padding:4px 14px; flex:none; }
+#inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:5px 3px; font-size:12px; white-space:normal; line-height:1.15; }
+.inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
+#inv-seg { flex-wrap:nowrap; gap:4px; overflow-x:auto; } #inv-seg .za-b { height:30px; padding:0 5px; font-size:11.5px; gap:3px; flex:1 1 auto; min-width:0; border-radius:8px; justify-content:center; }
+.inv-plus { width:38px; height:38px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
 .pt-acts { display:grid; grid-template-columns:repeat(3,32px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:32px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
@@ -899,7 +901,7 @@ function kaStart() {
   <!-- TAB 4: RECHNUNGEN -->
   <div id="tab-rechnungen" class="tab-content">
     <div class="card">
-      <div class="card-header" style="gap:8px;">
+      <div class="card-header" style="gap:8px; margin-bottom:8px; align-items:stretch;">
         <div class="seg" id="inv-kind" style="flex:1; min-width:0;"></div>
         <button type="button" class="btn btn-sm inv-plus" id="inv-b-new" onclick="invNew()" title="Neue Rechnung" aria-label="Neue Rechnung">+</button>
       </div>
@@ -915,7 +917,7 @@ function kaStart() {
       <div id="inv-seg" class="za-seg" style="margin-bottom:10px;"></div>
       <div class="scroll">
         <table class="pt" style="min-width:560px; font-size:14px;">
-          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort pc-d" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th><th class="sort" onclick="invSortBy('status')">Status <span class="sarr" data-ik="status"></span></th></tr></thead>
+          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort pc-d" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
           <tbody id="inv-table"></tbody>
         </table>
       </div>
@@ -1845,7 +1847,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-r';
+var KA_V = '2026-10-28-t';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3515,7 +3517,7 @@ function renderInvoices() {
   var cnt = { '': invoices.length, offen: 0, ueberfaellig: 0, bezahlt: 0, storno: 0 };
   invoices.forEach(function (i) { var k = invKind(i); cnt[k]++; if (k === 'ueberfaellig') cnt.offen++; });
   var sg = document.getElementById('inv-seg'); sg.innerHTML = '';
-  [['', 'Alle'], ['offen', 'Offen'], ['ueberfaellig', 'Überfällig'], ['bezahlt', 'Bezahlt'], ['storno', 'Storniert']].forEach(function (f) {
+  [['', 'Alle'], ['offen', 'Offen'], ['ueberfaellig', 'Überfällig'], ['bezahlt', 'Bezahlt'], ['storno', 'Storno']].forEach(function (f) {
     var bt = mk('button', 'za-b' + (invF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(cnt[f[0]])));
     bt.onclick = function () { invF = (invF === f[0]) ? '' : f[0]; renderInvoices(); }; sg.appendChild(bt);
   });
@@ -3525,13 +3527,15 @@ function renderInvoices() {
     if (invF === 'offen' && k !== 'offen' && k !== 'ueberfaellig') return false; if (invF && invF !== 'offen' && k !== invF) return false;
     return !q || (i.nr + ' ' + i.name + ' ' + eur(i.total) + ' ' + fmtD(i.date) + ' ' + String(i.total).replace('.', ',')).toLowerCase().indexOf(q) >= 0;
   });
-  if (!shown.length && invoices.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 5; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
+  if (!shown.length && invoices.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
   shown.sort(function (a, b) { var oa = invState(a).full ? 1 : 0, ob2 = invState(b).full ? 1 : 0; return (oa - ob2) || invCmp(a, b); }).forEach(function (i) {
     var row = tb.insertRow(); if (!invState(i).full) row.className = invLate(i) ? 't-late' : 't-open';
-    var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
+    var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
-    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm); c2.textContent = i.name; c3.textContent = eur(i.total); c3.className = 'nw'; c0.className = 'nw'; c4.className = 'nw';
-    var st = invState(i), late = !st.full && invLate(i), bd = mk('span', 'badge ' + (late ? 'badge-red' : st.cls)); bd.innerHTML = '<span class="hm-l">' + (late ? 'Überfällig' : st.txt) + '</span><span class="hm-s">' + (late ? 'Überf.' : st.txt === 'Teilzahlung' ? 'Teil' : st.txt === 'Storniert' ? 'Storno' : st.txt) + '</span>'; c4.appendChild(bd);
+    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm); c2.textContent = i.name; c3.textContent = eur(i.total); c0.className = 'nw';
+    /* Betrag statt Status-Spalte: rot = offen, dunkelrot = überfällig, orange = Teilzahlung, grün = bezahlt, grau = storniert */
+    var st = invState(i), late = !st.full && invLate(i), amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
+    amt.title = i.storniert ? 'Storniert' : st.full ? 'Bezahlt' : late ? 'Überfällig' : st.txt; c3.textContent = ''; c3.className = 'nw'; c3.appendChild(amt);
   });
 }
 /* ===== Alle Tabellen: Klick auf die Spaltenüberschrift sortiert (Zahlen, Beträge, Daten, Monate, Text) ===== */
