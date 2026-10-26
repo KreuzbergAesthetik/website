@@ -130,6 +130,8 @@ textarea.form-control { font-size:15px; }
 /* Kalender */
 .cal-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .seg { display:inline-flex; border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; }
+.seg-hd { flex:1; display:flex; } .seg-hd button { flex:1; }
+.wk-add { display:block; width:100%; margin:2px 0; padding:2px 0; font-size:10px; line-height:1.2; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#475569; cursor:pointer; } .dh .wk-x { margin-left:4px; color:#94a3b8; cursor:pointer; font-weight:400; }
 .seg button { background:#fff; border:none; padding:7px 14px; font-size:13px; color:#475569; cursor:pointer; }
 .seg button.on { background:#0f172a; color:#fff; }
 .cal-nav { display:flex; align-items:center; gap:6px; }
@@ -144,7 +146,7 @@ textarea.form-control { font-size:15px; }
 .now-line { position:absolute; left:0; right:0; height:0; border-top:2px solid #dc2626; z-index:4; pointer-events:none; }
 .now-line::before { content:''; position:absolute; left:-4px; top:-5px; width:8px; height:8px; border-radius:50%; background:#dc2626; }
 .tc { position:relative; }
-.now-tag { position:absolute; right:2px; transform:translateY(-50%); background:#dc2626; color:#fff; font-size:10.5px; font-weight:700; padding:1px 5px; border-radius:8px; z-index:4; pointer-events:none; }
+.now-tag { position:absolute; right:0; white-space:nowrap; transform:translateY(-50%); background:#dc2626; color:#fff; font-size:9.5px; font-weight:700; padding:1px 3px; border-radius:6px; z-index:4; pointer-events:none; }
 .dc { position:relative; border-right:1px solid #f1f5f9; background:repeating-linear-gradient(#e2e8f0 0 1px, transparent 1px 48px); }
 .ev { position:absolute; left:2px; right:2px; min-width:0; background:#fef3c7; border-left:3px solid #d97706; color:#78350f; border-radius:4px; padding:2px 5px; font-size:11px; line-height:1.3; overflow:hidden; }
 .ev.multi { border-left-width:0; padding-left:12px; }
@@ -355,6 +357,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-plus { width:22px; height:22px; font-size:15px; background:transparent; color:#94a3b8; padding:0 0 1px; }
 .tl-day .tl-plus:hover { background:#e2e8f0; color:#475569; }
 .tl-day .tl-plus { top:6px; right:0; }
+.tl-day .tl-item.tl-notiz .tl-plus, .tl-day .tl-item.tl-mail .tl-plus, .tl-day .tl-item.tl-med .tl-plus, .tl-day .tl-item.tl-rezept .tl-plus, .tl-day .tl-item.tl-rechnung .tl-plus, .tl-day .tl-item.tl-verbrauch .tl-plus, .tl-day .tl-item.tl-angelegt .tl-plus { top:14px; }
 .tl-plus { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:none; background:#dfe5ec; color:#475569; font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0 0 2px; }
 .tl-plus:hover { background:#cbd5e1; }
 #tl-menu { position:fixed; z-index:70; min-width:230px; top:0; left:0; }
@@ -849,14 +852,14 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Kalender</span>
-        <button type="button" class="btn btn-sm" onclick="openTermin()">+ Termin</button>
-      </div>
-      <div class="cal-bar">
-        <div class="seg">
+        <div class="seg seg-hd">
           <button type="button" id="v-tag" onclick="setView('tag')">Tag</button>
           <button type="button" id="v-woche" onclick="setView('woche')">Woche</button>
           <button type="button" id="v-monat" onclick="setView('monat')">Monat</button>
         </div>
+        <button type="button" class="btn btn-sm" onclick="openTermin()" title="Neuer Termin" aria-label="Neuer Termin">+</button>
+      </div>
+      <div class="cal-bar" style="justify-content:flex-end">
         <div class="cal-nav">
           <button type="button" class="btn btn-secondary" onclick="step(-1)">&lsaquo;</button>
           <span id="cal-title"></span>
@@ -1859,7 +1862,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-f';
+var KA_V = '2026-10-29-g';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2333,15 +2336,18 @@ function fitHours() {
   });
 }
 function timeGrid(days) {
-  var cols = 'grid-template-columns:44px repeat(' + days.length + ',1fr);';
-  var minW = days.length > 1 ? 'min-width:720px;' : '';
+  var wk = days.length > 1, addC = wk && (!wkSa || !wkSo);
+  var cols = 'grid-template-columns:30px repeat(' + days.length + ',1fr)' + (addC ? ' 34px' : '') + ';';
+  var minW = wk ? 'min-width:' + (days.length * 100 + 60) + 'px;' : '';
   var today = iso(new Date());
   var html = '<div style="' + minW + '"><div class="tg-row" style="' + cols + '"><div class="dh" style="border-right:1px solid #e2e8f0;"></div>';
   days.forEach(function (d) {
-    html += '<div class="dh' + (iso(d) === today ? ' today' : '') + '">' + WD[(d.getDay() + 6) % 7] + ' ' + d.getDate() + '.</div>';
+    var wdi = (d.getDay() + 6) % 7;
+    html += '<div class="dh' + (iso(d) === today ? ' today' : '') + '">' + WD[wdi] + ' ' + d.getDate() + '.' + (wk && wdi >= 5 ? '<span class="wk-x" onclick="wkTog(\'' + (wdi === 5 ? 'sa' : 'so') + '\')" title="Ausblenden">×</span>' : '') + '</div>';
   });
+  if (addC) html += '<div class="dh" style="padding:2px">' + (wkSa ? '' : '<button type="button" class="wk-add" onclick="wkTog(\'sa\')" title="Samstag einblenden">+Sa</button>') + (wkSo ? '' : '<button type="button" class="wk-add" onclick="wkTog(\'so\')" title="Sonntag einblenden">+So</button>') + '</div>';
   html += '</div><div class="tg-row" style="' + cols + '"><div class="tc">';
-  for (var h = START; h < END; h++) html += '<div class="hl">' + pad(h) + ':00</div>';
+  for (var h = START; h < END; h++) html += '<div class="hl">' + h + '</div>';
   var nw = new Date(), nmin = nw.getHours() * 60 + nw.getMinutes(), nowShow = days.some(function (d) { return iso(d) === today; }) && nmin >= START * 60 && nmin < END * 60;
   if (nowShow) html += '<div class="now-tag" style="top:' + ((nmin - START * 60) * H / 60) + 'px">' + pad(nw.getHours()) + ':' + pad(nw.getMinutes()) + '</div>';
   html += '</div>';
@@ -2352,6 +2358,7 @@ function timeGrid(days) {
     if (nowShow && k === today) html += '<div class="now-line" style="top:' + ((nmin - START * 60) * H / 60) + 'px"></div>';
     html += '</div>';
   });
+  if (addC) html += '<div></div>';
   return html + '</div></div>';
 }
 
@@ -2385,6 +2392,9 @@ function updNow() {
   line.style.top = y + 'px'; if (tag) { tag.style.top = y + 'px'; tag.textContent = pad(n.getHours()) + ':' + pad(n.getMinutes()); }
 }
 setInterval(updNow, 30000);
+var wkSa = false, wkSo = false;
+try { wkSa = kaGet('ka_wksa') === '1'; wkSo = kaGet('ka_wkso') === '1'; } catch (x) {}
+function wkTog(k) { if (k === 'sa') wkSa = !wkSa; else wkSo = !wkSo; try { kaSet('ka_wksa', wkSa ? '1' : '0'); kaSet('ka_wkso', wkSo ? '1' : '0'); } catch (x) {} renderCal(); }
 function renderCal() {
   fitHours();
   ['tag', 'woche', 'monat'].forEach(function (v) {
@@ -2396,8 +2406,8 @@ function renderCal() {
     body = timeGrid([cur]);
   } else if (view === 'woche') {
     var mo = monday(cur), days = [];
-    for (var i = 0; i < 7; i++) days.push(addDays(mo, i));
-    var so = days[6];
+    for (var i = 0; i < 7; i++) if (i < 5 || (i === 5 && wkSa) || (i === 6 && wkSo)) days.push(addDays(mo, i));
+    var so = days[days.length - 1];
     title = mo.getDate() + '. ' + MN[mo.getMonth()].slice(0, 3) + ' bis ' + so.getDate() + '. ' + MN[so.getMonth()].slice(0, 3) + ' ' + so.getFullYear();
     body = timeGrid(days);
   } else {
@@ -2447,6 +2457,7 @@ function toggleGanztag() {
   var g = document.getElementById('t-ganztag').checked;
   document.getElementById('t-zeit').disabled = g;
   document.getElementById('t-ende').disabled = g;
+  document.querySelector('#modal-termin .tm-times').style.display = g ? 'none' : '';
   tmSub();
 }
 var retP = null;
@@ -2611,7 +2622,7 @@ function renderHome() {
       if (miss.length) ex.appendChild(mk('span', 'badge badge-amber', 'Unterlagen offen: ' + miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' (Unterschrift)' : ''); }).join(', ')));
     }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
-    return hmRow(e.time + ' bis ' + endStr, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
+    return hmRow(e.time + ' bis ' + endStr, e.patient, e.behandlung || '', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
   }), 'Heute stehen keine Termine an.');
   /* Heute wichtig: nur, was heute erledigt werden muss */
   var imp = document.getElementById('hm-important'); imp.innerHTML = '';
@@ -2657,7 +2668,7 @@ function renderHome() {
     var dd = addDays(now, di - wd), k = iso(dd), ev = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time.localeCompare(b.time); });
     if (!ev.length) continue; any = true;
     wk.appendChild(mk('div', 'hm-sec', WDL[dd.getDay()] + ', ' + dd.getDate() + '. ' + MN[dd.getMonth()] + (k === today ? ' (heute)' : '')));
-    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, e.patient, e.behandlung || 'Beratung', function () { openAkteFromTermin(e.id); })); });
+    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, e.patient, e.behandlung || '', function () { openAkteFromTermin(e.id); })); });
   }
   if (!any) wk.appendChild(mk('div', 'hm-empty', 'Diese Woche stehen keine Termine an.'));
   /* Umsatz und Ausgaben des Jahres */
@@ -2669,7 +2680,7 @@ function renderHome() {
   fin.appendChild(tb);
   /* offene Punkte */
   var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !e.alt && !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
-  var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, e.patient, fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung'), function () { openDokuFromTermin(e.id); }); });
+  var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, e.patient, fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : ''), function () { openDokuFromTermin(e.id); }); });
   if (nd.length > 5) ndRows.push(mk('div', 'hm-empty', 'und ' + (nd.length - 5) + ' weitere'));
   hmFill('hm-nodoku', ndRows, 'Alles dokumentiert.');
   var op = invoices.filter(function (i) { return !invState(i).full; }).sort(function (a, b) { return a.date.localeCompare(b.date); }), sum = 0;
@@ -2728,7 +2739,8 @@ function openTerminView(id, keep) {
   /* Kopf: Streifen und blasse Fläche in der Kategoriefarbe, Name, Datum und Uhrzeit */
   var hd = mk('div', 'tv-hd'); hd.style.setProperty('--tvc', col);
   var hm = mk('div', 'tv-hm');
-  var wen = mk('div', 'tv-wann'); wen.innerHTML = WD[(d.getDay() + 6) % 7] + ', ' + d.getDate() + '. ' + MN[d.getMonth()].slice(0, 3) + '. · <b>' + e.time + '</b> – <b>' + fromMin(toMin(e.time) + e.dur) + '</b> Uhr <span>(' + e.dur + ' min)</span>';
+  var wen = mk('div', 'tv-wann'); var ganzT = e.time === fromMin(DSTART * 60) && e.dur === (DEND - DSTART) * 60;
+  wen.innerHTML = WD[(d.getDay() + 6) % 7] + ', ' + d.getDate() + '. ' + MN[d.getMonth()].slice(0, 3) + '. · ' + (ganzT ? '<b>ganztägig</b>' : '<b>' + e.time + '</b> – <b>' + fromMin(toMin(e.time) + e.dur) + '</b> Uhr <span>(' + e.dur + ' min)</span>');
   hm.appendChild(wen);
   var nm = p ? ((p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + String(p.nachname).toUpperCase() + (ageOf(p.dob) !== '' ? ' (' + ageOf(p.dob) + ')' : '')) : e.patient;
   var nl = mk('a', 'tv-name', nm); nl.href = '#'; nl.title = 'Patientenakte öffnen';
@@ -3257,7 +3269,7 @@ function fillTermine(p) {
   if (!p) return;
   events.filter(function (e) { return e.patient === nameKey(p); })
     .sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
-    .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); });
+    .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); });
 }
 var invDokEv = null;
 function invDokuEinfuegen() {
@@ -4478,7 +4490,7 @@ function openDkPick(doc) {
   if (!doc && !evs.length) { newFreeDoku(); return; }
   if (doc && !evs.length) { alert('Für diesen Patienten gibt es noch keinen Termin, mit dem die Dokumentation verknüpft werden kann.'); return; }
   var sel = document.getElementById('dkp-sel'); sel.innerHTML = ''; var today = iso(new Date()), pre = null;
-  evs.forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); if (!pre && e.date <= today) pre = String(e.id); });
+  evs.forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); if (!pre && e.date <= today) pre = String(e.id); });
   if (!doc) { var o2 = mk('option', '', 'Ohne Termin (freie Dokumentation)'); o2.value = ''; sel.appendChild(o2); }
   sel.value = pre || String(evs[evs.length - 1].id);
   document.getElementById('dkp-title').textContent = doc ? 'Dokumentation mit Termin verknüpfen' : 'Dokumentation zu einem Termin';
@@ -4507,9 +4519,6 @@ function tlRow(it) {
   if (it.t === 'termin') {
     var e = it.e;
     sh = tlShell(it.k, 'Termin · ' + fmtTermin(e));
-    line = mk('div', '', e.behandlung || 'Beratung'); line.style.cssText = 'font-weight:600; cursor:pointer;';
-    line.onclick = function () { editTermin(e.id, true); };
-    sh.body.appendChild(line);
     sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));
     tlPlus(sh, [['Dokumentation', function () { openDok(e.id); }], ['Termin bearbeiten', function () { editTermin(e.id, true); }], ['Im Kalender anzeigen', function () { showInCal(e); }]]
@@ -4653,7 +4662,8 @@ function addDocs(inp, key) {
   });
 }
 /* ===== Dokumentation eines Termins (strukturiert) und To-Dos ===== */
-var DK_TEXT = [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung']];
+var DK_TEXT = [['befund', 'Befund'], ['behandlung', 'Behandlung']];
+var dkPend = [], dkDel = [];
 var DK_VERW = [['aufkl', 'Aufklärung'], ['dok', 'Unterlagen'], ['anam', 'Anamnesebogen'], ['honorar', 'Honorarvertrag']];
 var DK_FIELDS = ['anamnese', 'befund', 'behandlung', 'leist', 'produkte', 'ausblick', 'rechnung'];
 var dkEv = null, dkTodos = [], tdPrio = '', tdStat = 'offen', toCur = null;
@@ -4677,13 +4687,18 @@ function dokSummary(e) {
   var d = e.dok, open = todos.filter(function (t) { return t.eid === e.id && !t.done; }).length;
   if (!dokFilled(e) && !open) { box.textContent = 'Dokumentation für diesen Termin hinzufügen'; box.style.color = '#94a3b8'; }
   else {
-    var shown = false;
-    [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung'], ['leist', 'Leistungen'], ['ausblick', 'Ausblick']].forEach(function (k) {
-      var t = d ? String(d[k[0]] || '').trim() : (k[0] === 'behandlung' ? String(e.doku || '').trim() : '');
-      if (!t) return; shown = true;
-      var r = mk('div'); r.style.cssText = 'white-space:pre-wrap; margin-bottom:3px;'; r.appendChild(mk('b', '', k[1] + ': ')); r.appendChild(document.createTextNode(t)); box.appendChild(r);
+    var shown = false, secs = [], cl = function (t) { return String(t || '').trim(); };
+    var used = lager.verbrauch.filter(function (v) { return v.eid === e.id; });
+    var lt = d ? cl(d.leist).split('\n').map(cl).filter(Boolean) : []; if (!lt.length) lt = evLeistungen(e);
+    var pt = used.map(function (v) { return v.name + ' ' + qty(v.menge) + ' ' + (v.einheit || ''); }); if (d && cl(d.produkte)) pt.push(cl(d.produkte));
+    secs.push(['Anamnese', d ? cl(d.anamnese) : '']); secs.push(['Befund', d ? cl(d.befund) : '']);
+    secs.push(['Leistungen', lt.join(', ')]); secs.push(['Produkte', pt.join(', ')]);
+    secs.push(['Behandlung', d ? cl(d.behandlung) : cl(e.doku)]); secs.push(['Ausblick', d ? cl(d.ausblick) : '']);
+    secs.forEach(function (k) {
+      if (!k[1]) return; shown = true;
+      var r = mk('div'); r.style.cssText = 'white-space:pre-wrap; padding:5px 0;' + (box.children.length ? ' border-top:1px solid #dbe2ea;' : ''); r.appendChild(mk('b', '', k[0] + ': ')); r.appendChild(document.createTextNode(k[1])); box.appendChild(r);
     });
-    if (d && d.verw) { var v = DK_VERW.filter(function (x) { return d.verw[x[0]]; }).map(function (x) { return x[1]; }); if (v.length) { shown = true; var r2v = mk('div'); r2v.style.marginBottom = '3px'; r2v.appendChild(mk('b', '', 'Verwaltung: ')); r2v.appendChild(document.createTextNode(v.join(', '))); box.appendChild(r2v); } }
+    if (d && d.verw) { var v = DK_VERW.filter(function (x) { return d.verw[x[0]]; }).map(function (x) { return x[1]; }); if (v.length) { shown = true; var r2v = mk('div'); r2v.style.cssText = 'padding:5px 0;' + (box.children.length ? ' border-top:1px solid #dbe2ea;' : ''); r2v.appendChild(mk('b', '', 'Verwaltung: ')); r2v.appendChild(document.createTextNode(v.join(', '))); box.appendChild(r2v); } }
     if (open) { var tb = mk('span', 'badge badge-amber', open + ' offene(s) To-Do'); box.appendChild(tb); }
     if (!shown && !open) box.textContent = 'Dokumentation geöffnet';
   }
@@ -4720,8 +4735,32 @@ function dkFold(sec, content) {
 }
 function dkRenderProd() {
   var box = document.getElementById('dk-prod'); if (!box || !dkEv) return; box.innerHTML = '';
-  var used = lager.verbrauch.filter(function (v) { return v.eid === dkEv.id; });
-  used.forEach(function (v) { var r = mk('div', '', '• ' + v.name + ': ' + qty(v.menge) + ' ' + (v.einheit || '') + ' · Charge ' + (v.nr || '-')); r.style.cssText = 'font-size:13.5px; padding:2px 0;'; box.appendChild(r); });
+  var rows = lager.verbrauch.filter(function (v) { return v.eid === dkEv.id && dkDel.indexOf(v.id) < 0; }).map(function (v) { return [v, false]; }).concat(dkPend.map(function (v) { return [v, true]; }));
+  rows.forEach(function (r) {
+    var v = r[0], row = mk('div'); row.style.cssText = 'display:flex; gap:8px; align-items:center; font-size:13.5px; padding:2px 0;';
+    var t = mk('span', '', '• ' + v.name + ': ' + qty(v.menge) + ' ' + (v.einheit || '') + ' · Charge ' + (v.nr || '-')); t.style.flex = '1'; row.appendChild(t);
+    var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Produkt entfernen'; x.setAttribute('aria-label', v.name + ' entfernen');
+    x.onclick = function () { if (r[1]) dkPend = dkPend.filter(function (y) { return y !== v; }); else dkDel.push(v.id); dkRenderProd(); };
+    row.appendChild(x); box.appendChild(row);
+  });
+  if (dkPend.length || dkDel.length) { var h = mk('div', 'hm-empty', 'Das Lager wird erst beim Speichern angepasst.'); box.appendChild(h); }
+}
+/* Produktänderungen der Dokumentation erst beim Speichern ins Lager übernehmen */
+function dkApplyProd(e) {
+  var skipped = 0, rd = function (x) { return Math.round(x * 1000) / 1000; };
+  dkDel.forEach(function (id) {
+    var v = lager.verbrauch.filter(function (y) { return y.id === id; })[0]; if (!v) return;
+    var ch = lager.chargen.filter(function (c) { return c.id === v.chId; })[0]; if (ch) ch.rest = rd((+ch.rest || 0) + v.menge);
+    lager.verbrauch = lager.verbrauch.filter(function (y) { return y.id !== id; });
+  });
+  dkPend.forEach(function (v) {
+    var ch = lager.chargen.filter(function (c) { return c.id === v.chId; })[0];
+    if (!ch || v.menge > (+ch.rest || 0) + 1e-9) { skipped++; return; }
+    ch.rest = rd((+ch.rest || 0) - v.menge); v.ts = Date.now(); lager.verbrauch.push(v);
+  });
+  dkPend = []; dkDel = [];
+  if (skipped) alert(skipped + ' Produkt(e) konnten nicht abgebucht werden, weil der Bestand der Charge nicht mehr reicht.');
+  try { renderLager(); } catch (x) {}
 }
 function dkRenderTodos() {
   var box = document.getElementById('dk-todos'); if (!box) return; box.innerHTML = '';
@@ -4744,20 +4783,21 @@ function openDokFree(d) {
 function dkCancel() {
   var e = dkEv; closeModal('modal-dok');
   if (e && e.pseudo && curP && !String(e.pseudo.text || '').trim() && !e.pseudo.dok) { curP.doku = (curP.doku || []).filter(function (y) { return y !== e.pseudo; }); persist(); renderVerlauf(); }
-  dkEv = null;
+  dkEv = null; dkPend = []; dkDel = [];
 }
 function openDokEv(e) {
   dkEv = e; var d = dokOf(e), box = document.getElementById('dk-body'); box.innerHTML = '';
   document.getElementById('dk-title').textContent = 'Dokumentation · ' + e.patient + ' · ' + fmtTermin(e);
   dkTodos = todos.filter(function (t) { return t.eid === e.id; }).map(function (t) { return Object.assign({}, t); });
-  DK_TEXT.forEach(function (k) { box.appendChild(dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true)); });
+  dkPend = []; dkDel = [];
+  var dkT = {}; DK_TEXT.forEach(function (k) { dkT[k[0]] = dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true); });
+  box.appendChild(dkT.befund);
   var vw = mk('div'), vs = d.verw || {}, vg = mk('div', 'dk-vgrid'); vw.appendChild(vg);
   DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vg.appendChild(l); });
   var vt = dkTa('dk-verwtext', vs.text, 1); vt.placeholder = 'Freitext zur Verwaltung'; vt.classList.add('dk-grow'); vt.addEventListener('input', function () { autoGrow(vt); }); if (!String(vs.text || '').trim()) vt.style.display = 'none'; vw.appendChild(vt);
   var vsec = dkSec('Verwaltung', vw), vh = vsec.firstChild; vh.classList.add('dk-hrow');
   var vplus = mk('button', 'dk-plus', '+ Text'); vplus.type = 'button'; vplus.onclick = function () { vt.style.display = ''; autoGrow(vt); vt.focus(); vplus.style.display = 'none'; };
   if (String(vs.text || '').trim()) vplus.style.display = 'none'; vh.appendChild(vplus);
-  box.appendChild(vsec);
   /* Leistungen und Produkte: eine Leiste zum Tippen oder Auswählen, darunter die gewählten Leistungen und die abgebuchten Produkte */
   var lw = mk('div'), lta = dkTa('dk-leist', d.leist || evLeistungen(e).join('\n'), 2); lta.style.display = 'none'; lw.appendChild(lta);
   var lrow = mk('div', 'dk-lrow'), lwrap = mk('div', 'dk-lwrap'), lin = mk('input', 'form-control'); lin.type = 'text'; lin.placeholder = 'Leistung eintippen oder wählen'; lin.autocomplete = 'off'; lin.setAttribute('aria-label', 'Leistung');
@@ -4781,11 +4821,14 @@ function openDokEv(e) {
   lin.addEventListener('input', showDd); lin.addEventListener('focus', showDd); lin.addEventListener('blur', function () { dd.style.display = 'none'; });
   lin.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); var q = lin.value.trim().toLowerCase(), hit = (settings.katalog || []).filter(function (k) { return k.name.toLowerCase().indexOf(q) >= 0; }); addL(q && hit.length === 1 ? hit[0].name : lin.value); } });
   lwrap.appendChild(lin); lwrap.appendChild(dd); lrow.appendChild(lwrap);
-  var pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); }; if (!e.pseudo) lrow.appendChild(pb);
   lw.appendChild(lrow); lw.appendChild(chips); drawChips();
-  var pl = mk('div'); pl.id = 'dk-prod'; lw.appendChild(pl);
-  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; lw.appendChild(pta);
-  box.appendChild(dkSec('Leistungen und Produkte', lw));
+  box.appendChild(dkSec('Leistung', lw));
+  var pw = mk('div'), pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); };
+  var pl = mk('div'); pl.id = 'dk-prod'; pw.appendChild(pl); if (!e.pseudo) pw.appendChild(pb);
+  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; pw.appendChild(pta);
+  if (!e.pseudo || String(d.produkte || '').trim()) box.appendChild(dkSec('Produkte', pw));
+  box.appendChild(dkT.behandlung);
+  box.appendChild(vsec);
   box.appendChild(dkFold(dkTextSec('dk-ausblick', 'Ausblick und Procedere', d.ausblick), d.ausblick));
   var rs = dkTextSec('dk-rechnung', 'Text für die Rechnung', d.rechnung, 3); rs.appendChild(mk('div', 'hm-empty', 'Wird nicht automatisch übertragen. In der Rechnung kannst Du diesen Text bei Bedarf einfügen.')); box.appendChild(dkFold(rs, d.rechnung));
   var tw = mk('div'); var tl = mk('div'); tl.id = 'dk-todos'; tw.appendChild(tl);
@@ -4797,8 +4840,9 @@ function openDokEv(e) {
 function saveDok() {
   var e = dkEv; if (!e) return;
   var g = function (id) { return (document.getElementById(id).value || '').trim(); };
+  if (!e.pseudo) dkApplyProd(e);
   var verw = { text: g('dk-verwtext') }; DK_VERW.forEach(function (v) { verw[v[0]] = document.getElementById('dk-v-' + v[0]).checked; });
-  e.dok = { anamnese: g('dk-anamnese'), befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
+  e.dok = { anamnese: (e.dok && e.dok.anamnese) || '', befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
   e.doku = dokuText(e);
   if (e.pseudo) {
     var d0 = e.pseudo; d0.dok = e.dok; d0.text = e.doku;
@@ -5318,7 +5362,9 @@ function formMenuItems(p) {
 }
 function fmSend(ev, p, k) {
   var f = pkForm(k);
-  sendMenu(ev, p, [k], f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p));
+  var st = formSt(p, k), ex = [];
+  if (st.sent && !st.got) ex.push(['Als nicht gesendet zurücksetzen', function () { p.best = (p.best || []).filter(function (b) { return !(b.k === k && b.art === 'sent'); }); persist(); if (curP === p) { renderVerlauf(); renderHead(); } renderPatients(); }]);
+  sendMenu(ev, p, [k], f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p), ex);
 }
 /* Hinweisblatt oder Aufklärung als Link: Hinweisblätter enthalten keine Daten (ohne Code), Aufklärungen laufen über den Patientencode */
 function docLink(p, d) { var u = webfUrl(d.typ === 'info' ? 'info.html' : 'aufklaerung.html') + '?d=' + d.id; return d.typ === 'info' ? u : u + '&c=' + pCode(p); }
@@ -5626,7 +5672,7 @@ function validZu(p) {
   return v;
 }
 function zuLabel(p, key) {
-  if (key.charAt(0) === 'e') { var e = events.filter(function (x) { return 'e' + x.id === key; })[0]; return e ? 'Termin ' + fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung') : ''; }
+  if (key.charAt(0) === 'e') { var e = events.filter(function (x) { return 'e' + x.id === key; })[0]; return e ? 'Termin ' + fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '') : ''; }
   var d = (p.doku || []).filter(function (x) { return 'd' + x.ts === key; })[0];
   return d ? 'Dokumentation ' + fmtDT(d.ts) : '';
 }
@@ -5718,7 +5764,7 @@ function openZu(p, list) {
   var o0 = mk('option', '', 'Keine Zuordnung (frei in der Zeitleiste)'); o0.value = ''; sel.appendChild(o0);
   var n = nameKey(p), day = iso(new Date(tsOf(list[0])));
   events.filter(function (e) { return e.patient === n; }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
-    .forEach(function (e) { var o = mk('option', '', 'Termin ' + fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung')); o.value = 'e' + e.id; sel.appendChild(o); });
+    .forEach(function (e) { var o = mk('option', '', 'Termin ' + fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = 'e' + e.id; sel.appendChild(o); });
   (p.doku || []).slice().sort(function (a, b) { return b.ts - a.ts; }).forEach(function (d) {
     var o = mk('option', '', 'Dokumentation ' + fmtDT(d.ts) + ' · ' + String(d.text || '').split('\n')[0].slice(0, 40)); o.value = 'd' + d.ts; sel.appendChild(o);
   });
@@ -6484,7 +6530,7 @@ function openVb(eid) {
   prods.forEach(function (p) { var o = mk('option', '', p.name + ' (' + qty(bestand(p.id)) + ' ' + (p.einheit || '') + ')'); o.value = p.id; sel.appendChild(o); });
   var ts = document.getElementById('vb-termin'); ts.innerHTML = '';
   var o0 = mk('option', '', 'Kein Termin'); o0.value = ''; ts.appendChild(o0);
-  events.filter(function (e) { return e.patient === nameKey(curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + ' · ' + (e.behandlung || 'Beratung')); o.value = e.id; ts.appendChild(o); });
+  events.filter(function (e) { return e.patient === nameKey(curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = e.id; ts.appendChild(o); });
   ts.value = eid ? String(eid) : '';
   document.getElementById('vb-menge').value = '';
   vbProdChanged(); openModal('modal-vb');
@@ -6506,13 +6552,17 @@ function vbChChanged() {
 }
 function saveVb() {
   var p = prodOf(document.getElementById('vb-prod').value), c = lager.chargen.filter(function (x) { return x.id === document.getElementById('vb-ch').value; })[0], m = num(document.getElementById('vb-menge').value);
+  var eidv = document.getElementById('vb-termin').value;
+  var stage = !!(dkEv && !dkEv.pseudo && document.getElementById('modal-dok').classList.contains('active') && eidv === String(dkEv.id));
   if (!p || !c) { alert('Bitte Produkt und Charge wählen. Abgelaufene Chargen können nicht verwendet werden.'); return; }
   if (c.verfall && daysTo(c.verfall) < 0) { alert('Diese Charge ist abgelaufen.'); return; }
   if (m === null || m <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
-  if (m > (+c.rest || 0) + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(c.rest) + ' ' + (p.einheit || '') + ' da.'); return; }
+  var frei = (+c.rest || 0) - (stage ? dkPend.filter(function (x) { return x.chId === c.id; }).reduce(function (t, x) { return t + x.menge; }, 0) : 0);
+  if (m > frei + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(frei) + ' ' + (p.einheit || '') + ' da.'); return; }
+  var vb = { id: lid(), ts: Date.now(), pid: curP.id, prodId: p.id, chId: c.id, name: p.name, einheit: p.einheit || '', nr: c.nr || '', verfall: c.verfall || '', menge: m, ek: c.ek, eid: eidv ? +eidv : null };
+  if (stage) { dkPend.push(vb); closeModal('modal-vb'); dkRenderProd(); return; }
   c.rest = Math.round(((+c.rest || 0) - m) * 1000) / 1000;
-  var eidv = document.getElementById('vb-termin').value;
-  lager.verbrauch.push({ id: lid(), ts: Date.now(), pid: curP.id, prodId: p.id, chId: c.id, name: p.name, einheit: p.einheit || '', nr: c.nr || '', verfall: c.verfall || '', menge: m, ek: c.ek, eid: eidv ? +eidv : null });
+  lager.verbrauch.push(vb);
   persist(); renderVerlauf(); renderLager(); closeModal('modal-vb'); if (dkEv) dkRenderProd();
 }
 
@@ -6956,7 +7006,7 @@ function saveTermin() {
   var ev = {
     date: datum, time: zeit, dur: dur,
     patient: pname,
-    behandlung: tLeist.join(', ') || 'Beratung',
+    behandlung: tLeist.join(', '),
     notiz: document.getElementById('t-notiz').value,
     color: document.getElementById('t-farbe').value,
     leistung: tLeist[0] || '',
