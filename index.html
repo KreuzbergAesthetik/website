@@ -120,7 +120,7 @@ textarea.form-control { font-size:15px; }
 .nav-btn:focus-visible, .btn:focus-visible { outline-offset:-3px; }
 .modal-box { -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
 #modal-invview .modal-box { overflow-x:auto; }
-.mc { min-height:92px; }
+.mc { height:92px; }
 .ev { box-shadow:0 1px 2px rgba(15,23,42,.15); }
 @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; } }
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -155,9 +155,9 @@ textarea.form-control { font-size:15px; }
 .evchips { display:flex; flex-wrap:wrap; gap:3px; margin-top:3px; }
 .evchips i { font-style:normal; font-size:10px; padding:0 6px; border-radius:8px; color:#fff; line-height:15px; }
 .ev.ok { background:#d1fae5; border-left-color:#059669; color:#064e3b; }
-.mg { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0; }
-.mh { text-align:center; font-size:12px; font-weight:600; padding:6px 0; color:#475569; background:#f8fafc; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; }
-.mc { min-height:76px; padding:4px; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; cursor:pointer; font-size:11px; }
+.mg { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); grid-auto-rows:auto; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0; }
+.mh { min-width:0; text-align:center; font-size:12px; font-weight:600; padding:6px 0; color:#475569; background:#f8fafc; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; }
+.mc { height:92px; min-width:0; overflow:hidden; padding:4px; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; cursor:pointer; font-size:11px; }
 .mc:hover { background:#f8fafc; }
 .mc.out { background:#fafafa; color:#cbd5e1; }
 .mc .n { font-size:12px; font-weight:600; margin-bottom:2px; }
@@ -271,7 +271,7 @@ body.akte-open main { display:none; }
 body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .a-fab { left:50%; right:auto; bottom:14px; transform:translateX(-50%); width:min(880px, calc(100% - 24px)); } .a-fab .a-cats { flex:1; justify-content:space-between; gap:4px; } @media (max-width:520px) { .a-fab { right:auto; bottom:12px; } }
 .a-cats { display:flex; gap:5px; } .a-cat { width:42px; height:42px; border-radius:12px; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
-.am-tile.c0 { --ac:#2563eb; --ab:#eff4ff; } .am-tile.c1 { --ac:#15803d; --ab:#effaf2; } .am-tile.c2 { --ac:#7c3aed; --ab:#f5f1ff; } .am-tile.c3 { --ac:#0f766e; --ab:#ecfaf8; }
+.am-tile.c0 { --ac:#2563eb; --ab:#eff4ff; } .am-tile.c1 { --ac:#15803d; --ab:#effaf2; } .am-tile.c2 { --ac:#7c3aed; --ab:#f5f1ff; } .am-tile.c3 { --ac:#0f766e; --ab:#ecfaf8; } .am-tile.c4 { --ac:#b45309; --ab:#fdf5ea; }
 .a-cat.d0 { --ac:#2563eb; --ab:#eff4ff; } .a-cat.d1 { --ac:#15803d; --ab:#effaf2; } .a-cat.d2 { --ac:#1e3a8a; --ab:#eef1fa; } .a-cat.d3 { --ac:#b45309; --ab:#fdf5ea; } .a-cat.d4 { --ac:#7c3aed; --ab:#f5f1ff; } .a-cat.d5 { --ac:#0f766e; --ab:#ecfaf8; }
 .a-cat[class*=" d"] { color:var(--ac); border-color:color-mix(in srgb, var(--ac) 35%, #fff); background:var(--ab); }
 .a-menu .am-tile[class*=" c"] svg { color:var(--ac); } .a-menu .am-tile[class*=" c"] { background:var(--ab); border-color:color-mix(in srgb, var(--ac) 22%, #fff); }
@@ -1862,7 +1862,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-g';
+var KA_V = '2026-10-29-h';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5381,6 +5381,12 @@ function renderUnterlagen() {
   };
   var bt = function (txt, dark, fn) { var b = mk('button', 'btn un-btn' + (dark ? '' : ' btn-secondary'), txt); b.type = 'button'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
+  var unReset = function (keys) {
+    var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg>';
+    b.onclick = function () { p.best = (p.best || []).filter(function (x) { return !(keys.indexOf(x.k) >= 0 && x.art === 'sent'); }); persist(); renderUnterlagen(); renderPatients(); };
+    return b;
+  };
   /* Pakete */
   pakete().forEach(function (pk) {
     var c = mk('div', 'un-pk'); c.appendChild(mk('b', '', pk.name));
@@ -5389,7 +5395,7 @@ function renderUnterlagen() {
     var ts = (pk.forms || []).map(function (k) { return formSt(p, k).sent || 0; }), last = Math.max.apply(null, ts.concat([0]));
     var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;';
     rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); })); rr.appendChild(bt('Per WhatsApp', false, function () { pkSend(p, pk, 'wa'); }));
-    rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); c.appendChild(rr); box.appendChild(c);
+    rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); if (last) rr.appendChild(unReset(pk.forms || [])); c.appendChild(rr); box.appendChild(c);
   });
   /* Online-Formulare */
   box.appendChild(mk('div', 'un-grp', 'Online vor dem Termin'));
@@ -5407,7 +5413,8 @@ function renderUnterlagen() {
       }
     }
     var sub = got ? 'eingegangen ' + dm(got) : sent ? 'gesendet ' + dm(sent) + ' · wartet' : f[0] === 'anamnese' && !anm.got ? 'erst nach der Anmeldung' : 'noch nicht gesendet';
-    var btn = got ? null : bt(sent ? 'Erneut senden' : 'Senden', f[0] === 'anamnese' && anm.got && !sent, function (ev) { fmSend(ev, p, f[0]); });
+    var btn = got ? null : bt('Senden', f[0] === 'anamnese' && anm.got && !sent, function (ev) { fmSend(ev, p, f[0]); });
+    if (btn && sent) { var bw = mk('span'); bw.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; bw.appendChild(unReset([f[0]])); bw.appendChild(btn); btn = bw; }
     row(got ? 'ok' : sent ? 'wait' : '', got ? '✓' : sent ? '…' : '–', f[1], sub, btn);
   });
   /* Vorlagen zum Unterschreiben */
@@ -5922,13 +5929,14 @@ function renderPick() {
 /* Plus-Menü der Patientenakte */
 /* Aktionsmenü der Akte: vier Kategorien mit eigenem Symbol, das + öffnet alle */
 var AM_GROUPS = [
-  { t: 'Dokumentieren', ic: 'book', items: [['doku', 'book', 'Dokumentation'], ['notiz', 'pen', 'Notiz'], ['med', 'pill', 'Medikament'], ['produkt', 'box', 'Produkt']] },
-  { t: 'Termin und Abrechnung', ic: 'cal', items: [['termin', 'cal', 'Termin'], ['rechnung', 'euro', 'Rechnung'], ['rezept', 'rx', 'Rezept']] },
+  { t: 'Dokumentieren', ic: 'book', items: [['doku', 'book', 'Dokumentation'], ['notiz', 'pen', 'Notiz'], ['produkt', 'box', 'Produkt']] },
+  { t: 'Termin und Abrechnung', ic: 'cal', items: [['termin', 'cal', 'Termin'], ['rechnung', 'euro', 'Rechnung']] },
   { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamwa', 'wa', 'Anamnese WhatsApp'], ['anamlink', 'link', 'Anamnese-Link']] },
-  { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] }
+  { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] },
+  { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
 /* Symbolleiste: Termin, Rechnung und Rezept (häufigste Aktionen) starten direkt, die anderen öffnen ihre Kategorie */
-var AM_DOCK = [{ t: 'Dokumentieren', ic: 'book', g: 0, c: 'd0' }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Rezept', ic: 'rx', act: 'rezept', c: 'd3' }, { t: 'Nachrichten', ic: 'mail', g: 2, c: 'd4' }, { t: 'Dateien', ic: 'img', g: 3, c: 'd5' }];
+var AM_DOCK = [{ t: 'Dokumentieren', ic: 'book', g: 0, c: 'd0' }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Medikamente', ic: 'pill', g: 4, c: 'd3' }, { t: 'Nachrichten', ic: 'mail', g: 2, c: 'd4' }, { t: 'Dateien', ic: 'img', g: 3, c: 'd5' }];
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
   AM_DOCK.forEach(function (d) {
