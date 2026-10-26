@@ -7,7 +7,7 @@
 <title>Terminerinnerung Kreuzberg Ästhetik</title>
 <link rel="stylesheet" href="forms.css">
 </head>
-<body>
+<body data-form="erinnerung">
 <div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
 <div class="wrap" id="formbox">
   <form id="f" novalidate autocomplete="on">
@@ -40,6 +40,8 @@
       <div id="datenschutz"></div>
     </div>
 
+    <div id="extras"></div>
+
     <h2>Unterschrift</h2>
     <div class="card">
       <canvas id="sig" class="sigbox"></canvas>
@@ -55,12 +57,15 @@
   </form>
 </div>
 <script src="forms.js"></script>
+<script src="ftexte.js"></script>
 <script>
 $('datenschutz').appendChild(datenschutzBlock());
 var sig = makeSig($('sig'));
 $('sig-clear').onclick = function () { sig.clear(); };
 $('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); });
 
+var EX = null;
+KF.ready(function () { KF.apply(); EX = KF.extras($('extras')); });
 function val(id) { return $(id).value.trim(); }
 function collect() {
   document.querySelectorAll('.invalid').forEach(function (n) { n.classList.remove('invalid'); });
@@ -70,6 +75,7 @@ function collect() {
   d.dob = dobFromParts(val('dob-t'), $('dob-m').value, val('dob-j')); if (!d.dob) bad.push($('g-dob'));
   d.email = val('email'); if (!isEmail(d.email)) bad.push($('email'));
   d.einwilligung = (document.querySelector('input[name=einw]:checked') || {}).value || ''; if (!d.einwilligung) bad.push($('g-einw'));
+  var ex = EX ? EX.collect() : { bad: [], list: [] }; bad = bad.concat(ex.bad); d.extra = ex.list;
   if (sig.isEmpty()) bad.push($('sig'));
   return { d: d, bad: bad };
 }
@@ -87,9 +93,10 @@ async function buildErinnerung(d) {
   kv('Name', who); kv('Geburtsdatum', d.dob); kv('E-Mail', d.email);
   P.y -= 8; P.text('EINWILLIGUNG', { size: 10.5, bold: true, gap: 2 }); P.rule(8);
   kv('Terminerinnerung per E-Mail', d.einwilligung === 'ja' ? 'Ja, ich bin mit der Verarbeitung meiner Daten zum Versand von Terminerinnerungen per E-Mail einverstanden. Ich kann diese Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.' : 'Nein, ich wünsche keine Terminerinnerung.');
+  KF.pdf(P, d.extra);
   P.y -= 6; P.text('Mit meiner Unterschrift bestätige ich die Richtigkeit meiner Angaben und habe die Datenschutzhinweise zur Kenntnis genommen.', { size: 9, italic: true, color: P.gray, gap: 8 });
   await P.sign(sig.png(), 'Unterschrift', who);
-  return await P.finish({ format: 'ka-formular', version: 1, typ: 'erinnerung', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob, email: d.email }, einwilligung: d.einwilligung });
+  return await P.finish({ format: 'ka-formular', version: 1, typ: 'erinnerung', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob, email: d.email }, einwilligung: d.einwilligung, extra: d.extra });
 }
 
 $('f').addEventListener('submit', async function (ev) {
@@ -98,13 +105,12 @@ $('f').addEventListener('submit', async function (ev) {
   if (r.bad.length) { r.bad.forEach(function (n) { if (n.classList) n.classList.add('invalid'); }); r.bad[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); errBox('Bitte fülle alle mit * markierten Felder aus (rot umrandet).'); return; }
   var go = $('go'); go.disabled = true; go.textContent = 'Wird erstellt …';
   try {
-    var d = r.d, data = { format: 'ka-formular', version: 1, typ: 'erinnerung', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob, email: d.email }, einwilligung: d.einwilligung };
+    var d = r.d, data = { format: 'ka-formular', version: 1, typ: 'erinnerung', erstellt: new Date().toISOString(), patient: { vorname: d.vorname, nachname: d.nachname, dob: d.dob, email: d.email }, einwilligung: d.einwilligung, extra: d.extra };
     var pdf = await buildErinnerung(d);
     await deliver('erinnerung', 'Terminerinnerung', d.nachname + '_' + d.vorname, data, pdf, $('website').value);
     showDone('Formular');
   } catch (x) { go.disabled = false; go.textContent = 'Absenden'; errBox(x && x.message ? x.message : 'Das hat leider nicht geklappt. Bitte versuche es noch einmal.'); }
 });
 </script>
-<script src="ftexte.js"></script>
 </body>
 </html>
