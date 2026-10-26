@@ -165,7 +165,7 @@ function collect() {
 }
 
 async function buildAnamnese(d, data) {
-  var P = await newPdf('Anamnese', 'Code ' + d.code);
+  var P = await newPdf(KF.name('Anamnese'), 'Code ' + d.code);
   P.text('Patientencode: ' + d.code, { size: 10.5, bold: true, gap: 4 });
   P.text('J = Ja | N = Nein', { size: 8.5, color: P.gray, gap: 6 });
   var xYn = P.W - P.M - 46;

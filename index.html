@@ -1904,7 +1904,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-p';
+var KA_V = '2026-10-29-q';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5457,6 +5457,7 @@ function docSend(ev, p, d) {
   sendMenu(ev, p, ['doc:' + d.id], d.titel, txt);
 }
 function renderUnterlagen() {
+  fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
   var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = 'block'; box.innerHTML = '';
   var row = function (cls, ic, t, sub, btn) {
@@ -6096,14 +6097,32 @@ function aAct(x) {
 }
 
 /* ===== Webformulare ===== */
+/* Eigene Namen der drei Formulare (settings.formFelder[Formular].name) in WEBF und PK_FORMS übernehmen */
+var FNAME_DEF = { anmeldung: 'Patientenanmeldung', anamnese: 'Anamnesebogen', erinnerung: 'Terminerinnerung' };
+function fNamen() {
+  var fe = settings.formFelder || {};
+  PK_FORMS.forEach(function (f) { if (FNAME_DEF[f[0]]) f[1] = (fe[f[0]] && fe[f[0]].name) || FNAME_DEF[f[0]]; });
+  WEBF.forEach(function (w) { var id = String(w[1]).replace(/\.html.*/, ''); if (FNAME_DEF[id]) w[0] = (fe[id] && fe[id].name) || FNAME_DEF[id]; });
+}
+function fRename(w) {
+  var id = String(w[1]).replace(/\.html.*/, ''); if (!FNAME_DEF[id]) return;
+  var v = prompt('Neuer Name für dieses Formular (leer = ' + FNAME_DEF[id] + '):', w[0]); if (v === null) return;
+  v = v.trim(); if (v === FNAME_DEF[id]) v = '';
+  settings.formFelder = settings.formFelder || {}; var c = settings.formFelder[id] = settings.formFelder[id] || {}; if (v) c.name = v; else delete c.name;
+  persist(); fNamen(); renderWebf();
+  if (typeof KS !== 'undefined') KS.txtset(settings.formTexte || {}, settings.formFelder).catch(function () { alert('Der Name ist gespeichert, aber noch nicht auf dem Server veröffentlicht. Er gilt dort nach dem nächsten Speichern im Editor.'); });
+}
 var WEBF = [['Patientenanmeldung', 'anmeldung.html'], ['Anamnesebogen', 'anamnese.html'], ['Terminerinnerung', 'erinnerung.html']].concat(KA_DOCS.filter(function (d) { return d.typ === 'info'; }).map(function (d) { return [d.name, 'info.html?d=' + d.id]; }));
 function webfUrl(f) { try { return new URL(f, location.href).href; } catch (x) { return f; } }
 function renderWebf() {
   var box = document.getElementById('wf-list'); if (!box) return; box.innerHTML = '';
   var ic = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>';
+  fNamen();
   WEBF.forEach(function (w) {
     var url = webfUrl(w[1]), r = mk('div', 'wf-row');
-    r.appendChild(mk('b', 'wf-t', w[0]));
+    var tt = mk('b', 'wf-t', w[0]);
+    if (FNAME_DEF[String(w[1]).replace(/\.html.*/, '')]) { var rn = mk('button', 'x-btn', '✎'); rn.type = 'button'; rn.title = 'Umbenennen'; rn.setAttribute('aria-label', 'Umbenennen'); rn.style.marginLeft = '8px'; rn.onclick = function () { fRename(w); }; tt.appendChild(rn); }
+    r.appendChild(tt);
     var ln = mk('div', 'wf-ln'), a = mk('a', 'wf-a', url); a.href = url; a.target = '_blank'; a.rel = 'noopener'; ln.appendChild(a);
     var cp = mk('button', 'wf-cp'); cp.type = 'button'; cp.innerHTML = ic; cp.title = 'Link kopieren'; cp.setAttribute('aria-label', 'Link kopieren');
     cp.onclick = function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, function () { prompt('Link zum Kopieren:', url); }); };
@@ -6196,7 +6215,7 @@ async function ffSave() {
     if (!sh.checked && !sh.disabled) hide.push(k);
     if (rq && !rq.disabled && sh.checked && rq.checked !== (r.dataset.dreq === '1')) req[k] = rq.checked;
   });
-  settings.formFelder = settings.formFelder || {}; settings.formFelder[ffCur] = { hide: hide, req: req, extra: extra };
+  var nm0 = ((settings.formFelder || {})[ffCur] || {}).name; settings.formFelder = settings.formFelder || {}; settings.formFelder[ffCur] = { hide: hide, req: req, extra: extra }; if (nm0) settings.formFelder[ffCur].name = nm0;
   persist(); closeModal('modal-ffeld');
   try { await KS.txtset(settings.formTexte || {}, settings.formFelder); alert('Gespeichert und veröffentlicht. Das Formular zeigt die neuen Felder beim nächsten Öffnen.'); }
   catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
@@ -6215,7 +6234,7 @@ async function fvSave() {
   if (!K) { alert('Der Editor ist noch nicht geladen, oder die Seite ist noch nicht auf dem neuesten Stand. Bitte kurz warten und noch einmal versuchen.'); return; }
   var res = K.result(); if (res.error) { alert(res.error); return; }
   settings.formTexte = res.texte;
-  if (FV.form) { settings.formFelder = settings.formFelder || {}; settings.formFelder[FV.form] = res.felder; }
+  if (FV.form) { settings.formFelder = settings.formFelder || {}; var nm1 = (settings.formFelder[FV.form] || {}).name; settings.formFelder[FV.form] = res.felder; if (nm1) res.felder.name = nm1; else delete res.felder.name; }
   persist(); closeModal('modal-fvis');
   try { await KS.txtset(settings.formTexte || {}, settings.formFelder || {}); alert('Gespeichert und veröffentlicht. Das Formular zeigt die Änderungen beim nächsten Öffnen.'); }
   catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }

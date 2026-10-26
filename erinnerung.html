@@ -82,7 +82,7 @@ function collect() {
 
 async function buildErinnerung(d) {
   var who = d.vorname + ' ' + d.nachname;
-  var P = await newPdf('Einwilligung Terminerinnerung', d.nachname + ', ' + d.vorname + ' (geb. ' + d.dob + ')');
+  var P = await newPdf(KF.name('Einwilligung Terminerinnerung'), d.nachname + ', ' + d.vorname + ' (geb. ' + d.dob + ')');
   function kv(k, v) {
     var lines = P.wrap(v || '-', P.f, 10.5, P.W - P.M * 2 - 180), lh = 14; P.ensure(lh * lines.length + 4);
     P.page.drawText(k, { x: P.M, y: P.y - 10, size: 9.5, font: P.f, color: P.gray });

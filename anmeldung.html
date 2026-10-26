@@ -133,7 +133,7 @@ function collect() {
 
 async function buildAnmeldung(d, data) {
   var who = (d.titel ? d.titel + ' ' : '') + d.vorname + ' ' + d.nachname;
-  var P = await newPdf('Patientenanmeldung', d.nachname + ', ' + d.vorname + ' (geb. ' + d.dob + ')');
+  var P = await newPdf(KF.name('Patientenanmeldung'), d.nachname + ', ' + d.vorname + ' (geb. ' + d.dob + ')');
   function sec(t) { P.ensure(40); P.y -= 8; P.text(t.toUpperCase(), { size: 10.5, bold: true, gap: 2 }); P.rule(8); }
   function kv(k, v) {
     var lines = P.wrap(v || '-', P.f, 10.5, P.W - P.M * 2 - 180), kl = P.wrap(k, P.f, 9.5, 165), lh = 14, rows = Math.max(lines.length, kl.length); P.ensure(lh * rows + 4);
