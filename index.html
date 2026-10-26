@@ -806,8 +806,6 @@ function kaStart() {
     <div class="hd-act">
       <span class="live-dot" title="System aktiv" aria-label="System aktiv"></span>
       <button type="button" class="ico-btn" id="al-btn" title="Sperren" aria-label="App sperren" style="display:none;" onclick="alLockNow()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
-      <button type="button" class="ico-btn" title="Sichern" aria-label="Sichern" onclick="hdRun(exportData, 'Sichern')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span class="ico-lbl">Sichern</span></button>
-      <button type="button" class="ico-btn" title="Laden" aria-label="Laden" onclick="hdRun(function () { document.getElementById('imp-file').click(); }, 'Laden')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg><span class="ico-lbl">Laden</span></button>
       <input type="file" id="imp-file" multiple style="display:none" onchange="importData(this)">
     </div>
     <div id="gs-res" class="gs-res" style="display:none;"></div>
@@ -1069,6 +1067,20 @@ function kaStart() {
       </div>
       </div>
       <div id="wf-list"></div>
+    </div>
+  </div>
+
+  <!-- TAB: SICHERUNG -->
+  <div id="tab-sicherung" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Sicherung</span></div>
+      <div id="sk-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
+      <div style="font-size:13px; color:#64748b; margin-bottom:16px;">Die Sicherung ist eine ZIP-Datei mit allen Daten, Fotos und Dokumenten. Du kannst sie mit einem eigenen Passwort verschlüsseln. Sie ist unabhängig vom Geräte-Abgleich: Wird dort versehentlich etwas gelöscht, bleibt sie erhalten.</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-save" onclick="hdRun(exportData, 'Sichern')">Sichern</button>
+        <button type="button" class="btn btn-secondary" onclick="hdRun(function () { document.getElementById('imp-file').click(); }, 'Laden')">Laden</button>
+      </div>
+      <div style="font-size:13px; color:#64748b; margin-top:16px;"><b>Sichern</b> speichert den aktuellen Stand. <b>Laden</b> liest eine Sicherung wieder ein, bei mehreren Teilen bitte alle Teile gemeinsam wählen. Einzelne Formulare, Rechnungen oder Patienten liest der Knopf <b>Import</b> unter der Patientenliste ein.</div>
     </div>
   </div>
 
@@ -1844,11 +1856,11 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-a';
+var KA_V = '2026-10-29-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
-  ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], ['abgleich', 'Geräte-Abgleich', 'renderSync']];
+  ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung']];
 var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function (x) { return x[0]; });
 (function () {
   var box = document.getElementById('nav-menu');
@@ -7162,6 +7174,14 @@ function fixImported() {
 fixImported();
 restoreLast();
 /* ===== Geräte-Abgleich ===== */
+function renderSicherung() {
+  var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
+  var el = document.getElementById('sk-state'); if (!el) return;
+  if (!lb) { el.textContent = 'Noch keine Sicherung auf diesem Gerät'; el.style.color = '#b91c1c'; return; }
+  var d = new Date(lb), days = Math.round((new Date(iso(new Date())) - new Date(iso(d))) / 86400000);
+  el.textContent = 'Letzte Sicherung: ' + (days === 0 ? 'heute' : days === 1 ? 'gestern' : 'vor ' + days + ' Tagen') + ' um ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' Uhr';
+  el.style.color = days >= 2 ? '#92400e' : '#15803d';
+}
 function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); }
 async function syncGo(mode) {
   var pw = document.getElementById('sy-pw').value, m = document.getElementById('sy-msg'); m.className = ''; m.style.color = '#64748b';
