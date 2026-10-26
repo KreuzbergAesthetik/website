@@ -11,6 +11,7 @@
  *
  * Gespeichert wird in wp-content/ka-daten (von außen gesperrt). Alles dort ist verschlüsselt.
  * Adressen (stehen in forms.js und sync.js):
+ *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/kalender?c=CODE (Kalender ohne Namen, Code erzeugt die App)
  *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/formular     (Webformulare)
  *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/schluessel   (öffentlicher Schlüssel)
  *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/abgleich     (Praxis-App)
@@ -220,13 +221,39 @@ if (!function_exists('ka_cfg')) {
             if ($a === 'ibdel') { @unlink($f); return ka_ok(); }
             return ka_ok(array('d' => base64_encode(file_get_contents($f))));
         }
+        /* Kalender ohne Namen für Google, Apple usw.: die App legt hier eine fertige .ics-Datei ab, abrufbar nur über den geheimen Code */
+        if ($a === 'calput' || $a === 'caldel') {
+            $cc = strtolower((string) $req->get_param('c'));
+            if (!preg_match('/^[0-9a-f]{32}$/', $cc)) return ka_fail(400, 'Ungültiger Kalendercode.');
+            $cf = ka_dir('cal') . '/' . $cc . '.ics';
+            if ($a === 'caldel') { if (is_file($cf)) @unlink($cf); return ka_ok(); }
+            $files = $req->get_file_params();
+            if (empty($files['d']) || $files['d']['error'] !== UPLOAD_ERR_OK || $files['d']['size'] > 1024 * 1024) return ka_fail(400, 'Kalenderdaten fehlen oder sind zu groß.');
+            $body = file_get_contents($files['d']['tmp_name']);
+            if (strpos($body, 'BEGIN:VCALENDAR') !== 0) return ka_fail(400, 'Das ist kein Kalender.');
+            file_put_contents($cf, $body);
+            return ka_ok();
+        }
         return ka_fail(400, 'Unbekannte Anfrage.');
+    }
+
+    /* öffentlicher Kalender-Abruf (nur mit dem geheimen Code aus der App) */
+    function ka_kalender($req) {
+        $key = ka_ip_key('ka_cal_'); $n = (int) get_transient($key);
+        if ($n >= 600) return ka_fail(429, 'Zu viele Anfragen.');
+        set_transient($key, $n + 1, HOUR_IN_SECONDS);
+        $cc = strtolower((string) $req->get_param('c'));
+        $cf = ka_dir('cal') . '/' . $cc . '.ics';
+        if (!preg_match('/^[0-9a-f]{32}$/', $cc) || !is_file($cf)) return ka_fail(404, 'Nicht gefunden.');
+        header('Content-Type: text/calendar; charset=utf-8'); header('Cache-Control: no-cache'); header('Content-Disposition: inline; filename="praxis.ics"');
+        echo file_get_contents($cf); exit;
     }
 }
 
 add_action('rest_api_init', function () {
     register_rest_route('ka/v1', '/formular', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_formular'));
     register_rest_route('ka/v1', '/schluessel', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_schluessel'));
+    register_rest_route('ka/v1', '/kalender', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_kalender'));
     register_rest_route('ka/v1', '/texte', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_texte'));
     register_rest_route('ka/v1', '/abgleich', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_abgleich'));
 });
