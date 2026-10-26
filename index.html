@@ -1104,6 +1104,19 @@ function kaStart() {
         <div style="font-size:13px; color:#64748b;">Der Abgleich läuft automatisch beim Öffnen der App, beim Zurückkehren zur App und etwa 6 Sekunden nach jeder Änderung. Offline arbeitest Du normal weiter, der Abgleich holt sich nach, was fehlt. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
       </div>
     </div>
+    <div class="card" id="kal-box" style="margin-top:16px;">
+      <div class="card-header"><span class="card-title">Kalender für Google, Apple und Co.</span></div>
+      <div style="font-size:14px; color:#334155; margin-bottom:12px;">Ein Kalender zum Abonnieren, in dem nur die <b>belegte Zeit</b> steht, ohne Patientennamen, ohne Behandlung, ohne Daten. Auf Wunsch stehen die Kürzel der Patienten darin, zum Beispiel „KD“.</div>
+      <div class="kb-off"><button type="button" class="btn btn-save" onclick="KS.calOn()">Kalender einschalten</button></div>
+      <div class="kb-on" style="display:none">
+        <div class="form-group"><label>Was soll im Kalender stehen?</label><select class="form-control kb-mode" onchange="calMode(this.value)"><option value="belegt">Nur „Belegt“</option><option value="kuerzel">Kürzel der Patienten</option></select></div>
+        <div class="form-group"><label>Adresse zum Abonnieren (geheim halten)</label><div style="display:flex; gap:6px;"><input type="text" class="form-control kb-url" readonly style="min-width:0; font-size:12px;"><button type="button" class="btn btn-secondary btn-sm" onclick="calCopy()">Kopieren</button></div></div>
+        <div class="kb-state" style="font-size:13px; margin-bottom:10px;"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-secondary" onclick="KS.calPush()">Jetzt aktualisieren</button><button type="button" class="btn btn-cancel" onclick="calOffAsk()">Ausschalten</button></div>
+        <div style="font-size:13px; color:#64748b; margin-top:12px;">Einrichten in Google Kalender (am Computer): Weitere Kalender, Per URL, Adresse einfügen. Google lädt abonnierte Kalender nur alle paar Stunden neu, die Anzeige hinkt also etwas nach. Wer die Adresse kennt, sieht die belegten Zeiten. Beim Ausschalten wird sie ungültig.</div>
+      </div>
+      <div class="kb-state-off" style="font-size:13px; color:#b91c1c; margin-top:8px;"></div>
+    </div>
   </div>
 
   <!-- TAB: TEXTBAUSTEINE -->
@@ -1856,7 +1869,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-d';
+var KA_V = '2026-10-29-e';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -7182,6 +7195,9 @@ function renderSicherung() {
   el.textContent = 'Letzte Sicherung: ' + (days === 0 ? 'heute' : days === 1 ? 'gestern' : 'vor ' + days + ' Tagen') + ' um ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' Uhr';
   el.style.color = days >= 2 ? '#92400e' : '#15803d';
 }
+function calMode(v) { settings.calMode = v === 'kuerzel' ? 'kuerzel' : 'belegt'; persist(); KS.calPush(); }
+function calCopy() { var u = KS.calUrl(); copyText(u, function () { alert('Adresse kopiert.'); }, function () { prompt('Adresse zum Kopieren:', u); }); }
+function calOffAsk() { if (confirm('Kalender ausschalten? Die Adresse wird ungültig, und der Kalender in Google verschwindet nach der nächsten Aktualisierung.')) KS.calOff(); }
 function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); }
 async function syncGo(mode) {
   var pw = document.getElementById('sy-pw').value, m = document.getElementById('sy-msg'); m.className = ''; m.style.color = '#64748b';

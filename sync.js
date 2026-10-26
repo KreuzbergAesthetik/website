@@ -179,6 +179,7 @@ var KS = (function () {
     } finally { S.busy = false; S.msg = ''; ui(); }
   }
   function touch() {
+    if (settings.calOn && !S.applying) { clearTimeout(S.calT); S.calT = setTimeout(calPush, 15000); }
     if (S.applying) return; var c = cfg(); if (!c) return;
     var b = base(); if (!b.dirty) { b.dirty = true; setBase(b); }
     clearTimeout(S.timer); S.timer = setTimeout(function () { run(false); }, 6000); ui();
@@ -217,6 +218,34 @@ var KS = (function () {
     var b = base(); b.dirty = true; setBase(b); refreshUi(); await run(true);
   }
 
+  /* ---------- Kalender ohne Namen (für Google, Apple usw.) ---------- */
+  function icsZ(t) { return new Date(t).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
+  function calBuild() {
+    var kz = settings.calMode === 'kuerzel', now = Date.now(), from = now - 7 * 86400000, salt = settings.calToken || '';
+    var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Kreuzberg Aesthetik//Praxis//DE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Praxis (belegt)', 'X-PUBLISHED-TTL:PT1H', 'REFRESH-INTERVAL;VALUE=DURATION:PT1H'];
+    events.forEach(function (e) {
+      if (e.phase === 'Abgesagt') return;
+      var t = new Date(e.date + 'T' + e.time + ':00').getTime(); if (!t || t < from) return;
+      var sum = 'Belegt';
+      if (kz) { var p = patients.filter(function (x) { return nameKey(x) === e.patient; })[0]; if (p) { var v = noTitel(p.vorname), n = noTitel(p.nachname); sum = ((v.charAt(0) || '') + (n.charAt(0) || '')).toUpperCase() || 'Belegt'; } }
+      L.push('BEGIN:VEVENT', 'UID:' + h53(salt + '|' + e.patient + '|' + e.date + e.time) + '@praxis', 'DTSTAMP:' + icsZ(now), 'DTSTART:' + icsZ(t), 'DTEND:' + icsZ(t + (+e.dur || 60) * 60000), 'SUMMARY:' + sum, 'TRANSP:OPAQUE', 'END:VEVENT');
+    });
+    L.push('END:VCALENDAR'); return L.join('\r\n') + '\r\n';
+  }
+  function calUrl() { return settings.calToken ? EP.replace(/abgleich$/, 'kalender') + '?c=' + settings.calToken : ''; }
+  async function calPush() {
+    if (!settings.calOn || !settings.calToken) return; var c = cfg(); if (!c) { S.calErr = 'Erst den Geräte-Abgleich einrichten.'; ui(); return; }
+    try { await api('calput', { c: settings.calToken }, enc.encode(calBuild())); S.calErr = ''; S.calLast = Date.now(); }
+    catch (e) { S.calErr = err(e); }
+    ui();
+  }
+  async function calOff() { var tk = settings.calToken, c = cfg(); settings.calOn = false; settings.calToken = ''; persist(); if (tk && c) { try { await api('caldel', { c: tk }); } catch (e) {} } S.calErr = ''; ui(); }
+  async function calOn() {
+    if (!cfg()) { S.calErr = 'Erst den Geräte-Abgleich einrichten.'; ui(); return; }
+    if (!settings.calToken) { var r = crypto.getRandomValues(new Uint8Array(16)); settings.calToken = hex(r); }
+    settings.calOn = true; persist(); await calPush();
+  }
+
   /* ---------- Postfach ---------- */
   async function openPaket(c, u8) {
     var n = (u8[0] << 8) | u8[1], wrapped = u8.subarray(2, 2 + n), iv = u8.subarray(2 + n, 14 + n), ct = u8.subarray(14 + n);
@@ -252,6 +281,13 @@ var KS = (function () {
     var c = cfg(), b = c ? base() : null, n = S.inbox.length;
     var btn = document.getElementById('pt-abrufen'); if (btn) { btn.style.display = c && n ? '' : 'none'; btn.textContent = n ? 'Abrufen (' + n + ')' : 'Abrufen'; btn.classList.toggle('has-new', n > 0); }
     var bar = document.getElementById('ks-bar'); if (bar) { bar.style.display = c && n ? 'flex' : 'none'; var t = document.getElementById('ks-bar-t'); if (t) t.textContent = n === 1 ? '1 neues Formular im Postfach' : n + ' neue Formulare im Postfach'; }
+    var kb = document.getElementById('kal-box');
+    if (kb) {
+      var on = !!settings.calOn;
+      kb.querySelector('.kb-off').style.display = on ? 'none' : ''; kb.querySelector('.kb-on').style.display = on ? '' : 'none';
+      kb.querySelector('.kb-url').value = calUrl(); kb.querySelector('.kb-mode').value = settings.calMode === 'kuerzel' ? 'kuerzel' : 'belegt';
+      var ke = kb.querySelector('.kb-state'); ke.textContent = S.calErr ? S.calErr : on ? (S.calLast ? 'Zuletzt aktualisiert: ' + ago(S.calLast) : 'Wird aktualisiert …') : ''; ke.style.color = S.calErr ? '#b91c1c' : '#64748b';
+    }
     var box = document.getElementById('sync-box'); if (!box) return;
     box.querySelector('.sy-off').style.display = c ? 'none' : '';
     box.querySelector('.sy-on').style.display = c ? '' : 'none';
@@ -266,10 +302,10 @@ var KS = (function () {
     if (S.started) return; S.started = true;
     var hf = function (name) { var f = window[name]; if (typeof f !== 'function') return; window[name] = function () { var r = f.apply(this, arguments); if (r && r.then) return r.then(function (v) { if (v) touch(); return v; }); return r; }; };
     hf('fPut'); hf('fDel');
-    setTimeout(function () { run(false); ui(); }, 1500); ui();
+    setTimeout(function () { run(false); ui(); }, 1500); setTimeout(calPush, 5000); ui();
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') run(false); });
     window.addEventListener('online', function () { run(false); });
     S.poll = setInterval(function () { if (document.visibilityState === 'visible') run(false); }, 180000);
   }
-  return { init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  return { calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();
