@@ -877,18 +877,7 @@ function kaStart() {
         <span class="card-title">Patienten</span>
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
-      <div class="cal-bar" style="margin-bottom:10px;">
-        <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="flex:1 1 200px;">
-        <div class="row-actions">
-          <select id="p-sortkey" class="form-control" style="width:auto;" onchange="setPSort(this.value)" aria-label="Sortieren nach">
-            <option value="name">Name</option><option value="id">ID</option><option value="dob">Geburtsdatum</option><option value="erstellt">Erstellt am</option>
-          </select>
-          <button type="button" class="btn btn-secondary btn-sm" id="p-dir" onclick="togglePDir()" title="Sortierrichtung" aria-label="Sortierrichtung">&#9650;</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="pt-abrufen" style="display:none" onclick="KS.abrufen()" title="Neue Formulare aus dem Postfach holen">Abrufen</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('pimp-file').click()" title="Patienten, Rechnungen oder ausgefüllte Formulare einlesen">Import</button>
-          <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
-        </div>
-      </div>
+      <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="display:none;">
       <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span><span><i style="background:#16a34a"></i>Termin gebucht</span></div>
       <div class="scroll">
         <table class="pt">
@@ -899,6 +888,11 @@ function kaStart() {
           </tr></thead>
           <tbody id="patient-table"></tbody>
         </table>
+      </div>
+      <div class="row-actions" style="justify-content:center; margin-top:14px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="pt-abrufen" style="display:none" onclick="KS.abrufen()" title="Neue Formulare aus dem Postfach holen">Abrufen</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('pimp-file').click()" title="Patienten, Rechnungen oder ausgefüllte Formulare einlesen">Import</button>
+        <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
       </div>
     </div>
   </div>
@@ -1851,7 +1845,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-x';
+var KA_V = '2026-10-28-y';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2149,7 +2143,6 @@ function renderPatients() {
   ensurePatients();
   var tb = document.getElementById('patient-table'), dl = document.getElementById('t-patient-list');
   tb.innerHTML = ''; dl.innerHTML = '';
-  document.getElementById('p-sortkey').value = pKey; document.getElementById('p-dir').innerHTML = pSort === 'asc' ? '&#9650;' : '&#9660;';
   [].forEach.call(document.querySelectorAll('.sarr'), function (e) { e.innerHTML = e.getAttribute('data-k') === pKey ? (pSort === 'asc' ? '&#9650;' : '&#9660;') : ''; });
   var q = (document.getElementById('p-filter').value || '').trim().toLowerCase().replace(/^#/, '#');
   var cmp = function (a, b) {
