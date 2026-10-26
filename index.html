@@ -561,6 +561,7 @@ body { overflow-x:clip; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
+#zl-arts { flex-wrap:nowrap; gap:4px; } #zl-arts .za-b { flex:1 1 0; min-width:0; flex-direction:column; gap:1px; height:auto; padding:5px 2px; font-size:11px; border-radius:8px; justify-content:center; } #zl-arts .za-l { display:inline-flex; align-items:center; gap:4px; max-width:100%; overflow:hidden; white-space:nowrap; } #zl-arts .za-b b { font-size:12px; white-space:nowrap; } #zl-arts .za-b i { width:7px; height:7px; }
 #inv-seg { flex-wrap:nowrap; gap:4px; overflow-x:auto; } #inv-seg .za-b { height:30px; padding:0 5px; font-size:11.5px; gap:3px; flex:1 1 auto; min-width:0; border-radius:8px; justify-content:center; }
 .sr-fab { position:fixed; right:16px; bottom:18px; width:44px; height:44px; border-radius:50%; border:1px solid #cbd5e1; background:rgba(255,255,255,.88); color:#64748b; box-shadow:0 4px 14px rgba(15,23,42,.18); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; z-index:60; backdrop-filter:blur(4px); } .sr-fab.on { background:#dbeafe; color:#2563eb; border-color:#93c5fd; }
 .sr-bar { display:none; position:fixed; left:14px; right:70px; bottom:18px; z-index:60; box-shadow:0 4px 14px rgba(15,23,42,.18); border-radius:10px; background:#fff; } .sr-bar input { height:44px; }
@@ -1953,7 +1954,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zh';
+var KA_V = '2026-10-29-zi';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5295,8 +5296,7 @@ function renderZahlungen() {
   var tot = allP.reduce(function (a, p) { return a + p.amount; }, 0);
   var segBtn = function (key, dot, label, sum) {
     var b = mk('button', 'za-b' + ((zArt || '') === key ? ' on' : '')); b.type = 'button';
-    if (dot) { var d = mk('i'); d.style.background = dot; b.appendChild(d); }
-    b.appendChild(document.createTextNode(label + ' ')); b.appendChild(mk('b', '', eur(sum)));
+    var lb = mk('span', 'za-l'); if (dot) { var d = mk('i'); d.style.background = dot; lb.appendChild(d); } lb.appendChild(document.createTextNode(label === 'Überweisung' ? 'Überw.' : label)); b.title = label; b.appendChild(lb); b.appendChild(mk('b', '', eur(sum)));
     b.onclick = function () { zArt = ((zArt || '') === key) ? '' : key; renderZahlungen(); }; zs.appendChild(b);
   };
   segBtn('', null, 'Alle', tot);
@@ -5305,7 +5305,7 @@ function renderZahlungen() {
   pays.forEach(function (p) {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
     var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 5) + '</span>'; c0.className = 'nw'; c1.textContent = p.inv.name; c4.className = 'nw';
-    var b = mk('button', 'pn', p.inv.nr); b.type = 'button'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
+    var b = mk('button', 'pn'); b.type = 'button'; var nrm = /^(.*?-)(\d+)$/.exec(String(p.inv.nr || '')); if (nrm) { b.appendChild(document.createTextNode(nrm[1])); b.appendChild(document.createElement('br')); b.appendChild(document.createTextNode(nrm[2])); } else b.textContent = p.inv.nr; b.style.lineHeight = '1.25'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar); c4.textContent = eur(p.amount);
     var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Zahlung bearbeiten'; pe.setAttribute('aria-label', 'Zahlung bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:15px;height:15px;vertical-align:middle;'; pe.style.cssText = 'position:absolute; right:2px; top:7px; padding:0; height:16px; line-height:1; background:none; border:0;'; c4.style.position = 'relative'; c4.style.paddingRight = '26px'; c4.appendChild(pe);
     row.style.cursor = 'pointer'; row.onclick = function (ev) { if (ev.target.closest('.pn')) return; openPayEdit(p.inv.id, p.ref); };
