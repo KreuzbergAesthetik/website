@@ -370,8 +370,9 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 @media (max-width:520px) { .foot-bar { flex-wrap:wrap; gap:8px; } .foot-bar .btn { min-width:0; flex:1 1 90px; padding-left:10px; padding-right:10px; } }
 .icon-btn { width:38px; height:36px; padding:0 !important; display:inline-flex; align-items:center; justify-content:center; }
 .icon-btn svg { width:20px; height:20px; }
-.iv-bar { display:flex; gap:6px; align-items:flex-start; margin-bottom:14px; } .iv-sp { flex:1; }
+.iv-bar { display:flex; gap:6px; align-items:flex-start; margin:-20px -20px 14px; padding:10px 14px 8px; position:sticky; top:-20px; z-index:20; background:#fff; border-bottom:1px solid #e2e8f0; border-radius:12px 12px 0 0; box-shadow:0 4px 10px rgba(15,23,42,.06); } .iv-sp { flex:1; }
 .iv-b { width:48px; border:none; border-radius:12px; padding:7px 0 5px; cursor:pointer; display:inline-flex; flex-direction:column; align-items:center; gap:2px; font-size:10px; font-weight:600; line-height:1.1; } .iv-b svg { width:20px; height:20px; } .iv-b span { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.iv-back { background:none; color:#475569; width:28px; padding:11px 0; } .iv-back svg { width:22px; height:22px; }
 .iv-grey { background:#eef2f7; color:#475569; } .iv-navy { background:#eef1fa; color:#1e3a8a; } .iv-orange { background:#fdf5ea; color:#b45309; } .iv-violet { background:#f5f1ff; color:#7c3aed; } .iv-green { background:#16a34a; color:#fff; } .iv-del { background:none; color:#dc2626; border:1px solid #fecaca; padding:10px 0; width:40px; }
 .inv-card { background:#f8fafc; border:1px solid #d5dde7; border-radius:12px; padding:10px; margin-bottom:10px; } .inv-card.rab { background:#fff7ed; border-color:#fed7aa; } .inv-addbar { background:#f1f5f9; border:1px dashed #94a3b8; border-radius:12px; padding:10px; margin:4px 0 10px; } .ic-btns { display:flex; gap:6px; flex-wrap:wrap; } .ic-add { border:1px dashed #94a3b8; background:#fff; color:#475569; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; cursor:pointer; } .ic-add.on { border-style:solid; border-color:#2563eb; color:#2563eb; background:#eff4ff; } .ic-fields { margin-bottom:6px; } .ic-f { margin-bottom:6px; } .ic-f.two { display:flex; gap:6px; }
 .ic-top { display:grid; grid-template-columns:minmax(0,1fr) auto 24px; gap:8px; align-items:center; margin-bottom:6px; } .inv-amt { font-size:13px; font-weight:600; white-space:nowrap; }
@@ -1236,8 +1237,8 @@ function kaStart() {
         <textarea id="t-notiz" class="form-control" rows="2" placeholder="Notiz"></textarea>
       </div>
       <div class="foot-bar">
-        <button type="button" class="btn btn-cancel" onclick="closeTermin()">Abbrechen</button>
       <button type="button" id="t-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteTermin()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+        <button type="button" class="btn btn-cancel" onclick="closeTermin()">Abbrechen</button>
         <button type="button" class="btn btn-save" onclick="saveTermin()">Speichern</button>
       </div>
     </div>
@@ -1428,8 +1429,8 @@ function kaStart() {
     <div class="form-group"><label>Bezeichnung (steht auf der Rechnung)</label><input type="text" id="rb-name" class="form-control" autocomplete="off" placeholder="z. B. Erstkunde"></div>
     <div class="form-group"><label>Rabatt in Prozent</label><input type="text" id="rb-pct" class="form-control" inputmode="decimal" placeholder="20"></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-rab')">Abbrechen</button>
       <button type="button" id="rb-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteRab()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-rab')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveRab()">Speichern</button>
     </div>
   </div>
@@ -1441,8 +1442,8 @@ function kaStart() {
     <div class="form-group"><label>Name</label><input type="text" id="lk-name" class="form-control" autocomplete="off"></div>
     <div class="form-group"><label>Farbe im Kalender</label><input type="color" id="lk-color" value="#2563eb" style="width:100%; height:42px; border:none; padding:0; border-radius:6px; cursor:pointer;"></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-lkat')">Abbrechen</button>
       <button type="button" id="lk-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteLKat()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-lkat')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveLKat()">Speichern</button>
     </div>
   </div>
@@ -1461,8 +1462,8 @@ function kaStart() {
     <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
     <a href="#" id="ls-cp" style="display:none; font-size:13px; font-weight:600; color:#1e3a8a; text-decoration:none;" onclick="event.preventDefault(); var i = lsIdx; closeModal('modal-leist'); lsCopy(i);">Diese Leistung kopieren</a>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-leist')">Abbrechen</button>
       <button type="button" id="ls-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteLeist()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-leist')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveLeist()">Speichern</button>
     </div>
   </div>
@@ -1514,8 +1515,8 @@ function kaStart() {
     <div class="form-group"><label>Kategorie</label><select id="ag-kat" class="form-control"></select></div>
     <div class="form-group"><label>Beschreibung</label><input type="text" id="ag-text" class="form-control" autocomplete="off"></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ausg')">Abbrechen</button>
       <button type="button" id="ag-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteAusgabe()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ausg')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveAusgabe()">Speichern</button>
     </div>
   </div>
@@ -1531,8 +1532,8 @@ function kaStart() {
     <div class="form-group"><label>Betreff</label><input type="text" id="pk-betreff" class="form-control" autocomplete="off"></div>
     <div class="form-group"><label>Nachricht</label><textarea id="pk-text" class="form-control" rows="8"></textarea></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-pk')">Abbrechen</button>
       <button type="button" id="pk-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deletePaket()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-pk')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="savePaket()">Speichern</button>
     </div>
   </div>
@@ -1546,8 +1547,8 @@ function kaStart() {
     <div class="form-group"><label>Nachricht</label><textarea id="nv-text" class="form-control" rows="8"></textarea></div>
     <div class="form-group"><label>Anhänge (Vorlagen aus Praxis → Vorlagen)</label><div id="nv-att"></div></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-nv')">Abbrechen</button>
       <button type="button" id="nv-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteNachr()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-nv')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveNachr()">Speichern</button>
     </div>
   </div>
@@ -1560,8 +1561,8 @@ function kaStart() {
     <div class="form-group"><label>Name</label><input type="text" id="tb-name" class="form-control" autocomplete="off"></div>
     <div class="form-group"><label>Text</label><textarea id="tb-text" class="form-control" rows="6"></textarea></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tb')">Abbrechen</button>
       <button type="button" id="tb-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteTxt()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tb')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveTxt()">Speichern</button>
     </div>
   </div>
@@ -1592,8 +1593,8 @@ function kaStart() {
     </div>
     <div style="margin-top:10px;"><button type="button" class="btn btn-secondary" id="tp-view" onclick="viewTpl()">Vorlage ansehen</button></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tpl')">Abbrechen</button>
       <button type="button" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" onclick="deleteTpl()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tpl')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveTpl()">Speichern</button>
     </div>
   </div>
@@ -1613,14 +1614,14 @@ function kaStart() {
 <div id="modal-invview" class="modal-overlay">
   <div class="modal-box" style="max-width:800px; background:#fff;">
     <div class="no-print iv-bar">
-      <button type="button" class="iv-b iv-grey" title="Zurück" aria-label="Zurück" onclick="closeModal('modal-invview')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>Zurück</span></button>
+      <button type="button" class="iv-b iv-back" title="Zurück" aria-label="Zurück" onclick="closeModal('modal-invview')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button type="button" class="iv-b iv-del" title="Löschen" aria-label="Löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
       <span class="iv-sp"></span>
       <button type="button" class="iv-b iv-navy" id="inv-pay-btn" title="Zahlung erfassen" aria-label="Zahlung erfassen" onclick="openPay()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7a6 6 0 100 10M5 10h9M5 14h9"/></svg><span>Zahlung</span></button>
       <button type="button" class="iv-b iv-grey" title="Bearbeiten" aria-label="Bearbeiten" onclick="editInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg><span>Ändern</span></button>
       <button type="button" class="iv-b iv-violet" id="inv-kv-btn" style="display:none" title="In Rechnung umwandeln" aria-label="In Rechnung umwandeln" onclick="kvToInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 14h5M13 11l3 3-3 3"/></svg><span>Rechnung</span></button>
       <button type="button" class="iv-b iv-orange" title="Als PDF speichern" aria-label="Als PDF speichern" onclick="savePdf()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>PDF</span></button>
       <button type="button" class="iv-b iv-green" id="inv-send-btn" title="Rechnung senden" aria-label="Rechnung senden" onclick="sendInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg><span id="inv-send-cap">Senden</span></button>
-      <button type="button" class="iv-b iv-del" title="Löschen" aria-label="Löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
     </div>
     <div id="inv-view"></div>
   </div>
@@ -1704,8 +1705,8 @@ function kaStart() {
     <div class="form-group"><label>Patient (optional)</label><input type="text" id="to-pat" class="form-control" list="t-patient-list" autocomplete="off" placeholder="Name eingeben..."></div>
     <div id="to-ev" style="font-size:12px; color:#64748b; margin-bottom:6px;"></div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-todo')">Abbrechen</button>
       <button type="button" id="to-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteTodo()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-todo')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveTodo()">Speichern</button>
     </div>
   </div>
@@ -1752,8 +1753,8 @@ function kaStart() {
       <button type="button" class="btn btn-secondary btn-sm" id="lp-histmore" style="margin-top:8px; display:none;" onclick="lpHistN += 10; lpHistory()">Mehr anzeigen</button>
     </div>
     <div class="foot-bar">
-      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-produkt')">Abbrechen</button>
       <button type="button" id="lp-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteProdukt()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-produkt')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveProdukt()">Speichern</button>
     </div>
   </div>
@@ -1844,7 +1845,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-n';
+var KA_V = '2026-10-28-q';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2928,11 +2929,11 @@ function rowAmount(i) {
   var r = invRows[i];
   if (r.type === 'rabatt') {
     var base = 0; for (var k = 0; k < i; k++) if (invRows[k].type !== 'rabatt') base += numIn(invRows[k].qty) * numIn(invRows[k].price) - posRab(k);
-    return -r2(base * numIn(r.pct) / 100);
+    return r.art === 'eur' ? -r2(Math.min(Math.max(base, 0), numIn(r.pct))) : -r2(base * numIn(r.pct) / 100);
   }
   return r2(numIn(r.qty) * numIn(r.price));
 }
-function posRab(i) { var r = invRows[i]; if (!r || r.type === 'rabatt') return 0; return r2(r2(numIn(r.qty) * numIn(r.price)) * Math.min(100, numIn(r.rab)) / 100); }
+function posRab(i) { var r = invRows[i]; if (!r || r.type === 'rabatt') return 0; var g = r2(numIn(r.qty) * numIn(r.price)); return r.rabArt === 'eur' ? r2(Math.min(g, numIn(r.rab))) : r2(g * Math.min(100, numIn(r.rab)) / 100); }
 function invTotal() { var t = 0; for (var i = 0; i < invRows.length; i++) t += rowAmount(i) - posRab(i); return r2(t); }
 function paidSum(inv) { return (inv.payments || []).reduce(function (a, p) { return a + p.amount; }, 0); }
 function invState(inv) {
@@ -3196,8 +3197,9 @@ function fillInvForm(inv) {
   var c = function (v) { return String(v).replace('.', ','); };
   (inv.items || []).forEach(function (it) {
     var last = invRows[invRows.length - 1];
-    if (it.rabatt && it.perPos && last && last.type === 'pos') { last.rab = c(it.pct); last.rabText = String(it.text || '').replace(/\s*-[\d,.]+%$/, '') || 'Rabatt'; return; }
-    if (it.rabatt) { invRows.push({ type: 'rabatt', text: String(it.text || '').replace(/\s*-[\d,.]+%$/, ''), pct: c(it.pct), rate: String(it.rate) }); return; }
+    var strip = function (t) { return String(t || '').replace(/\s*-[\d,.]+\s*(%|€)$/, ''); };
+    if (it.rabatt && it.perPos && last && last.type === 'pos') { last.rabArt = it.art === 'eur' ? 'eur' : 'pct'; last.rab = c(it.art === 'eur' ? it.eur : it.pct); last.rabText = strip(it.text) || 'Rabatt'; return; }
+    if (it.rabatt) { invRows.push({ type: 'rabatt', art: it.art === 'eur' ? 'eur' : 'pct', text: strip(it.text), pct: c(it.art === 'eur' ? it.eur : it.pct), rate: String(it.rate) }); return; }
     var dd0 = it.datum || inv.leistung || inv.date;
     invRows.push({ type: 'pos', text: it.text, qty: c(it.qty), price: c(it.price), rate: String(it.rate), datum: dd0 && dd0 !== inv.date ? dd0 : '', note: it.note || '', rab: '', rabText: 'Rabatt' });
   });
@@ -3329,7 +3331,11 @@ function renderInvRows() {
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Entfernen';
     x.onclick = function () { invRows.splice(i, 1); renderInvRows(); };
     top.appendChild(a); top.appendChild(sum); top.appendChild(x); card.appendChild(top);
-    if (isR) { mid.appendChild(q); mid.appendChild(mk('span', 'ic-rl', 'Rabatt in %')); mid.appendChild(rt); card.appendChild(mid); box.appendChild(card); return; }
+    if (isR) {
+      var as = mk('select', 'form-control'); [['pct', '%'], ['eur', '€']].forEach(function (o) { var op = mk('option', '', o[1]); op.value = o[0]; as.appendChild(op); }); as.value = r.art === 'eur' ? 'eur' : 'pct'; as.setAttribute('aria-label', 'Prozent oder Euro');
+      q.placeholder = as.value === 'eur' ? '€' : '%'; as.onchange = function () { r.art = as.value; q.placeholder = as.value === 'eur' ? '€' : '%'; upd(); };
+      mid.appendChild(q); mid.appendChild(as); mid.appendChild(rt); card.appendChild(mid); box.appendChild(card); return;
+    }
     mid.appendChild(q); mid.appendChild(pr); mid.appendChild(rt); card.appendChild(mid);
     /* kleine Zusatzfelder je Position: Rabatt, Datum, Text */
     var btns = mk('div', 'ic-btns'), fields = mk('div', 'ic-fields');
@@ -3344,7 +3350,9 @@ function renderInvRows() {
       var pc = mk('input', 'form-control'); pc.type = 'text'; pc.inputMode = 'decimal'; pc.placeholder = '%'; pc.value = r.rab || ''; pc.style.maxWidth = '70px';
       var nm = mk('input', 'form-control'); nm.type = 'text'; nm.placeholder = 'Bezeichnung'; nm.value = r.rabText || 'Rabatt';
       pc.oninput = function () { r.rab = pc.value; upd(); }; nm.oninput = function () { r.rabText = nm.value; };
-      f.className = 'ic-f two'; f.appendChild(pc); f.appendChild(nm);
+      var ar = mk('select', 'form-control'); ar.style.maxWidth = '62px'; [['pct', '%'], ['eur', '€']].forEach(function (o) { var op = mk('option', '', o[1]); op.value = o[0]; ar.appendChild(op); }); ar.value = r.rabArt === 'eur' ? 'eur' : 'pct'; ar.setAttribute('aria-label', 'Prozent oder Euro');
+      pc.placeholder = ar.value === 'eur' ? '€' : '%'; ar.onchange = function () { r.rabArt = ar.value; pc.placeholder = ar.value === 'eur' ? '€' : '%'; upd(); };
+      f.className = 'ic-f two'; f.appendChild(pc); f.appendChild(ar); f.appendChild(nm);
     });
     mkF('datum', 'Datum', function (f) { var dt = mk('input', 'form-control'); dt.type = 'date'; dt.value = r.datum || document.getElementById('inv-datum').value || ''; dt.title = 'Datum der Leistung'; dt.onchange = function () { r.datum = dt.value; }; f.appendChild(dt); });
     mkF('note', 'Text', function (f) { var nt = mk('input', 'form-control'); nt.type = 'text'; nt.placeholder = 'Anmerkung für die Tabelle, z. B. Charge'; nt.value = r.note || ''; nt.oninput = function () { r.note = nt.value; }; f.appendChild(nt); });
@@ -3364,13 +3372,17 @@ function saveInvoice() {
   invRows.forEach(function (r, i) {
     if (r.type === 'rabatt') {
       var pc = numIn(r.pct);
-      if (!r.text.trim() || pc <= 0 || pc > 100) { bad = true; return; }
-      items.push({ rabatt: true, pct: pc, text: r.text.trim() + ' -' + String(pc).replace('.', ',') + '%', qty: 1, price: rowAmount(i), amount: rowAmount(i), rate: parseInt(r.rate, 10) });
+      var ge = r.art === 'eur';
+      if (!r.text.trim() || pc <= 0 || (!ge && pc > 100)) { bad = true; return; }
+      items.push(ge ? { rabatt: true, art: 'eur', eur: pc, pct: 0, text: r.text.trim() + ' -' + nf(pc) + ' €', qty: 1, price: rowAmount(i), amount: rowAmount(i), rate: parseInt(r.rate, 10) }
+        : { rabatt: true, pct: pc, text: r.text.trim() + ' -' + String(pc).replace('.', ',') + '%', qty: 1, price: rowAmount(i), amount: rowAmount(i), rate: parseInt(r.rate, 10) });
     } else {
       var q = numIn(r.qty), pr = numIn(r.price);
       if (!r.text.trim() || q <= 0 || pr <= 0) { bad = true; return; }
       items.push({ text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || datum, note: String(r.note || '').trim() });
-      var pcr = numIn(r.rab); if (pcr > 0 && pcr <= 100) { var pa = posRab(i); items.push({ rabatt: true, perPos: true, pct: pcr, text: String(r.rabText || 'Rabatt').trim() + ' -' + String(pcr).replace('.', ',') + '%', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }); } else if (pcr > 100) bad = true;
+      var pcr = numIn(r.rab), pge = r.rabArt === 'eur';
+      if (pcr > 0 && (pge || pcr <= 100)) { var pa = posRab(i); items.push(pge ? { rabatt: true, perPos: true, art: 'eur', eur: pcr, pct: 0, text: String(r.rabText || 'Rabatt').trim() + ' -' + nf(pa) + ' €', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }
+        : { rabatt: true, perPos: true, pct: pcr, text: String(r.rabText || 'Rabatt').trim() + ' -' + String(pcr).replace('.', ',') + '%', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }); } else if (pcr > 100 && !pge) bad = true;
     }
   });
   var pd = items.filter(function (x) { return x.datum; }).map(function (x) { return x.datum; }).sort(); leist = pd.length ? pd[0] : datum;
@@ -4175,7 +4187,7 @@ function renderHead() {
     var cb = mk('button', 'btn btn-cancel', 'Abbrechen'); cb.type = 'button'; cb.onclick = function () { cancelStamm(); };
     var sbn = mk('button', 'btn btn-save', 'Speichern'); sbn.type = 'button'; sbn.onclick = function () { toggleStamm(); };
     var db = mk('button', 'btn btn-del btn-ico'); db.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'; db.title = 'Patient löschen'; db.setAttribute('aria-label', 'Patient löschen'); db.type = 'button'; db.onclick = function () { deletePatient(); };
-    fb.appendChild(cb); fb.appendChild(db); fb.appendChild(sbn); box.appendChild(fb);
+    fb.appendChild(db); fb.appendChild(cb); fb.appendChild(sbn); box.appendChild(fb);
     return;
   }
   var tiles = mk('div', 'a-tiles'), age = ageOf(p.dob);
