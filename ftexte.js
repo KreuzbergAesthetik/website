@@ -87,6 +87,7 @@ var KF = (function () {
   }
   /* Elemente mit data-fk ausblenden und die Sternchen nach Pflicht setzen */
   function apply() {
+    if (conf().name) document.title = conf().name + ' ' + (PRAXIS_F && PRAXIS_F.name || '');
     [].forEach.call(document.querySelectorAll('[data-fk]'), function (el) {
       var k = el.getAttribute('data-fk'), h = hidden(k); el.style.display = h ? 'none' : ''; grids(el);
       if (h) return;
@@ -151,7 +152,8 @@ var KF = (function () {
       clearTimeout(t); finish();
     });
   } else done = true;
-  return { ready: ready, apply: apply, hidden: hidden, need: need, extras: extras, pdf: pdf, describe: describe };
+  function name(def) { return conf().name || def; }
+  return { ready: ready, apply: apply, hidden: hidden, need: need, extras: extras, pdf: pdf, describe: describe, name: name };
 })();
 
 /*
@@ -283,7 +285,7 @@ var KE = (function () {
     var ex = D.felder.extra.filter(function (f) { return String(f.label || '').trim(); });
     if (ex.some(function (f) { return f.typ === 'wahl' && !(f.opts || []).length; })) return { error: 'Bei einer Auswahl brauchst Du mindestens eine Antwort (eine pro Zeile).' };
     ex.forEach(function (f) { f.label = f.label.trim(); });
-    return { error: '', texte: D.texte, felder: { hide: D.felder.hide, req: D.felder.req, extra: ex } };
+    return { error: '', texte: D.texte, felder: { hide: D.felder.hide, req: D.felder.req, extra: ex, name: D.felder.name || '' } };
   }
   return { result: result };
 })();
