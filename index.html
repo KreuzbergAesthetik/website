@@ -81,7 +81,8 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .logo { width:36px; height:36px; background:#0f172a; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:18px; }
 .title-text h1 { font-size:17px; letter-spacing:.2px; } .title-text p { font-size:12px; color:#64748b; }
 nav { background:#fff; border-bottom:1px solid #e2e8f0; display:flex; overflow-x:auto; }
-@media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 1 0; min-width:0; padding-left:2px; padding-right:2px; text-align:center; } }
+@media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 1 0; min-width:0; padding-left:1px; padding-right:1px; text-align:center; font-size:13px; } }
+.nav-more { flex:0 0 auto !important; padding-left:12px !important; padding-right:12px !important; display:inline-flex; align-items:center; justify-content:center; } .nav-badge { margin-left:2px; padding:1px 5px; }
 nav > :first-child { margin-left:auto; } nav > :last-child { margin-right:auto; }
 .nav-btn { background:none; border:none; padding:12px 16px; font-size:14px; font-weight:500; color:#64748b; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
 .nav-btn.active { color:#0f172a; border-bottom-color:#0f172a; font-weight:600; }
@@ -609,6 +610,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
 .al-box img { width:72px; height:72px; margin-bottom:8px; } .al-box h2 { font-size:17px; margin-bottom:14px; } .al-box input { text-align:center; }
 .al-msg { color:#b91c1c; font-size:13px; min-height:18px; margin-top:8px; }
+@media (max-width:760px) { header .nav-btn { padding-left:2px; padding-right:2px; } header .nav-btn.nav-more { padding-left:12px; padding-right:12px; } }
 </style>
 <script src="docs.js"></script>
 <script src="sync.js"></script>
@@ -820,7 +822,8 @@ function kaStart() {
   <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
   <button type="button" class="nav-btn" id="btn-todos" onclick="switchTab('todos')">To-Dos <span id="todo-badge" class="nav-badge" style="display:none;"></span></button>
-  <button type="button" class="nav-btn" id="btn-praxis" onclick="toggleNavMenu(event)">Praxis &#9662;</button>
+  <button type="button" class="nav-btn" id="btn-rechnungen" onclick="switchTab('rechnungen')">Rechnungen</button>
+  <button type="button" class="nav-btn nav-more" id="btn-praxis" onclick="toggleNavMenu(event)" title="Praxis" aria-label="Praxis"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
 </nav>
 </header>
 <div id="nav-menu" class="nav-menu" style="display:none;"></div>
@@ -1730,6 +1733,20 @@ function kaStart() {
   </div>
 </div>
 
+<!-- MODAL: WEBFORMULAR-TEXTE -->
+<div id="modal-ftxt" class="modal-overlay">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header"><strong id="ft-title">Texte</strong><button type="button" class="close-btn" onclick="closeModal('modal-ftxt')">&times;</button></div>
+    <div style="font-size:13px; color:#64748b; margin-bottom:8px;">Ändere die Texte so, wie sie im Formular stehen sollen. Ein Text gilt überall, wo er vorkommt. Zeilenumbrüche werden nicht übernommen.</div>
+    <input type="search" id="ft-q" class="form-control" placeholder="Suchen..." oninput="ftFilter()" style="margin-bottom:10px;">
+    <div id="ft-list" style="max-height:52vh; overflow-y:auto; padding-right:2px;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ftxt')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="ft-save" onclick="ftSave()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: PRODUKT -->
 <div id="modal-produkt" class="modal-overlay">
   <div class="modal-box" style="max-width:600px;">
@@ -1863,7 +1880,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-j';
+var KA_V = '2026-10-29-k';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -1924,7 +1941,7 @@ function switchTab(tabId) {
   var b = document.querySelectorAll('.nav-btn');
   for (var j = 0; j < b.length; j++) b[j].classList.remove('active');
   document.getElementById('tab-' + tabId).classList.add('active');
-  var nb = document.getElementById(PRAXIS_TABS.indexOf(tabId) >= 0 ? 'btn-praxis' : 'btn-' + tabId); if (nb) nb.classList.add('active');
+  var nb = document.getElementById(PRAXIS_TABS.indexOf(tabId) >= 0 && tabId !== 'rechnungen' ? 'btn-praxis' : 'btn-' + tabId); if (nb) nb.classList.add('active');
   if (tabId === 'start') histClean(); else histPush();
   saveLast();
 }
@@ -6040,8 +6057,58 @@ function renderWebf() {
     var ln = mk('div', 'wf-ln'), a = mk('a', 'wf-a', url); a.href = url; a.target = '_blank'; a.rel = 'noopener'; ln.appendChild(a);
     var cp = mk('button', 'wf-cp'); cp.type = 'button'; cp.innerHTML = ic; cp.title = 'Link kopieren'; cp.setAttribute('aria-label', 'Link kopieren');
     cp.onclick = function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, function () { prompt('Link zum Kopieren:', url); }); };
-    ln.appendChild(cp); r.appendChild(ln); box.appendChild(r);
+    ln.appendChild(cp); r.appendChild(ln);
+    var eb = mk('button', 'btn btn-secondary btn-sm', 'Texte bearbeiten'); eb.type = 'button'; eb.style.marginTop = '8px'; eb.onclick = function () { ftOpen(w); };
+    r.appendChild(eb); box.appendChild(r);
   });
+}
+/* Eigene Texte der Webformulare: Originaltext -> eigener Text, gespeichert in settings.formTexte und auf dem Server veröffentlicht */
+var ftCur = null, ftKeys = [];
+function ftNorm(t) { return String(t == null ? '' : t).replace(/\s+/g, ' ').trim(); }
+function ftOpen(w) {
+  ftCur = w; document.getElementById('ft-title').textContent = 'Texte: ' + w[0];
+  var lst = document.getElementById('ft-list'); lst.innerHTML = ''; document.getElementById('ft-q').value = '';
+  lst.appendChild(mk('div', 'hm-empty', 'Texte werden gelesen ...')); document.getElementById('ft-save').disabled = true; openModal('modal-ftxt');
+  var fr = document.createElement('iframe'), url = webfUrl(w[1]); url += (url.indexOf('?') >= 0 ? '&' : '?') + 'ed=1';
+  fr.style.cssText = 'position:fixed; left:-9999px; top:0; width:480px; height:800px; border:0; visibility:hidden;';
+  var done = false, fin = function (msg) { if (done) return; done = true; try { fr.remove(); } catch (x) {} if (msg) { lst.innerHTML = ''; lst.appendChild(mk('div', 'hm-empty', msg)); } };
+  fr.onload = function () {
+    setTimeout(function () {
+      if (done) return;
+      try {
+        var KTw = fr.contentWindow.KT; if (!KTw) { fin('Die Seite ist noch nicht auf dem neuesten Stand. Bitte in ein bis zwei Minuten noch einmal versuchen.'); return; }
+        ftKeys = KTw.collect(fr.contentDocument.body); fin(); ftRender();
+      } catch (x) { fin('Die Texte konnten nicht gelesen werden.'); }
+    }, 1200);
+  };
+  fr.onerror = function () { fin('Die Seite konnte nicht geladen werden.'); };
+  document.body.appendChild(fr); fr.src = url;
+}
+function ftRender() {
+  var lst = document.getElementById('ft-list'); lst.innerHTML = ''; var map = settings.formTexte || {};
+  ftKeys.forEach(function (k) {
+    var row = mk('div', 'ft-row'); row.dataset.k = k; row.style.cssText = 'margin-bottom:10px;';
+    var ta = mk('textarea', 'form-control'); ta.rows = k.length > 90 ? Math.min(8, Math.ceil(k.length / 55)) : 1; ta.value = map[k] != null ? map[k] : k; ta.style.cssText = 'resize:vertical; min-height:38px;';
+    var top = mk('div'); top.style.cssText = 'display:flex; gap:6px; align-items:center; font-size:11.5px; color:#94a3b8; margin-bottom:2px;';
+    var lb = mk('span', '', 'Original: ' + (k.length > 70 ? k.slice(0, 69) + '…' : k)); lb.style.cssText = 'flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'; top.appendChild(lb);
+    var rs = mk('button', 'x-btn', '↺'); rs.type = 'button'; rs.title = 'Original wiederherstellen'; rs.setAttribute('aria-label', 'Original wiederherstellen'); rs.onclick = function () { ta.value = k; mark(); };
+    top.appendChild(rs);
+    var mark = function () { var ch = ftNorm(ta.value) !== k && ftNorm(ta.value) !== ''; ta.style.borderColor = ch ? '#16a34a' : ''; rs.style.visibility = ch ? 'visible' : 'hidden'; };
+    ta.oninput = mark; mark(); row.appendChild(top); row.appendChild(ta); lst.appendChild(row);
+  });
+  if (!ftKeys.length) lst.appendChild(mk('div', 'hm-empty', 'Keine Texte gefunden.'));
+  document.getElementById('ft-save').disabled = false;
+}
+function ftFilter() {
+  var q = ftNorm(document.getElementById('ft-q').value).toLowerCase();
+  [].forEach.call(document.querySelectorAll('#ft-list .ft-row'), function (r) { var ta = r.querySelector('textarea'); r.style.display = !q || (r.dataset.k + ' ' + ta.value).toLowerCase().indexOf(q) >= 0 ? '' : 'none'; });
+}
+async function ftSave() {
+  var map = settings.formTexte = settings.formTexte || {};
+  [].forEach.call(document.querySelectorAll('#ft-list .ft-row'), function (r) { var k = r.dataset.k, v = ftNorm(r.querySelector('textarea').value); if (!v || v === k) delete map[k]; else map[k] = v; });
+  persist(); closeModal('modal-ftxt');
+  try { await KS.txtset(map); alert('Gespeichert und veröffentlicht. Die Formulare zeigen die neuen Texte beim nächsten Öffnen.'); }
+  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere die Texte noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
 }
 /* Ausgefüllte Formulare (.json und .pdf) in die Akten übernehmen */
 function fIsDob(a, b) { return String(a || '').trim() === String(b || '').trim(); }

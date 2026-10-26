@@ -121,6 +121,15 @@ if (!function_exists('ka_cfg')) {
         return ka_ok(array('key' => is_array($k) ? $k : null));
     }
 
+    /* eigene Texte der Webformulare (öffentlich, enthalten keine Patientendaten) */
+    function ka_texte($req) {
+        $f = ka_dir() . '/texte.json';
+        $k = is_file($f) ? json_decode(file_get_contents($f), true) : null;
+        $r = ka_ok(array('texte' => is_array($k) && $k ? $k : new stdClass()));
+        $r->header('Cache-Control', 'no-store');
+        return $r;
+    }
+
     /* Abgleich der Praxis-App: alles mit Zugangs-Token, Daten liegen nur verschlüsselt hier */
     function ka_abgleich($req) {
         $c = ka_cfg();
@@ -190,6 +199,12 @@ if (!function_exists('ka_cfg')) {
             file_put_contents(ka_dir() . '/pub.json', json_encode($k));
             return ka_ok();
         }
+        if ($a === 'txtset') {
+            $raw = (string) $req->get_param('k'); $k = json_decode($raw, true);
+            if (!is_array($k) || strlen($raw) > 400000) return ka_fail(400, 'Ungültige Texte.');
+            file_put_contents(ka_dir() . '/texte.json', json_encode($k, JSON_UNESCAPED_UNICODE));
+            return ka_ok();
+        }
         if ($a === 'ibget' || $a === 'ibdel') {
             $id = (string) $req->get_param('id');
             $f = ka_dir('inbox') . '/' . $id . '.bin';
@@ -204,5 +219,6 @@ if (!function_exists('ka_cfg')) {
 add_action('rest_api_init', function () {
     register_rest_route('ka/v1', '/formular', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_formular'));
     register_rest_route('ka/v1', '/schluessel', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_schluessel'));
+    register_rest_route('ka/v1', '/texte', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_texte'));
     register_rest_route('ka/v1', '/abgleich', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_abgleich'));
 });
