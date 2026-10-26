@@ -378,7 +378,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .icon-btn svg { width:20px; height:20px; }
 .iv-bar { display:flex; gap:5px; align-items:flex-start; margin:-20px -20px 4px; padding:10px 14px 0; position:sticky; top:-20px; z-index:20; background:none; pointer-events:none; height:70px; } .iv-sp { flex:1; } .iv-bar > * { pointer-events:auto; }
 .iv-b { box-shadow:0 4px 12px rgba(15,23,42,.18); flex:1 1 0; min-width:0; height:50px; border:none; border-radius:10px; padding:6px 0 4px; cursor:pointer; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:10px; font-weight:600; line-height:1.1; } .iv-b svg { width:20px; height:20px; } .iv-b span { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-@media (min-width:600px) { .iv-bar { justify-content:flex-start; } .iv-b { flex:none; width:66px; height:58px; } .iv-back { flex:none; width:40px; } }
+@media (min-width:600px) { .iv-bar { justify-content:center; gap:6px; } .iv-b { flex:none; width:42px; height:42px; border-radius:12px; padding:0; } .iv-b span { display:none; } .iv-back { position:absolute; left:14px; top:10px; width:40px; height:42px; } }
 .iv-back { background:none; box-shadow:none; color:#334155; flex:0 0 40px; padding:0; } .iv-back svg { width:32px; height:32px; stroke-width:3; }
 .iv-grey { background:#eef2f7; color:#475569; } .iv-navy { background:#eef1fa; color:#1e3a8a; } .iv-orange { background:#fdf5ea; color:#b45309; } .iv-violet { background:#f5f1ff; color:#7c3aed; } .iv-green { background:#16a34a; color:#fff; } .iv-del { background:#fdecec; color:#dc2626; box-shadow:inset 0 0 0 1px #fbcaca, 0 4px 12px rgba(15,23,42,.18); }
 .inv-card { background:#f8fafc; border:1px solid #d5dde7; border-radius:12px; padding:10px; margin-bottom:10px; } .inv-card.rab { background:#fff7ed; border-color:#fed7aa; } .inv-addbar { background:#f1f5f9; border:1px dashed #94a3b8; border-radius:12px; padding:10px; margin:4px 0 10px; } .ic-btns { display:flex; gap:6px; flex-wrap:wrap; } .ic-add { border:1px dashed #94a3b8; background:#fff; color:#475569; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; cursor:pointer; } .ic-add.on { border-style:solid; border-color:#2563eb; color:#2563eb; background:#eff4ff; } .ic-fields { margin-bottom:6px; } .ic-f { margin-bottom:6px; } .ic-f.two { display:flex; gap:6px; }
@@ -1906,7 +1906,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-v';
+var KA_V = '2026-10-29-w';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
