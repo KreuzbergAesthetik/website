@@ -307,6 +307,7 @@ var KS = (function () {
     window.addEventListener('online', function () { run(false); });
     S.poll = setInterval(function () { if (document.visibilityState === 'visible') run(false); }, 180000);
   }
+  async function extFetch(url) { var j = await api('calget', { u: url }); return j.ics; }
   async function txtset(obj, felder) { var c = cfg(); if (!c) throw new Error('Der Geräte-Abgleich ist nicht eingerichtet.'); var f = { k: JSON.stringify(obj || {}), _c: c }; if (felder) f.f = JSON.stringify(felder); await api('txtset', f); }
-  return { calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  return { extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();

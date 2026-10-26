@@ -565,6 +565,7 @@ body { overflow-x:clip; }
 #inv-seg { flex-wrap:nowrap; gap:4px; overflow-x:auto; } #inv-seg .za-b { height:30px; padding:0 5px; font-size:11.5px; gap:3px; flex:1 1 auto; min-width:0; border-radius:8px; justify-content:center; }
 .sr-fab { position:fixed; right:16px; bottom:18px; width:44px; height:44px; border-radius:50%; border:1px solid #cbd5e1; background:rgba(255,255,255,.88); color:#64748b; box-shadow:0 4px 14px rgba(15,23,42,.18); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; z-index:60; backdrop-filter:blur(4px); } .sr-fab.on { background:#dbeafe; color:#2563eb; border-color:#93c5fd; }
 .sr-bar { display:none; position:fixed; left:14px; right:70px; bottom:18px; z-index:60; box-shadow:0 4px 14px rgba(15,23,42,.18); border-radius:10px; background:#fff; } .sr-bar input { height:44px; }
+.ev-ext { position:absolute; left:0; right:0; z-index:0; border-left:3px solid #94a3b8; background:repeating-linear-gradient(135deg,#eef1f5,#eef1f5 6px,#e4e8ee 6px,#e4e8ee 12px); color:#64748b; font-size:10.5px; line-height:1.2; padding:1px 4px; overflow:hidden; pointer-events:none; } .mp.ext { background:#eef1f5; color:#64748b; border-left:3px solid #94a3b8; }
 .sr-btn { width:36px; height:36px; flex:none; border:none; border-radius:10px; background:#eef2f7; color:#475569; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; } .sr-btn.on { background:#dbeafe; color:#2563eb; }
 .inv-plus { width:36px; height:36px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
@@ -622,6 +623,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 </style>
 <script src="docs.js"></script>
 <script src="sync.js"></script>
+<script src="extcal.js"></script>
 <script>try { if (localStorage.getItem('ka_lock')) document.documentElement.classList.add('locked'); } catch (e) {}</script>
 </head>
 <body>
@@ -1120,6 +1122,20 @@ function kaStart() {
         <div id="sy-baks"></div>
         <div style="font-size:13px; color:#64748b;">Der Abgleich läuft automatisch beim Öffnen der App, beim Zurückkehren zur App und etwa 6 Sekunden nach jeder Änderung. Offline arbeitest Du normal weiter, der Abgleich holt sich nach, was fehlt. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
       </div>
+    </div>
+    <div class="card" id="ext-box" style="margin-top:16px;">
+      <div class="card-header"><span class="card-title">Privaten Kalender anzeigen</span></div>
+      <div style="font-size:14px; color:#334155; margin-bottom:12px;">Zeigt die Zeiten aus deinem privaten Kalender (Google, Apple, Outlook) als graue Blöcke im Praxis-Kalender, damit du nichts doppelt belegst. Nur lesend, es wird nichts verändert.</div>
+      <div class="eb-off">
+        <div class="form-group"><label>Geheime Adresse im iCal-Format</label><input type="text" id="ext-url" class="form-control" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics" autocomplete="off"></div>
+        <button type="button" class="btn btn-save" onclick="extSave()">Speichern und abrufen</button>
+      </div>
+      <div class="eb-on" style="display:none">
+        <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-bottom:10px;"><input type="checkbox" class="eb-hide" onchange="extHide(this.checked)"> Titel verbergen, nur „Privat“ anzeigen</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-secondary" onclick="EXT.refresh()">Jetzt abrufen</button><button type="button" class="btn btn-cancel" onclick="extOff()">Entfernen</button></div>
+      </div>
+      <div class="eb-state" style="font-size:13px; margin-top:10px;"></div>
+      <div style="font-size:13px; color:#64748b; margin-top:12px;">In Google Kalender: Einstellungen, dein Kalender, „Geheime Adresse im iCal-Format“ kopieren. Der Praxis-Server holt die Datei ab und reicht sie an die App weiter, deine privaten Termine laufen dabei unverschlüsselt über diesen Server (nicht über Dritte). Die Adresse ist ein Geheimnis, wer sie kennt, sieht deinen Kalender. Mit einer neuen Adresse in Google wird die alte ungültig.</div>
     </div>
     <div class="card" id="kal-box" style="margin-top:16px;">
       <div class="card-header"><span class="card-title">Kalender für Google, Apple und Co.</span></div>
@@ -1954,7 +1970,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zj';
+var KA_V = '2026-10-29-zk';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2511,6 +2527,7 @@ function timeGrid(days) {
   days.forEach(function (d) {
     var k = iso(d);
     html += '<div class="dc" data-date="' + k + '" style="height:' + (END - START) * H + 'px;cursor:pointer" onclick="slotClick(event,\'' + k + '\')">';
+    html += EXT.blocks(k);
     layoutDay(events.filter(function (e) { return e.date === k; })).forEach(function (x) { html += evBlock(x.e, x.lane, x.lanes); });
     if (nowShow && k === today) html += '<div class="now-line" style="top:' + ((nmin - START * 60) * H / 60) + 'px"></div>';
     html += '</div>';
@@ -2533,6 +2550,7 @@ function monthGrid() {
       html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openTerminView(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + esc(dnS(e.patient)) + '</div>';
     });
     if (list.length > 3) html += '<div style="color:#64748b;margin-top:2px;">+' + (list.length - 3) + ' weitere</div>';
+    html += EXT.pills(k);
     html += '</div>';
   }
   return html + '</div></div>';
@@ -7755,7 +7773,13 @@ function renderSicherung() {
 function calMode(v) { settings.calMode = v === 'kuerzel' ? 'kuerzel' : 'belegt'; persist(); KS.calPush(); }
 function calCopy() { var u = KS.calUrl(); copyText(u, function () { alert('Adresse kopiert.'); }, function () { prompt('Adresse zum Kopieren:', u); }); }
 function calOffAsk() { if (confirm('Kalender ausschalten? Die Adresse wird ungültig, und der Kalender in Google verschwindet nach der nächsten Aktualisierung.')) KS.calOff(); }
-function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); }
+function extSave() {
+  var v = (document.getElementById('ext-url').value || '').trim(); if (!v) { alert('Bitte die Adresse einfügen.'); return; }
+  settings.extUrl = v.replace(/^webcal:/i, 'https:'); persist(); EXT.ui(); EXT.refresh();
+}
+function extOff() { if (!confirm('Privaten Kalender entfernen? Die Adresse wird aus der App gelöscht.')) return; settings.extUrl = ''; persist(); EXT.clear(); EXT.ui(); try { renderCal(); } catch (x) {} }
+function extHide(on) { settings.extHide = !!on; persist(); EXT.ui(); try { renderCal(); } catch (x) {} }
+function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }
 async function syncGo(mode) {
   var pw = document.getElementById('sy-pw').value, m = document.getElementById('sy-msg'); m.className = ''; m.style.color = '#64748b';
   if (pw.length < 12) { m.style.color = '#b91c1c'; m.textContent = 'Das Passwort braucht mindestens 12 Zeichen.'; return; }
@@ -7781,6 +7805,7 @@ async function syncBackups() {
   } catch (e) { box.textContent = e.message; }
 }
 try { srchInit(); } catch (x) {}
+try { EXT.reload(); EXT.ui(); setTimeout(function () { EXT.refresh(); }, 4000); setInterval(function () { if (document.visibilityState === 'visible') EXT.refresh(); }, 900000); } catch (x) {}
 try { KS.init(); } catch (x) {}
 
 </script>
