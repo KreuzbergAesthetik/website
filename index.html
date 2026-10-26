@@ -545,10 +545,11 @@ body { overflow-x:clip; }
 .pt-dr { display:flex; flex-direction:column; gap:1px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
 .pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:flex-start; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
-#inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:5px 3px; font-size:12px; white-space:normal; line-height:1.15; }
+#inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
 #inv-seg { flex-wrap:nowrap; gap:4px; overflow-x:auto; } #inv-seg .za-b { height:30px; padding:0 5px; font-size:11.5px; gap:3px; flex:1 1 auto; min-width:0; border-radius:8px; justify-content:center; }
-.inv-plus { width:38px; height:38px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
+.sr-btn { width:36px; height:36px; flex:none; border:none; border-radius:10px; background:#eef2f7; color:#475569; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; } .sr-btn.on { background:#dbeafe; color:#2563eb; }
+.inv-plus { width:36px; height:36px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
 .pt-acts { display:grid; grid-template-columns:repeat(3,32px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:32px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
@@ -574,7 +575,7 @@ body { overflow-x:clip; }
 .pt th[data-sd="1"]::after { content:' \25B2'; font-size:9px; } .pt th[data-sd="-1"]::after { content:' \25BC'; font-size:9px; }
 .open-box { display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#fff7ed; border:1px solid #fed7aa; border-left:6px solid #ea580c; border-radius:12px; padding:10px 14px; margin:0 0 12px; } .open-box.late { background:#fef2f2; border-color:#fecaca; border-left-color:#dc2626; }
 .open-box .ob-l { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#9a3412; } .open-box b { font-size:22px; color:#9a3412; } .open-box.late .ob-l, .open-box.late b { color:#991b1b; } .open-box .ob-t { font-size:13.5px; color:#475569; flex:1; min-width:180px; }
-.pt tr.t-open td { background:#fffaf5; } .pt tr.t-late td { background:#fef2f2; } .pt tr.t-open td:first-child, .pt tr.t-late td:first-child { padding-left:16px; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
+.pt tr.t-open td { background:#fffaf5; } .pt tr.t-late td { background:#fef2f2; } .pt tr.t-open td:first-child, .pt tr.t-late td:first-child, .pt tr.t-paid td:first-child { padding-left:20px !important; } .pt tr.t-paid td:first-child { box-shadow:inset 4px 0 0 #16a34a; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
 .badge-red { background:#fee2e2; color:#991b1b; font-weight:700; }
 .ak-h-open { color:#9a3412; border-bottom-color:#fed7aa; }
 .hm-openp { background:#fffaf5 !important; border-left:4px solid #ea580c; } .hm-late { background:#fef2f2 !important; border-left:4px solid #dc2626; }
@@ -907,11 +908,6 @@ function kaStart() {
       </div>
       <div id="entw-list" style="display:none"></div>
       <div id="inv-main">
-      <div class="row-actions" style="justify-content:flex-end; margin-bottom:8px;">
-        <button type="button" class="btn btn-secondary btn-sm" id="inv-b-check" onclick="invCheck()">Prüfen</button>
-        <button type="button" class="btn btn-secondary btn-sm" id="inv-b-imp" onclick="document.getElementById('rimp-file').click()">Import</button>
-        <input type="file" id="rimp-file" accept="application/pdf,.pdf,application/zip,.zip" multiple style="display:none" onchange="rechnungenImport(this)">
-      </div>
       <div id="inv-open"></div>
       <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
       <div id="inv-seg" class="za-seg" style="margin-bottom:10px;"></div>
@@ -922,6 +918,11 @@ function kaStart() {
         </table>
       </div>
       <div id="inv-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Rechnungen</div>
+      <div class="row-actions" style="justify-content:center; margin-top:14px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="inv-b-check" onclick="invCheck()">Prüfen</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="inv-b-imp" onclick="document.getElementById('rimp-file').click()">Import</button>
+        <input type="file" id="rimp-file" accept="application/pdf,.pdf,application/zip,.zip" multiple style="display:none" onchange="rechnungenImport(this)">
+      </div>
       </div>
     </div>
   </div>
@@ -1846,7 +1847,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-u';
+var KA_V = '2026-10-28-w';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3461,6 +3462,21 @@ function invCmp(a, b) {
   else d = invState(a).txt.localeCompare(invState(b).txt, 'de');
   return d * invSort.dir;
 }
+/* Suchleisten stehen hinter einer Lupe; mit Text bleiben sie sichtbar */
+var SR_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
+function srchFold(inputId, host, before, btnId) {
+  var inp = document.getElementById(inputId); if (!inp || !host || inp.dataset.sr) return; inp.dataset.sr = '1';
+  var b = mk('button', 'sr-btn'); b.type = 'button'; b.title = 'Suchen'; b.setAttribute('aria-label', 'Suchen'); b.innerHTML = SR_ICON; if (btnId) b.id = btnId;
+  var set = function (on) { inp.style.display = on ? '' : 'none'; b.classList.toggle('on', on); if (on) inp.focus(); };
+  b.onclick = function () { var open = inp.style.display === 'none'; if (!open && inp.value) { inp.value = ''; inp.dispatchEvent(new Event('input')); } set(open); };
+  inp.style.display = inp.value ? '' : 'none'; b.classList.toggle('on', !!inp.value);
+  host.insertBefore(b, before || host.firstChild);
+}
+function srchInit() {
+  var pf = document.getElementById('p-filter'); if (pf) srchFold('p-filter', pf.parentNode.querySelector('.row-actions'));
+  var hd = document.querySelector('#tab-rechnungen .card-header'); if (hd) srchFold('inv-q', hd, document.getElementById('inv-b-new'), 'sr-inv');
+  var ma = document.getElementById('md-addf'); if (ma) srchFold('md-filter', ma.parentNode, null);
+}
 var invAddReady = false;
 function invAddPos(text, price, rate) {
   if (invRows.length === 1 && invRows[0].type === 'pos' && !invRows[0].text.trim() && !numIn(invRows[0].price)) invRows = [];
@@ -3490,10 +3506,10 @@ function invNew() { if (invTab === 'rechnung') openInvoice(null); else openInvoi
 /* Reiter Rechnungen | Kostenvoranschläge | Test-Rechnungen: Kostenvoranschläge und Test-Rechnungen haben keine Nummer und zählen nicht in Statistik und Zahlungen */
 function renderEntw() {
   var sg = document.getElementById('inv-kind'); if (!sg) return; sg.innerHTML = '';
-  [['rechnung', 'Rechnungen'], ['kv', 'Kosten\u00advoranschläge'], ['test', 'Test-Rechnungen']].forEach(function (k) {
+  [['rechnung', 'Rechnungen'], ['kv', 'Kosten\u00advor\u00adan\u00adschläge'], ['test', 'Test-Rechnungen']].forEach(function (k) {
     var b = mk('button', invTab === k[0] ? 'on' : '', k[1]); b.type = 'button'; b.onclick = function () { invTab = k[0]; renderInvoices(); }; sg.appendChild(b);
   });
-  var dr = DRAFT[invTab], main = document.getElementById('inv-main'), box = document.getElementById('entw-list');
+  var dr = DRAFT[invTab], main = document.getElementById('inv-main'), box = document.getElementById('entw-list'), srb = document.getElementById('sr-inv'); if (srb) srb.style.display = dr ? 'none' : '';
   main.style.display = dr ? 'none' : ''; box.style.display = dr ? '' : 'none';
   var nb = document.getElementById('inv-b-new'); nb.title = nb.getAttribute('aria-label').replace(/.*/, 'Neu: ' + (dr ? dr.name : 'Rechnung')); nb.setAttribute('aria-label', nb.title);
   if (!dr) return;
@@ -3528,7 +3544,7 @@ function renderInvoices() {
   });
   if (!shown.length && invoices.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
   shown.sort(function (a, b) { var oa = invState(a).full ? 1 : 0, ob2 = invState(b).full ? 1 : 0; return (oa - ob2) || invCmp(a, b); }).forEach(function (i) {
-    var row = tb.insertRow(); if (!invState(i).full) row.className = invLate(i) ? 't-late' : 't-open';
+    var row = tb.insertRow(); row.className = i.storniert ? '' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
     var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm); c2.textContent = i.name; c3.textContent = eur(i.total); c0.className = 'nw';
@@ -7167,6 +7183,7 @@ async function syncBackups() {
     });
   } catch (e) { box.textContent = e.message; }
 }
+try { srchInit(); } catch (x) {}
 try { KS.init(); } catch (x) {}
 
 </script>
