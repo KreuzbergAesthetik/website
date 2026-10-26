@@ -83,6 +83,8 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 nav { background:#fff; border-bottom:1px solid #e2e8f0; display:flex; overflow-x:auto; }
 @media (max-width:760px) { nav { overflow-x:visible; } .nav-btn { flex:1 0 auto; min-width:0; padding-left:1px; padding-right:1px; text-align:center; font-size:13px; } }
 .nav-meas .nav-btn { flex:none !important; }
+#tab-zahlungen .pt td { vertical-align:top; }
+nav .nav-btn { font-weight:400; } nav #btn-kalender, nav #btn-patienten, nav #btn-todos, nav #btn-rechnungen, nav #btn-zahlungen { font-weight:600; } nav .nav-btn.active { color:#0f172a; }
 .nav-more { flex:0 0 auto !important; padding-left:12px !important; padding-right:12px !important; display:inline-flex; align-items:center; justify-content:center; } .nav-badge { margin-left:2px; padding:1px 5px; }
 nav > :first-child { margin-left:auto; } nav > :last-child { margin-right:auto; }
 .nav-btn { background:none; border:none; padding:12px 16px; font-size:14px; font-weight:500; color:#64748b; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
@@ -559,6 +561,7 @@ body { overflow-x:clip; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
+#zl-arts { flex-wrap:nowrap; gap:4px; } #zl-arts .za-b { flex:1 1 0; min-width:0; flex-direction:column; gap:1px; height:auto; padding:5px 2px; font-size:11px; border-radius:8px; justify-content:center; } #zl-arts .za-l { display:inline-flex; align-items:center; gap:4px; max-width:100%; overflow:hidden; white-space:nowrap; } #zl-arts .za-b b { font-size:12px; white-space:nowrap; } #zl-arts .za-b i { width:7px; height:7px; }
 #inv-seg { flex-wrap:nowrap; gap:4px; overflow-x:auto; } #inv-seg .za-b { height:30px; padding:0 5px; font-size:11.5px; gap:3px; flex:1 1 auto; min-width:0; border-radius:8px; justify-content:center; }
 .sr-fab { position:fixed; right:16px; bottom:18px; width:44px; height:44px; border-radius:50%; border:1px solid #cbd5e1; background:rgba(255,255,255,.88); color:#64748b; box-shadow:0 4px 14px rgba(15,23,42,.18); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; z-index:60; backdrop-filter:blur(4px); } .sr-fab.on { background:#dbeafe; color:#2563eb; border-color:#93c5fd; }
 .sr-bar { display:none; position:fixed; left:14px; right:70px; bottom:18px; z-index:60; box-shadow:0 4px 14px rgba(15,23,42,.18); border-radius:10px; background:#fff; } .sr-bar input { height:44px; }
@@ -615,7 +618,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
 .al-box img { width:72px; height:72px; margin-bottom:8px; } .al-box h2 { font-size:17px; margin-bottom:14px; } .al-box input { text-align:center; }
 .al-msg { color:#b91c1c; font-size:13px; min-height:18px; margin-top:8px; }
-@media (max-width:760px) { header .nav-btn { padding-left:2px; padding-right:2px; } header .nav-btn.nav-more { padding-left:12px; padding-right:12px; } }
+@media (max-width:760px) { header .nav-btn { padding-left:1px; padding-right:1px; font-size:12.5px; } header .nav-btn.nav-more { padding-left:10px; padding-right:10px; } }
 </style>
 <script src="docs.js"></script>
 <script src="sync.js"></script>
@@ -1951,7 +1954,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-ze';
+var KA_V = '2026-10-29-zi';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4709,7 +4712,7 @@ function tlMenu(ev, items) {
   m.style.top = top + 'px'; m.style.right = 'auto';
 }
 function tlPlus(sh, items) {
-  var b = mk('button', 'tl-plus', '+'); b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
+  var b = mk('button', 'tl-plus'); b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'; b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   b.onclick = function (ev) { tlMenu(ev, items); }; sh.row.appendChild(b);
 }
 function attItems(key) { return [['Bilder hinzufügen', function () { zuNext = key; document.getElementById('a-img-in').click(); }], ['Dokument hinzufügen', function () { zuNext = key; document.getElementById('a-doc-in').click(); }]]; }
@@ -5293,8 +5296,7 @@ function renderZahlungen() {
   var tot = allP.reduce(function (a, p) { return a + p.amount; }, 0);
   var segBtn = function (key, dot, label, sum) {
     var b = mk('button', 'za-b' + ((zArt || '') === key ? ' on' : '')); b.type = 'button';
-    if (dot) { var d = mk('i'); d.style.background = dot; b.appendChild(d); }
-    b.appendChild(document.createTextNode(label + ' ')); b.appendChild(mk('b', '', eur(sum)));
+    var lb = mk('span', 'za-l'); if (dot) { var d = mk('i'); d.style.background = dot; lb.appendChild(d); } lb.appendChild(document.createTextNode(label === 'Überweisung' ? 'Überw.' : label)); b.title = label; b.appendChild(lb); b.appendChild(mk('b', '', eur(sum)));
     b.onclick = function () { zArt = ((zArt || '') === key) ? '' : key; renderZahlungen(); }; zs.appendChild(b);
   };
   segBtn('', null, 'Alle', tot);
@@ -5303,9 +5305,9 @@ function renderZahlungen() {
   pays.forEach(function (p) {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
     var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 5) + '</span>'; c0.className = 'nw'; c1.textContent = p.inv.name; c4.className = 'nw';
-    var b = mk('button', 'pn', p.inv.nr); b.type = 'button'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
+    var b = mk('button', 'pn'); b.type = 'button'; var nrm = /^(.*?-)(\d+)$/.exec(String(p.inv.nr || '')); if (nrm) { b.appendChild(document.createTextNode(nrm[1])); b.appendChild(document.createElement('br')); b.appendChild(document.createTextNode(nrm[2])); } else b.textContent = p.inv.nr; b.style.lineHeight = '1.25'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar); c4.textContent = eur(p.amount);
-    var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Zahlung bearbeiten'; pe.setAttribute('aria-label', 'Zahlung bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:15px;height:15px;vertical-align:middle;'; pe.style.marginLeft = '6px'; c4.appendChild(pe);
+    var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Zahlung bearbeiten'; pe.setAttribute('aria-label', 'Zahlung bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:15px;height:15px;vertical-align:middle;'; pe.style.cssText = 'position:absolute; right:2px; top:7px; padding:0; height:16px; line-height:1; background:none; border:0;'; c4.style.position = 'relative'; c4.style.paddingRight = '26px'; c4.appendChild(pe);
     row.style.cursor = 'pointer'; row.onclick = function (ev) { if (ev.target.closest('.pn')) return; openPayEdit(p.inv.id, p.ref); };
   });
   if (!pays.length) { var er = tin.insertRow(), ec = er.insertCell(); ec.colSpan = 5; ec.textContent = 'Keine Zahlungen im Zeitraum'; ec.style.color = '#94a3b8'; }
@@ -5313,8 +5315,10 @@ function renderZahlungen() {
   var oi = invOpenInfo(), open = oi.list.sort(function (a, b) { return a.date.localeCompare(b.date); });
   var oh = document.getElementById('zl-open-h'); oh.textContent = open.length ? 'Offene Posten (' + open.length + ') · ' + eur(oi.sum) : 'Offene Posten'; oh.className = 'ak-h' + (open.length ? ' ak-h-open' : '');
   open.forEach(function (i) {
-    var b = mk('button', 'btn btn-secondary btn-sm', 'Zahlung'); b.type = 'button'; b.onclick = function (ev) { ev.stopPropagation(); viewInvId = i.id; openPay(); };
-    var late = invLate(i), d = invDaysOld(i), row = hmRow(fmtD(i.date), i.name, i.nr + ' · offen ' + eur(i.total - paidSum(i)) + (late ? ' · seit ' + d + ' Tagen überfällig' : ''), function () { viewInvoice(i.id); }, b);
+    var b0 = mk('button', 'btn btn-secondary btn-sm', 'Zahlung'); b0.type = 'button'; b0.onclick = function (ev) { ev.stopPropagation(); viewInvId = i.id; openPay(); };
+    var b = mk('span'); b.style.cssText = 'display:inline-flex; flex-direction:column; align-items:flex-end; gap:5px; flex:none;'; var am = mk('b', '', eur(i.total - paidSum(i))); am.style.cssText = 'white-space:nowrap; color:#b45309;'; b.appendChild(am); b.appendChild(b0);
+    var late = invLate(i), d = invDaysOld(i), row = hmRow(fmtD(i.date), i.name, i.nr + ' · offen' + (late ? ' · seit ' + d + ' Tagen überfällig' : ''), function () { viewInvoice(i.id); }, b);
+    var tm0 = row.querySelector('.hm-time'); if (tm0) { var zd0 = fmtD(i.date); tm0.innerHTML = '<span class="hm-l">' + zd0 + '</span><span class="hm-s">' + zd0.slice(0, 5) + '</span>'; }
     row.classList.add(late ? 'hm-late' : 'hm-openp'); op.appendChild(row);
   });
   if (!open.length) op.appendChild(mk('div', 'hm-empty', 'Keine offenen Rechnungen. Alles bezahlt.'));
