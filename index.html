@@ -548,6 +548,8 @@ body { overflow-x:clip; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
 #inv-seg { flex-wrap:nowrap; gap:4px; overflow-x:auto; } #inv-seg .za-b { height:30px; padding:0 5px; font-size:11.5px; gap:3px; flex:1 1 auto; min-width:0; border-radius:8px; justify-content:center; }
+.sr-fab { position:fixed; right:16px; bottom:18px; width:44px; height:44px; border-radius:50%; border:1px solid #cbd5e1; background:rgba(255,255,255,.88); color:#64748b; box-shadow:0 4px 14px rgba(15,23,42,.18); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; z-index:60; backdrop-filter:blur(4px); } .sr-fab.on { background:#dbeafe; color:#2563eb; border-color:#93c5fd; }
+.sr-bar { display:none; position:fixed; left:14px; right:70px; bottom:18px; z-index:60; box-shadow:0 4px 14px rgba(15,23,42,.18); border-radius:10px; background:#fff; } .sr-bar input { height:44px; }
 .sr-btn { width:36px; height:36px; flex:none; border:none; border-radius:10px; background:#eef2f7; color:#475569; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; } .sr-btn.on { background:#dbeafe; color:#2563eb; }
 .inv-plus { width:36px; height:36px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
@@ -575,7 +577,9 @@ body { overflow-x:clip; }
 .pt th[data-sd="1"]::after { content:' \25B2'; font-size:9px; } .pt th[data-sd="-1"]::after { content:' \25BC'; font-size:9px; }
 .open-box { display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#fff7ed; border:1px solid #fed7aa; border-left:6px solid #ea580c; border-radius:12px; padding:10px 14px; margin:0 0 12px; } .open-box.late { background:#fef2f2; border-color:#fecaca; border-left-color:#dc2626; }
 .open-box .ob-l { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#9a3412; } .open-box b { font-size:22px; color:#9a3412; } .open-box.late .ob-l, .open-box.late b { color:#991b1b; } .open-box .ob-t { font-size:13.5px; color:#475569; flex:1; min-width:180px; }
-.pt tr.t-open td { background:#fffaf5; } .pt tr.t-late td { background:#fef2f2; } .pt tr.t-open td:first-child, .pt tr.t-late td:first-child, .pt tr.t-paid td:first-child { padding-left:20px !important; } .pt tr.t-paid td:first-child { box-shadow:inset 4px 0 0 #16a34a; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
+.pt tr.t-open td { background:#fffaf5; } .pt tr.t-late td { background:#fef2f2; } #inv-table td:first-child { padding-right:16px; } #inv-table td:nth-child(3) { padding-left:0; padding-right:8px; width:1%; white-space:nowrap; text-align:right; }
+#inv-table td:nth-child(2) { padding-left:0; }
+.pt tr.t-open td:first-child, .pt tr.t-late td:first-child, .pt tr.t-paid td:first-child { padding-left:20px !important; } .pt tr.t-paid td:first-child { box-shadow:inset 4px 0 0 #16a34a; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
 .badge-red { background:#fee2e2; color:#991b1b; font-weight:700; }
 .ak-h-open { color:#9a3412; border-bottom-color:#fed7aa; }
 .hm-openp { background:#fffaf5 !important; border-left:4px solid #ea580c; } .hm-late { background:#fef2f2 !important; border-left:4px solid #dc2626; }
@@ -1847,7 +1851,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-w';
+var KA_V = '2026-10-28-x';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3472,9 +3476,17 @@ function srchFold(inputId, host, before, btnId) {
   inp.style.display = inp.value ? '' : 'none'; b.classList.toggle('on', !!inp.value);
   host.insertBefore(b, before || host.firstChild);
 }
+/* Schwebende Lupe unten rechts; die Suchleiste klappt unten daneben auf. Der Knopf liegt im Reiter und ist nur dort sichtbar. */
+function srchFloat(inputId, tabId) {
+  var inp = document.getElementById(inputId), tab = document.getElementById(tabId); if (!inp || !tab || inp.dataset.sr) return; inp.dataset.sr = '1';
+  var bar = mk('div', 'sr-bar'), b = mk('button', 'sr-fab'); b.type = 'button'; b.title = 'Suchen'; b.setAttribute('aria-label', 'Suchen'); b.innerHTML = SR_ICON;
+  inp.style.cssText = 'margin:0; flex:1; min-width:0;'; bar.appendChild(inp); tab.appendChild(bar); tab.appendChild(b);
+  var set = function (on) { bar.style.display = on ? 'flex' : 'none'; b.classList.toggle('on', on); if (on) inp.focus(); };
+  b.onclick = function () { var open = bar.style.display !== 'flex'; if (!open && inp.value) { inp.value = ''; inp.dispatchEvent(new Event('input')); } set(open); };
+  set(!!inp.value);
+}
 function srchInit() {
-  var pf = document.getElementById('p-filter'); if (pf) srchFold('p-filter', pf.parentNode.querySelector('.row-actions'));
-  var hd = document.querySelector('#tab-rechnungen .card-header'); if (hd) srchFold('inv-q', hd, document.getElementById('inv-b-new'), 'sr-inv');
+  srchFloat('p-filter', 'tab-patienten'); srchFloat('inv-q', 'tab-rechnungen');
   var ma = document.getElementById('md-addf'); if (ma) srchFold('md-filter', ma.parentNode, null);
 }
 var invAddReady = false;
@@ -3509,7 +3521,7 @@ function renderEntw() {
   [['rechnung', 'Rechnungen'], ['kv', 'Kosten\u00advor\u00adan\u00adschläge'], ['test', 'Test-Rechnungen']].forEach(function (k) {
     var b = mk('button', invTab === k[0] ? 'on' : '', k[1]); b.type = 'button'; b.onclick = function () { invTab = k[0]; renderInvoices(); }; sg.appendChild(b);
   });
-  var dr = DRAFT[invTab], main = document.getElementById('inv-main'), box = document.getElementById('entw-list'), srb = document.getElementById('sr-inv'); if (srb) srb.style.display = dr ? 'none' : '';
+  var dr = DRAFT[invTab], main = document.getElementById('inv-main'), box = document.getElementById('entw-list'), srb = document.querySelector('#tab-rechnungen .sr-fab'), srbar = document.querySelector('#tab-rechnungen .sr-bar'); if (srb) srb.style.display = dr ? 'none' : ''; if (dr && srbar) srbar.style.display = 'none';
   main.style.display = dr ? 'none' : ''; box.style.display = dr ? '' : 'none';
   var nb = document.getElementById('inv-b-new'); nb.title = nb.getAttribute('aria-label').replace(/.*/, 'Neu: ' + (dr ? dr.name : 'Rechnung')); nb.setAttribute('aria-label', nb.title);
   if (!dr) return;
@@ -3547,7 +3559,7 @@ function renderInvoices() {
     var row = tb.insertRow(); row.className = i.storniert ? '' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
-    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm); c2.textContent = i.name; c3.textContent = eur(i.total); c0.className = 'nw';
+    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm); c2.textContent = String(i.name || '').replace(/^(Frau|Herr|Divers)\s+/, ''); c3.textContent = eur(i.total); c0.className = 'nw';
     /* Betrag statt Status-Spalte: rot = offen, dunkelrot = überfällig, orange = Teilzahlung, grün = bezahlt, grau = storniert */
     var st = invState(i), late = !st.full && invLate(i), amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
     amt.title = i.storniert ? 'Storniert' : st.full ? 'Bezahlt' : late ? 'Überfällig' : st.txt; c3.textContent = ''; c3.className = 'nw'; c3.appendChild(amt);
