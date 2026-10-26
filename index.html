@@ -1825,7 +1825,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-b';
+var KA_V = '2026-10-28-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2149,7 +2149,7 @@ function renderPatients() {
     if (sub) { var dr = mk('div', 'pt-dr'); dr.appendChild(mk('span', 'pt-dob', sub)); c1.appendChild(dr); }
     if (em.last) {
       /* letzter Termin mit Rechnungs-Symbol: grau = keine Rechnung, gelb = offen, grün = bezahlt */
-      var le = em.last.e, lrow = mk('div', 'pt-lt'), lt = mk('span', 'pt-ev', 'Zuletzt ' + fmtS(em.last.t)); lt.title = (le.behandlung || 'Termin') + ' · ' + fmtDT(em.last.t); lrow.appendChild(lt);
+      var le = em.last.e, lrow = mk('div', 'pt-lt'), lt = mk('span', 'pt-ev', fmtS(em.last.t)); lt.title = 'Letzter Termin: ' + (le.behandlung || 'Termin') + ' · ' + fmtDT(em.last.t); lrow.appendChild(lt);
       var inv0 = invoices.filter(function (i) { return i.eid === le.id || (i.pid === p.id && i.date === le.date); })[0], is = inv0 ? (invState(inv0).full ? 'ok' : 'wait') : 'todo';
       var rb = mk('button', 'pt-ib pt-inv st-' + is); rb.type = 'button'; rb.innerHTML = tvSvg('euro');
       rb.title = is === 'ok' ? 'Rechnung bezahlt' : is === 'wait' ? 'Rechnung erstellt, noch offen' : 'Rechnung erstellen';
@@ -2157,7 +2157,6 @@ function renderPatients() {
       rb.onclick = function (ev) { ev.stopPropagation(); curP = p; if (inv0) viewInvoice(inv0.id); else invFromEvent(le); };
       lrow.appendChild(rb); c1.appendChild(lrow);
     }
-    if (em.next) { var nx = mk('div', 'pt-ev next', 'Nächster ' + fmtS(em.next.t)); nx.title = (em.next.e.behandlung || 'Termin') + ' · ' + fmtDT(em.next.t); c1.appendChild(nx); }
     /* Schnellaktionen */
     var acts = mk('div', 'pt-acts');
     var ib = function (k, t, fn) { var b = mk('button', 'pt-ib'); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k); b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
@@ -2171,7 +2170,6 @@ function renderPatients() {
     var fst = formStatus(p);
     ib('form', fst.t, function (ev) { tlMenu(ev, formMenuItems(p)); });
     acts.lastChild.classList.add('st-' + fst.s);
-    ib('img', 'Foto hinzufügen', function () { curP = p; zuNext = null; document.getElementById('a-img-in').click(); });
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
     wrap.appendChild(left); wrap.appendChild(acts); c1.appendChild(wrap);
