@@ -538,6 +538,8 @@ body { overflow-x:clip; }
 .pt-dr { display:flex; flex-direction:column; gap:1px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
 .pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:flex-start; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
+#inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:8px 4px; font-size:12.5px; white-space:normal; line-height:1.2; }
+.entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
 .pt-acts { display:grid; grid-template-columns:repeat(3,32px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:32px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
 .pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; } .pt-dot.d-rem { background:#ea580c; } .pt-dot.d-next { background:#16a34a; }
@@ -892,12 +894,15 @@ function kaStart() {
       <div class="card-header">
         <span class="card-title">Rechnungen</span>
         <div class="row-actions">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="invCheck()">Prüfen</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('rimp-file').click()">Import</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="inv-b-check" onclick="invCheck()">Prüfen</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="inv-b-imp" onclick="document.getElementById('rimp-file').click()">Import</button>
           <input type="file" id="rimp-file" accept="application/pdf,.pdf,application/zip,.zip" multiple style="display:none" onchange="rechnungenImport(this)">
-          <button type="button" class="btn btn-sm" onclick="openInvoice(null)">+ Rechnung</button>
+          <button type="button" class="btn btn-sm" id="inv-b-new" onclick="invNew()">+ Rechnung</button>
         </div>
       </div>
+      <div class="seg" id="inv-kind" style="margin-bottom:10px;"></div>
+      <div id="entw-list" style="display:none"></div>
+      <div id="inv-main">
       <div id="inv-open"></div>
       <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
       <div id="inv-seg" class="za-seg" style="margin-bottom:10px;"></div>
@@ -908,6 +913,7 @@ function kaStart() {
         </table>
       </div>
       <div id="inv-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Rechnungen</div>
+      </div>
     </div>
   </div>
 
@@ -1601,7 +1607,8 @@ function kaStart() {
       <button type="button" class="btn btn-secondary" onclick="closeModal('modal-invview')">&lsaquo; Zurück</button>
       <button type="button" class="btn btn-secondary" id="inv-pay-btn" onclick="openPay()">Zahlung erfassen</button>
       <button type="button" class="btn btn-secondary" onclick="editInvoice()">Bearbeiten</button>
-      <button type="button" class="btn btn-save" onclick="sendInvoice()">Rechnung senden</button>
+      <button type="button" class="btn btn-secondary" id="inv-kv-btn" style="display:none" onclick="kvToInvoice()">In Rechnung umwandeln</button>
+      <button type="button" class="btn btn-save" id="inv-send-btn" onclick="sendInvoice()">Rechnung senden</button>
       <button type="button" class="btn btn-secondary" onclick="savePdf()">Als PDF speichern</button>
       <button type="button" class="btn btn-del btn-ico" style="margin-left:auto;" title="Rechnung löschen" aria-label="Rechnung löschen" onclick="deleteInvoice()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
     </div>
@@ -1827,7 +1834,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-g';
+var KA_V = '2026-10-28-j';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -1893,7 +1900,8 @@ function switchTab(tabId) {
   saveLast();
 }
 function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
-var ausgaben = [], todos = [];
+var ausgaben = [], todos = [], entw = [];
+try { var sen = JSON.parse(kaGet('ka_entw')); if (Array.isArray(sen)) entw = sen; } catch (x) {}
 try { var sa = JSON.parse(kaGet('ka_ausgaben')); if (Array.isArray(sa)) ausgaben = sa; } catch (x) {}
 try { var stt = JSON.parse(kaGet('ka_todos')); if (Array.isArray(stt)) todos = stt; } catch (x) {}
 var patients = [];
@@ -1920,6 +1928,7 @@ function persist() {
     kaSet('ka_settings', JSON.stringify(settings));
     kaSet('ka_lager', JSON.stringify(lager));
     kaSet('ka_ausgaben', JSON.stringify(ausgaben));
+    kaSet('ka_entw', JSON.stringify(entw));
     kaSet('ka_todos', JSON.stringify(todos));
   } catch (x) { alert('Der Speicher im Browser ist voll. Bitte große Dateien entfernen und eine Sicherung machen.'); }
   try { renderHome(); } catch (x) {}
@@ -3149,17 +3158,25 @@ function nextPayNr(date) {
   return 'B' + yr + '-' + String(seq + 1).padStart(5, '0');
 }
 function newRow(type) { return type === 'rabatt' ? { type: 'rabatt', text: 'Rabatt', pct: '', rate: '19' } : { type: 'pos', text: '', qty: '1', price: '', rate: '19' }; }
-var invEdit = null;
+var invEdit = null, invMode = 'rechnung', invTab = 'rechnung', invKeepMode = false;
+var DRAFT = { kv: { name: 'Kostenvoranschlag', kopf: 'KOSTENVORANSCHLAG', datei: 'Kostenvoranschlag', neu: 'Kostenvoranschlag erstellen', liste: 'Kostenvoranschläge' }, test: { name: 'Test-Rechnung', kopf: 'RECHNUNG', datei: 'Test-Rechnung', neu: 'Test-Rechnung erstellen', liste: 'Test-Rechnungen' } };
+function invCur() { return invoices.concat(entw).filter(function (i) { return i.id === viewInvId; })[0]; }
+function invIsDraft(inv) { return !!(inv && inv.kind); }
 function invEditUi(on) {
-  document.getElementById('inv-title').textContent = on ? 'Rechnung bearbeiten' : 'Rechnung erstellen';
-  document.getElementById('inv-savebtn').textContent = on ? 'Speichern' : 'Rechnung erstellen';
-  ['inv-payh', 'inv-payseg', 'inv-paybox'].forEach(function (id) { var e = document.getElementById(id); if (e) e.style.display = on ? 'none' : (id === 'inv-paybox' ? (invPayArt ? 'grid' : 'none') : ''); });
+  var dr = DRAFT[invMode], nm = dr ? dr.name : 'Rechnung';
+  document.getElementById('inv-title').textContent = on ? nm + ' bearbeiten' : dr ? dr.neu : 'Rechnung erstellen';
+  document.getElementById('inv-savebtn').textContent = on ? 'Speichern' : dr ? nm + ' erstellen' : 'Rechnung erstellen';
+  var hidePay = on || !!dr;
+  ['inv-payh', 'inv-payseg', 'inv-paybox'].forEach(function (id) { var e = document.getElementById(id); if (e) e.style.display = hidePay ? 'none' : (id === 'inv-paybox' ? (invPayArt ? 'grid' : 'none') : ''); });
+  var zg = document.getElementById('inv-zahlung'); if (zg && zg.parentNode) zg.parentNode.style.display = dr ? 'none' : '';
 }
 /* Bestehende Rechnung ändern: Nummer und Zahlungen bleiben erhalten */
 function editInvoice() {
-  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
+  var inv = invCur(); if (!inv) return;
   var p = patients.filter(function (x) { return x.id === inv.pid; })[0]; if (!p) { alert('Der Patient zu dieser Rechnung wurde nicht gefunden.'); return; }
-  closeModal('modal-invview'); openInvoice(p); invEdit = inv; invEditUi(true);
+  closeModal('modal-invview'); invMode = inv.kind || 'rechnung'; invKeepMode = true; openInvoice(p); invEdit = inv; invEditUi(true); fillInvForm(inv);
+}
+function fillInvForm(inv) {
   var g = function (id) { return document.getElementById(id); };
   g('inv-adresse').value = inv.adresse || ''; g('inv-datum').value = inv.date || ''; g('inv-leistung').value = inv.leistung || inv.date || '';
   g('inv-vortext').value = inv.vortext || ''; g('inv-doku').value = inv.doku || ''; g('inv-zahlung').value = inv.zahlung || '';
@@ -3172,7 +3189,15 @@ function editInvoice() {
   if (!invRows.length) invRows = [newRow('pos')];
   renderInvRows();
 }
+function openInvoiceKind(p, kind) { invMode = kind || 'rechnung'; invKeepMode = true; openInvoice(p); }
+function kvToInvoice() {
+  var inv = invCur(); if (!inv) return;
+  var p = patients.filter(function (x) { return x.id === inv.pid; })[0]; if (!p) { alert('Der Patient wurde nicht gefunden.'); return; }
+  closeModal('modal-invview'); invMode = 'rechnung'; openInvoice(p); fillInvForm(inv);
+  document.getElementById('inv-datum').value = iso(new Date());
+}
 function openInvoice(p) {
+  if (!invKeepMode) invMode = 'rechnung'; invKeepMode = false;
   invP = p; invEdit = null; if (document.getElementById('inv-title')) invEditUi(false);
   document.getElementById('inv-patient').value = p ? nameKey(p) : '';
   document.getElementById('inv-adresse').value = p && p.adresse ? p.adresse : '';
@@ -3323,6 +3348,12 @@ function saveInvoice() {
     if (payAmount <= 0 || !payDate) { alert('Bitte bei der Zahlung Betrag und Datum angeben, oder "Noch offen" wählen.'); return; }
     if (payAmount > tot0 + 0.005) { alert('Der Zahlungsbetrag ist höher als die Rechnungssumme.'); return; }
   }
+  if (invMode !== 'rechnung' && !invEdit) {
+    var dtot = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
+    var d0 = { id: newId(), kind: invMode, nr: '', date: datum, leistung: leist, pid: p.id, name: (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname, adresse: adresse, items: items,
+      doku: document.getElementById('inv-doku').value.trim(), eid: parseInt(document.getElementById('inv-termin').value, 10) || null, hinweis: hinweis, zahlung: '', vortext: document.getElementById('inv-vortext').value.trim(), total: dtot, payments: [], created: Date.now() };
+    entw.push(d0); p.adresse = adresse; persist(); closeModal('modal-inv'); invTab = d0.kind; renderInvoices(); viewInvoice(d0.id); return;
+  }
   if (invEdit) {
     var ie = invEdit, totE = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
     if (paidSum(ie) > totE + 0.005 && !confirm('Die bereits erfassten Zahlungen (' + eur(paidSum(ie)) + ') sind höher als die neue Summe (' + eur(totE) + '). Trotzdem speichern?')) return;
@@ -3380,7 +3411,28 @@ function invCmp(a, b) {
   else d = invState(a).txt.localeCompare(invState(b).txt, 'de');
   return d * invSort.dir;
 }
+function invNew() { if (invTab === 'rechnung') openInvoice(null); else openInvoiceKind(null, invTab); }
+/* Reiter Rechnungen | Kostenvoranschläge | Test-Rechnungen: Kostenvoranschläge und Test-Rechnungen haben keine Nummer und zählen nicht in Statistik und Zahlungen */
+function renderEntw() {
+  var sg = document.getElementById('inv-kind'); if (!sg) return; sg.innerHTML = '';
+  [['rechnung', 'Rechnungen'], ['kv', 'Kosten\u00advoranschläge'], ['test', 'Test-Rechnungen']].forEach(function (k) {
+    var b = mk('button', invTab === k[0] ? 'on' : '', k[1]); b.type = 'button'; b.onclick = function () { invTab = k[0]; renderInvoices(); }; sg.appendChild(b);
+  });
+  var dr = DRAFT[invTab], main = document.getElementById('inv-main'), box = document.getElementById('entw-list');
+  main.style.display = dr ? 'none' : ''; box.style.display = dr ? '' : 'none';
+  document.getElementById('inv-b-check').style.display = document.getElementById('inv-b-imp').style.display = dr ? 'none' : '';
+  document.getElementById('inv-b-new').textContent = '+ ' + (dr ? dr.name : 'Rechnung');
+  if (!dr) return;
+  box.innerHTML = '';
+  var list = entw.filter(function (e) { return e.kind === invTab; }).sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+  if (!list.length) { box.appendChild(Object.assign(mk('div', '', 'Noch keine ' + dr.liste), { style: 'color:#94a3b8; font-size:13px; padding:10px 0;' })); return; }
+  list.forEach(function (e) {
+    var r = mk('button', 'entw-row'); r.type = 'button'; r.onclick = function () { viewInvoice(e.id); };
+    r.appendChild(mk('span', 'entw-n', e.name)); r.appendChild(mk('span', 'entw-d', fmtD(e.date))); r.appendChild(mk('b', 'entw-t', eur(e.total))); box.appendChild(r);
+  });
+}
 function renderInvoices() {
+  renderEntw();
   var tb = document.getElementById('inv-table'); if (!tb) return;
   tb.innerHTML = '';
   [].forEach.call(document.querySelectorAll('[data-ik]'), function (e) { e.innerHTML = e.getAttribute('data-ik') === invSort.k ? (invSort.dir > 0 ? '&#9650;' : '&#9660;') : ''; });
@@ -3479,7 +3531,7 @@ function invCheck() {
 /* Rechnungsansicht nach Vorbild der Praxisrechnung */
 function invoiceDOM(inv) {
   var w = mk('div'); w.style.cssText = 'font-size:13px; color:#111; line-height:1.45; min-width:560px;';
-  var st = invState(inv), pays = inv.payments || [];
+  var dk0 = invIsDraft(inv), st = dk0 ? { full: true } : invState(inv), pays = inv.payments || [];
   var top = mk('div'); top.style.cssText = 'display:grid; grid-template-columns:90px 1fr 190px; align-items:start; gap:8px;';
   var logo = document.createElement('img'); var li = document.querySelector('.logo-img');
   if (li) logo.src = li.src; logo.style.cssText = 'width:70px; height:70px;'; logo.alt = '';
@@ -3496,8 +3548,8 @@ function invoiceDOM(inv) {
   if (rc.anrede) left.appendChild(mk('b', '', rc.anrede));
   rc.lines.forEach(function (t) { left.appendChild(mk('div', '', t)); });
   var right = mk('div'); right.style.cssText = 'width:230px; font-size:12px; color:#333;';
-  right.appendChild(mk('b', '', 'RECHNUNG'));
-  [['Rechnungsnummer:', inv.nr], ['Rechnungsdatum:', fmtD(inv.date)], ['Zahlungsstatus:', invStatusText(inv)]].forEach(function (m) {
+  right.appendChild(mk('b', '', dk0 ? DRAFT[inv.kind].kopf : 'RECHNUNG'));
+  (dk0 ? [['Datum:', fmtD(inv.date)]] : [['Rechnungsnummer:', inv.nr], ['Rechnungsdatum:', fmtD(inv.date)], ['Zahlungsstatus:', invStatusText(inv)]]).forEach(function (m) {
     var r = mk('div'); r.style.cssText = 'display:flex; justify-content:space-between; gap:8px;'; r.appendChild(mk('span', '', m[0])); r.appendChild(mk('span', '', m[1])); right.appendChild(r);
   });
   two.appendChild(left); two.appendChild(right); w.appendChild(two);
@@ -3557,14 +3609,19 @@ function invoiceDOM(inv) {
   return w;
 }
 function viewInvoice(id) {
-  var inv = invoices.filter(function (i) { return i.id === id; })[0]; if (!inv) return;
-  viewInvId = id;
+  viewInvId = id; var inv = invCur(); if (!inv) return;
   var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv));
-  document.getElementById('inv-pay-btn').style.display = invState(inv).full ? 'none' : 'inline-block';
+  document.getElementById('inv-pay-btn').style.display = invIsDraft(inv) || invState(inv).full ? 'none' : 'inline-block';
+  document.getElementById('inv-kv-btn').style.display = inv.kind === 'kv' ? '' : 'none';
+  document.getElementById('inv-send-btn').textContent = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden';
   openModal('modal-invview');
 }
 function deleteInvoice() {
-  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
+  var inv = invCur(); if (!inv) return;
+  if (invIsDraft(inv)) {
+    if (!confirm(DRAFT[inv.kind].name + ' für ' + inv.name + ' (' + eur(inv.total) + ') wirklich löschen?')) return;
+    entw = entw.filter(function (i) { return i !== inv; }); persist(); closeModal('modal-invview'); invTab = inv.kind; renderInvoices(); return;
+  }
   var paid = paidSum(inv), np = (inv.payments || []).length;
   var msg = 'Rechnung ' + inv.nr + ' für ' + inv.name + ' (' + eur(inv.total) + ') wirklich löschen?\n\n'
     + (np ? (np === 1 ? 'Die Zahlung' : 'Die ' + np + ' Zahlungen') + ' (' + eur(paid) + ') dazu ' + (np === 1 ? 'wird' : 'werden') + ' ebenfalls gelöscht und ' + (np === 1 ? 'fehlt' : 'fehlen') + ' dann in Statistik und Zahlungen.\n\n' : '')
@@ -3578,14 +3635,14 @@ function deleteInvoice() {
   if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
 }
 function openPay() {
-  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
+  var inv = invCur(); if (!inv) return;
   document.getElementById('pay-art').value = 'Überweisung';
   document.getElementById('pay-betrag').value = nf(Math.max(0, inv.total - paidSum(inv)));
   document.getElementById('pay-datum').value = iso(new Date());
   openModal('modal-pay');
 }
 function savePay() {
-  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
+  var inv = invCur(); if (!inv) return;
   var amount = r2(numIn(document.getElementById('pay-betrag').value)), date = document.getElementById('pay-datum').value;
   if (amount <= 0 || !date) { alert('Bitte Betrag und Datum angeben.'); return; }
   inv.payments = (inv.payments || []).concat([{ nr: nextPayNr(date), art: document.getElementById('pay-art').value, amount: amount, date: date }]);
@@ -3767,7 +3824,7 @@ function invStatusText(inv) {
   return st.full ? 'Bezahlt' + (pays.length ? ' am ' + fmtD(pays[pays.length - 1].date) : '') : (st.txt === 'Teilzahlung' ? 'Teilzahlung, offen ' + eurP(inv.total - paidSum(inv)) : 'Offen');
 }
 function buildInvoicePdf(inv, logo) {
-  var PW = 595, PH = 842, L = 60, R = 543, pages = [], cur, y, st = invState(inv), pays = inv.payments || [];
+  var PW = 595, PH = 842, L = 60, R = 543, pages = [], cur, y, st = invIsDraft(inv) ? { full: true } : invState(inv), pays = inv.payments || [];
   var imgs = [];
   if (logo) imgs.push({ n: 'Im1', w: logo.w, h: logo.h, bytes: logo.bytes });
   var q1 = (!!settings.iban && !st.full) ? qrMake(epcFor(inv)) : null, useQ1 = !!q1, useQ2 = qrPaypal() && !st.full;
@@ -3796,8 +3853,8 @@ function buildInvoicePdf(inv, logo) {
   var rc = splitRecipient(inv), ry = 152;
   if (rc.anrede) { txt(L, ry, rc.anrede, 9.5, true); ry += 12; }
   rc.lines.forEach(function (t, i) { pdfWrap(t, false, 9.5, 280).forEach(function (w) { txt(L, ry, w, 9.5); ry += 12; }); });
-  txt(379, 148, 'RECHNUNG', 9.5, true);
-  [['Rechnungsnummer:', inv.nr], ['Rechnungsdatum:', fmtD(inv.date)], ['Zahlungsstatus:', invStatusText(inv)]].forEach(function (m, i) {
+  txt(379, 148, invIsDraft(inv) ? DRAFT[inv.kind].kopf : 'RECHNUNG', 9.5, true);
+  (invIsDraft(inv) ? [['Datum:', fmtD(inv.date)]] : [['Rechnungsnummer:', inv.nr], ['Rechnungsdatum:', fmtD(inv.date)], ['Zahlungsstatus:', invStatusText(inv)]]).forEach(function (m, i) {
     txt(379, 160 + i * 12, m[0], 8.5, false, 0.25); txtR(R, 160 + i * 12, m[1], 8.5, false, 0.25);
   });
   y = Math.max(ry, 190) + 16;
@@ -3901,8 +3958,8 @@ function buildInvoicePdf(inv, logo) {
   return all;
 }
 async function savePdf() {
-  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
-  var data = buildInvoicePdf(inv, getLogoJpeg()), name = 'Rechnung-' + inv.nr + '.pdf';
+  var inv = invCur(); if (!inv) return;
+  var data = buildInvoicePdf(inv, getLogoJpeg()), name = invFile(inv);
   var dl = null; try { dl = window.claude && await window.claude.use('downloads'); } catch (x) {}
   if (dl) {
     try { await dl.save({ filename: name, data: data }); } catch (x) { if (!x || x.code !== 'declined') alert('Die PDF konnte nicht gespeichert werden.'); }
@@ -3916,13 +3973,13 @@ async function savePdf() {
 
 /* Rechnung als PDF über das Teilen-Menü des Geräts senden (Mail, WhatsApp usw.) und als versendet vermerken */
 async function sendInvoice() {
-  var inv = invoices.filter(function (i) { return i.id === viewInvId; })[0]; if (!inv) return;
-  var p = patients.filter(function (x) { return x.id === inv.pid; })[0] || curP, name = 'Rechnung-' + inv.nr + '.pdf';
-  var betreff = 'Rechnung ' + inv.nr + ' - Kreuzberg Ästhetik', text = fillPlatzhalter('{AnredeInformell},\n\nanbei die Rechnung ' + inv.nr + '.\n\nManuel - Kreuzberg Ästhetik', p);
+  var inv = invCur(); if (!inv) return;
+  var p = patients.filter(function (x) { return x.id === inv.pid; })[0] || curP, name = invFile(inv), dr = DRAFT[inv.kind], what = dr ? dr.name : 'Rechnung ' + inv.nr;
+  var betreff = what + ' - Kreuzberg Ästhetik', text = fillPlatzhalter('{AnredeInformell},\n\nanbei ' + (dr ? 'der ' + dr.name : 'die Rechnung ' + inv.nr) + '.\n\nManuel - Kreuzberg Ästhetik', p);
   var file; try { file = new File([buildInvoicePdf(inv, getLogoJpeg())], name, { type: 'application/pdf' }); } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); return; }
   var done = function (via) {
     inv.sentAt = Date.now();
-    if (p) p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'Rechnung ' + inv.nr + ' gesendet (' + via + ')' }]);
+    if (p) p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: what + ' gesendet (' + via + ')' }]);
     persist(); try { renderPatients(); } catch (x) {} if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
   };
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -3935,6 +3992,7 @@ async function sendInvoice() {
   if (p && p.email) window.location.href = 'mailto:' + encodeURIComponent(p.email) + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
   if (confirm('Die PDF wurde heruntergeladen. Bitte im Mailprogramm anhängen und senden.\n\nRechnung jetzt als versendet markieren?')) done('Mailprogramm');
 }
+function invFile(inv) { var dr = DRAFT[inv.kind]; return dr ? dr.datei + '-' + String(inv.name || '').replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, '_') + '-' + inv.date + '.pdf' : 'Rechnung-' + inv.nr + '.pdf'; }
 function printInvoice() {
   try { window.print(); } catch (x) { alert('Drucken ist in dieser Ansicht nicht verfügbar.'); }
 }
@@ -6866,7 +6924,7 @@ async function doExport() {
       if (i % 20 === 19) await new Promise(function (r) { setTimeout(r, 0); });
     }
     progSet(92, 'Daten werden geschrieben...');
-    var data = { format: 'ka-sicherung', version: 3, id: sid, exportiert: now.toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager, ausgaben: ausgaben, todos: todos, dateien: meta };
+    var data = { format: 'ka-sicherung', version: 3, id: sid, exportiert: now.toISOString(), events: events, patients: patients, templates: templates, invoices: invoices, settings: settings, lager: lager, ausgaben: ausgaben, entw: entw, todos: todos, dateien: meta };
     var jb = new TextEncoder().encode(JSON.stringify(data)), jn = 'daten.json';
     if (key) { jb = await encEntry(key, jb); jn += '.enc'; }
     parts[0].add(jn, new Blob([jb]), (crcBytes(jb, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0);
@@ -6973,6 +7031,7 @@ function applyImport(d, inp, restorer) {
     if (!Array.isArray(settings.katalog)) settings.katalog = [];
     if (d.lager && Array.isArray(d.lager.produkte)) lager = { produkte: d.lager.produkte, chargen: Array.isArray(d.lager.chargen) ? d.lager.chargen : [], verbrauch: Array.isArray(d.lager.verbrauch) ? d.lager.verbrauch : [] };
     if (Array.isArray(d.ausgaben)) ausgaben = d.ausgaben;
+    if (Array.isArray(d.entw)) entw = d.entw;
     if (Array.isArray(d.todos)) todos = d.todos;
     var m = 0;
     events.forEach(function (e) { if (e.id > m) m = e.id; });

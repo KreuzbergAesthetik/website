@@ -5,7 +5,7 @@
  */
 var KS = (function () {
   var EP = 'https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/abgleich';
-  var STORES = ['events', 'patients', 'templates', 'invoices', 'settings', 'lager', 'ausgaben', 'todos'];
+  var STORES = ['events', 'patients', 'templates', 'invoices', 'settings', 'lager', 'ausgaben', 'todos', 'entw'];
   var S = { busy: false, applying: false, timer: null, poll: null, inbox: [], err: '', msg: '', obj: [], rev: 0, started: false };
   var enc = new TextEncoder(), dec = new TextDecoder();
 
@@ -69,7 +69,7 @@ var KS = (function () {
   function setArr(a, src) { a.length = 0; for (var i = 0; i < src.length; i++) a.push(src[i]); }
   function applyCore(core) {
     var s = core.stores;
-    ['events', 'patients', 'templates', 'invoices', 'ausgaben', 'todos'].forEach(function (k) { setArr(window[k], Array.isArray(s[k]) ? s[k] : []); });
+    ['events', 'patients', 'templates', 'invoices', 'ausgaben', 'todos', 'entw'].forEach(function (k) { setArr(window[k], Array.isArray(s[k]) ? s[k] : []); });
     Object.keys(settings).forEach(function (k) { delete settings[k]; }); Object.assign(settings, s.settings || {});
     var lg = s.lager || {}; ['produkte', 'chargen', 'verbrauch'].forEach(function (k) { setArr(lager[k], Array.isArray(lg[k]) ? lg[k] : []); });
     try { ensurePatients(); } catch (x) {}
