@@ -872,7 +872,7 @@ function kaStart() {
           <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
         </div>
       </div>
-      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span><span><i style="background:#16a34a"></i>Termin gebucht</span></div>
+      <div class="pt-leg"><span><i style="background:#dc2626"></i>To-Do</span><span><i style="background:#1e3a8a"></i>Rechnung offen</span><span><i style="background:#94a3b8"></i>Anamnese</span><span><i style="background:#ea580c"></i>Erinnerung fällig</span></div>
       <div class="scroll">
         <table class="pt">
           <thead><tr>
@@ -1825,7 +1825,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-28-d';
+var KA_V = '2026-10-28-e';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2154,7 +2154,6 @@ function renderPatients() {
     if (fl0.unb.length) addDot('d-inv', 'Rechnung offen: vergangene Termine ohne Rechnung (' + fl0.unb.length + ')');
     if (fl0.anam) addDot('d-anam', anamText(fl0.anam.info));
     if (fl0.rem) addDot('d-rem', 'Terminerinnerung fällig: ' + fmtTermin(fl0.rem));
-    if (fl0.next) addDot('d-next', 'Nächster Termin gebucht: ' + fmtTermin(fl0.next));
     if (dots.childNodes.length) c1.appendChild(dots);
     var nb = mk('button', 'pn pn-nm', full); nb.type = 'button'; nb.title = full; nb.onclick = function () { viewAkte(p); }; nrow.appendChild(nb);
     if (p.titel) nrow.appendChild(mk('span', 'pt-tit', p.titel));
@@ -2162,14 +2161,16 @@ function renderPatients() {
     var sub = [p.dob ? 'geb. ' + p.dob + (age !== '' ? ' (' + age + ')' : '') : '', { Frau: '♀', Herr: '♂', Divers: '⚧' }[p.anrede] || ''].filter(Boolean).join(' · ');
     var em = evMap[nameKey(p)] || {};
     if (sub) { var dr = mk('div', 'pt-dr'); dr.appendChild(mk('span', 'pt-dob', sub)); c1.appendChild(dr); }
-    if (em.last) {
+    var inv0 = em.last ? invoices.filter(function (i) { return i.eid === em.last.e.id || (i.pid === p.id && i.date === em.last.e.date); })[0] : null;
+    /* Zeile nur, solange die Rechnung zum letzten Termin fehlt oder noch nicht versendet ist */
+    if (em.last && !(inv0 && (invState(inv0).full || inv0.sentAt))) {
       /* letzter Termin mit Rechnungs-Symbol: grau = keine Rechnung, gelb = offen, grün = bezahlt */
       var le = em.last.e, lrow = mk('div', 'pt-lt'), lt = mk('span', 'pt-ev', fmtS(em.last.t)); lt.title = 'Letzter Termin: ' + (le.behandlung || 'Termin') + ' · ' + fmtDT(em.last.t); lrow.appendChild(lt);
-      var inv0 = invoices.filter(function (i) { return i.eid === le.id || (i.pid === p.id && i.date === le.date); })[0], is = inv0 ? (invState(inv0).full ? 'ok' : 'wait') : 'todo';
+      var is = inv0 ? 'wait' : 'todo';
       var rb = mk('button', 'pt-ib pt-inv st-' + is); rb.type = 'button'; rb.innerHTML = tvSvg('euro');
-      rb.title = is === 'ok' ? 'Rechnung bezahlt' : is === 'wait' ? 'Rechnung erstellt, noch offen' : 'Rechnung erstellen';
+      rb.title = is === 'wait' ? 'Rechnung erstellt, noch nicht versendet' : 'Rechnung erstellen';
       rb.setAttribute('aria-label', rb.title);
-      rb.onclick = function (ev) { ev.stopPropagation(); curP = p; if (inv0) viewInvoice(inv0.id); else invFromEvent(le); };
+      rb.onclick = function (ev) { curP = p; if (!inv0) { ev.stopPropagation(); invFromEvent(le); return; } tlMenu(ev, [['Rechnung ansehen', function () { viewInvoice(inv0.id); }], ['Als versendet markieren', function () { inv0.sentAt = Date.now(); persist(); renderPatients(); }]]); };
       lrow.appendChild(rb); c1.appendChild(lrow);
     }
     /* Schnellaktionen */
