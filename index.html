@@ -268,7 +268,7 @@ body.akte-open main { display:none; }
 .a-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:40; }
 body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .a-fab { left:50%; right:auto; bottom:14px; transform:translateX(-50%); width:min(880px, calc(100% - 24px)); } .a-fab .a-cats { flex:1; justify-content:space-between; gap:4px; } @media (max-width:520px) { .a-fab { right:auto; bottom:12px; } }
-.a-cats { display:flex; gap:5px; } .a-cat { width:38px; height:38px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
+.a-cats { display:flex; gap:5px; } .a-cat { width:42px; height:42px; border-radius:12px; border:1px solid #cbd5e1; background:#fff; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 12px rgba(15,23,42,.18); } .a-cat svg { width:20px; height:20px; }
 .am-tile.c0 { --ac:#2563eb; --ab:#eff4ff; } .am-tile.c1 { --ac:#15803d; --ab:#effaf2; } .am-tile.c2 { --ac:#7c3aed; --ab:#f5f1ff; } .am-tile.c3 { --ac:#0f766e; --ab:#ecfaf8; }
 .a-cat.d0 { --ac:#2563eb; --ab:#eff4ff; } .a-cat.d1 { --ac:#15803d; --ab:#effaf2; } .a-cat.d2 { --ac:#1e3a8a; --ab:#eef1fa; } .a-cat.d3 { --ac:#b45309; --ab:#fdf5ea; } .a-cat.d4 { --ac:#7c3aed; --ab:#f5f1ff; } .a-cat.d5 { --ac:#0f766e; --ab:#ecfaf8; }
 .a-cat[class*=" d"] { color:var(--ac); border-color:color-mix(in srgb, var(--ac) 35%, #fff); background:var(--ab); }
@@ -278,7 +278,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .am-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
 .a-menu .am-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; width:auto; min-height:70px; padding:10px 4px 8px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:11.5px; font-weight:600; color:#334155; text-align:center; line-height:1.15; } .am-tile svg { width:22px; height:22px; } .a-menu .am-tile:hover { background:#eef2f7; }
 .akte-page { padding-bottom:90px; }
-.plus-btn.fab { width:56px; height:56px; font-size:32px; box-shadow:0 6px 18px rgba(15,23,42,.35); background:#0f172a; display:flex; align-items:center; justify-content:center; padding:0 0 3px; }
+.plus-btn.fab { width:46px; height:46px; border-radius:12px; font-size:32px; box-shadow:0 6px 18px rgba(15,23,42,.35); background:#0f172a; display:flex; align-items:center; justify-content:center; padding:0 0 3px; }
 .a-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:0; position:relative; z-index:1; }
 .a-tabs button { background:#dbe3ec; border:1px solid #b6c2d1; border-bottom:1px solid #b6c2d1; border-radius:12px 12px 0 0; padding:12px 6px; font-size:17px; font-weight:600; color:#475569; cursor:pointer; margin-bottom:-1px; }
 .a-tabs button.on { background:#fff; color:#0f172a; font-weight:800; border-bottom-color:#fff; }
@@ -525,6 +525,8 @@ body { overflow-x:clip; }
 .tm-title { font-size:17px; font-weight:800; color:#0f172a; line-height:1.15; } .tm-sub { font-size:12.5px; color:#64748b; margin-top:2px; min-height:16px; overflow-wrap:anywhere; }
 .tm-body { padding:10px 14px 14px; max-height:calc(90vh - 70px); overflow-y:auto; }
 .tm-tile { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:12px; padding:8px 10px 10px; margin-bottom:8px; }
+.pat-dd { position:absolute; left:10px; right:10px; top:100%; margin-top:-8px; z-index:30; background:#fff; border:1px solid #cbd5e1; border-radius:10px; box-shadow:0 8px 22px rgba(15,23,42,.22); max-height:240px; overflow-y:auto; } .pat-dd button { display:block; width:100%; text-align:left; background:none; border:none; border-bottom:1px solid #f1f5f9; padding:10px 12px; font-size:15px; color:#0f172a; cursor:pointer; } .pat-dd button:last-child { border-bottom:none; } .pat-dd button.pd-new { color:#15803d; font-weight:600; }
+#modal-patient { z-index:60; }
 .tm-tile .form-control { min-height:38px; padding:7px 10px; background:#fff; }
 .tm-lbl { display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:0 0 5px; } .tm-lbl em { font-style:normal; text-transform:none; letter-spacing:0; font-weight:600; }
 .tm-dr { display:flex; gap:8px; align-items:center; } .tm-dr .form-control { flex:1; min-width:0; }
@@ -1233,9 +1235,10 @@ function kaStart() {
           <input type="time" id="t-ende" step="900" class="form-control" onchange="updDur(); tmSub()">
         </div>
       </div>
-      <div class="tm-tile">
+      <div class="tm-tile" style="position:relative">
         <span class="tm-lbl">Patient</span>
-        <input type="text" id="t-patient" class="form-control" list="t-patient-list" placeholder="Name eingeben..." autocomplete="off">
+        <input type="text" id="t-patient" class="form-control" placeholder="Name eingeben..." autocomplete="off" oninput="tPatDD()" onfocus="tPatDD()" onblur="setTimeout(tPatDDHide,180)">
+        <div id="t-pat-dd" class="pat-dd" style="display:none"></div>
         <datalist id="t-patient-list"></datalist>
       </div>
       <div class="tm-tile">
@@ -1856,7 +1859,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-e';
+var KA_V = '2026-10-29-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2014,9 +2017,17 @@ function flagItems(p) {
   var f = flagsMap().get(p), out = [];
   if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
   if (f.rem) {
-    var re = f.rem, rtx = fillPlatzhalter('{AnredeInformell},\n\nwir erinnern Dich an Deinen Termin am ' + fmtD(re.date) + ' um ' + re.time + ' Uhr bei Kreuzberg Ästhetik.\n\nSolltest Du den Termin nicht wahrnehmen können, gib uns bitte rechtzeitig Bescheid.\n\nManuel - Kreuzberg Ästhetik', p);
+    var re = f.rem, rtx = fillPlatzhalter('{AnredeInformell},\n\nich erinnere Dich an Deinen Termin am ' + fmtD(re.date) + ' um ' + re.time + ' Uhr bei Kreuzberg Ästhetik.\n\nSolltest Du den Termin nicht wahrnehmen können, gib mir bitte rechtzeitig Bescheid.\n\nManuel - Kreuzberg Ästhetik', p);
     var rmark = function () { bestAdd(p, 'termin:' + re.id, 'sent'); p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'Terminerinnerung gesendet für ' + fmtTermin(re) }]); persist(); if (curP === p) { renderVerlauf(); renderHead(); } };
     out.push({ cls: 'fl-orange', label: 'Terminerinnerung: ' + fmtTermin(re), menu: [['Per E-Mail senden', function () { rmark(); tvMail(p, '', ['Terminerinnerung', rtx]); }], ['Per WhatsApp senden', function () { rmark(); waOpen(p, rtx); }], ['Schon erinnert (vor Ort oder telefonisch)', rmark]] });
+  }
+  else if (f.next && f.next.date <= iso(new Date(Date.now() + (settings.remDays == null ? 2 : +settings.remDays) * 86400000)) && bestLast(p, 'termin:' + f.next.id, 'sent')) {
+    var ue = f.next;
+    out.push({ cls: 'fl-grey', label: 'Terminerinnerung gesendet: ' + fmtTermin(ue), menu: [['Rückgängig (als nicht gesendet markieren)', function () {
+      p.best = (p.best || []).filter(function (b) { return !(b.k === 'termin:' + ue.id && b.art === 'sent'); });
+      var tx = 'Terminerinnerung gesendet für ' + fmtTermin(ue), ix = -1; (p.log || []).forEach(function (l, i) { if (l.text === tx) ix = i; }); if (ix >= 0) p.log.splice(ix, 1);
+      persist(); if (curP === p) { renderVerlauf(); renderHead(); } renderPatients();
+    }]] });
   }
   f.todos.slice(0, 5).forEach(function (t) { out.push({ cls: 'fl-red', label: 'To-Do: ' + (t.text.length > 60 ? t.text.slice(0, 59) + '…' : t.text) + (t.due ? ' · fällig ' + fmtD(t.due) : ''), fn: function () { openTodo(t.id); } }); });
   if (f.todos.length > 5) out.push({ cls: 'fl-red', label: '+' + (f.todos.length - 5) + ' weitere To-Dos', fn: function () { switchTab('todos'); closeModal('modal-akte'); } });
@@ -6900,11 +6911,33 @@ function savePatient() {
   patients.push({ anrede: g('p-anrede'), vorname: g('p-vorname'), nachname: g('p-nachname'), dob: g('p-dob'), phone: g('p-phone'), email: g('p-email'), adresse: addrRead('p-adr-'), allergien: g('p-allergien'), notizen: g('p-notizen') });
   ensurePatients(); persist(); renderPatients();
   var newP = patients[patients.length - 1];
+  if (patFromTermin) { patFromTermin = false; document.getElementById('t-patient').value = nameKey(newP); }
   ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen', 'p-adr-str', 'p-adr-nr', 'p-adr-plz', 'p-adr-ort'].forEach(function (id) { document.getElementById(id).value = ''; });
   closeModal('modal-patient');
   offerNeu(newP);
 }
 
+function tPatDDHide() { var d = document.getElementById('t-pat-dd'); if (d) d.style.display = 'none'; }
+function tPatDD() {
+  var inp = document.getElementById('t-patient'), d = document.getElementById('t-pat-dd'), q = inp.value.trim().toLowerCase().replace(/\s+/g, ' ');
+  d.innerHTML = '';
+  if (!q) { d.style.display = 'none'; return; }
+  var hit = patients.filter(function (p) { var n = nameKey(p).toLowerCase(); return n.indexOf(q) === 0 || (' ' + n).indexOf(' ' + q) >= 0 || (p.nachname + ' ' + p.vorname).toLowerCase().indexOf(q) === 0; }).sort(function (a, b) { return nameKey(a).localeCompare(nameKey(b), 'de'); }).slice(0, 8);
+  hit.forEach(function (p) { var b = mk('button', '', nameKey(p) + (p.dob ? ' · ' + p.dob : '')); b.type = 'button'; b.onmousedown = function (ev) { ev.preventDefault(); }; b.onclick = function () { inp.value = nameKey(p); d.style.display = 'none'; }; d.appendChild(b); });
+  var exact = patients.some(function (p) { return nameKey(p).toLowerCase() === q; });
+  if (!exact) {
+    var nb = mk('button', 'pd-new', '+ Neuen Patienten anlegen: ' + inp.value.trim()); nb.type = 'button'; nb.onmousedown = function (ev) { ev.preventDefault(); };
+    nb.onclick = function () {
+      d.style.display = 'none';
+      ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen', 'p-adr-str', 'p-adr-nr', 'p-adr-plz', 'p-adr-ort'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; });
+      var w = inp.value.trim().split(/\s+/), n = w.length > 1 ? w.pop() : ''; document.getElementById('p-vorname').value = w.join(' '); document.getElementById('p-nachname').value = n;
+      patFromTermin = true; openModal('modal-patient');
+    };
+    d.appendChild(nb);
+  }
+  d.style.display = 'block';
+}
+var patFromTermin = false;
 function saveTermin() {
   var datum = document.getElementById('t-datum').value;
   var ganz = document.getElementById('t-ganztag').checked;
