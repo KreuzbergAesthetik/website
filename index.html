@@ -1656,15 +1656,15 @@ function kaStart() {
 <!-- MODAL: ZAHLUNG -->
 <div id="modal-pay" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-header"><strong>Zahlung erfassen</strong><button type="button" class="close-btn" onclick="closeModal('modal-pay')">&times;</button></div>
+    <div class="modal-header"><strong id="pay-title">Zahlung erfassen</strong><button type="button" class="close-btn" onclick="closeModal('modal-pay')">&times;</button></div>
     <div class="form-group"><label>Zahlart</label>
-      <select id="pay-art" class="form-control"><option>Karte</option><option>Bar</option><option>Überweisung</option><option>PayPal</option></select>
+      <select id="pay-art" class="form-control"><option>Karte</option><option>Bar</option><option>Überweisung</option><option>PayPal</option><option>Gutschein</option></select>
     </div>
     <div class="grid-2">
       <div class="form-group"><label>Betrag in Euro</label><input type="text" id="pay-betrag" inputmode="decimal" class="form-control"></div>
       <div class="form-group"><label>Datum</label><input type="date" id="pay-datum" class="form-control"></div>
     </div>
-    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-pay')">Abbrechen</button><button type="button" class="btn btn-save" onclick="savePay()">Speichern</button></div>
+    <div class="foot-bar"><button type="button" id="pay-del" class="btn btn-del btn-ico" style="display:none" title="Zahlung löschen" aria-label="Zahlung löschen" onclick="deletePay()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button><button type="button" class="btn btn-cancel" onclick="closeModal('modal-pay')">Abbrechen</button><button type="button" class="btn btn-save" onclick="savePay()">Speichern</button></div>
   </div>
 </div>
 
@@ -1840,7 +1840,7 @@ function kaStart() {
 <!-- MODAL: WARENEINGANG -->
 <div id="modal-ware" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-header"><strong>Wareneingang</strong><button type="button" class="close-btn" onclick="closeModal('modal-ware')">&times;</button></div>
+    <div class="modal-header"><strong id="lw-title">Wareneingang</strong><button type="button" class="close-btn" onclick="closeModal('modal-ware')">&times;</button></div>
     <div class="form-group"><label>Produkt</label><select id="lw-prod" class="form-control" onchange="wareProdChanged()"></select></div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
       <div class="form-group"><label>Chargennummer</label><input type="text" id="lw-nr" class="form-control" autocomplete="off"></div>
@@ -1850,6 +1850,7 @@ function kaStart() {
       <div class="form-group"><label>Lieferdatum</label><input type="date" id="lw-datum" class="form-control"></div>
     </div>
     <div class="foot-bar">
+      <button type="button" id="lw-del" class="btn btn-del btn-ico" style="display:none" title="Charge löschen" aria-label="Charge löschen" onclick="deleteWare()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ware')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveWare()">Speichern</button>
     </div>
@@ -1909,7 +1910,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zb';
+var KA_V = '2026-10-29-zc';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3858,7 +3859,7 @@ function invoiceDOM(inv) {
 }
 function viewInvoice(id) {
   viewInvId = id; var inv = invCur(); if (!inv) return;
-  var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv));
+  var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv)); if (!invIsDraft(inv)) box.appendChild(invPayBlock(inv));
   document.getElementById('inv-pay-btn').style.display = invIsDraft(inv) || invState(inv).full ? 'none' : 'inline-block';
   document.getElementById('inv-kv-btn').style.display = inv.kind === 'kv' ? '' : 'none';
   var sb = document.getElementById('inv-send-btn'), sl = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden'; sb.title = sl; sb.setAttribute('aria-label', sl);
@@ -3882,20 +3883,59 @@ function deleteInvoice() {
   if (document.getElementById('tab-start').classList.contains('active')) renderHome();
   if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
 }
-function openPay() {
-  var inv = invCur(); if (!inv) return;
-  document.getElementById('pay-art').value = 'Überweisung';
-  document.getElementById('pay-betrag').value = nf(Math.max(0, inv.total - paidSum(inv)));
-  document.getElementById('pay-datum').value = iso(new Date());
+var payCur = null;
+function payFill(art, amount, date, titel, edit) {
+  var sel = document.getElementById('pay-art'); if (![].some.call(sel.options, function (o) { return o.text === art; })) sel.appendChild(mk('option', '', art));
+  sel.value = art; document.getElementById('pay-betrag').value = nf(amount); document.getElementById('pay-datum').value = date;
+  document.getElementById('pay-title').textContent = titel; document.getElementById('pay-del').style.display = edit ? '' : 'none';
   openModal('modal-pay');
+}
+function openPay() {
+  var inv = invCur(); if (!inv) return; payCur = null;
+  payFill('Überweisung', Math.max(0, inv.total - paidSum(inv)), iso(new Date()), 'Zahlung erfassen', false);
+}
+/* Vorhandene Zahlung ändern oder löschen; ref = Eintrag in inv.payments, ohne ref = alter Vermerk "bezahlt" */
+function openPayEdit(invId, ref) {
+  viewInvId = invId; var inv = invCur(); if (!inv) return;
+  payCur = ref ? { ref: ref } : { legacy: true };
+  payFill(ref ? ref.art : 'Überweisung', ref ? ref.amount : inv.total, ref ? ref.date : inv.date, 'Zahlung bearbeiten', true);
+}
+function payRefresh(inv, openView) {
+  renderInvoices();
+  if (openView || document.getElementById('modal-invview').classList.contains('active')) viewInvoice(inv.id);
+  ['zahlungen', 'statistik'].forEach(function (t) { var el = document.getElementById('tab-' + t); if (el && el.classList.contains('active') && typeof window[TAB_RENDER[t]] === 'function') window[TAB_RENDER[t]](); });
+  if (document.getElementById('tab-start').classList.contains('active')) renderHome();
+  try { renderPatients(); } catch (x) {}
+  if (curP && document.getElementById('modal-akte').classList.contains('active')) { renderVerlauf(); }
 }
 function savePay() {
   var inv = invCur(); if (!inv) return;
-  var amount = r2(numIn(document.getElementById('pay-betrag').value)), date = document.getElementById('pay-datum').value;
+  var amount = r2(numIn(document.getElementById('pay-betrag').value)), date = document.getElementById('pay-datum').value, art = document.getElementById('pay-art').value;
   if (amount <= 0 || !date) { alert('Bitte Betrag und Datum angeben.'); return; }
-  inv.payments = (inv.payments || []).concat([{ nr: nextPayNr(date), art: document.getElementById('pay-art').value, amount: amount, date: date }]);
-  persist(); closeModal('modal-pay'); renderInvoices(); viewInvoice(inv.id);
-  if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
+  if (payCur && payCur.ref) { payCur.ref.art = art; payCur.ref.amount = amount; payCur.ref.date = date; }
+  else if (payCur && payCur.legacy) { inv.paid = false; inv.payments = (inv.payments || []).concat([{ nr: nextPayNr(date), art: art, amount: amount, date: date }]); }
+  else inv.payments = (inv.payments || []).concat([{ nr: nextPayNr(date), art: art, amount: amount, date: date }]);
+  var wasEdit = !!payCur; payCur = null;
+  persist(); closeModal('modal-pay'); payRefresh(inv, !wasEdit);
+}
+function deletePay() {
+  var inv = invCur(); if (!inv || !payCur) return;
+  if (!confirm('Diese Zahlung löschen? Die Rechnung gilt danach wieder als offen bzw. teilbezahlt.')) return;
+  if (payCur.ref) inv.payments = (inv.payments || []).filter(function (x) { return x !== payCur.ref; }); else inv.paid = false;
+  payCur = null; persist(); closeModal('modal-pay'); payRefresh(inv, false);
+}
+/* Zahlungen unter der Rechnung (nur am Bildschirm) */
+function invPayBlock(inv) {
+  var w = mk('div', 'no-print'), pays = inv.payments || []; if (!pays.length && !inv.paid) return w;
+  w.style.cssText = 'margin-top:16px; padding-top:10px; border-top:1px dashed #cbd5e1; font-size:13px; color:#334155;';
+  var h = mk('b', '', 'Zahlungen'); h.style.cssText = 'display:block; margin-bottom:4px;'; w.appendChild(h);
+  var line = function (txt, fn) {
+    var r = mk('div'); r.style.cssText = 'display:flex; align-items:center; gap:8px; padding:3px 0;'; var t = mk('span', '', txt); t.style.flex = '1'; r.appendChild(t);
+    var b = mk('button', 'x-btn'); b.type = 'button'; b.title = 'Zahlung bearbeiten'; b.setAttribute('aria-label', 'Zahlung bearbeiten'); b.innerHTML = tvSvg('pen'); b.firstChild.style.cssText = 'width:16px;height:16px;'; b.onclick = fn; r.appendChild(b); w.appendChild(r);
+  };
+  if (pays.length) pays.forEach(function (x) { line(fmtD(x.date) + ' · ' + x.art + ' · ' + eur(x.amount), function () { openPayEdit(inv.id, x); }); });
+  else line('Als bezahlt vermerkt (' + eur(inv.total) + ')', function () { openPayEdit(inv.id, null); });
+  return w;
 }
 /* ===== PDF-Erzeugung (ohne Fremdbibliothek) ===== */
 var HW = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
@@ -4377,6 +4417,7 @@ function renderHead() {
     var ul = mk('ul'); list.forEach(function (m, i) {
       var li = mk('li'), mm = /^(.*?)(?:\s+(?=\S*\d))([\s\S]*)$/.exec(m), tx = mk('span', 'med-t');
       if (mm && mm[1]) { tx.appendChild(mk('b', 'med-n', mm[1])); tx.appendChild(mk('span', 'med-d', ' ' + mm[2])); } else tx.appendChild(mk('b', 'med-n', m));
+      if (ed) { tx.style.cursor = 'pointer'; tx.title = 'Tippen zum Bearbeiten'; tx.onclick = function () { var v = prompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v) { p.medikation[i] = v; persist(); renderHead(); renderVerlauf(); } }; }
       li.appendChild(tx);
       if (ed) { var b = mk('button', '', '×'); b.type = 'button'; b.onclick = function () { p.medikation.splice(i, 1); persist(); renderHead(); }; li.appendChild(b); }
       ul.appendChild(li);
@@ -4652,6 +4693,13 @@ function tlRow(it) {
       lager.verbrauch = lager.verbrauch.filter(function (y) { return y.id !== vb.id; }); persist(); renderVerlauf(); renderLager();
     }));
     var ev0 = vb.eid ? events.filter(function (x) { return x.id === vb.eid; })[0] : null;
+    tlPlus(sh, [['Menge ändern', function () {
+      var v = prompt('Neue Menge für ' + vb.name + ' (' + (vb.einheit || 'Stk') + '):', qty(vb.menge)); if (v === null) return; var n = num(v);
+      if (n === null || n <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
+      var ch = lager.chargen.filter(function (c) { return c.id === vb.chId; })[0], d = n - vb.menge;
+      if (ch && d > (+ch.rest || 0) + 1e-9) { alert('Von dieser Charge sind nur noch ' + qty(ch.rest) + ' da.'); return; }
+      if (ch) ch.rest = Math.round(((+ch.rest || 0) - d) * 1000) / 1000; vb.menge = n; persist(); renderVerlauf(); renderLager();
+    }]]);
     sh.body.appendChild(mk('div', '', vb.name + ': ' + qty(vb.menge) + ' ' + (vb.einheit || '') + ' · Charge ' + (vb.nr || '-') + (vb.verfall ? ' · verwendbar bis ' + fmtD(vb.verfall) : '') + (ev0 ? ' · Termin ' + fmtTermin(ev0) : '')));
   } else if (it.t === 'doku') {
     var d = it.d;
@@ -5119,8 +5167,8 @@ var zMonth = iso(new Date()).slice(0, 7), zArt = '', agCur = null;
 function allPayments() {
   var out = [];
   invoices.forEach(function (i) {
-    if ((i.payments || []).length) i.payments.forEach(function (p) { out.push({ date: p.date, amount: p.amount, art: p.art, inv: i }); });
-    else if (i.paid) out.push({ date: i.date, amount: i.total, art: '-', inv: i });
+    if ((i.payments || []).length) i.payments.forEach(function (p) { out.push({ date: p.date, amount: p.amount, art: p.art, inv: i, ref: p }); });
+    else if (i.paid) out.push({ date: i.date, amount: i.total, art: '-', inv: i, ref: null });
   });
   return out;
 }
@@ -5164,6 +5212,8 @@ function renderZahlungen() {
     var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 5) + '</span>'; c0.className = 'nw'; c1.textContent = p.inv.name; c4.className = 'nw';
     var b = mk('button', 'pn', p.inv.nr); b.type = 'button'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar); c4.textContent = eur(p.amount);
+    var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Zahlung bearbeiten'; pe.setAttribute('aria-label', 'Zahlung bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:15px;height:15px;vertical-align:middle;'; pe.style.marginLeft = '6px'; c4.appendChild(pe);
+    row.style.cursor = 'pointer'; row.onclick = function (ev) { if (ev.target.closest('.pn')) return; openPayEdit(p.inv.id, p.ref); };
   });
   if (!pays.length) { var er = tin.insertRow(), ec = er.insertCell(); ec.colSpan = 5; ec.textContent = 'Keine Zahlungen im Zeitraum'; ec.style.color = '#94a3b8'; }
   var op = document.getElementById('zl-open'); op.innerHTML = '';
@@ -5955,6 +6005,11 @@ function medDocRow(p, dd) {
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
   l2.appendChild(medDots([
     ['Zuordnen', function () { openZu(p, [dd]); }],
+    ['Umbenennen', function () {
+      var v = prompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
+      var ex = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[0] || ''; if (ex && !/\.[A-Za-z0-9]{1,6}$/.test(v)) v += ex;
+      dd.name = v; persist(); refreshFiles(); renderMedien();
+    }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
     ['Löschen', function () { if (!confirm('Datei "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
   ]));
@@ -6745,7 +6800,9 @@ function openProdukt(id) {
       var r = mk('div', ''); r.style.cssText = 'display:flex; gap:8px; align-items:center; justify-content:space-between; padding:6px 0; border-top:1px solid #e2e8f0; font-size:13px;';
       r.appendChild(mk('span', '', 'Charge ' + (c.nr || '-') + (c.verfall ? ' · bis ' + fmtD(c.verfall) : '')));
       var inp = mk('input', 'form-control'); inp.type = 'text'; inp.setAttribute('inputmode', 'decimal'); inp.style.cssText = 'width:90px;'; inp.value = qty(c.rest); inp.setAttribute('data-cid', c.id); inp.title = 'Restmenge korrigieren';
-      r.appendChild(inp); list.appendChild(r);
+      var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Charge bearbeiten'; pe.setAttribute('aria-label', 'Charge bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:16px;height:16px;'; pe.onclick = function () { openWare(c.id); };
+      var rr = mk('span'); rr.style.cssText = 'display:inline-flex; gap:6px; align-items:center;'; rr.appendChild(inp); rr.appendChild(pe);
+      r.appendChild(rr); list.appendChild(r);
     });
     lpHistN = 10; lpHistory();
   } else box.style.display = 'none';
@@ -6806,13 +6863,22 @@ function deleteProdukt() {
   lager.chargen = lager.chargen.filter(function (c) { return c.pid !== id; });
   persist(); renderLager(); closeModal('modal-produkt');
 }
-function openWare() {
+var wareCur = null;
+function openWare(cid) {
+  wareCur = null;
   if (!lager.produkte.length) { alert('Bitte zuerst ein Produkt anlegen.'); openProdukt(null); return; }
   var sel = document.getElementById('lw-prod'); sel.innerHTML = '';
   lager.produkte.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); }).forEach(function (p) { var o = mk('option', '', p.name); o.value = p.id; sel.appendChild(o); });
   ['lw-nr', 'lw-verfall', 'lw-menge'].forEach(function (i) { document.getElementById(i).value = ''; });
   document.getElementById('lw-datum').value = iso(new Date());
-  wareProdChanged(); openModal('modal-ware');
+  document.getElementById('lw-title').textContent = 'Wareneingang'; document.getElementById('lw-del').style.display = 'none'; document.getElementById('lw-prod').disabled = false;
+  wareProdChanged();
+  var c0 = cid ? lager.chargen.filter(function (x) { return x.id === cid; })[0] : null;
+  if (c0) {
+    wareCur = c0; document.getElementById('lw-prod').value = c0.pid; document.getElementById('lw-prod').disabled = true; document.getElementById('lw-title').textContent = 'Charge bearbeiten'; document.getElementById('lw-del').style.display = '';
+    document.getElementById('lw-nr').value = c0.nr || ''; document.getElementById('lw-verfall').value = c0.verfall || ''; document.getElementById('lw-menge').value = qty(c0.menge); document.getElementById('lw-ek').value = c0.ek === null || c0.ek === undefined || c0.ek === '' ? '' : qty(c0.ek); document.getElementById('lw-datum').value = c0.datum || '';
+  }
+  openModal('modal-ware');
 }
 function wareProdChanged() {
   var p = prodOf(document.getElementById('lw-prod').value), ek = p ? lastEk(p) : null;
@@ -6824,8 +6890,21 @@ function saveWare() {
   if (!nr) { alert('Bitte die Chargennummer eingeben. Sie wird für die Dokumentation beim Patienten gebraucht.'); return; }
   if (m === null || m <= 0) { alert('Bitte eine Menge größer als 0 eingeben.'); return; }
   if (ekv !== '' && (ek === null || ek < 0)) { alert('Bitte den Einkaufspreis prüfen.'); return; }
-  lager.chargen.push({ id: lid(), pid: p.id, nr: nr, verfall: document.getElementById('lw-verfall').value || '', menge: m, rest: m, ek: ek, datum: document.getElementById('lw-datum').value || iso(new Date()) });
-  persist(); renderLager(); closeModal('modal-ware');
+  if (wareCur) {
+    var c1 = wareCur, d = m - (+c1.menge || 0);
+    c1.nr = nr; c1.verfall = document.getElementById('lw-verfall').value || ''; c1.ek = ek; c1.datum = document.getElementById('lw-datum').value || c1.datum;
+    c1.menge = m; c1.rest = Math.max(0, Math.round(((+c1.rest || 0) + d) * 1000) / 1000);
+    lager.verbrauch.forEach(function (v) { if (v.chId === c1.id) { v.nr = nr; v.verfall = c1.verfall; } });
+    wareCur = null;
+  } else lager.chargen.push({ id: lid(), pid: p.id, nr: nr, verfall: document.getElementById('lw-verfall').value || '', menge: m, rest: m, ek: ek, datum: document.getElementById('lw-datum').value || iso(new Date()) });
+  persist(); renderLager(); closeModal('modal-ware'); if (curProd && document.getElementById('modal-produkt').classList.contains('active')) openProdukt(curProd.id);
+}
+function deleteWare() {
+  var c = wareCur; if (!c) return;
+  if (lager.verbrauch.some(function (v) { return v.chId === c.id; })) { alert('Von dieser Charge wurde schon etwas verwendet. Sie kann deshalb nicht gelöscht werden. Setze stattdessen die Restmenge auf 0.'); return; }
+  if (!confirm('Charge ' + (c.nr || '-') + ' löschen? Der Bestand sinkt um ' + qty(c.rest) + '.')) return;
+  lager.chargen = lager.chargen.filter(function (x) { return x !== c; }); wareCur = null;
+  persist(); renderLager(); closeModal('modal-ware'); if (curProd && document.getElementById('modal-produkt').classList.contains('active')) openProdukt(curProd.id);
 }
 function openVb(eid) {
   if (!curP) return;
