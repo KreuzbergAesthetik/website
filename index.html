@@ -87,6 +87,11 @@ nav { background:#fff; border-bottom:1px solid #e2e8f0; display:flex; overflow-x
 #tab-zahlungen .pt td { vertical-align:top; }
 nav .nav-btn { font-weight:400; } nav #btn-kalender, nav #btn-patienten, nav #btn-todos, nav #btn-rechnungen, nav #btn-zahlungen { font-weight:600; } nav .nav-btn.active { color:#0f172a; }
 .nav-more { flex:0 0 auto !important; padding-left:12px !important; padding-right:12px !important; display:inline-flex; align-items:center; justify-content:center; } .nav-badge { margin-left:2px; padding:1px 5px; }
+@media (min-width:761px) and (orientation:landscape) {
+  header nav .nav-btn.nav-main { flex:1 1 auto; font-size:17px; font-weight:600; padding:14px 22px; min-height:52px; text-align:center; color:#334155; }
+  header nav .nav-btn.nav-main.active { color:#0f172a; }
+  header nav .nav-btn.nav-x:not(.nav-main) { font-size:12px; padding:8px 9px; min-height:36px; align-self:center; }
+}
 nav > :first-child { margin-left:auto; } nav > :last-child { margin-right:auto; }
 .nav-btn { background:none; border:none; padding:12px 16px; font-size:14px; font-weight:500; color:#64748b; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
 .nav-btn.active { color:#0f172a; border-bottom-color:#0f172a; font-weight:600; }
@@ -869,9 +874,9 @@ function kaStart() {
     <div id="gs-res" class="gs-res" style="display:none;"></div>
   </div>
   <nav>
-  <button type="button" class="nav-btn" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
-  <button type="button" class="nav-btn" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
-  <button type="button" class="nav-btn" id="btn-todos" onclick="switchTab('todos')">To-Dos <span id="todo-badge" class="nav-badge" style="display:none;"></span></button>
+  <button type="button" class="nav-btn nav-main" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
+  <button type="button" class="nav-btn nav-main" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
+  <button type="button" class="nav-btn nav-main" id="btn-todos" onclick="switchTab('todos')">To-Dos <span id="todo-badge" class="nav-badge" style="display:none;"></span></button>
   <button type="button" class="nav-btn nav-more" id="btn-praxis" onclick="toggleNavMenu(event)" title="Praxis" aria-label="Praxis"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
 </nav>
 </header>
@@ -1161,7 +1166,7 @@ function kaStart() {
       <div class="sy-on" style="display:none">
         <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
         <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:14px;"></div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
         <div id="sy-baks"></div>
         <div style="font-size:13px; color:#64748b;">Der Abgleich läuft automatisch beim Öffnen der App, beim Zurückkehren zur App und etwa 6 Sekunden nach jeder Änderung. Offline arbeitest Du normal weiter, der Abgleich holt sich nach, was fehlt. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
       </div>
@@ -2027,7 +2032,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zz';
+var KA_V = '2026-10-30-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2038,7 +2043,7 @@ var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function 
   var nav = document.querySelector('header nav'), more = document.getElementById('btn-praxis');
   PRAXIS_NAV.forEach(function (x) {
     if (x === '-' || !x[0]) return;
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'nav-btn nav-x'; b.id = 'btn-' + x[0]; b.textContent = x[1]; b.style.display = 'none'; b.onclick = function () { switchTab(x[0]); };
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'nav-btn nav-x' + (x[0] === 'rechnungen' || x[0] === 'zahlungen' ? ' nav-main' : ''); b.id = 'btn-' + x[0]; b.textContent = x[1]; b.style.display = 'none'; b.onclick = function () { switchTab(x[0]); };
     nav.insertBefore(b, more);
   });
 })();
@@ -2047,7 +2052,8 @@ function navFit() {
   var fixed = [].filter.call(nav.querySelectorAll('.nav-btn:not(.nav-x)'), function (b) { return b !== more; }), xs = [].slice.call(nav.querySelectorAll('.nav-x'));
   nav.classList.add('nav-meas'); xs.forEach(function (b) { b.style.display = ''; });
   var used = more.offsetWidth + fixed.reduce(function (t, b) { return t + b.offsetWidth; }, 0), avail = nav.clientWidth, n = 0;
-  for (var i = 0; i < xs.length; i++) { var w = xs[i].offsetWidth; if (used + w > avail - 10) break; used += w; n++; }
+  var phone = window.matchMedia('(max-width:760px)').matches, cap = phone ? 1 : xs.length;   /* Handy: nur bis Rechnungen, Zahlungen steht im Menü */
+  for (var i = 0; i < Math.min(xs.length, cap); i++) { var w = xs[i].offsetWidth; if (used + w > avail - 10) break; used += w; n++; }
   xs.forEach(function (b, i) { b.style.display = i < n ? '' : 'none'; });
   nav.classList.remove('nav-meas');
   var cur = document.querySelector('.tab-content.active'); if (cur) { var id = cur.id.replace(/^tab-/, ''), nb = document.getElementById('btn-' + id), vis = nb && nb.style.display !== 'none'; [].forEach.call(nav.querySelectorAll('.nav-btn'), function (b) { b.classList.remove('active'); }); var t = vis ? nb : (PRAXIS_TABS.indexOf(id) >= 0 ? more : null); if (t) t.classList.add('active'); }
@@ -7996,6 +8002,32 @@ async function syncGo(mode) {
   try { if (mode === 'setup') await KS.setup(pw, document.getElementById('sy-code').value.trim()); else await KS.connect(pw); document.getElementById('sy-pw').value = ''; m.textContent = ''; }
   catch (e) { m.style.color = '#b91c1c'; m.textContent = e && e.message ? e.message : 'Das hat nicht geklappt.'; }
   KS.ui();
+}
+function syncPw() {
+  var d = document.createElement('div'); d.className = 'modal-overlay active'; d.style.zIndex = 120;
+  d.innerHTML = '<div class="modal-box"><div class="modal-header"><strong>Abgleich-Passwort ändern</strong></div>' +
+    '<div class="form-group"><label>Aktuelles Passwort</label><input type="password" id="sp-old" class="form-control" autocomplete="current-password"></div>' +
+    '<div class="form-group"><label>Neues Passwort (mindestens 12 Zeichen)</label><input type="password" id="sp-new" class="form-control" autocomplete="new-password"></div>' +
+    '<div class="form-group"><label>Neues Passwort wiederholen</label><input type="password" id="sp-new2" class="form-control" autocomplete="new-password"></div>' +
+    '<div class="form-group"><label>Einrichtungscode (nur falls im Server-Skript eingetragen)</label><input type="text" id="sp-code" class="form-control" autocomplete="off"></div>' +
+    '<div class="hm-warn" style="margin-bottom:10px">Alles wird mit dem neuen Passwort neu verschlüsselt, der alte Bereich auf dem Server wird gelöscht. Andere Geräte tippen danach auf „Trennen“ und verbinden sich mit dem neuen Passwort. Notiere das neue Passwort, ohne es sind die Daten nicht mehr lesbar.</div>' +
+    '<div id="sp-msg" style="font-size:13px;min-height:18px;margin-bottom:8px"></div>' +
+    '<div class="foot-bar"><button type="button" class="btn btn-cancel" id="sp-no">Abbrechen</button><button type="button" class="btn btn-save" id="sp-ok">Ändern</button></div></div>';
+  document.body.appendChild(d);
+  var m = d.querySelector('#sp-msg'), ok = d.querySelector('#sp-ok'), no = d.querySelector('#sp-no');
+  no.onclick = function () { d.remove(); };
+  ok.onclick = async function () {
+    var o = d.querySelector('#sp-old').value, n = d.querySelector('#sp-new').value, n2 = d.querySelector('#sp-new2').value;
+    m.style.color = '#b91c1c';
+    if (!o) { m.textContent = 'Bitte das aktuelle Passwort eingeben.'; return; }
+    if (n.length < 12) { m.textContent = 'Das neue Passwort braucht mindestens 12 Zeichen.'; return; }
+    if (n !== n2) { m.textContent = 'Die beiden neuen Passwörter sind nicht gleich.'; return; }
+    ok.disabled = no.disabled = true; m.style.color = '#64748b'; m.textContent = 'Einen Moment, alles wird neu verschlüsselt …';
+    try {
+      var sauber = await KS.changePw(o, n, d.querySelector('#sp-code').value.trim());
+      d.remove(); alert(sauber ? 'Das Passwort ist geändert. Auf anderen Geräten bitte „Trennen“ tippen und mit dem neuen Passwort verbinden.' : 'Das Passwort ist geändert. Der alte Bereich auf dem Server konnte nicht gelöscht werden, er ist aber mit dem alten Passwort verschlüsselt. Auf anderen Geräten bitte „Trennen“ tippen und mit dem neuen Passwort verbinden.');
+    } catch (e) { ok.disabled = no.disabled = false; m.style.color = '#b91c1c'; m.textContent = e && e.message ? e.message : 'Das hat nicht geklappt.'; }
+  };
 }
 function syncOff() { if (confirm('Abgleich auf diesem Gerät beenden? Die Daten auf diesem Gerät bleiben erhalten, auf dem Server ändert sich nichts.')) KS.disconnect(); }
 async function syncBackups() {
