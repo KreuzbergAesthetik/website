@@ -306,7 +306,7 @@ var KS = (function () {
       }
       var ok = entries.length ? await formularImport(entries) : [];
       for (var k = 0; k < ids.length; k++) if (ok && ok[k]) await api('ibdel', { id: ids[k] }).catch(function () {});
-      if (bad.length && confirm(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden (anderer Schlüssel oder beschädigt). Aus dem Postfach löschen?')) for (var m = 0; m < bad.length; m++) await api('ibdel', { id: bad[m] }).catch(function () {});
+      if (bad.length && await kaConfirm(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden (anderer Schlüssel oder beschädigt). Aus dem Postfach löschen?')) for (var m = 0; m < bad.length; m++) await api('ibdel', { id: bad[m] }).catch(function () {});
       st = await api('status'); S.inbox = st.inbox || [];
     } catch (e) { alert('Abrufen nicht möglich: ' + err(e)); }
     finally { S.busy = false; ui(); }
