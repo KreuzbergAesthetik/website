@@ -2027,7 +2027,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zx';
+var KA_V = '2026-10-29-zy';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5309,12 +5309,11 @@ function openDokEv(e) {
   lin.addEventListener('input', showDd); lin.addEventListener('focus', showDd); lin.addEventListener('blur', function () { dd.style.display = 'none'; });
   lin.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); var q = lin.value.trim().toLowerCase(), hit = (settings.katalog || []).filter(function (k) { return k.name.toLowerCase().indexOf(q) >= 0; }); addL(q && hit.length === 1 ? hit[0].name : lin.value); } });
   lwrap.appendChild(lin); lwrap.appendChild(dd); lrow.appendChild(lwrap);
+  var pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); }; if (!e.pseudo) lrow.appendChild(pb);
   lw.appendChild(lrow); lw.appendChild(chips); drawChips();
+  var pl = mk('div'); pl.id = 'dk-prod'; lw.appendChild(pl);
+  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; lw.appendChild(pta);
   box.appendChild(dkSec('Leistung', lw));
-  var pw = mk('div'), pb = mk('button', 'btn btn-secondary btn-sm dk-pb', '+ Produkt'); pb.type = 'button'; pb.title = 'Produkt aus dem Lager verwenden'; pb.onclick = function () { openVb(e.id); };
-  var pl = mk('div'); pl.id = 'dk-prod'; pw.appendChild(pl); if (!e.pseudo) pw.appendChild(pb);
-  var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; pw.appendChild(pta);
-  if (!e.pseudo || String(d.produkte || '').trim()) box.appendChild(dkSec('Produkte', pw));
   box.appendChild(dkT.behandlung);
   box.appendChild(vsec);
   box.appendChild(dkFold(dkTextSec('dk-ausblick', 'Ausblick und Procedere', d.ausblick), d.ausblick));
