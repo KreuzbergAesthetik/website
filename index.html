@@ -255,7 +255,7 @@ body.akte-open main { display:none; }
 .a-title { flex:1; min-width:0; font-size:24px; font-weight:800; line-height:1.2; overflow-wrap:anywhere; }
 .a-title { display:flex; align-items:flex-start; gap:12px; }
 .a-idc { display:flex; flex-direction:column; align-items:center; min-width:30px; line-height:1.1; padding-top:3px; } .a-pid { font-size:13px; font-weight:500; color:#94a3b8; margin:0; } .a-idc .a-sex { margin:4px 0 0; font-size:16px; }
-.a-nm { min-width:0; line-height:1.15; } .a-nl { white-space:nowrap; } .a-nf { display:inline-block; } .a-tit { font-size:11px; font-weight:400; color:#64748b; margin-left:6px; white-space:nowrap; }
+.a-nm { min-width:0; line-height:1.15; } .a-nl { display:block; white-space:nowrap; } .a-nf { display:block; } .a-tit { font-size:11px; font-weight:400; color:#64748b; margin-left:6px; white-space:nowrap; }
 .a-tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .a-tile { position:relative; background:#f4f6f9; border:1px solid #cbd5e1; border-radius:10px; padding:10px 34px 10px 12px; min-height:104px; font-size:14px; min-width:0; }
 .a-tile h4 { font-size:13px; font-weight:800; color:#475569; margin-bottom:4px; }
@@ -2027,7 +2027,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zv';
+var KA_V = '2026-10-29-zw';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
