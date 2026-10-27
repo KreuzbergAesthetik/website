@@ -912,7 +912,8 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Patienten</span>
-        <button type="button" class="btn btn-sm btn-secondary" style="margin-left:auto" onclick="var l=document.getElementById('pt-leg'); l.style.display = l.style.display === 'none' ? 'flex' : 'none';" title="Legende der Punkte" aria-label="Legende der Punkte">ⓘ</button>
+        <button type="button" class="btn btn-sm btn-secondary" style="margin-left:auto" onclick="mgOpen()" title="Doppelte Akten finden und zusammenlegen" aria-label="Doppelte Akten zusammenlegen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5.5" r="2.2"/><circle cx="6" cy="18.5" r="2.2"/><circle cx="18" cy="12" r="2.2"/><path d="M6 7.7v8.6M8.2 5.5c5.5 0 9.8 1.5 9.8 4.3"/></svg></button>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="var l=document.getElementById('pt-leg'); l.style.display = l.style.display === 'none' ? 'flex' : 'none';" title="Legende der Punkte" aria-label="Legende der Punkte">ⓘ</button>
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
       <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="display:none;">
@@ -1927,6 +1928,18 @@ function kaStart() {
   </div>
 </div>
 
+<!-- MODAL: AKTEN ZUSAMMENLEGEN -->
+<div id="modal-merge" class="modal-overlay">
+  <div class="modal-box" style="max-width:620px;">
+    <div class="modal-header"><strong id="mg-title">Akten zusammenlegen</strong><button type="button" class="close-btn" onclick="closeModal('modal-merge')">&times;</button></div>
+    <div id="mg-body" style="max-height:62vh; overflow-y:auto; padding-right:2px;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-merge')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="mg-go" style="display:none" onclick="mgDo()">Zusammenlegen</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: DATUM UND UHRZEIT -->
 <div id="modal-dt" class="modal-overlay">
   <div class="modal-box" style="max-width:380px;">
@@ -1992,7 +2005,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zo';
+var KA_V = '2026-10-29-zp';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2898,6 +2911,7 @@ function renderHome() {
 /* Terminansicht (angelehnt an die Termin-Karte des Altsystems): Details, Schnellaktionen, Ablauf-Status */
 var TV_PH = [['', 'Patient noch nicht erschienen', '#d9edf7', '#31708f', 'Patient im Warteraum'], ['Warteraum', 'Patient im Warteraum', '#fef3c7', '#92400e', 'Behandlung starten'], ['Behandlung', 'Patient in Behandlung', '#d1fae5', '#065f46', 'Abschließen'], ['Fertig', 'Behandlung abgeschlossen', '#e2e8f0', '#334155', 'Wieder öffnen'], ['Abgesagt', 'Termin abgesagt', '#fee2e2', '#991b1b', 'Wieder aktivieren']];
 var TV_I = {
+  merge: '<circle cx="6" cy="5.5" r="2.2"/><circle cx="6" cy="18.5" r="2.2"/><circle cx="18" cy="12" r="2.2"/><path d="M6 7.7v8.6M8.2 5.5c5.5 0 9.8 1.5 9.8 4.3"/>',
   plus: '<path d="M12 5v14M5 12h14"/>', cancel: '<circle cx="12" cy="12" r="9"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/>',
   form: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>', box: '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>', rx: '<path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 12h5M10 16h5"/>', wa: '<path d="M4 20l1.3-4A8 8 0 118 18.7z"/>', link: '<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>', img: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>', auto: '<path d="M4 12a8 8 0 0114-5l2-2v6h-6l2.2-2.2A5.5 5.5 0 006.5 12M20 12a8 8 0 01-14 5l-2 2v-6h6l-2.2 2.2A5.5 5.5 0 0017.5 12"/>',
   cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
@@ -4489,7 +4503,8 @@ function renderHead() {
     var cb = mk('button', 'btn btn-cancel', 'Abbrechen'); cb.type = 'button'; cb.onclick = function () { cancelStamm(); };
     var sbn = mk('button', 'btn btn-save', 'Speichern'); sbn.type = 'button'; sbn.onclick = function () { toggleStamm(); };
     var db = mk('button', 'btn btn-del btn-ico'); db.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'; db.title = 'Patient löschen'; db.setAttribute('aria-label', 'Patient löschen'); db.type = 'button'; db.onclick = function () { deletePatient(); };
-    fb.appendChild(db); fb.appendChild(cb); fb.appendChild(sbn); box.appendChild(fb);
+    var mgb = mk('button', 'btn btn-secondary btn-ico'); mgb.type = 'button'; mgb.title = 'Mit einer anderen Akte zusammenlegen'; mgb.setAttribute('aria-label', mgb.title); mgb.innerHTML = tvSvg('merge'); mgb.firstChild.style.cssText = 'width:18px;height:18px;'; mgb.onclick = function () { mgOpen(curP); };
+    fb.appendChild(db); fb.appendChild(mgb); fb.appendChild(cb); fb.appendChild(sbn); box.appendChild(fb);
     return;
   }
   var tiles = mk('div', 'a-tiles'), age = ageOf(p.dob);
@@ -4615,6 +4630,111 @@ function saveVbEdit() {
   vb.chId = nc.id; vb.nr = nc.nr || ''; vb.verfall = nc.verfall || ''; vb.ek = nc.ek; vb.menge = m; vb.ts = new Date(dd + 'T' + tt + ':00').getTime();
   if (vb.pid) { var ev = document.getElementById('vbe-termin').value; vb.eid = ev ? +ev : null; }
   vbeCur = null; persist(); closeModal('modal-vbe'); if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf(); renderLager();
+}
+/* ===== Doppelte Akten zusammenlegen ===== */
+var mgA = null, mgB = null, mgKeep = 'a', mgPick = {};
+var MG_FIELDS = [['anrede', 'Anrede'], ['titel', 'Titel'], ['vorname', 'Vorname'], ['nachname', 'Nachname'], ['dob', 'Geburtsdatum'], ['phone', 'Telefon'], ['email', 'E-Mail'], ['adresse', 'Anschrift']];
+function mgCounts(p) { var n = nameKey(p); return { t: events.filter(function (e) { return e.patient === n; }).length, r: invoices.filter(function (i) { return i.pid === p.id; }).length, d: (p.dokumente || []).length + (p.bilder || []).length, l: (p.log || []).length + (p.doku || []).length }; }
+function mgWeight(p) { var c = mgCounts(p); return c.t + c.r * 2 + c.d + c.l; }
+function mgDigits(t) { return String(t || '').replace(/\D/g, '').replace(/^(00)?49/, '').replace(/^0+/, ''); }
+function mgScore(a, b) {
+  var s = 0, strong = false, da = String(a.dob || '').trim(), db = String(b.dob || '').trim();
+  if (da && da === db) s += 3;
+  if (nameNorm(nameKey(a)) === nameNorm(nameKey(b))) s += 4;
+  else { if (nameNorm(a.nachname) === nameNorm(b.nachname)) s += 1.5; if (nameNorm(a.vorname) === nameNorm(b.vorname)) s += 1; else if (nameNorm(a.vorname).slice(0, 3) && nameNorm(a.vorname).slice(0, 3) === nameNorm(b.vorname).slice(0, 3)) s += 0.5; }
+  if (a.email && String(a.email).toLowerCase() === String(b.email || '').toLowerCase()) { s += 3; strong = true; }
+  if (mgDigits(a.phone).length >= 6 && mgDigits(a.phone) === mgDigits(b.phone)) { s += 3; strong = true; }
+  return { s: s, strong: strong };
+}
+function mgPairs() {
+  var out = [];
+  for (var i = 0; i < patients.length; i++) for (var j = i + 1; j < patients.length; j++) { var r = mgScore(patients[i], patients[j]); if (r.s >= 4 || r.strong) out.push({ a: patients[i], b: patients[j], s: r.s }); }
+  return out.sort(function (x, y) { return y.s - x.s; });
+}
+function mgLine(p) { return '#' + patNr(p) + ' ' + dnP(p) + (p.dob ? ' · ' + p.dob : '') + (p.phone ? ' · ' + p.phone : ''); }
+function mgOpen(a, b) { ensurePatients(); mgA = a || null; mgB = b || null; mgPick = {}; mgRender(); openModal('modal-merge'); }
+function mgRender() {
+  var box = document.getElementById('mg-body'), go = document.getElementById('mg-go'); box.innerHTML = ''; go.style.display = 'none';
+  var note = function (t) { var d = mk('div', '', t); d.style.cssText = 'font-size:13px; color:#475569; margin-bottom:10px;'; box.appendChild(d); };
+  var row = function (txt, fn, badge) {
+    var b = mk('button', 'btn btn-secondary'); b.type = 'button'; b.style.cssText = 'display:flex; width:100%; text-align:left; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; font-weight:400;'; b.appendChild(mk('span', '', txt));
+    if (badge) { var g = mk('span', 'badge badge-amber', badge); b.appendChild(g); } b.onclick = fn; box.appendChild(b);
+  };
+  if (!mgA) {
+    document.getElementById('mg-title').textContent = 'Doppelte Akten';
+    var pr = mgPairs(); note(pr.length ? 'Diese Akten sehen nach Doubletten aus (gleicher Name, gleiches Geburtsdatum, gleiche E-Mail oder Telefonnummer). Tippe ein Paar an, um es zu prüfen.' : 'Es wurden keine offensichtlichen Doppelten gefunden. Du kannst eine Akte öffnen und dort im Stift-Menü „Zusammenlegen“ wählen.');
+    pr.slice(0, 40).forEach(function (x) { row(mgLine(x.a) + '  ↔  ' + mgLine(x.b), function () { mgA = x.a; mgB = x.b; mgPick = {}; mgRender(); }); });
+    return;
+  }
+  document.getElementById('mg-title').textContent = 'Akten zusammenlegen';
+  if (!mgB) {
+    note('Mit welcher Akte soll „' + dnP(mgA) + '“ zusammengelegt werden?');
+    var q = mk('input', 'form-control'); q.type = 'search'; q.placeholder = 'Name, Geburtsdatum, Telefon …'; q.style.marginBottom = '8px'; box.appendChild(q);
+    var lst = mk('div'); box.appendChild(lst);
+    var draw = function () {
+      var t = String(q.value || '').trim().toLowerCase(); lst.innerHTML = '';
+      patients.filter(function (x) { return x !== mgA; }).map(function (x) { return { p: x, r: mgScore(mgA, x) }; })
+        .filter(function (x) { return !t || (nameKey(x.p) + ' ' + dnP(x.p) + ' ' + (x.p.dob || '') + ' ' + (x.p.phone || '') + ' ' + (x.p.email || '')).toLowerCase().indexOf(t) >= 0; })
+        .sort(function (a, b) { return b.r.s - a.r.s || nameKey(a.p).localeCompare(nameKey(b.p), 'de'); }).slice(0, 30).forEach(function (x) {
+          var b = mk('button', 'btn btn-secondary'); b.type = 'button'; b.style.cssText = 'display:flex; width:100%; text-align:left; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; font-weight:400;';
+          b.appendChild(mk('span', '', mgLine(x.p))); if (x.r.s >= 4 || x.r.strong) b.appendChild(mk('span', 'badge badge-amber', 'wahrscheinlich doppelt')); b.onclick = function () { mgB = x.p; mgPick = {}; mgRender(); }; lst.appendChild(b);
+        });
+    };
+    q.oninput = draw; draw(); return;
+  }
+  /* Auswahl, welche Akte bleibt, und Abgleich der Angaben */
+  if (mgKeepAuto !== mgA.id + ':' + mgB.id) { mgKeep = mgWeight(mgA) >= mgWeight(mgB) ? 'a' : 'b'; mgKeepAuto = mgA.id + ':' + mgB.id; }
+  var keep = mgKeep === 'a' ? mgA : mgB, other = keep === mgA ? mgB : mgA;
+  note('Alles aus der einen Akte wird in die andere übernommen (Termine, Rechnungen, Dateien, Verlauf, Medikation). Danach wird die übernommene Akte gelöscht.');
+  [['a', mgA], ['b', mgB]].forEach(function (x) {
+    var c = mgCounts(x[1]), lb = mk('label'); lb.style.cssText = 'display:flex; gap:10px; align-items:flex-start; padding:10px; border:1.5px solid ' + (mgKeep === x[0] ? '#16a34a' : '#cbd5e1') + '; border-radius:10px; margin-bottom:8px; font-weight:400; cursor:pointer;';
+    var r = mk('input'); r.type = 'radio'; r.name = 'mg-keep'; r.checked = mgKeep === x[0]; r.style.marginTop = '3px'; r.onchange = function () { mgKeep = x[0]; mgPick = {}; mgRender(); };
+    var t = mk('div'); t.appendChild(mk('b', '', (mgKeep === x[0] ? 'Bleibt: ' : 'Wird übernommen: ') + mgLine(x[1])));
+    var d = mk('div', '', c.t + ' Termine · ' + c.r + ' Rechnungen · ' + c.d + ' Dateien und Bilder · ' + c.l + ' Verlaufseinträge'); d.style.cssText = 'font-size:12.5px; color:#64748b; margin-top:2px;'; t.appendChild(d);
+    lb.appendChild(r); lb.appendChild(t); box.appendChild(lb);
+  });
+  var conf = MG_FIELDS.filter(function (f) { var a = String(keep[f[0]] || '').trim(), b = String(other[f[0]] || '').trim(); return a && b && a.toLowerCase() !== b.toLowerCase(); });
+  if (conf.length) {
+    var h = mk('div', 'ak-h', 'Unterschiedliche Angaben'); h.style.marginTop = '8px'; box.appendChild(h); note('Welche Angabe soll gelten?');
+    conf.forEach(function (f) {
+      var wrap = mk('div'); wrap.style.cssText = 'display:flex; gap:10px; align-items:center; margin-bottom:6px; font-size:13.5px; flex-wrap:wrap;'; wrap.appendChild(Object.assign(mk('span', '', f[1]), { style: 'width:96px; color:#64748b;' }));
+      [['keep', keep], ['other', other]].forEach(function (y) {
+        var l = mk('label'); l.style.cssText = 'display:flex; gap:5px; align-items:center; font-weight:400; margin:0;'; var r = mk('input'); r.type = 'radio'; r.name = 'mg-f-' + f[0]; r.checked = (mgPick[f[0]] || 'keep') === y[0]; r.onchange = function () { mgPick[f[0]] = y[0]; };
+        l.appendChild(r); l.appendChild(document.createTextNode(String(y[1][f[0]]).replace(/\n/g, ', '))); wrap.appendChild(l);
+      });
+      box.appendChild(wrap);
+    });
+  }
+  var nb = mk('div'); nb.style.cssText = 'font-size:12.5px; color:#b45309; margin-top:10px;'; nb.textContent = 'Das lässt sich nur mit einer Sicherung rückgängig machen. Mach vorher eine Sicherung, wenn Du Dir nicht sicher bist.'; box.appendChild(nb);
+  go.style.display = '';
+}
+var mgKeepAuto = '';
+function mgMerge(keep, other, pick) {
+  var oldK = nameKey(keep), oldO = nameKey(other), oid = other.id;
+  MG_FIELDS.forEach(function (f) { var k = f[0]; if (pick[k] === 'other' && String(other[k] || '').trim()) keep[k] = other[k]; else if (!String(keep[k] || '').trim() && String(other[k] || '').trim()) keep[k] = other[k]; });
+  ['allergien', 'diagnosen', 'notizen'].forEach(function (k) {
+    var a = String(keep[k] || '').trim(), b = String(other[k] || '').trim();
+    if (b && !a) keep[k] = b; else if (a && b && a.toLowerCase().indexOf(b.toLowerCase()) < 0) keep[k] = a + '\n' + b;
+  });
+  var med = (keep.medikation = keep.medikation || []); (other.medikation || []).forEach(function (m) { if (med.indexOf(m) < 0) med.push(m); });
+  ['doku', 'log', 'bilder', 'dokumente', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
+  if (other.code) { if (!keep.code) keep.code = other.code; else if (other.code !== keep.code) keep.codes2 = (keep.codes2 || []).concat([other.code]); }
+  (other.codes2 || []).forEach(function (c) { keep.codes2 = (keep.codes2 || []).concat([c]); });
+  Object.keys(other).forEach(function (k) { if (keep[k] === undefined && other[k] !== undefined && k !== 'id' && k !== 'nr') keep[k] = other[k]; });
+  keep.erstellt = Math.min(keep.erstellt || Date.now(), other.erstellt || Date.now());
+  var newK = nameKey(keep);
+  events.forEach(function (e) { if (e.patient === oldO || e.patient === oldK) e.patient = newK; });
+  invoices.forEach(function (i) { if (i.pid === oid) i.pid = keep.id; }); entw.forEach(function (i) { if (i.pid === oid) i.pid = keep.id; });
+  todos.forEach(function (t) { if (t.pid === oid) t.pid = keep.id; });
+  lager.verbrauch.forEach(function (v) { if (v.pid === oid) v.pid = keep.id; });
+  keep.log = (keep.log || []).concat([{ ts: Date.now(), type: 'notiz', text: 'Akte zusammengelegt mit ' + mgLine(other) + (other.email ? ' · ' + other.email : '') + (other.adresse ? ' · ' + String(other.adresse).replace(/\n/g, ', ') : '') }]);
+  patients = patients.filter(function (x) { return x !== other; });
+}
+function mgDo() {
+  var keep = mgKeep === 'a' ? mgA : mgB, other = keep === mgA ? mgB : mgA; if (!keep || !other) return;
+  if (!confirm('„' + dnP(other) + '“ (#' + patNr(other) + ') in „' + dnP(keep) + '“ (#' + patNr(keep) + ') übernehmen und die erste Akte danach löschen?')) return;
+  mgMerge(keep, other, mgPick); mgA = mgB = null;
+  persist(); closeModal('modal-merge'); try { renderPatients(); renderCal(); } catch (x) {} stammEdit = false; viewAkte(keep);
 }
 var rxRows = [], rxZu = null, rxEdit = null;
 function rxDocOf(lg) {
@@ -6533,7 +6653,7 @@ async function formularImport(entries) {
     var q = d.patient, nm = ((q.vorname || '') + ' ' + (q.nachname || '')).trim().toLowerCase();
     var p, created = false;
     if (d.typ === 'anamnese' || d.typ === 'aufklaerung') {
-      p = patients.filter(function (x) { return x.code && x.code === q.code; })[0];
+      p = patients.filter(function (x) { return x.code && (x.code === q.code || (x.codes2 || []).indexOf(q.code) >= 0); })[0];
       if (!p) {
         if (confirm('Der Code ' + q.code + ' ist noch keinem Patienten zugeordnet.\n\nOK = neuen Patienten anlegen\nAbbrechen = einem vorhandenen Patienten zuordnen')) {
           p = { anrede: '', vorname: 'Neuer Patient', nachname: q.code, dob: '', phone: '', email: '', adresse: '', allergien: '', notizen: '', medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: today, code: q.code };
