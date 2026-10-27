@@ -175,6 +175,7 @@ var KS = (function () {
       else { b.last = Date.now(); setBase(b); }
     } catch (e) {
       if (e.status === 409) { S.err = 'Ein anderes Gerät war schneller. Beim nächsten Abgleich entscheidest Du.'; var bb = base(); bb.dirty = true; setBase(bb); }
+      else if (e.status === 404 && /nichts eingerichtet/.test(err(e))) S.err = 'Das Abgleich-Passwort wurde geändert. Bitte hier auf „Trennen“ tippen und mit dem neuen Passwort verbinden.';
       else S.err = err(e);
     } finally { S.busy = false; S.msg = ''; ui(); }
   }
@@ -211,6 +212,42 @@ var KS = (function () {
     await run(true);
   }
   function disconnect() { try { kaSet('ka_sync', 'null'); kaSet('ka_sync_base', 'null'); } catch (x) {} S.inbox = []; S.obj = []; ui(); }
+
+  /* ---------- Passwort ändern: neuer Bereich mit neuem Schlüssel, alles umverschlüsselt, alter Bereich wird gelöscht ---------- */
+  async function dropArea(c) {
+    try { await api('drop', { _c: c }); return true; } catch (e) {}
+    try { var st = await api('status', { _c: c }); for (var i = 0; i < st.objs.length; i++) await api('del', { n: st.objs[i].n, _c: c }); return true; } catch (e) { return false; }
+  }
+  async function changePw(oldPw, newPw, code) {
+    var c = cfg(); if (!c) throw new Error('Der Abgleich ist nicht eingerichtet.');
+    if (S.busy) throw new Error('Der Abgleich läuft gerade. Bitte gleich noch einmal versuchen.');
+    if (!navigator.onLine) throw new Error('Keine Verbindung zum Server.');
+    var od = await derive(oldPw); if (od.tok !== c.tok) throw new Error('Das aktuelle Passwort stimmt nicht.');
+    var nd = await derive(newPw); if (nd.tok === c.tok) throw new Error('Das neue Passwort ist gleich dem alten.');
+    await run(true);
+    if (S.err || base().dirty) throw new Error(S.err || 'Bitte zuerst abgleichen und einen Konflikt klären.');
+    var nc = { tok: nd.tok, ek: nd.ek }, made = false, switched = false;
+    S.busy = true; S.err = ''; ui();
+    try {
+      var st = await api('status'), core = st.objs.some(function (o) { return o.n === 'core'; });
+      if (!core) throw new Error('Auf dem Server liegt noch kein Stand. Bitte zuerst abgleichen.');
+      var r = await api('init', { e: code || '', _c: nc });
+      if (!r.neu) throw new Error('Mit diesem Passwort gibt es schon einen Bereich. Bitte ein anderes wählen.');
+      made = true;
+      var names = st.objs.map(function (o) { return o.n; }).sort(function (a, b) { return (a === 'core') - (b === 'core'); }), rev = 0;
+      for (var i = 0; i < names.length; i++) {
+        progress('Verschlüssele neu (' + (i + 1) + ' von ' + names.length + ') …');
+        var raw = await getObj(names[i], c), out = /^f_/.test(names[i]) ? await seal(nc, await open(c, raw)) : await packJson(nc, await unpackJson(c, raw));
+        var j = await api('put', { n: names[i], base: 0, _c: nc }, out); if (names[i] === 'core') rev = j.rev;
+      }
+      nc.priv = c.priv; put('ka_sync', nc); switched = true; setBase({ rev: rev, dirty: false, last: Date.now(), h: stateHash() });
+      progress('Lösche den alten Bereich …');
+      return await dropArea(c);
+    } catch (e) {
+      if (made && !switched) await dropArea(nc);
+      throw e;
+    } finally { S.busy = false; S.msg = ''; ui(); }
+  }
 
   async function backups() { var st = await api('status'); return st.objs.filter(function (o) { return /^sich_/.test(o.n); }).map(function (o) { return o.n; }).sort().reverse(); }
   async function restoreBackup(n) {
@@ -309,5 +346,5 @@ var KS = (function () {
   }
   async function extFetch(url) { var j = await api('calget', { u: url }); return j.ics; }
   async function txtset(obj, felder) { var c = cfg(); if (!c) throw new Error('Der Geräte-Abgleich ist nicht eingerichtet.'); var f = { k: JSON.stringify(obj || {}), _c: c }; if (felder) f.f = JSON.stringify(felder); await api('txtset', f); }
-  return { extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  return { extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();

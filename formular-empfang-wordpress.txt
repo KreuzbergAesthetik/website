@@ -196,6 +196,11 @@ if (!function_exists('ka_cfg')) {
             if ($okName && is_file($f)) @unlink($f);
             return ka_ok();
         }
+        if ($a === 'drop') {
+            foreach ((array) glob($vdir . '/*') as $f) { if (is_file($f)) @unlink($f); }
+            @rmdir($vdir);
+            return ka_ok();
+        }
         if ($a === 'pubset') {
             $k = json_decode((string) $req->get_param('k'), true);
             if (!is_array($k) || ($k['kty'] ?? '') !== 'RSA' || strlen((string) $req->get_param('k')) > 3000) return ka_fail(400, 'Ungültiger Schlüssel.');
