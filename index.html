@@ -2019,7 +2019,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zs';
+var KA_V = '2026-10-29-zt';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4471,6 +4471,21 @@ function logAdd(type, text) { curP.log = (curP.log || []).concat([{ ts: Date.now
 /* Kopfbereich: Titel und Kacheln (Kontakt, Notiz, Medikation, Allergien, Diagnosen, Anschrift) */
 var tileEdit = '', akTab = 'akte';
 function tilePen(fn) { var b = mk('button', 'a-pen'); b.type = 'button'; b.innerHTML = ICON_PEN; b.title = 'Bearbeiten'; b.setAttribute('aria-label', 'Bearbeiten'); b.onclick = fn; return b; }
+/* Medikament für die Anzeige kürzen: nur Name und Dosierung, ohne Packungsgröße und Anwendung (der volle Text bleibt gespeichert) */
+function medSplit(m) {
+  var t = String(m || '').replace(/\s+/g, ' ').trim(), w = t.split(' '), i = 0, UNIT = /^(mg|µg|mcg|g|ml|ie|i\.e\.|%)(\/(g|ml|l|h|tag|hub|dosis))?[,.;]?$/i;
+  while (i < w.length && !/^\d/.test(w[i])) i++;
+  if (i === 0 || i >= w.length) return { n: t.replace(/[,;]\s*$/, ''), d: '' };
+  var name = w.slice(0, i).join(' ').replace(/[,;]\s*$/, ''), dose = '', x = w[i].replace(/[,;]$/, '');
+  var mm = /^(\d+(?:[.,]\d+)?(?:\/\d+(?:[.,]\d+)?)?)(mg|µg|mcg|g|ml|ie|%)(\/(?:g|ml|l|h|tag|hub|dosis))?$/i.exec(x);
+  if (mm) dose = x;
+  else if (/^\d+(?:[.,]\d+)?(?:\/\d+(?:[.,]\d+)?)?$/.test(x)) {
+    var um = /^(mg|µg|mcg|g|ml|ie|i\.e\.|%)(\/(?:g|ml|l|h|tag|hub|dosis))?(?:\/\S*)?[,.;]?$/i.exec(w[i + 1] || '');
+    if (um) dose = x + ' ' + um[1] + (um[2] || '');
+    else if (!/^(st|stk|stück|x|n\d|tabl|tbl|kaps|amp)/i.test(w[i + 1] || '')) dose = x;
+  }
+  return { n: name, d: dose };
+}
 function tileBox(key, title, cls, fill) {
   var t = mk('div', 'a-tile' + (cls ? ' ' + cls : '')); t.appendChild(mk('h4', '', title));
   if (tileEdit === key) { t.className += ' ed'; fill(t, true); } else { t.appendChild(tilePen(function () { stammEdit = false; tileEdit = key; renderHead(); var f = document.getElementById('a-tile-in') || document.getElementById('a-med-in'); if (f) f.focus(); })); fill(t, false); if (t.querySelector('.a-none') && !t.querySelector('li')) t.style.display = 'none'; }
@@ -4532,9 +4547,9 @@ function renderHead() {
     var list = p.medikation || [];
     if (!list.length && !ed) t.appendChild(mk('div', 'a-txt a-none', 'Keine Medikation'));
     var ul = mk('ul'); list.forEach(function (m, i) {
-      var li = mk('li'), mm = /^(.*?)(?:\s+(?=\S*\d))([\s\S]*)$/.exec(m), tx = mk('span', 'med-t');
-      if (mm && mm[1]) { tx.appendChild(mk('b', 'med-n', mm[1])); tx.appendChild(mk('span', 'med-d', ' ' + mm[2])); } else tx.appendChild(mk('b', 'med-n', m));
-      if (ed) { tx.style.cursor = 'pointer'; tx.title = 'Tippen zum Bearbeiten'; tx.onclick = function () { var v = prompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v) { p.medikation[i] = v; persist(); renderHead(); renderVerlauf(); } }; }
+      var li = mk('li'), md = medSplit(m), tx = mk('span', 'med-t'); tx.title = ed ? 'Tippen zum Bearbeiten' : m;
+      tx.appendChild(mk('b', 'med-n', md.n)); if (md.d) tx.appendChild(mk('span', 'med-d', ' ' + md.d));
+      if (ed) { tx.style.cursor = 'pointer'; tx.onclick = function () { var v = prompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v) { p.medikation[i] = v; persist(); renderHead(); renderVerlauf(); } }; }
       li.appendChild(tx);
       if (ed) { var b = mk('button', '', '×'); b.type = 'button'; b.onclick = function () { p.medikation.splice(i, 1); persist(); renderHead(); }; li.appendChild(b); }
       ul.appendChild(li);
