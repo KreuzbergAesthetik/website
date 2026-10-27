@@ -56,6 +56,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .td-chk { width:22px; height:22px; margin-top:1px; flex:none; accent-color:#0f172a; }
 .td-main { flex:1; min-width:0; cursor:pointer; } .td-text { font-size:14.5px; } .td-sub { font-size:12px; color:#64748b; margin-top:2px; }
 .fl { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:6px; vertical-align:middle; line-height:16px; border:none; font-family:inherit; }
+.fl-n { display:inline-block; min-width:16px; margin-left:6px; padding:0 5px; border-radius:8px; background:rgba(255,255,255,.28); text-align:center; font-size:11px; }
 .fl-orange { background:#ea580c; color:#fff; } .fl-red { background:#dc2626; color:#fff; } .fl-blue { background:#1e3a8a; color:#fff; } .fl-ico { display:inline-flex; align-items:center; padding:2px 5px; } .fl-ico svg { width:13px; height:13px; stroke-width:2.4; } .fl-amb { background:#e2e8f0; color:#475569; }
 .pt .fl { margin:3px 4px 0 0; }
 .a-flagcard { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:8px 12px; margin-bottom:12px; } .a-flagcard .fl { margin:0; font-size:12px; padding:3px 10px; cursor:pointer; text-align:left; } .a-fl-t { font-size:12px; font-weight:700; color:#64748b; }
@@ -642,12 +643,15 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   .a-tile.ed { flex-basis:100%; }
 }
 
-/* Patientenakte im Querformat: Stammdaten als feste Sidebar links, Zeitleiste rechts */
+/* Patientenakte im Querformat: Name und Stammdaten als feste Sidebar links, Hinweise und Zeitleiste rechts */
+.a-sidecol { display:contents; }
 @media (orientation:landscape) and (min-width:700px) {
   .akte-page.active { display:grid; grid-template-columns:310px minmax(0,1fr); column-gap:14px; align-items:start; max-width:1400px; }
-  .akte-page .a-top, .akte-page .a-flagcard { grid-column:1 / -1; }
-  .akte-page .a-side { grid-column:1; grid-row:span 3; position:sticky; top:calc(var(--hdh,112px) + 72px); max-height:calc(100vh - var(--hdh,112px) - 92px); overflow-y:auto; margin-top:0; }
+  .a-sidecol { display:flex; flex-direction:column; gap:10px; grid-column:1; grid-row:span 3; position:sticky; top:calc(var(--hdh,112px) + 10px); max-height:calc(100vh - var(--hdh,112px) - 24px); overflow-y:auto; }
+  .a-sidecol .a-top { position:static; margin:0; } .a-sidecol .a-title { font-size:19px; }
   .akte-page .a-tabs, .akte-page .a-pane { grid-column:2; }
+  .a-sidecol .a-flagcard { margin:0; }
+  .akte-page .a-side { margin:0; }
   .akte-page > .btn { display:none; }
   .a-side .a-tiles { display:flex; flex-direction:column; gap:8px; }
   .a-side .a-tile, .a-side .a-tile.a-half { flex:none; width:auto; }
@@ -1343,6 +1347,7 @@ function kaStart() {
 
 <!-- MODAL: PATIENTENAKTE -->
 <div id="modal-akte" class="akte-page">
+  <div class="a-sidecol">
   <div class="a-top">
     <button type="button" class="btn btn-secondary icon-btn" title="Zurück" aria-label="Zurück" onclick="closeModal('modal-akte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div id="a-title" class="a-title"></div>
@@ -1354,6 +1359,7 @@ function kaStart() {
     <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'dokumente')">
     <input type="file" id="a-tpl-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'templates')">
     <div id="a-head"></div>
+  </div>
   </div>
   <div class="a-tabs">
     <button type="button" id="atb-akte" class="on" onclick="setAkTab('akte')">Akte</button>
@@ -2019,7 +2025,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zt';
+var KA_V = '2026-10-29-zu';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2231,19 +2237,37 @@ function flagItems(p) {
       persist(); if (curP === p) { renderVerlauf(); renderHead(); } renderPatients();
     }]] });
   }
-  f.todos.slice(0, 5).forEach(function (t) { out.push({ cls: 'fl-red', label: 'To-Do: ' + (t.text.length > 60 ? t.text.slice(0, 59) + '…' : t.text) + (t.due ? ' · fällig ' + fmtD(t.due) : ''), fn: function () { openTodo(t.id); } }); });
-  if (f.todos.length > 5) out.push({ cls: 'fl-red', label: '+' + (f.todos.length - 5) + ' weitere To-Dos', fn: function () { switchTab('todos'); closeModal('modal-akte'); } });
-  f.unb.slice(0, 5).forEach(function (e) {
+  var cutT = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+  if (f.todos.length) out.push({ cls: 'fl-red', label: 'To-Dos', n: f.todos.length, subs: f.todos.map(function (t) { return { label: cutT(t.text, 70) + (t.due ? ' · fällig ' + fmtD(t.due) : ''), fn: function () { openTodo(t.id); } }; }) });
+  if (f.unb.length) out.push({ cls: 'fl-blue', label: 'Rechnung offen', n: f.unb.length, subs: f.unb.map(function (e) {
     var d = e.date.split('-');
-    out.push({ cls: 'fl-blue', label: 'Rechnung offen: ' + d[2] + '.' + d[1] + '. ' + (e.behandlung || 'Termin'), menu: [['Rechnung erstellen', function () { openInvoice(p); document.getElementById('inv-termin').value = String(e.id); invTerminChanged(); }], ['Keine Rechnung nötig', function () { e.keineRechnung = true; persist(); }]] });
-  });
-  if (f.unb.length > 5) out.push({ cls: 'fl-blue', label: '+' + (f.unb.length - 5) + ' weitere Termine ohne Rechnung' });
+    return { label: d[2] + '.' + d[1] + '.' + d[0].slice(2), sub: e.behandlung || '', fn: function () { openInvoice(p); document.getElementById('inv-termin').value = String(e.id); invTerminChanged(); }, alt: ['Keine Rechnung nötig', function () { e.keineRechnung = true; persist(); if (curP === p) { renderFlags(); } renderPatients(); }] };
+  }) });
   return out;
 }
 function flagBtn(it) {
   var b = mk('button', 'fl ' + it.cls, it.label); b.type = 'button';
-  b.onclick = function (ev) { ev.stopPropagation(); if (it.menu) tlMenu(ev, it.menu); else if (it.fn) { fpClose(); it.fn(); } };
+  if (it.n) b.appendChild(mk('span', 'fl-n', String(it.n)));
+  b.onclick = function (ev) { ev.stopPropagation(); if (it.subs) flagDrop(ev, it, b); else if (it.menu) tlMenu(ev, it.menu); else if (it.fn) { fpClose(); it.fn(); } };
   return b;
+}
+/* Einzelne Posten einer Hinweis-Kategorie erst nach dem Antippen im Auswahlfenster */
+function flagDrop(ev, it, anchor) {
+  ev.stopPropagation(); var m = document.getElementById('fl-drop');
+  if (!m) { m = mk('div', 'a-menu'); m.id = 'fl-drop'; document.body.appendChild(m); }
+  if (m.style.display === 'block' && m._src === anchor) { m.style.display = 'none'; return; }
+  m._src = anchor; m.innerHTML = '';
+  it.subs.forEach(function (sub) {
+    var row = mk('div'); row.style.cssText = 'display:flex; align-items:center; gap:2px;';
+    var b = mk('button', '', sub.label); b.type = 'button'; b.style.cssText = 'flex:1; width:auto;';
+    if (sub.sub) { var sm = mk('small', '', ' · ' + sub.sub); sm.style.cssText = 'color:#94a3b8; font-size:12px;'; b.appendChild(sm); }
+    b.onclick = function () { m.style.display = 'none'; fpClose(); sub.fn(); }; row.appendChild(b);
+    if (sub.alt) { var x = mk('button', '', ''); x.type = 'button'; x.title = sub.alt[0]; x.setAttribute('aria-label', sub.alt[0]); x.innerHTML = tvSvg('ban'); x.firstChild.style.cssText = 'width:15px;height:15px;vertical-align:middle;'; x.style.cssText = 'flex:none; width:34px; padding:10px 0; text-align:center; color:#94a3b8;'; x.onclick = function () { m.style.display = 'none'; sub.alt[1](); }; row.appendChild(x); }
+    m.appendChild(row);
+  });
+  var r = anchor.getBoundingClientRect(); m.style.position = 'fixed'; m.style.right = 'auto'; m.style.width = 'max-content'; m.style.maxWidth = 'calc(100vw - 16px)'; m.style.maxHeight = '60vh'; m.style.overflowY = 'auto'; m.style.zIndex = 80; m.style.display = 'block';
+  m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
+  var top = r.bottom + 4; if (top + m.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - m.offsetHeight - 4); m.style.top = top + 'px';
 }
 function renderFlags() {
   var card = document.getElementById('a-flagcard'), fb = document.getElementById('a-flagbtn'); if (!card) return;
@@ -6437,6 +6461,7 @@ document.addEventListener('click', function (ev) {
   var tm = document.getElementById('tl-menu'); if (tm) tm.style.display = 'none';
   var n = document.getElementById('nav-menu'); if (n) n.style.display = 'none';
   var pm = document.getElementById('pt-amenu'); if (pm) pm.style.display = 'none';
+  var fd = document.getElementById('fl-drop'); if (fd) fd.style.display = 'none';
   var g = document.getElementById('gs-res'); if (g && !ev.target.closest('.hd-top')) g.style.display = 'none';
 });
 /* Tippen neben ein Pop-up schließt es. Bei ungespeicherten Eingaben fragt die App vorher. */
