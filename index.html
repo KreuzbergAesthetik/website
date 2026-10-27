@@ -417,6 +417,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .hm-row { display:flex; gap:10px; align-items:center; padding:10px 4px; border-bottom:1px solid #f1f5f9; cursor:pointer; }
 .hm-row:last-child { border-bottom:none; }
 .hm-row.next { background:#f0f9ff; border-radius:8px; }
+.hm-chips { display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-top:5px; } .hm-chips .badge { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
 .hm-time { width:96px; font-weight:600; flex:none; font-size:14px; }
 .hm-main { flex:1; min-width:0; } .hm-main small { display:block; color:#64748b; font-size:12px; }
 .hm-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; } @media (max-width:760px) { .hm-grid { grid-template-columns:1fr; } }
@@ -2032,7 +2033,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-30-a';
+var KA_V = '2026-10-30-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2877,12 +2878,16 @@ function renderHome() {
     var end = toMin(e.time) + (e.dur || 60), isNext = !nextDone && end > nowMin; if (isNext) nextDone = true;
     var p = patOf(e), ex = null, miss = p ? tplsForEvent(e).filter(function (t) { return tplState(p, t).s !== 'ok'; }) : [];
     if (hasAllergy(p) || miss.length) {
-      ex = mk('div'); ex.style.cssText = 'display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;';
+      ex = mk('div', 'hm-chips');
       if (hasAllergy(p)) ex.appendChild(mk('span', 'badge hm-allergy', 'Allergie: ' + p.allergien));
-      if (miss.length) ex.appendChild(mk('span', 'badge badge-amber', 'Unterlagen offen: ' + miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' (Unterschrift)' : ''); }).join(', ')));
+      var ml = miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' · Unterschrift' : ''); });
+      if (ml.length > 2) { var c3 = mk('span', 'badge badge-amber', 'Offen: ' + ml.length + ' Unterlagen'); c3.title = ml.join('\n'); ex.appendChild(c3); }
+      else ml.forEach(function (t) { var c2 = mk('span', 'badge badge-amber', 'Offen: ' + t); c2.title = t; ex.appendChild(c2); });
     }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
-    return hmRow(e.time + ' bis ' + endStr, dnS(e.patient), e.behandlung || '', function () { openAkteFromTermin(e.id); }, ex, isNext ? 'next' : '');
+    var row = hmRow(e.time + ' bis ' + endStr, dnS(e.patient), e.behandlung || '', function () { openAkteFromTermin(e.id); }, null, isNext ? 'next' : '');
+    if (ex) row.querySelector('.hm-main').appendChild(ex);
+    return row;
   }), 'Heute stehen keine Termine an.');
   /* Heute wichtig: nur, was heute erledigt werden muss */
   var imp = document.getElementById('hm-important'); imp.innerHTML = '';
