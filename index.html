@@ -50,9 +50,12 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; padding:8px 16px 10px
 .dk-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } .dk-chips:empty { display:none; } .dk-chip { display:inline-flex; align-items:center; gap:4px; background:#eef2f7; color:#334155; border-radius:999px; padding:4px 6px 4px 10px; font-size:13px; } .dk-chx { border:none; background:none; color:#94a3b8; font-size:16px; line-height:1; cursor:pointer; padding:0 4px; } .dk-chx:hover { color:#dc2626; }
 .dk-grow { resize:none; overflow:hidden; min-height:38px; } .dk-vgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-bottom:8px; } .dk-h { font-size:13px; font-weight:700; color:#334155; margin-bottom:4px; }
 .prio { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; }
-.prio-hoch { background:#fee2e2; color:#b91c1c; } .prio-mittel { background:#fef3c7; color:#92400e; } .prio-niedrig { background:#e2e8f0; color:#475569; }
-.td-row { display:flex; gap:10px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid #f1f5f9; }
-.td-row:last-child { border-bottom:none; } .td-row.done .td-text { text-decoration:line-through; color:#94a3b8; }
+.prio-hoch { background:#fee2e2; color:#b91c1c; } .prio-mittel { background:#fef3c7; color:#92400e; } .prio-niedrig { background:#bbf0cb; color:#166534; }
+.td-row { display:flex; gap:10px; align-items:flex-start; padding:10px; margin-bottom:6px; border-radius:10px; background:#f6f8fb; }
+.td-row.td-hoch { background:#fde8e8; } .td-row.td-mittel { background:#fdf1cf; } .td-row.td-niedrig { background:#dcf5e3; }
+.td-row.done { opacity:.55; } .td-row .prio { align-self:flex-start; }
+#td-prio button[data-v="hoch"] { background:#fde8e8; color:#b91c1c; } #td-prio button[data-v="mittel"] { background:#fdf1cf; color:#92400e; } #td-prio button[data-v="niedrig"] { background:#dcf5e3; color:#166534; }
+#td-prio button[data-v="hoch"].on { background:#dc2626; color:#fff; } #td-prio button[data-v="mittel"].on { background:#d97706; color:#fff; } #td-prio button[data-v="niedrig"].on { background:#16a34a; color:#fff; } .td-row.done .td-text { text-decoration:line-through; color:#94a3b8; }
 .td-chk { width:22px; height:22px; margin-top:1px; flex:none; accent-color:#0f172a; }
 .td-main { flex:1; min-width:0; cursor:pointer; } .td-text { font-size:14.5px; } .td-sub { font-size:12px; color:#64748b; margin-top:2px; }
 .fl { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:6px; vertical-align:middle; line-height:16px; border:none; font-family:inherit; }
@@ -674,6 +677,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   .a-side .grid-2 { grid-template-columns:1fr; }
 }
 </style>
+<script src="dialoge.js"></script>
 <script src="docs.js"></script>
 <script src="sync.js"></script>
 <script src="extcal.js"></script>
@@ -815,7 +819,7 @@ async function alEncryptAll() {
   var c = alGet(), cur = document.getElementById('al-cur').value;
   if (!c || c.enc) return;
   if (!(await alCheck(cur))) { alert('Bitte oben das aktuelle Passwort eingeben.'); return; }
-  if (!confirm('Alle Daten auf diesem Gerät werden jetzt verschlüsselt.\n\nHast Du gerade eine Sicherung gemacht? Ohne das Passwort gibt es danach keinen Zugriff mehr auf die Daten.\n\nJetzt verschlüsseln?')) return;
+  if (!await kaConfirm('Alle Daten auf diesem Gerät werden jetzt verschlüsselt.\n\nHast Du gerade eine Sicherung gemacht? Ohne das Passwort gibt es danach keinen Zugriff mehr auf die Daten.\n\nJetzt verschlüsseln?')) return;
   progOpen('Daten werden verschlüsselt');
   try {
     var raw = crypto.getRandomValues(new Uint8Array(32)), salt = alHex(crypto.getRandomValues(new Uint8Array(16)));
@@ -830,7 +834,7 @@ async function alDecryptAll(silent) {
   var c = alGet(), cur = document.getElementById('al-cur').value;
   if (!c || !c.enc) return true;
   if (!(await alCheck(cur))) { alert('Bitte oben das aktuelle Passwort eingeben.'); return false; }
-  if (!silent && !confirm('Die Verschlüsselung wird aufgehoben. Die Daten liegen danach wieder unverschlüsselt auf dem Gerät. Die App-Sperre bleibt.\n\nFortfahren?')) return false;
+  if (!silent && !await kaConfirm('Die Verschlüsselung wird aufgehoben. Die Daten liegen danach wieder unverschlüsselt auf dem Gerät. Die App-Sperre bleibt.\n\nFortfahren?')) return false;
   progOpen('Verschlüsselung wird aufgehoben');
   try {
     await kaIdle();
@@ -845,8 +849,8 @@ async function alDecryptAll(silent) {
 async function alRemove() {
   var c = alGet(); if (!c) return;
   if (!(await alCheck(document.getElementById('al-cur').value))) { alert('Bitte das aktuelle Passwort eingeben.'); return; }
-  if (c.enc) { if (!(await alDecryptAll(false))) return; if (!confirm('Verschlüsselung ist aufgehoben. Auch die App-Sperre jetzt entfernen?')) { switchTab('settings'); return; } }
-  else if (!confirm('App-Sperre wirklich entfernen?')) return;
+  if (c.enc) { if (!(await alDecryptAll(false))) return; if (!await kaConfirm('Verschlüsselung ist aufgehoben. Auch die App-Sperre jetzt entfernen?')) { switchTab('settings'); return; } }
+  else if (!await kaConfirm('App-Sperre wirklich entfernen?')) return;
   alPut(null); clearTimeout(alTimer); alUi();
 }
 /* Start: ohne Verschlüsselung sofort, mit Verschlüsselung erst nach dem Entsperren */
@@ -2037,7 +2041,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-30-d';
+var KA_V = '2026-10-30-e';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2356,10 +2360,10 @@ function titelMigration() {
   } catch (x) {}
   if (map.length || skipped.length) setTimeout(function () { alert('Titel aus den Namen gelöst: ' + map.length + ' Patient(en).' + (skipped.length ? '\n\nNicht geändert, weil der Name sonst doppelt vorkäme: ' + skipped.join(', ') : '') + '\n\nRückgängig machen: Praxis → Praxisdaten.'); }, 600);
 }
-function titelRueckgaengig() {
+async function titelRueckgaengig() {
   var b = null; try { b = JSON.parse(kaGet('ka_bak_titel') || 'null'); } catch (x) {}
   if (!b || !b.map || !b.map.length) { alert('Es gibt nichts rückgängig zu machen.'); return; }
-  if (!confirm(b.map.length + ' Patient(en) bekommen ihren Titel wieder in den Namen. Fortfahren?')) return;
+  if (!await kaConfirm(b.map.length + ' Patient(en) bekommen ihren Titel wieder in den Namen. Fortfahren?')) return;
   b.map.forEach(function (m) {
     var p = patients.filter(function (x) { return x.id === m.id; })[0]; if (!p || nameKey(p) !== m.newKey) return;
     p.vorname = m.oldV; p.nachname = m.oldN;
@@ -2368,9 +2372,9 @@ function titelRueckgaengig() {
   kaSet('ka_bak_titel', 'null'); persist(); renderPatients(); alert('Erledigt.');
 }
 function patNr(p) { return p.nr > 0 ? p.nr : p.id; }
-function changePatNr(p) {
+async function changePatNr(p) {
   ensurePatients(); var old = p.nr, mx = 0; patients.forEach(function (q) { if (q.nr > mx) mx = q.nr; });
-  var v = prompt('Neue Nummer für ' + p.vorname + ' ' + p.nachname + ' (jetzt #' + old + '):\nDie Nummern dazwischen rücken automatisch nach.', old);
+  var v = await kaPrompt('Neue Nummer für ' + p.vorname + ' ' + p.nachname + ' (jetzt #' + old + '):\nDie Nummern dazwischen rücken automatisch nach.', old);
   if (v === null) return; var n = parseInt(v, 10);
   if (!(n >= 1)) { alert('Bitte eine ganze Zahl ab 1 eingeben.'); return; }
   n = Math.min(n, mx); if (n === old) return;
@@ -2761,8 +2765,8 @@ function editTermin(id, fromAkte) {
   document.getElementById('t-del').style.display = 'inline-block';
   openModal('modal-termin');
 }
-function deleteTermin() {
-  if (!confirm('Termin wirklich löschen?')) return;
+async function deleteTermin() {
+  if (!await kaConfirm('Termin wirklich löschen?')) return;
   events = events.filter(function (x) { return x.id !== editId; });
   persist(); renderCal();
   closeTermin();
@@ -2996,10 +3000,10 @@ function tvMail(p, vorlName, fallback) {
   var n = (settings.nachrichten || []).filter(function (x) { return x.name === vorlName; })[0];
   if (n) { document.getElementById('m-vorl').value = n.id; applyMailVorl(); } else if (fallback) { document.getElementById('m-betreff').value = fallback[0]; document.getElementById('m-text').value = fillPlatzhalter(fallback[1], p); }
 }
-function tvCancel(e, p) {
-  if (!confirm('Termin am ' + fmtD(e.date) + ' um ' + e.time + ' absagen? Er bleibt als abgesagt im Kalender stehen.')) return;
+async function tvCancel(e, p) {
+  if (!await kaConfirm('Termin am ' + fmtD(e.date) + ' um ' + e.time + ' absagen? Er bleibt als abgesagt im Kalender stehen.')) return;
   e.phase = 'Abgesagt'; e.mod = Date.now(); persist(); renderCal(); closeModal('modal-tview');
-  if (p && p.email && confirm('Absagebestätigung per E-Mail an ' + nameKey(p) + ' vorbereiten?')) { setTimeout(function () { tvMail(p, 'Bestätigung Terminabsage (E-Mail)', ['Bestätigung Deiner Terminabsage', '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wurde erfolgreich abgesagt.\n\nManuel von Kreuzberg Ästhetik']); }, 100); }
+  if (p && p.email && await kaConfirm('Absagebestätigung per E-Mail an ' + nameKey(p) + ' vorbereiten?')) { setTimeout(function () { tvMail(p, 'Bestätigung Terminabsage (E-Mail)', ['Bestätigung Deiner Terminabsage', '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wurde erfolgreich abgesagt.\n\nManuel von Kreuzberg Ästhetik']); }, 100); }
 }
 function openTerminView(id, keep) {
   if (noClick) return;
@@ -3062,7 +3066,7 @@ function openTerminView(id, keep) {
   }
   /* Fuß: nur Löschen */
   var ft = mk('div', 'tv-foot');
-  var del = mk('button', 'tv-del'); del.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'; del.title = 'Termin löschen'; del.setAttribute('aria-label', 'Termin löschen'); del.type = 'button'; del.onclick = function () { if (!confirm('Termin wirklich löschen?')) return; events = events.filter(function (x) { return x.id !== id; }); persist(); renderCal(); closeModal('modal-tview'); }; ft.appendChild(del);
+  var del = mk('button', 'tv-del'); del.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'; del.title = 'Termin löschen'; del.setAttribute('aria-label', 'Termin löschen'); del.type = 'button'; del.onclick = async function () { if (!await kaConfirm('Termin wirklich löschen?')) return; events = events.filter(function (x) { return x.id !== id; }); persist(); renderCal(); closeModal('modal-tview'); }; ft.appendChild(del);
   ft.appendChild(del);
   var fsp = mk('span'); fsp.style.flex = '1'; ft.appendChild(fsp);
   var fb = function (k, t, fn) { var b = tvIcon(k, t, fn); b.style.cssText = 'width:42px; height:38px; border-radius:10px;'; ft.appendChild(b); };
@@ -3197,12 +3201,7 @@ function migrateFiles() {
   return Promise.all(jobs).then(function () { persist(); });
 }
 function editFileDate(rec) {
-  var c = new Date(tsOf(rec)), def = pad(c.getDate()) + '.' + pad(c.getMonth() + 1) + '.' + c.getFullYear() + ' ' + pad(c.getHours()) + ':' + pad(c.getMinutes());
-  var v = prompt('Datum und Uhrzeit (TT.MM.JJJJ HH:MM):', def); if (v === null) return;
-  var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(v.trim());
-  var d = m ? new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)) : null;
-  if (!d || d.getMonth() !== +m[2] - 1) { alert('Bitte Datum und Uhrzeit im Format TT.MM.JJJJ HH:MM eingeben.'); return; }
-  rec.ts = d.getTime(); persist(); renderVerlauf();
+  askDateTime(tsOf(rec), function (t) { rec.ts = t; persist(); renderVerlauf(); });
 }
 /* ===== Rechnungen ===== */
 var invoices = [];
@@ -3327,17 +3326,17 @@ function saveLKat() {
   if (lkIdx >= 0) { settings.leistKats[lkIdx].name = n; settings.leistKats[lkIdx].color = col; } else settings.leistKats.push({ id: newId(), name: n, color: col });
   persist(); closeModal('modal-lkat'); renderLKats(); renderLeist(); if (document.getElementById('tab-kalender').classList.contains('active')) renderCal();
 }
-function deleteLKat() {
+async function deleteLKat() {
   var c = settings.leistKats[lkIdx]; if (!c) return;
   var n = (settings.katalog || []).filter(function (l) { return l.kat === c.id; }).length;
-  if (!confirm('Kategorie „' + c.name + '“ löschen?' + (n ? ' ' + n + ' Leistung(en) haben dann keine Kategorie.' : ''))) return;
+  if (!await kaConfirm('Kategorie „' + c.name + '“ löschen?' + (n ? ' ' + n + ' Leistung(en) haben dann keine Kategorie.' : ''))) return;
   (settings.katalog || []).forEach(function (l) { if (l.kat === c.id) delete l.kat; });
   settings.leistKats.splice(lkIdx, 1); persist(); closeModal('modal-lkat'); renderLKats(); renderLeist();
 }
-function recolorEvents() {
+async function recolorEvents() {
   var n = 0; events.forEach(function (e) { var c = evKats(e)[0]; if (c && e.color !== c.color) n++; });
   if (!n) { alert('Alle Termine mit einer Leistung haben schon die Farbe ihrer Kategorie.'); return; }
-  if (!confirm(n + ' Termin(e) auf die Farbe ihrer Kategorie setzen? Von Hand gewählte Farben werden dabei überschrieben.')) return;
+  if (!await kaConfirm(n + ' Termin(e) auf die Farbe ihrer Kategorie setzen? Von Hand gewählte Farben werden dabei überschrieben.')) return;
   events.forEach(function (e) { var c = evKats(e)[0]; if (c) e.color = c.color; });
   persist(); alert(n + ' Termin(e) umgefärbt.'); if (document.getElementById('tab-kalender').classList.contains('active')) renderCal();
 }
@@ -3407,7 +3406,7 @@ function renderLeist() {
 var LS_I = { copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>' };
 function lsAct(k, title, fn, cls) { var b = mk('button', 'tv-ib' + (cls ? ' ' + cls : '')); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.style.cssText = 'width:32px; height:30px; margin-right:4px;' + (cls === 'del' ? 'border-color:transparent; background:none; color:#dc2626;' : ''); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">' + LS_I[k] + '</svg>'; b.onclick = fn; return b; }
 function lsCopy(i) { var k = settings.katalog[i]; if (!k) return; var n = Object.assign({}, k, { id: 0, name: k.name + ' (Kopie)', vorlagen: (k.vorlagen || []).slice() }); settings.katalog.push(n); lsEnsureIds(); persist(); refreshLeistungen(); renderLeist(); }
-function lsDelete(i) { var k = settings.katalog[i]; if (!k || !confirm('Leistung "' + k.name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return; settings.katalog.splice(i, 1); persist(); refreshLeistungen(); renderLeist(); }
+async function lsDelete(i) { var k = settings.katalog[i]; if (!k || !await kaConfirm('Leistung "' + k.name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return; settings.katalog.splice(i, 1); persist(); refreshLeistungen(); renderLeist(); }
 function lsExport() {
   var q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
   var rows = [['ID', 'Leistung', 'Gruppe', 'Preis brutto', 'MwSt', 'Dauer (min)'].map(q).join(';')].concat((settings.katalog || []).map(function (k) { var c = lkatOf(k); return [k.id, k.name, c ? c.name : '', String(k.price).replace('.', ','), k.rate, k.dauer || ''].map(q).join(';'); }));
@@ -3441,8 +3440,8 @@ function saveLeist() {
   if (lsIdx >= 0) settings.katalog[lsIdx] = k; else settings.katalog.push(k);
   lsEnsureIds(); persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
-function deleteLeist() {
-  if (lsIdx < 0 || !confirm('Leistung "' + settings.katalog[lsIdx].name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return;
+async function deleteLeist() {
+  if (lsIdx < 0 || !await kaConfirm('Leistung "' + settings.katalog[lsIdx].name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return;
   settings.katalog.splice(lsIdx, 1);
   persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
@@ -3602,7 +3601,7 @@ function saveRab() {
   ensureRabatte(); if (rbIdx >= 0) { settings.rabatte[rbIdx].name = n; settings.rabatte[rbIdx].pct = p; } else settings.rabatte.push({ id: newId(), name: n, pct: p });
   persist(); closeModal('modal-rab'); renderRabatte(); renderInvRab();
 }
-function deleteRab() { if (rbIdx < 0 || !confirm('Rabatt "' + settings.rabatte[rbIdx].name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return; settings.rabatte.splice(rbIdx, 1); persist(); closeModal('modal-rab'); renderRabatte(); renderInvRab(); }
+async function deleteRab() { if (rbIdx < 0 || !await kaConfirm('Rabatt "' + settings.rabatte[rbIdx].name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return; settings.rabatte.splice(rbIdx, 1); persist(); closeModal('modal-rab'); renderRabatte(); renderInvRab(); }
 function renderInvRab() {
   var box = document.getElementById('inv-rab'); if (!box) return; box.innerHTML = '';
   ensureRabatte().forEach(function (r) {
@@ -3667,7 +3666,7 @@ function renderInvRows() {
   });
   document.getElementById('inv-total').textContent = eurP(invTotal()); syncInvPay(); updZeroInfo();
 }
-function saveInvoice() {
+async function saveInvoice() {
   var name = document.getElementById('inv-patient').value.trim();
   var p = patients.filter(function (x) { return nameKey(x) === name; })[0];
   if (!p) { alert('Bitte einen angelegten Patienten auswählen. Neue Patienten legst Du zuerst unter Patienten an.'); return; }
@@ -3695,8 +3694,8 @@ function saveInvoice() {
   var pd = items.filter(function (x) { return x.datum; }).map(function (x) { return x.datum; }).sort(); leist = pd.length ? pd[0] : datum;
   if (bad || !items.length) { alert('Bitte jede Position mit Leistung, Menge und Preis (Rabatt: Bezeichnung und Prozent) ausfüllen.'); return; }
   var hinweis = items.some(function (i) { return i.rate === 0; }) ? (settings.hinweis || '').trim() : '';
-  if (!settings.steuernr && !settings.ustid && !confirm('In den Praxisdaten fehlt die Steuernummer oder USt-IdNr. Die Rechnung wäre unvollständig. Trotzdem erstellen?')) return;
-  if (items.some(function (i) { return i.rate === 0; }) && !hinweis && !confirm('Eine Position hat 0 % Umsatzsteuer, aber im Menü Praxis unter Praxisdaten ist kein Hinweis für 0 % hinterlegt. Trotzdem erstellen?')) return;
+  if (!settings.steuernr && !settings.ustid && !await kaConfirm('In den Praxisdaten fehlt die Steuernummer oder USt-IdNr. Die Rechnung wäre unvollständig. Trotzdem erstellen?')) return;
+  if (items.some(function (i) { return i.rate === 0; }) && !hinweis && !await kaConfirm('Eine Position hat 0 % Umsatzsteuer, aber im Menü Praxis unter Praxisdaten ist kein Hinweis für 0 % hinterlegt. Trotzdem erstellen?')) return;
   var payAmount = 0, payDate = '';
   if (invPayArt) {
     payAmount = r2(numIn(document.getElementById('inv-paybetrag').value)); payDate = document.getElementById('inv-paydatum').value;
@@ -3712,7 +3711,7 @@ function saveInvoice() {
   }
   if (invEdit) {
     var ie = invEdit, totE = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
-    if (paidSum(ie) > totE + 0.005 && !confirm('Die bereits erfassten Zahlungen (' + eur(paidSum(ie)) + ') sind höher als die neue Summe (' + eur(totE) + '). Trotzdem speichern?')) return;
+    if (paidSum(ie) > totE + 0.005 && !await kaConfirm('Die bereits erfassten Zahlungen (' + eur(paidSum(ie)) + ') sind höher als die neue Summe (' + eur(totE) + '). Trotzdem speichern?')) return;
     var changed = JSON.stringify(ie.items) !== JSON.stringify(items) || ie.date !== datum || ie.adresse !== adresse || ie.vortext !== document.getElementById('inv-vortext').value.trim();
     ie.date = datum; ie.leistung = leist; ie.pid = p.id; ie.name = (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname; ie.adresse = adresse; ie.items = items;
     ie.doku = document.getElementById('inv-doku').value.trim(); ie.eid = parseInt(document.getElementById('inv-termin').value, 10) || null; ie.hinweis = hinweis; ie.zahlung = document.getElementById('inv-zahlung').value.trim();
@@ -4022,17 +4021,17 @@ function viewInvoice(id) {
   var sb = document.getElementById('inv-send-btn'), sl = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden'; sb.title = sl; sb.setAttribute('aria-label', sl);
   openModal('modal-invview');
 }
-function deleteInvoice() {
+async function deleteInvoice() {
   var inv = invCur(); if (!inv) return;
   if (invIsDraft(inv)) {
-    if (!confirm(DRAFT[inv.kind].name + ' für ' + inv.name + ' (' + eur(inv.total) + ') wirklich löschen?')) return;
+    if (!await kaConfirm(DRAFT[inv.kind].name + ' für ' + inv.name + ' (' + eur(inv.total) + ') wirklich löschen?')) return;
     entw = entw.filter(function (i) { return i !== inv; }); persist(); closeModal('modal-invview'); invTab = inv.kind; renderInvoices(); return;
   }
   var paid = paidSum(inv), np = (inv.payments || []).length;
   var msg = 'Rechnung ' + inv.nr + ' für ' + inv.name + ' (' + eur(inv.total) + ') wirklich löschen?\n\n'
     + (np ? (np === 1 ? 'Die Zahlung' : 'Die ' + np + ' Zahlungen') + ' (' + eur(paid) + ') dazu ' + (np === 1 ? 'wird' : 'werden') + ' ebenfalls gelöscht und ' + (np === 1 ? 'fehlt' : 'fehlen') + ' dann in Statistik und Zahlungen.\n\n' : '')
     + 'Bereits versendete Rechnungen müssen aus steuerlichen Gründen aufbewahrt werden. Lösche nur Testrechnungen oder Fehlerfassungen.';
-  if (!confirm(msg)) return;
+  if (!await kaConfirm(msg)) return;
   invoices = invoices.filter(function (i) { return i !== inv; });
   persist(); closeModal('modal-invview'); renderInvoices();
   if (document.getElementById('tab-zahlungen') && document.getElementById('tab-zahlungen').classList.contains('active')) renderZahlungen();
@@ -4075,9 +4074,9 @@ function savePay() {
   var wasEdit = !!payCur; payCur = null;
   persist(); closeModal('modal-pay'); payRefresh(inv, !wasEdit);
 }
-function deletePay() {
+async function deletePay() {
   var inv = invCur(); if (!inv || !payCur) return;
-  if (!confirm('Diese Zahlung löschen? Die Rechnung gilt danach wieder als offen bzw. teilbezahlt.')) return;
+  if (!await kaConfirm('Diese Zahlung löschen? Die Rechnung gilt danach wieder als offen bzw. teilbezahlt.')) return;
   if (payCur.ref) inv.payments = (inv.payments || []).filter(function (x) { return x !== payCur.ref; }); else inv.paid = false;
   payCur = null; persist(); closeModal('modal-pay'); payRefresh(inv, false);
 }
@@ -4436,7 +4435,7 @@ async function sendInvoice() {
   /* Computer: PDF laden und Mail vorbereiten, Anhang hängt der Nutzer selbst an */
   var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
   if (p && p.email) window.location.href = 'mailto:' + encodeURIComponent(p.email) + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
-  if (confirm('Die PDF wurde heruntergeladen. Bitte im Mailprogramm anhängen und senden.\n\nRechnung jetzt als versendet markieren?')) done('Mailprogramm');
+  if (await kaConfirm('Die PDF wurde heruntergeladen. Bitte im Mailprogramm anhängen und senden.\n\nRechnung jetzt als versendet markieren?')) done('Mailprogramm');
 }
 function invFile(inv) { var dr = DRAFT[inv.kind]; return dr ? dr.datei + '-' + String(inv.name || '').replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, '_') + '-' + inv.date + '.pdf' : 'Rechnung-' + inv.nr + '.pdf'; }
 function printInvoice() {
@@ -4595,7 +4594,7 @@ function renderHead() {
     var ul = mk('ul'); list.forEach(function (m, i) {
       var li = mk('li'), md = medSplit(m), tx = mk('span', 'med-t'); tx.title = ed ? 'Tippen zum Bearbeiten' : m;
       tx.appendChild(mk('b', 'med-n', md.n)); if (md.d) tx.appendChild(mk('span', 'med-d', ' ' + md.d));
-      if (ed) { tx.style.cursor = 'pointer'; tx.onclick = function () { var v = prompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v) { p.medikation[i] = v; persist(); renderHead(); renderVerlauf(); } }; }
+      if (ed) { tx.style.cursor = 'pointer'; tx.onclick = async function () { var v = await kaPrompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v) { p.medikation[i] = v; persist(); renderHead(); renderVerlauf(); } }; }
       li.appendChild(tx);
       if (ed) { var b = mk('button', '', '×'); b.type = 'button'; b.onclick = function () { p.medikation.splice(i, 1); persist(); renderHead(); }; li.appendChild(b); }
       ul.appendChild(li);
@@ -4642,12 +4641,12 @@ function toggleStamm() {
   if (nn !== old) events.forEach(function (e) { if (e.patient === old) e.patient = nn; });
   persist(); renderPatients(); renderCal(); viewAkte(curP);
 }
-function deletePatient() {
+async function deletePatient() {
   var p = curP;
   if (invoices.some(function (i) { return i.pid === p.id; })) { alert('Zu diesem Patienten gibt es Rechnungen. Diese müssen aufbewahrt werden, deshalb kann er nicht gelöscht werden.'); return; }
   if (lager.verbrauch.some(function (v) { return v.pid === p.id; })) { alert('Zu diesem Patienten gibt es Produktbuchungen aus dem Lager. Deshalb kann er nicht gelöscht werden.'); return; }
   var name = nameKey(p), n = events.filter(function (e) { return e.patient === name; }).length;
-  if (!confirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
+  if (!await kaConfirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
   (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });
   patients = patients.filter(function (x) { return x !== p; });
   events = events.filter(function (e) { return e.patient !== name; });
@@ -4806,9 +4805,9 @@ function mgMerge(keep, other, pick) {
   keep.log = (keep.log || []).concat([{ ts: Date.now(), type: 'notiz', text: 'Akte zusammengelegt mit ' + mgLine(other) + (other.email ? ' · ' + other.email : '') + (other.adresse ? ' · ' + String(other.adresse).replace(/\n/g, ', ') : '') }]);
   patients = patients.filter(function (x) { return x !== other; });
 }
-function mgDo() {
+async function mgDo() {
   var keep = mgKeep === 'a' ? mgA : mgB, other = keep === mgA ? mgB : mgA; if (!keep || !other) return;
-  if (!confirm('„' + dnP(other) + '“ (#' + patNr(other) + ') in „' + dnP(keep) + '“ (#' + patNr(keep) + ') übernehmen und die erste Akte danach löschen?')) return;
+  if (!await kaConfirm('„' + dnP(other) + '“ (#' + patNr(other) + ') in „' + dnP(keep) + '“ (#' + patNr(keep) + ') übernehmen und die erste Akte danach löschen?')) return;
   mgMerge(keep, other, mgPick); mgA = mgB = null;
   persist(); closeModal('modal-merge'); try { renderPatients(); renderCal(); } catch (x) {} stammEdit = false; viewAkte(keep);
 }
@@ -4855,7 +4854,7 @@ async function rxMake() {
   var inp = document.getElementById('rx-new'); if (inp.value.trim()) rxAdd();
   var sel = rxRows.filter(function (r) { return r.on && r.text.trim(); });
   if (!sel.length) { alert('Bitte mindestens ein Medikament anhaken oder eintragen.'); return; }
-  if (sel.length > 6 && !confirm('Auf ein A6-Rezept passen etwa 6 Zeilen. Trotzdem erstellen?')) return;
+  if (sel.length > 6 && !await kaConfirm('Auf ein A6-Rezept passen etwa 6 Zeilen. Trotzdem erstellen?')) return;
   var datum = document.getElementById('rx-datum').value || iso(new Date()), label = document.getElementById('rx-label').checked;
   var dx = parseFloat(document.getElementById('rx-dx').value) || 0, dy = parseFloat(document.getElementById('rx-dy').value) || 0;
   settings.rx = { dx: dx, dy: dy, label: label };
@@ -5026,8 +5025,8 @@ function tlRow(it) {
   } else if (it.t === 'verbrauch') {
     var vb = it.v;
     sh = tlShell(it.k, 'Produkt');
-    sh.body.appendChild(xBtn(function () {
-      if (!confirm('Buchung löschen? Die Menge wird dem Lager wieder gutgeschrieben.')) return;
+    sh.body.appendChild(xBtn(async function () {
+      if (!await kaConfirm('Buchung löschen? Die Menge wird dem Lager wieder gutgeschrieben.')) return;
       var ch = lager.chargen.filter(function (c) { return c.id === vb.chId; })[0];
       if (ch) ch.rest = Math.round(((+ch.rest || 0) + vb.menge) * 1000) / 1000;
       lager.verbrauch = lager.verbrauch.filter(function (y) { return y.id !== vb.id; }); persist(); renderVerlauf(); renderLager();
@@ -5038,8 +5037,8 @@ function tlRow(it) {
   } else if (it.t === 'doku') {
     var d = it.d;
     sh = tlShell(it.k, 'Dokumentation');
-    sh.body.appendChild(xBtn(function () {
-      if (!confirm('Dokumentation löschen?')) return;
+    sh.body.appendChild(xBtn(async function () {
+      if (!await kaConfirm('Dokumentation löschen?')) return;
       curP.doku = curP.doku.filter(function (y) { return y !== d; }); persist(); renderVerlauf();
     }));
     var dtb = mk('div'); dtb.style.cssText = 'font-size:13px; margin:4px 0 0; padding:6px 8px; background:#f8fafc; border-radius:6px; white-space:pre-wrap; cursor:pointer;';
@@ -5073,8 +5072,8 @@ function tlRow(it) {
     } else {
       var tx = mk('div', '', it.t === 'med' ? String(lg.text).replace(/^Medikament hinzugefügt:\s*/, '') : lg.text);
       tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
-      tlPlus(sh, [['Bearbeiten', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { lg.ts = t; persist(); renderVerlauf(); }); }], ['Löschen', function () {
-        if (!confirm('Eintrag aus dem Zeitstrahl löschen?')) return;
+      tlPlus(sh, [['Bearbeiten', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { lg.ts = t; persist(); renderVerlauf(); }); }], ['Löschen', async function () {
+        if (!await kaConfirm('Eintrag aus dem Zeitstrahl löschen?')) return;
         curP.log = (curP.log || []).filter(function (y) { return y !== lg; }); persist(); renderVerlauf();
       }]]);
     }
@@ -5372,7 +5371,7 @@ function sortTodos(list) {
   });
 }
 function todoRow(t) {
-  var today = iso(new Date()), row = mk('div', 'td-row' + (t.done ? ' done' : ''));
+  var today = iso(new Date()), row = mk('div', 'td-row td-' + (t.prio || 'mittel') + (t.done ? ' done' : ''));
   var cb = mk('input', 'td-chk'); cb.type = 'checkbox'; cb.checked = !!t.done; cb.setAttribute('aria-label', 'Erledigt');
   cb.onchange = function () { t.done = cb.checked; t.doneTs = cb.checked ? Date.now() : 0; persist(); refreshTodoViews(); };
   var main = mk('div', 'td-main'); main.appendChild(mk('div', 'td-text', t.text));
@@ -5422,7 +5421,7 @@ function saveTodo() {
   if (!toCur) todos.push(t);
   persist(); closeModal('modal-todo'); refreshTodoViews();
 }
-function deleteTodo() { if (!toCur || !confirm('To-Do löschen?')) return; todos = todos.filter(function (t) { return t !== toCur; }); persist(); closeModal('modal-todo'); refreshTodoViews(); }
+async function deleteTodo() { if (!toCur || !await kaConfirm('To-Do löschen?')) return; todos = todos.filter(function (t) { return t !== toCur; }); persist(); closeModal('modal-todo'); refreshTodoViews(); }
 
 /* ===== Statistik ===== */
 var stYear = new Date().getFullYear(), COL1 = '#2a78d6', COL2 = '#eb6834', SVGNS = 'http://www.w3.org/2000/svg';
@@ -5607,8 +5606,8 @@ function saveAusgabe() {
   if (!agCur) ausgaben.push(a);
   persist(); closeModal('modal-ausg'); renderZahlungen(); var st = document.getElementById('tab-statistik'); if (st && st.classList.contains('active') && typeof renderStat === 'function') renderStat();
 }
-function deleteAusgabe() {
-  if (!agCur || !confirm('Ausgabe löschen?')) return;
+async function deleteAusgabe() {
+  if (!agCur || !await kaConfirm('Ausgabe löschen?')) return;
   ausgaben = ausgaben.filter(function (a) { return a !== agCur; }); persist(); closeModal('modal-ausg'); renderZahlungen();
 }
 
@@ -5630,12 +5629,12 @@ var NV_STD = [
   { name: 'Anamnesebogen und Aufklärungsbogen', betreff: 'Anamnesebogen und Aufklärungsbogen', text: '{AnredeInformell},\n\nim Anhang findest Du einen Anamnesebogen, den ich Dich bitten würde auszufüllen.\n\nAußerdem findest Du einen Aufklärungsbogen, diesen einfach durchlesen. Unterschreiben musst Du ihn noch nicht, da ich noch etwas ergänzen werde.\n\nLiebe Grüße\nManuel von Kreuzberg Ästhetik' },
   { name: 'Anamnesebogen und 2+ Aufklärungsbögen', betreff: 'Anamnesebogen und Aufklärungsbögen', text: '{AnredeInformell},\n\nim Anhang findest Du einen Anamnesebogen, den ich Dich bitten würde auszufüllen und zu unterschreiben.\n\nAußerdem findest Du Aufklärungsbögen, diese einfach durchlesen.\n\nLiebe Grüße\nManuel von Kreuzberg Ästhetik\n\n______________________________\n\n{AnredeEnglisch},\n\nAttached you will find a medical history form, which I would ask you to fill out and sign.\n\nYou will also find information and consent forms, please just read through them.\n\nBest regards,\nManuel from Kreuzberg Ästhetik' }
 ];
-function nvDefaults() {
+async function nvDefaults() {
   settings.nachrichten = settings.nachrichten || [];
   var have = {}; settings.nachrichten.forEach(function (n) { have[n.name.toLowerCase()] = 1; });
   var neu = NV_STD.filter(function (n) { return !have[n.name.toLowerCase()]; });
   if (!neu.length) { alert('Alle Standardvorlagen sind schon vorhanden.'); return; }
-  if (!confirm(neu.length + ' Standardvorlagen hinzufügen? Bereits vorhandene bleiben unverändert.')) return;
+  if (!await kaConfirm(neu.length + ' Standardvorlagen hinzufügen? Bereits vorhandene bleiben unverändert.')) return;
   neu.forEach(function (n) { settings.nachrichten.push({ id: newId(), name: n.name, betreff: n.betreff, text: n.text }); });
   persist(); renderNachr();
 }
@@ -5707,7 +5706,7 @@ function saveNachr() {
   if (nvIdx >= 0) settings.nachrichten[nvIdx] = x; else settings.nachrichten.push(x);
   persist(); closeModal('modal-nv'); renderNachr();
 }
-function deleteNachr() { if (nvIdx < 0 || !confirm('Vorlage löschen?')) return; settings.nachrichten.splice(nvIdx, 1); persist(); closeModal('modal-nv'); renderNachr(); }
+async function deleteNachr() { if (nvIdx < 0 || !await kaConfirm('Vorlage löschen?')) return; settings.nachrichten.splice(nvIdx, 1); persist(); closeModal('modal-nv'); renderNachr(); }
 function openTxt(i) {
   txIdx = i; var x = i >= 0 ? settings.textbausteine[i] : null;
   document.getElementById('tb-name').value = x ? x.name : ''; document.getElementById('tb-text').value = x ? x.text : '';
@@ -5719,7 +5718,7 @@ function saveTxt() {
   if (txIdx >= 0) settings.textbausteine[txIdx] = x; else settings.textbausteine.push(x);
   persist(); closeModal('modal-tb'); renderTxt();
 }
-function deleteTxt() { if (txIdx < 0 || !confirm('Textbaustein löschen?')) return; settings.textbausteine.splice(txIdx, 1); persist(); closeModal('modal-tb'); renderTxt(); }
+async function deleteTxt() { if (txIdx < 0 || !await kaConfirm('Textbaustein löschen?')) return; settings.textbausteine.splice(txIdx, 1); persist(); closeModal('modal-tb'); renderTxt(); }
 /* Auswahl "Textbaustein einfügen" unter einem Textfeld */
 function tbPicker(ta) {
   var list = settings.textbausteine || []; if (!list.length || !ta) return null;
@@ -5823,18 +5822,18 @@ function addTplsTo(p, list, zu, then) {
   });
 }
 /* beim Anlegen eines Termins: zur Leistung gehörende Unterlagen vorschlagen */
-function offerVorlagen(e) {
+async function offerVorlagen(e) {
   var p = patients.filter(function (x) { return nameKey(x) === e.patient; })[0]; if (!p) return;
   var miss = tplsForEvent(e).filter(function (t) { return !hasTpl(p, t); });
   if (!miss.length) return;
-  if (!confirm('Zu "' + (e.leistung || e.behandlung) + '" gehören diese Unterlagen:\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n') + '\n\nJetzt der Akte von ' + nameKey(p) + ' hinzufügen?')) return;
+  if (!await kaConfirm('Zu "' + (e.leistung || e.behandlung) + '" gehören diese Unterlagen:\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n') + '\n\nJetzt der Akte von ' + nameKey(p) + ' hinzufügen?')) return;
   addTplsTo(p, miss, 'e' + e.id);
 }
 /* bei einem neuen Patienten: Aufnahme, Anamnese, Datenschutz usw. */
-function offerNeu(p) {
+async function offerNeu(p) {
   var miss = templates.filter(function (t) { return t.neu && !hasTpl(p, t); });
   if (!miss.length) return;
-  if (!confirm('Für den neuen Patienten ' + nameKey(p) + ' diese Unterlagen hinzufügen?\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n'))) return;
+  if (!await kaConfirm('Für den neuen Patienten ' + nameKey(p) + ' diese Unterlagen hinzufügen?\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n'))) return;
   addTplsTo(p, miss, null);
 }
 /* Unterlagen: Pakete, Online-Formulare mit Status, Vorlagen zum Unterschreiben */
@@ -6000,7 +5999,7 @@ function savePaket() {
   if (pkIdx >= 0) settings.pakete[pkIdx] = x; else settings.pakete.push(x);
   persist(); closeModal('modal-pk'); renderPakete();
 }
-function deletePaket() { if (pkIdx < 0 || !confirm('Paket löschen?')) return; settings.pakete.splice(pkIdx, 1); persist(); closeModal('modal-pk'); renderPakete(); }
+async function deletePaket() { if (pkIdx < 0 || !await kaConfirm('Paket löschen?')) return; settings.pakete.splice(pkIdx, 1); persist(); closeModal('modal-pk'); renderPakete(); }
 /* Standardvorlagen: Nachsorge-Blätter als PDF, erstellt aus den Verhaltensregeln der Praxis (einmalig beim ersten Öffnen von Dokumente) */
 var VL_VER = 5;
 var AUFKL_KOPF = 'Patient/in: ______________________________   Geboren am: ________________\nBehandelter Bereich / Präparat: ________________________________________\nDatum: ________________   Behandelnder Arzt: Manuel Fella';
@@ -6183,8 +6182,8 @@ function saveTpl() {
   if (document.getElementById('tp-sig').checked) tpCur.sig = sigFromForm(); else delete tpCur.sig;
   persist(); renderTemplates(); closeModal('modal-tpl');
 }
-function deleteTpl() {
-  if (!confirm('Vorlage "' + tpCur.name + '" löschen? Bereits in Akten abgelegte Dateien bleiben erhalten.')) return;
+async function deleteTpl() {
+  if (!await kaConfirm('Vorlage "' + tpCur.name + '" löschen? Bereits in Akten abgelegte Dateien bleiben erhalten.')) return;
   var id = tpCur.id; fDel(id); templates = templates.filter(function (t) { return t.id !== id; });
   (settings.katalog || []).forEach(function (k) { if (k.vorlagen) k.vorlagen = k.vorlagen.filter(function (x) { return x !== id; }); });
   persist(); renderTemplates(); closeModal('modal-tpl');
@@ -6266,15 +6265,12 @@ function attachBlock(p, key) {
   return box;
 }
 function editGroupDate(list) {
-  var first = list.reduce(function (m, x) { return Math.min(m, tsOf(x)); }, Infinity), c = new Date(first);
-  var def = pad(c.getDate()) + '.' + pad(c.getMonth() + 1) + '.' + c.getFullYear() + ' ' + pad(c.getHours()) + ':' + pad(c.getMinutes());
-  var v = prompt('Datum und Uhrzeit (TT.MM.JJJJ HH:MM)' + (list.length > 1 ? ' für alle ' + list.length + ' Einträge:' : ':'), def); if (v === null) return;
-  var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(v.trim());
-  var d = m ? new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)) : null;
-  if (!d || d.getMonth() !== +m[2] - 1) { alert('Bitte Datum und Uhrzeit im Format TT.MM.JJJJ HH:MM eingeben.'); return; }
-  var delta = d.getTime() - first;
-  list.forEach(function (x) { x.ts = tsOf(x) + delta; });
-  refreshFiles();
+  var first = list.reduce(function (m, x) { return Math.min(m, tsOf(x)); }, Infinity);
+  askDateTime(first, function (t) {
+    var delta = t - first;
+    list.forEach(function (x) { x.ts = tsOf(x) + delta; });
+    refreshFiles(); try { renderMedien(); } catch (e) {}
+  });
 }
 /* Galerie */
 function showGallery(p, list, i) { gal = { p: p, list: list.slice(), i: i }; galShow(); openModal('modal-img'); }
@@ -6284,8 +6280,8 @@ function galShow() {
   fileURL(r).then(function (u) { if (u && gal && gal.list[gal.i] === r) im.src = u; });
 }
 function galStep(n) { if (!gal) return; gal.i = (gal.i + n + gal.list.length) % gal.list.length; galShow(); }
-function galDelete() {
-  if (!gal || !confirm('Dieses Bild löschen?')) return;
+async function galDelete() {
+  if (!gal || !await kaConfirm('Dieses Bild löschen?')) return;
   var r = gal.list[gal.i], p = gal.p;
   fDel(r.id); p.bilder = p.bilder.filter(function (y) { return y.id !== r.id; });
   gal.list.splice(gal.i, 1);
@@ -6371,13 +6367,13 @@ function medDocRow(p, dd) {
       openRx(null, lg);
     }]] : []).concat([
     ['Zuordnen', function () { openZu(p, [dd]); }],
-    ['Umbenennen', function () {
-      var v = prompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
+    ['Umbenennen', async function () {
+      var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
       var ex = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[0] || ''; if (ex && !/\.[A-Za-z0-9]{1,6}$/.test(v)) v += ex;
       dd.name = v; persist(); refreshFiles(); renderMedien();
     }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
-    ['Löschen', function () { if (!confirm('Datei "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
+    ['Löschen', async function () { if (!await kaConfirm('Datei "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
   ])));
   return r;
 }
@@ -6459,8 +6455,8 @@ function renderPick() {
       });
     };
     var x = mk('button', 'x-btn', '×'); x.type = 'button'; x.title = 'Vorlage löschen';
-    x.onclick = function () {
-      if (!confirm('Vorlage "' + t.name + '" löschen? Bereits zugeordnete Dateien bleiben erhalten.')) return;
+    x.onclick = async function () {
+      if (!await kaConfirm('Vorlage "' + t.name + '" löschen? Bereits zugeordnete Dateien bleiben erhalten.')) return;
       fDel(t.id); templates = templates.filter(function (y) { return y.id !== t.id; }); persist(); renderPick();
     };
     row.appendChild(b); row.appendChild(x); tl.appendChild(row);
@@ -6517,11 +6513,11 @@ document.addEventListener('click', function (ev) {
   document.addEventListener('input', mark, true); document.addEventListener('change', mark, true);
   var rec = function (ev) { down = ev.target; };
   document.addEventListener('mousedown', rec, true); document.addEventListener('touchstart', rec, true);
-  document.addEventListener('click', function (ev) {
+  document.addEventListener('click', async function (ev) {
     var o = ev.target; if (!o.classList || !o.classList.contains('modal-overlay') || down !== o || !o.classList.contains('active')) return;
     if (o.id === 'modal-prog' || o.id === 'modal-sign') return;
     var c = o.querySelector('.close-btn'); if (!c) return;
-    if (o.dataset.dirty === '1' && !confirm('Eingaben verwerfen und schließen?')) return;
+    if (o.dataset.dirty === '1' && !await kaConfirm('Eingaben verwerfen und schließen?')) return;
     c.click();
   });
 })();
@@ -6549,7 +6545,7 @@ function aAct(x) {
   else if (x === 'anammail' || x === 'anamwa') sendForm(curP, ['anamnese'], x === 'anamwa' ? 'wa' : 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, curP));
   else if (x === 'anamlink') {
     var url = webfUrl('anamnese.html') + '?c=' + pCode(curP);
-    copyText(url, function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, function () { prompt('Link zum Kopieren:', url); });
+    copyText(url, function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, async function () { await kaPrompt('Link zum Kopieren:', url, { readonly: true, ok: 'Schließen', single: true }); });
   }
   else if (x === 'auto') autoZu();
 }
@@ -6562,9 +6558,9 @@ function fNamen() {
   PK_FORMS.forEach(function (f) { if (FNAME_DEF[f[0]]) f[1] = (fe[f[0]] && fe[f[0]].name) || FNAME_DEF[f[0]]; });
   WEBF.forEach(function (w) { var id = String(w[1]).replace(/\.html.*/, ''); if (FNAME_DEF[id]) w[0] = (fe[id] && fe[id].name) || FNAME_DEF[id]; });
 }
-function fRename(w) {
+async function fRename(w) {
   var id = String(w[1]).replace(/\.html.*/, ''); if (!FNAME_DEF[id]) return;
-  var v = prompt('Neuer Name für dieses Formular (leer = ' + FNAME_DEF[id] + '):', w[0]); if (v === null) return;
+  var v = await kaPrompt('Neuer Name für dieses Formular (leer = ' + FNAME_DEF[id] + '):', w[0]); if (v === null) return;
   v = v.trim(); if (v === FNAME_DEF[id]) v = '';
   settings.formFelder = settings.formFelder || {}; var c = settings.formFelder[id] = settings.formFelder[id] || {}; if (v) c.name = v; else delete c.name;
   persist(); fNamen(); renderWebf();
@@ -6581,7 +6577,7 @@ function renderWebf() {
     r.appendChild(mk('b', 'wf-t', w[0]));
     var ln = mk('div', 'wf-ln'), a = mk('a', 'wf-a', url); a.href = url; a.target = '_blank'; a.rel = 'noopener'; ln.appendChild(a);
     var ib = function (svg, ttl, fn) { var b = mk('button', 'wf-cp'); b.type = 'button'; b.innerHTML = svg; b.title = ttl; b.setAttribute('aria-label', ttl); b.onclick = fn; ln.appendChild(b); return b; };
-    var cp = ib(ic, 'Link kopieren', function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, function () { prompt('Link zum Kopieren:', url); }); });
+    var cp = ib(ic, 'Link kopieren', function () { copyText(url, function () { cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); }, async function () { await kaPrompt('Link zum Kopieren:', url, { readonly: true, ok: 'Schließen', single: true }); }); });
     ib('<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>', 'Formular bearbeiten', function () { fvOpen(w); });
     ib('<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>', 'Weitere Aktionen', function (ev) {
       var it = []; if (FNAME_DEF[String(w[1]).replace(/\.html.*/, '')]) it.push(['Umbenennen', function () { fRename(w); }]);
@@ -6756,20 +6752,20 @@ async function formularImport(entries) {
     if (d.typ === 'anamnese' || d.typ === 'aufklaerung') {
       p = patients.filter(function (x) { return x.code && (x.code === q.code || (x.codes2 || []).indexOf(q.code) >= 0); })[0];
       if (!p) {
-        if (confirm('Der Code ' + q.code + ' ist noch keinem Patienten zugeordnet.\n\nOK = neuen Patienten anlegen\nAbbrechen = einem vorhandenen Patienten zuordnen')) {
+        if (await kaConfirm('Der Code ' + q.code + ' ist noch keinem Patienten zugeordnet.\n\nNeuen Patienten anlegen oder einem vorhandenen zuordnen?', { ok: 'Neu anlegen', cancel: 'Zuordnen', danger: false })) {
           p = { anrede: '', vorname: 'Neuer Patient', nachname: q.code, dob: '', phone: '', email: '', adresse: '', allergien: '', notizen: '', medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: today, code: q.code };
           patients.push(p); ensurePatients(); created = true;
         } else {
-          var nmq = (prompt('Name des vorhandenen Patienten (Teil des Namens genügt):') || '').trim().toLowerCase();
+          var nmq = (await kaPrompt('Name des vorhandenen Patienten (Teil des Namens genügt):') || '').trim().toLowerCase();
           var hit = nmq ? patients.filter(function (x) { return nameKey(x).toLowerCase().indexOf(nmq) >= 0; }) : [];
           if (hit.length !== 1) { out.push('Übersprungen: Code ' + q.code + (hit.length ? ' (mehrere Treffer, bitte genauer eingeben)' : ' (kein Patient gefunden)')); continue; }
-          p = hit[0]; if (p.code && !confirm('Dieser Patient hat schon den Code ' + p.code + '. Durch ' + q.code + ' ersetzen?')) { out.push('Übersprungen: Code ' + q.code); continue; }
+          p = hit[0]; if (p.code && !await kaConfirm('Dieser Patient hat schon den Code ' + p.code + '. Durch ' + q.code + ' ersetzen?')) { out.push('Übersprungen: Code ' + q.code); continue; }
           p.code = q.code;
         }
       }
     } else p = patients.filter(function (x) { return nameNorm(nameKey(x)) === nameNorm(nm) && (!q.dob || !x.dob || fIsDob(x.dob, q.dob)); })[0];
     if (!p) {
-      if (d.typ !== 'anmeldung' && !confirm('Für „' + q.vorname + ' ' + q.nachname + '“ gibt es noch keinen Patienten. Jetzt anlegen?')) { out.push('Übersprungen: ' + q.vorname + ' ' + q.nachname); continue; }
+      if (d.typ !== 'anmeldung' && !await kaConfirm('Für „' + q.vorname + ' ' + q.nachname + '“ gibt es noch keinen Patienten. Jetzt anlegen?')) { out.push('Übersprungen: ' + q.vorname + ' ' + q.nachname); continue; }
       p = { anrede: '', vorname: q.vorname, nachname: q.nachname, dob: q.dob || '', phone: '', email: '', adresse: '', allergien: '', notizen: '', medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: today };
       patients.push(p); ensurePatients(); created = true;
     }
@@ -7051,14 +7047,14 @@ function parseLagerFile(t) {
 }
 function lagerImport(inp) {
   var f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
-  f.text().then(function (t) {
+  f.text().then(async function (t) {
     var list; try { list = parseLagerFile(t); } catch (x) { alert('Die Datei konnte nicht gelesen werden: ' + (x && x.message ? x.message : x)); return; }
     var have = {}; lager.produkte.forEach(function (p) { have[p.name.toLowerCase()] = 1; });
     var neu = [], skip = 0, neg = 0;
     list.forEach(function (r) { var n = String(r.name || '').trim(); if (!n || have[n.toLowerCase()]) { skip++; return; } have[n.toLowerCase()] = 1; neu.push(r); if ((+r.bestand || 0) < 0) neg++; });
     if (!neu.length) { alert('Es gibt nichts Neues zu importieren (' + skip + ' Produkt(e) sind schon im Lager).'); return; }
     var mitB = neu.filter(function (r) { return (+r.bestand || 0) > 0; }).length;
-    if (!confirm(neu.length + ' neue Produkte importieren' + (skip ? ' (' + skip + ' schon vorhanden, werden übersprungen)' : '') + '?\n' + mitB + ' davon mit Bestand' + (neg ? '. ' + neg + ' mit negativem Bestand werden ohne Bestand angelegt' : '') + '.')) return;
+    if (!await kaConfirm(neu.length + ' neue Produkte importieren' + (skip ? ' (' + skip + ' schon vorhanden, werden übersprungen)' : '') + '?\n' + mitB + ' davon mit Bestand' + (neg ? '. ' + neg + ' mit negativem Bestand werden ohne Bestand angelegt' : '') + '.')) return;
     var today = iso(new Date());
     neu.forEach(function (r) {
       var p = { id: lid(), name: String(r.name).trim(), einheit: r.einheit || '', min: +r.min || 0, ek: r.ek === null || r.ek === undefined || r.ek === '' ? null : +r.ek, vk: +r.vk || 0, lief: r.lief || '', nr: r.nr || '', gruppe: r.gruppe || '' };
@@ -7221,10 +7217,10 @@ function saveProdukt() {
   if (bad) { alert('Bitte die Restmengen der Chargen prüfen.'); return; }
   persist(); renderLager(); closeModal('modal-produkt');
 }
-function deleteProdukt() {
+async function deleteProdukt() {
   if (!curProd) return;
   if (lager.verbrauch.some(function (v) { return v.prodId === curProd.id; })) { alert('Zu diesem Produkt gibt es Buchungen bei Patienten. Setze stattdessen die Restmengen der Chargen auf 0.'); return; }
-  if (!confirm('Produkt "' + curProd.name + '" mit allen Chargen löschen?')) return;
+  if (!await kaConfirm('Produkt "' + curProd.name + '" mit allen Chargen löschen?')) return;
   var id = curProd.id;
   lager.produkte = lager.produkte.filter(function (p) { return p.id !== id; });
   lager.chargen = lager.chargen.filter(function (c) { return c.pid !== id; });
@@ -7266,10 +7262,10 @@ function saveWare() {
   } else lager.chargen.push({ id: lid(), pid: p.id, nr: nr, verfall: document.getElementById('lw-verfall').value || '', menge: m, rest: m, ek: ek, datum: document.getElementById('lw-datum').value || iso(new Date()) });
   persist(); renderLager(); closeModal('modal-ware'); if (curProd && document.getElementById('modal-produkt').classList.contains('active')) openProdukt(curProd.id);
 }
-function deleteWare() {
+async function deleteWare() {
   var c = wareCur; if (!c) return;
   if (lager.verbrauch.some(function (v) { return v.chId === c.id; })) { alert('Von dieser Charge wurde schon etwas verwendet. Sie kann deshalb nicht gelöscht werden. Setze stattdessen die Restmenge auf 0.'); return; }
-  if (!confirm('Charge ' + (c.nr || '-') + ' löschen? Der Bestand sinkt um ' + qty(c.rest) + '.')) return;
+  if (!await kaConfirm('Charge ' + (c.nr || '-') + ' löschen? Der Bestand sinkt um ' + qty(c.rest) + '.')) return;
   lager.chargen = lager.chargen.filter(function (x) { return x !== c; }); wareCur = null;
   persist(); renderLager(); closeModal('modal-ware'); if (curProd && document.getElementById('modal-produkt').classList.contains('active')) openProdukt(curProd.id);
 }
@@ -7668,11 +7664,11 @@ function importPatienten2(inp, fl) {
 function doImportPatienten(d, files, q) {
   if (!d || d.format !== 'ka-patienten' || !Array.isArray(d.patients)) { if (q) return Promise.reject(new Error('kein Patienten-Importpaket')); alert('Das ist keine Patienten-Importdatei. Für eine komplette Sicherung nutze oben "Laden".'); return Promise.resolve(); }
   var added = 0, ev = 0, nf = 0, miss = 0, jobs = [], T = function (v) { return String(v == null ? '' : v); };
-  d.patients.forEach(function (src) {
+  d.patients.forEach(async function (src) {
     var name = (T(src.vorname) + ' ' + T(src.nachname)).trim();
     if (!T(src.vorname).trim() || !T(src.nachname).trim()) return;
     var old = patients.filter(function (x) { return nameKey(x).toLowerCase() === name.toLowerCase(); })[0];
-    if (old && (q ? q.dup === 'skip' : !confirm('Einen Patienten "' + name + '" gibt es schon.\n\nOK = seine bisherigen Daten (Termine, Dokumentation, Dateien) durch die Importdaten ersetzen.\nAbbrechen = diesen Patienten überspringen.'))) return;
+    if (old && (q ? q.dup === 'skip' : !await kaConfirm('Einen Patienten "' + name + '" gibt es schon.\n\nOK = seine bisherigen Daten (Termine, Dokumentation, Dateien) durch die Importdaten ersetzen oder diesen Patienten überspringen?', { ok: 'Ersetzen', cancel: 'Überspringen' }))) return;
     var p = { anrede: T(src.anrede), vorname: T(src.vorname).trim(), nachname: T(src.nachname).trim(), dob: T(src.dob), phone: T(src.phone), email: T(src.email), adresse: T(src.adresse), allergien: T(src.allergien), notizen: T(src.notizen), medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: tsParse(src.erstellt) };
     if (old) {
       p.id = old.id;
@@ -7740,7 +7736,7 @@ function tPatDD() {
   d.style.display = 'block';
 }
 var patFromTermin = false;
-function saveTermin() {
+async function saveTermin() {
   var datum = document.getElementById('t-datum').value;
   var ganz = document.getElementById('t-ganztag').checked;
   var zeit = ganz ? fromMin(DSTART * 60) : document.getElementById('t-zeit').value;
@@ -7754,7 +7750,7 @@ function saveTermin() {
   if (document.getElementById('t-leistung').value.trim()) tLeistAdd(document.getElementById('t-leistung').value);
   var pname = document.getElementById('t-patient').value.trim().replace(/\s+/g, ' ');
   if (!pname) { alert('Bitte einen Patienten eingeben.'); return; }
-  if (!patients.some(function (x) { return nameKey(x) === pname; }) && !confirm('Der Patient "' + pname + '" ist nicht angelegt. Der Termin kann dann keiner Akte zugeordnet werden. Trotzdem speichern?')) return;
+  if (!patients.some(function (x) { return nameKey(x) === pname; }) && !await kaConfirm('Der Patient "' + pname + '" ist nicht angelegt. Der Termin kann dann keiner Akte zugeordnet werden. Trotzdem speichern?')) return;
   var ev = {
     date: datum, time: zeit, dur: dur,
     patient: pname,
@@ -7843,8 +7839,8 @@ async function decEntry(key, u8) { return new Uint8Array(await crypto.subtle.dec
 function progOpen(title) { document.getElementById('pg-title').textContent = title; document.getElementById('pg-bar').style.width = '0'; document.getElementById('pg-status').textContent = ''; document.getElementById('pg-parts').innerHTML = ''; document.getElementById('pg-close').style.display = 'none'; openModal('modal-prog'); }
 function progSet(pct, text) { document.getElementById('pg-bar').style.width = Math.max(0, Math.min(100, pct)) + '%'; if (text !== undefined) document.getElementById('pg-status').textContent = text; }
 var bkOpen = 0;
-function progClose(force) {
-  if (!force && bkOpen > 0 && !confirm('Es wurden noch nicht alle Teile der Sicherung gespeichert. Ohne alle Teile ist die Sicherung unvollständig.\n\nTrotzdem schließen?')) return;
+async function progClose(force) {
+  if (!force && bkOpen > 0 && !await kaConfirm('Es wurden noch nicht alle Teile der Sicherung gespeichert. Ohne alle Teile ist die Sicherung unvollständig.\n\nTrotzdem schließen?')) return;
   bkOpen = 0; closeModal('modal-prog');
 }
 async function doExport() {
@@ -7965,10 +7961,10 @@ async function doDecrypt() {
   var d; try { d = JSON.parse(text); } catch (x) { alert('Die Datei konnte nicht gelesen werden.'); return; }
   closeModal('modal-bkpw'); pendingEnc = null; applyImport(d, importInp);
 }
-function applyImport(d, inp, restorer) {
+async function applyImport(d, inp, restorer) {
   try {
     if (!d || !Array.isArray(d.events) || !Array.isArray(d.patients)) throw new Error('Format');
-    if (!confirm('Aktuelle Daten durch die Sicherung ersetzen? (' + d.events.length + ' Termine, ' + d.patients.length + ' Patienten)')) { if (inp) inp.value = ''; return; }
+    if (!await kaConfirm('Aktuelle Daten durch die Sicherung ersetzen? (' + d.events.length + ' Termine, ' + d.patients.length + ' Patienten)')) { if (inp) inp.value = ''; return; }
     events = d.events; patients = d.patients; ensurePatients();
     if (Array.isArray(d.templates)) templates = d.templates;
     if (Array.isArray(d.invoices)) invoices = d.invoices;
@@ -8018,13 +8014,13 @@ function renderSicherung() {
   el.style.color = days >= 2 ? '#92400e' : '#15803d';
 }
 function calMode(v) { settings.calMode = v === 'kuerzel' ? 'kuerzel' : 'belegt'; persist(); KS.calPush(); }
-function calCopy() { var u = KS.calUrl(); copyText(u, function () { alert('Adresse kopiert.'); }, function () { prompt('Adresse zum Kopieren:', u); }); }
-function calOffAsk() { if (confirm('Kalender ausschalten? Die Adresse wird ungültig, und der Kalender in Google verschwindet nach der nächsten Aktualisierung.')) KS.calOff(); }
+function calCopy() { var u = KS.calUrl(); copyText(u, function () { alert('Adresse kopiert.'); }, async function () { await kaPrompt('Adresse zum Kopieren:', u, { readonly: true, ok: 'Schließen', single: true }); }); }
+async function calOffAsk() { if (await kaConfirm('Kalender ausschalten? Die Adresse wird ungültig, und der Kalender in Google verschwindet nach der nächsten Aktualisierung.')) KS.calOff(); }
 function extSave() {
   var v = (document.getElementById('ext-url').value || '').trim(); if (!v) { alert('Bitte die Adresse einfügen.'); return; }
   settings.extUrl = v.replace(/^webcal:/i, 'https:'); persist(); EXT.ui(); EXT.refresh();
 }
-function extOff() { if (!confirm('Privaten Kalender entfernen? Die Adresse wird aus der App gelöscht.')) return; settings.extUrl = ''; persist(); EXT.clear(); EXT.ui(); try { renderCal(); } catch (x) {} }
+async function extOff() { if (!await kaConfirm('Privaten Kalender entfernen? Die Adresse wird aus der App gelöscht.')) return; settings.extUrl = ''; persist(); EXT.clear(); EXT.ui(); try { renderCal(); } catch (x) {} }
 function extHide(on) { settings.extHide = !!on; persist(); EXT.ui(); try { renderCal(); } catch (x) {} }
 function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }
 async function syncGo(mode) {
@@ -8061,7 +8057,7 @@ function syncPw() {
     } catch (e) { ok.disabled = no.disabled = false; m.style.color = '#b91c1c'; m.textContent = e && e.message ? e.message : 'Das hat nicht geklappt.'; }
   };
 }
-function syncOff() { if (confirm('Abgleich auf diesem Gerät beenden? Die Daten auf diesem Gerät bleiben erhalten, auf dem Server ändert sich nichts.')) KS.disconnect(); }
+async function syncOff() { if (await kaConfirm('Abgleich auf diesem Gerät beenden? Die Daten auf diesem Gerät bleiben erhalten, auf dem Server ändert sich nichts.')) KS.disconnect(); }
 async function syncBackups() {
   var box = document.getElementById('sy-baks'); box.innerHTML = 'Lade …';
   try {
@@ -8072,7 +8068,7 @@ async function syncBackups() {
       var ts = +n.replace('sich_', ''), r = mk('div'); r.style.cssText = 'display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:14px';
       var t = mk('span', '', new Date(ts).toLocaleString('de-DE')); t.style.flex = '1';
       var b = mk('button', 'btn btn-secondary btn-sm', 'Zurückholen'); b.type = 'button';
-      b.onclick = function () { if (confirm('Diesen Stand auf diesem Gerät einsetzen? Der aktuelle Stand wird dadurch ersetzt (er bleibt auf dem Server bis zum nächsten Abgleich erhalten).')) KS.restoreBackup(n).catch(function (e) { alert(e.message); }); };
+      b.onclick = async function () { if (await kaConfirm('Diesen Stand auf diesem Gerät einsetzen? Der aktuelle Stand wird dadurch ersetzt (er bleibt auf dem Server bis zum nächsten Abgleich erhalten).')) KS.restoreBackup(n).catch(function (e) { alert(e.message); }); };
       r.appendChild(t); r.appendChild(b); box.appendChild(r);
     });
   } catch (e) { box.textContent = e.message; }
