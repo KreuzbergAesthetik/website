@@ -2027,7 +2027,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zy';
+var KA_V = '2026-10-29-zz';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5153,9 +5153,9 @@ function addDocs(inp, key) {
 var DK_TEXT = [['befund', 'Befund'], ['behandlung', 'Behandlung']];
 var dkPend = [], dkDel = [];
 var DK_VERW = [['aufkl', 'Aufklärung'], ['dok', 'Unterlagen'], ['anam', 'Anamnesebogen'], ['honorar', 'Honorarvertrag']];
-var DK_FIELDS = ['anamnese', 'befund', 'behandlung', 'leist', 'produkte', 'ausblick', 'rechnung'];
+var DK_FIELDS = ['anamnese', 'befund', 'behandlung', 'aufklaerung', 'leist', 'produkte', 'ausblick', 'rechnung'];
 var dkEv = null, dkTodos = [], tdPrio = '', tdStat = 'offen', toCur = null;
-function dokOf(e) { return e.dok || { anamnese: '', befund: '', behandlung: e.doku || '', verw: {}, leist: '', produkte: '', ausblick: '' }; }
+function dokOf(e) { return e.dok || { anamnese: '', befund: '', behandlung: e.doku || '', aufklaerung: '', verw: {}, leist: '', produkte: '', ausblick: '' }; }
 function dokFilled(e) {
   if (e.doku && String(e.doku).trim()) return true;
   var d = e.dok; if (!d) return false;
@@ -5165,7 +5165,7 @@ function dokFilled(e) {
 function dokuText(e) {
   if (!e.dok) return e.doku || '';
   var d = e.dok, out = [];
-  [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung'], ['leist', 'Leistungen'], ['produkte', 'Weitere Produkte'], ['ausblick', 'Ausblick und Procedere']].forEach(function (k) { if (String(d[k[0]] || '').trim()) out.push(k[1] + ': ' + String(d[k[0]]).trim()); });
+  [['anamnese', 'Anamnese'], ['befund', 'Befund'], ['behandlung', 'Behandlung'], ['aufklaerung', 'Aufklärung'], ['leist', 'Leistungen'], ['produkte', 'Weitere Produkte'], ['ausblick', 'Ausblick und Procedere']].forEach(function (k) { if (String(d[k[0]] || '').trim()) out.push(k[1] + ': ' + String(d[k[0]]).trim()); });
   var used = lager.verbrauch.filter(function (v) { return v.eid === e.id; });
   if (used.length) out.push('Verwendete Produkte: ' + used.map(function (v) { return v.name + ' ' + qty(v.menge) + ' ' + (v.einheit || '') + ' (Charge ' + (v.nr || '-') + ')'; }).join(', '));
   return out.join('\n');
@@ -5181,7 +5181,7 @@ function dokSummary(e) {
     var pt = used.map(function (v) { return v.name + ' ' + qty(v.menge) + ' ' + (v.einheit || ''); }); if (d && cl(d.produkte)) pt.push(cl(d.produkte));
     secs.push(['Anamnese', d ? cl(d.anamnese) : '']); secs.push(['Befund', d ? cl(d.befund) : '']);
     secs.push(['Leistungen', lt.join(', ')]); secs.push(['Produkte', pt.join(', ')]);
-    secs.push(['Behandlung', d ? cl(d.behandlung) : cl(e.doku)]); secs.push(['Ausblick', d ? cl(d.ausblick) : '']);
+    secs.push(['Behandlung', d ? cl(d.behandlung) : cl(e.doku)]); secs.push(['Aufklärung', d ? cl(d.aufklaerung) : '']); secs.push(['Ausblick', d ? cl(d.ausblick) : '']);
     secs.forEach(function (k) {
       if (!k[1]) return; shown = true;
       var r = mk('div'); r.style.cssText = 'white-space:pre-wrap; padding:5px 0;' + (box.children.length ? ' border-top:1px solid #dbe2ea;' : ''); r.appendChild(mk('b', '', k[0] + ': ')); r.appendChild(document.createTextNode(k[1])); box.appendChild(r);
@@ -5279,6 +5279,7 @@ function openDokEv(e) {
   dkTodos = todos.filter(function (t) { return t.eid === e.id; }).map(function (t) { return Object.assign({}, t); });
   dkPend = []; dkDel = [];
   var dkT = {}; DK_TEXT.forEach(function (k) { dkT[k[0]] = dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true); });
+  box.appendChild(dkFold(dkTextSec('dk-anamnese', 'Anamnese', d.anamnese), d.anamnese));
   box.appendChild(dkT.befund);
   var vw = mk('div'), vs = d.verw || {}, vg = mk('div', 'dk-vgrid'); vw.appendChild(vg);
   DK_VERW.forEach(function (v) { var l = mk('label', 'tm-chk'); l.style.cssText = 'display:flex; gap:8px; align-items:center; font-weight:400; font-size:14px; margin:0;'; var c = mk('input'); c.type = 'checkbox'; c.id = 'dk-v-' + v[0]; c.checked = !!vs[v[0]]; l.appendChild(c); l.appendChild(document.createTextNode(v[1])); vg.appendChild(l); });
@@ -5315,6 +5316,7 @@ function openDokEv(e) {
   var pta = dkTa('dk-produkte', d.produkte, 2); pta.placeholder = 'Anmerkung zu Produkten'; if (!String(d.produkte || '').trim()) pta.style.display = 'none'; lw.appendChild(pta);
   box.appendChild(dkSec('Leistung', lw));
   box.appendChild(dkT.behandlung);
+  box.appendChild(dkFold(dkTextSec('dk-aufklaerung', 'Aufklärung', d.aufklaerung), d.aufklaerung));
   box.appendChild(vsec);
   box.appendChild(dkFold(dkTextSec('dk-ausblick', 'Ausblick und Procedere', d.ausblick), d.ausblick));
   var rs = dkTextSec('dk-rechnung', 'Text für die Rechnung', d.rechnung, 3); rs.appendChild(mk('div', 'hm-empty', 'Wird nicht automatisch übertragen. In der Rechnung kannst Du diesen Text bei Bedarf einfügen.')); box.appendChild(dkFold(rs, d.rechnung));
@@ -5329,7 +5331,7 @@ function saveDok() {
   var g = function (id) { var el = document.getElementById(id); return el ? (el.value || '').trim() : ''; };
   if (!e.pseudo) dkApplyProd(e);
   var verw = { text: g('dk-verwtext') }; DK_VERW.forEach(function (v) { verw[v[0]] = document.getElementById('dk-v-' + v[0]).checked; });
-  e.dok = { anamnese: (e.dok && e.dok.anamnese) || '', befund: g('dk-befund'), behandlung: g('dk-behandlung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
+  e.dok = { anamnese: g('dk-anamnese'), befund: g('dk-befund'), behandlung: g('dk-behandlung'), aufklaerung: g('dk-aufklaerung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
   e.doku = dokuText(e);
   if (e.pseudo) {
     var d0 = e.pseudo; d0.dok = e.dok; d0.text = e.doku;
