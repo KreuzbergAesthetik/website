@@ -641,6 +641,19 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   .a-tiles[data-n="5"] .a-tile, .a-tiles[data-n="6"] .a-tile, .a-tiles[data-n="7"] .a-tile, .a-tiles[data-n="8"] .a-tile { flex-basis:calc(33.333% - 7px); }
   .a-tile.ed { flex-basis:100%; }
 }
+
+/* Patientenakte im Querformat: Stammdaten als feste Sidebar links, Zeitleiste rechts */
+@media (orientation:landscape) and (min-width:700px) {
+  .akte-page.active { display:grid; grid-template-columns:310px minmax(0,1fr); column-gap:14px; align-items:start; max-width:1400px; }
+  .akte-page .a-top, .akte-page .a-flagcard { grid-column:1 / -1; }
+  .akte-page .a-side { grid-column:1; grid-row:span 3; position:sticky; top:calc(var(--hdh,112px) + 72px); max-height:calc(100vh - var(--hdh,112px) - 92px); overflow-y:auto; margin-top:0; }
+  .akte-page .a-tabs, .akte-page .a-pane { grid-column:2; }
+  .akte-page > .btn { display:none; }
+  .a-side .a-tiles { display:flex; flex-direction:column; gap:8px; }
+  .a-side .a-tile, .a-side .a-tile.a-half { flex:none; width:auto; }
+  .a-side .a-tile.a-warn { order:-1; }
+  .a-side .grid-2 { grid-template-columns:1fr; }
+}
 </style>
 <script src="docs.js"></script>
 <script src="sync.js"></script>
@@ -1336,7 +1349,7 @@ function kaStart() {
     <button type="button" id="a-edit" class="a-pen" title="Stammdaten bearbeiten" aria-label="Stammdaten bearbeiten" onclick="toggleStamm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
   </div>
   <div id="a-flagcard" class="card a-flagcard" style="display:none;"></div>
-  <div class="card">
+  <div class="card a-side">
     <input type="file" id="a-img-in" accept="image/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addImages(this)">
     <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'dokumente')">
     <input type="file" id="a-tpl-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'templates')">
@@ -2006,7 +2019,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zr';
+var KA_V = '2026-10-29-zs';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
