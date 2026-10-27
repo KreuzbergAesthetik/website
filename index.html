@@ -638,6 +638,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 @media (min-width:641px) {
   .a-tiles { display:flex; flex-wrap:wrap; gap:10px; }
   .a-tile { flex:1 1 calc(50% - 5px); min-width:0; min-height:0; }
+  .a-tiles[data-n="5"] .a-tile, .a-tiles[data-n="6"] .a-tile, .a-tiles[data-n="7"] .a-tile, .a-tiles[data-n="8"] .a-tile { flex-basis:calc(33.333% - 7px); }
   .a-tile.ed { flex-basis:100%; }
 }
 </style>
@@ -2005,7 +2006,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-29-zq';
+var KA_V = '2026-10-29-zr';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4537,6 +4538,7 @@ function renderHead() {
   tiles.appendChild(tAl); tiles.appendChild(tAd);
   if ([tAl, tAd].filter(function (x) { return x.style.display !== 'none'; }).length === 1) { tAl.classList.remove('a-half'); tAd.classList.remove('a-half'); }
   tiles.appendChild(txtTile('diagnosen', 'Erkrankungen / Diagnosen', '', 'Keine Angabe'));
+  tiles.setAttribute('data-n', [].filter.call(tiles.children, function (c) { return c.style.display !== 'none'; }).length);
   box.appendChild(tiles);
 }
 function hdH() { var h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdh', h.offsetHeight + 'px'); }
