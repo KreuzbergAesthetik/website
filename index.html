@@ -278,7 +278,7 @@ body.akte-open main { display:none; }
 .a-tile ul { list-style:none; }
 .a-tile ul { border:1px solid #94a3b8; border-radius:8px; overflow:hidden; background:#fff; margin-top:6px; } .a-tile ul li { display:flex; justify-content:space-between; gap:6px; padding:7px 10px; font-size:14px; line-height:1.35; } .a-tile ul li + li { border-top:1px solid #cbd5e1; } .a-tile .med-n { font-weight:600; } .a-tile .med-d { color:#64748b; }
 .a-tile ul li button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
-@media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:20px; } .a-tabs button { font-size:15px; } }
+@media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:19px; align-items:center; } .a-nm { display:flex; align-items:baseline; gap:6px; white-space:nowrap; } .a-nl { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; flex:0 1 auto; } .a-nf { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; flex:0 1 auto; } .a-tabs button { font-size:15px; } }
 @media (max-width:440px) { .a-tile { min-height:0; } } .a-tiles { gap:8px; } @media (max-width:640px) { .a-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); } .a-tile { grid-column:1 / -1; min-height:0; padding:9px 28px 9px 10px; font-size:13.5px; } .a-tile.a-half { grid-column:auto; } .a-tile.ed, .a-tile.ed.a-half { grid-column:1 / -1; } .a-tile h4 { font-size:12px; } }
 .a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; color:#0f172a; border:1px solid #dbe2ea; border-left:6px solid #1e3a8a; border-radius:14px; padding:8px 12px; margin-bottom:12px; box-shadow:0 3px 10px rgba(15,23,42,.12); }
 .a-sex { font-size:17px; color:#64748b; margin-left:8px; font-weight:400; }
@@ -2041,7 +2041,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-30-e';
+var KA_V = '2026-10-30-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
