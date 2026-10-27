@@ -1052,6 +1052,7 @@ function kaStart() {
     <div class="card">
       <div class="card-header">
         <span class="card-title">Zahlungen</span>
+        <button type="button" class="btn btn-sm" onclick="zlAdd()">+ Zahlung</button>
       </div>
       <div class="cal-bar" style="margin-bottom:8px;">
         <div class="row-actions">
@@ -2036,7 +2037,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-30-c';
+var KA_V = '2026-10-30-d';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5521,6 +5522,28 @@ function statBox(label, val, color) {
   var b = mk('b', '', val); if (color) b.style.color = color; d.appendChild(b); return d;
 }
 var ZA_COL = { Karte: '#2563eb', Bar: '#16a34a', 'Überweisung': '#7c3aed', PayPal: '#0ea5e9', Gutschein: '#db2777' };
+/* Neue Zahlung von der Zahlungen-Seite: erst die Rechnung wählen, dann die übliche Maske */
+function zlAdd() {
+  var l = invOpenInfo().list.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
+  if (!l.length) { alert('Es gibt keine offenen Rechnungen. Eine Zahlung wird immer zu einer Rechnung erfasst.'); return; }
+  var d = document.createElement('div'); d.className = 'modal-overlay active'; d.style.zIndex = 120;
+  d.innerHTML = '<div class="modal-box"><div class="modal-header"><strong>Zahlung zu welcher Rechnung?</strong><button type="button" class="close-btn">&times;</button></div><input type="text" class="form-control" id="zl-q" placeholder="Nummer oder Name" autocomplete="off" style="margin-bottom:8px"><div id="zl-pick"></div></div>';
+  document.body.appendChild(d);
+  var box = d.querySelector('#zl-pick'), q = d.querySelector('#zl-q');
+  var fill = function () {
+    var t = q.value.trim().toLowerCase(); box.innerHTML = '';
+    l.filter(function (i) { return !t || (i.nr + ' ' + i.name).toLowerCase().indexOf(t) >= 0; }).forEach(function (i) {
+      var r = mk('div', 'hm-row'), m = mk('div', 'hm-main'), nm = mk('div', '', i.nr); nm.style.cssText = 'font-size:16px; font-weight:700; color:#0f172a;';
+      m.appendChild(nm); m.appendChild(mk('small', '', String(i.name || '').replace(/^(Frau|Herr|Divers)\s+/, '') + ' · ' + fmtD(i.date) + (invLate(i) ? ' · überfällig' : ''))); r.appendChild(m);
+      var am = mk('b', '', eur(r2(i.total - paidSum(i)))); am.style.cssText = 'white-space:nowrap; color:#b45309;'; r.appendChild(am);
+      r.onclick = function () { d.remove(); viewInvId = i.id; openPay(); }; box.appendChild(r);
+    });
+    if (!box.children.length) box.appendChild(mk('div', 'hm-empty', 'Keine passende offene Rechnung.'));
+  };
+  q.oninput = fill; fill();
+  d.querySelector('.close-btn').onclick = function () { d.remove(); };
+  d.addEventListener('click', function (ev) { if (ev.target === d) d.remove(); });
+}
 function zEur(v) { return window.innerWidth <= 760 && Math.abs(v - Math.round(v)) < 0.005 ? Math.round(v).toLocaleString('de-DE') + ' €' : eur(v); }
 function renderZahlungen() {
   var tin = document.getElementById('zl-in'); if (!tin) return;
