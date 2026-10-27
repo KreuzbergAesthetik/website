@@ -104,7 +104,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px; }
 .btn:hover { background:#1e293b; }
 .btn-secondary { background:#f1f5f9; color:#334155; } .btn-secondary:hover { background:#e2e8f0; }
 .btn.btn-cancel { background:#e2e8f0; color:#334155; } .btn.btn-cancel:hover { background:#cbd5e1; }
-.btn.btn-save { background:#2f9e44; color:#fff; } .btn.btn-save:hover { background:#278a3a; }
+.btn.btn-save { background:#16a34a; color:#fff; } .btn.btn-save:hover { background:#278a3a; }
 .btn.btn-del { background:#dc2626; color:#fff; } .btn.btn-del:hover { background:#b91c1c; }
 .ed-box { background:#fff !important; border:2px solid #64748b; border-radius:10px !important; padding:12px !important; box-shadow:0 4px 14px rgba(15,23,42,.15); margin:10px 0 !important; }
 .list-item { padding:12px 0; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
@@ -178,12 +178,12 @@ textarea.form-control { font-size:15px; }
 .tm-top { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding-bottom:10px; font-size:13px; color:#475569; }
 .tm-top .form-control { width:auto; flex:1 1 90px; min-width:0; }
 .tm-ic { width:20px; height:20px; color:#64748b; flex:none; }
-.tm-ok { background:#2f9e44; color:#fff; border:none; border-radius:6px; width:44px; height:34px; font-size:16px; cursor:pointer; }
+.tm-ok { background:#16a34a; color:#fff; border:none; border-radius:6px; width:44px; height:34px; font-size:16px; cursor:pointer; }
 .tm-x { background:#fff; color:#334155; border:1px solid #cbd5e1; border-radius:6px; width:44px; height:34px; font-size:16px; cursor:pointer; }
 .tm-row { display:grid; grid-template-columns:96px 1fr; align-items:center; gap:8px; padding:9px 0; border-top:1px solid #f1f5f9; }
 .tm-row > label { font-size:13px; font-weight:700; }
 .tm-chip { display:inline-flex; align-items:center; gap:6px; background:#e2e8f0; border:1px solid #cbd5e1; border-radius:4px; padding:3px 8px; font-size:13px; width:max-content; }
-.tm-chip i { width:14px; height:14px; background:#2f9e44; display:inline-block; }
+.tm-chip i { width:14px; height:14px; background:#16a34a; display:inline-block; }
 .tm-link { text-align:right; font-size:13px; color:#2563eb; cursor:pointer; padding:4px 0; }
 .tm-chk { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; margin-bottom:6px; }
 .ev { touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; cursor:pointer; }
@@ -221,7 +221,7 @@ textarea.form-control { font-size:15px; }
 .un-st.ok { background:#dcfce7; color:#15803d; } .un-st.wait { background:#fef3c7; color:#b45309; }
 .un-main { flex:1; min-width:0; } .un-t { font-weight:600; overflow-wrap:anywhere; } .un-s { font-size:12px; color:#64748b; margin-top:1px; }
 .un-btn { flex:none; padding:6px 10px; font-size:13px; white-space:nowrap; }
-.un-pk { border:1px solid #dbe2ea; border-left:5px solid #2f9e44; border-radius:12px; padding:12px; margin-bottom:8px; } .un-pk b { display:block; }
+.un-pk { border:1px solid #dbe2ea; border-left:5px solid #16a34a; border-radius:12px; padding:12px; margin-bottom:8px; } .un-pk b { display:block; }
 .md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
 .md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:#0f172a; border-color:#0f172a; color:#fff; }
 .md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .seg#inv-payseg { display:flex; width:100%; margin-bottom:16px; } #inv-payseg button { flex:1 1 auto; min-width:0; padding:9px 4px; font-size:12.5px; white-space:nowrap; } #inv-paybox { margin-bottom:6px; }
@@ -376,7 +376,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 #tl-menu { position:fixed; z-index:70; min-width:230px; top:0; left:0; }
 .a-pen { width:30px; height:30px; padding:0; border:none; background:none; color:#94a3b8; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
 .a-pen svg { width:16px; height:16px; } .a-pen:hover { background:#f1f5f9; color:#475569; }
-.a-pen.on { width:38px; height:36px; background:#2f9e44; color:#fff; }
+.a-pen.on { width:38px; height:36px; background:#16a34a; color:#fff; }
 .a-pen.on svg { width:20px; height:20px; }
 .pick-box { border:2px solid #64748b; background:#fff; border-radius:12px; padding:14px; margin:18px 0; box-shadow:0 4px 14px rgba(15,23,42,.15); }
 .pick-box .pick-h { font-size:14px; font-weight:700; color:#0f172a; margin-bottom:10px; }
@@ -417,6 +417,13 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .hm-row { display:flex; gap:10px; align-items:center; padding:10px 4px; border-bottom:1px solid #f1f5f9; cursor:pointer; }
 .hm-row:last-child { border-bottom:none; }
 .hm-row.next { background:#f0f9ff; border-radius:8px; }
+@media (max-width:760px) {
+  #tab-dokumente table.pt { min-width:0 !important; } #tab-dokumente .pt thead { display:none; }
+  #tp-table, #tp-table tr { display:block; } #tp-table tr { background:#f6f8fb; border-radius:10px; padding:10px; margin-bottom:6px; }
+  #tp-table td { display:inline-block; border:0; padding:0; width:auto; font-size:11.5px; margin:5px 4px 0 0; background:#dbeafe; color:#1e40af; border-radius:10px; padding:2px 8px; font-weight:500; }
+  #tp-table td:first-child { display:block; background:none; color:inherit; font-size:15px; padding:0; margin:0; }
+  #tp-table td.tp-no { display:none; } #tp-table td.tp-neu { font-size:0; background:#d1fae5; color:#065f46; } #tp-table td.tp-neu::after { content:'Neuer Patient'; font-size:11.5px; }
+}
 .hm-chips { display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-top:5px; } .hm-chips .badge { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
 .hm-time { width:96px; font-weight:600; flex:none; font-size:14px; }
 .hm-main { flex:1; min-width:0; } .hm-main small { display:block; color:#64748b; font-size:12px; }
@@ -471,7 +478,7 @@ body { overflow-x:clip; }
 @media (max-width:520px) { .a-top { margin-left:-6px; margin-right:-6px; } }
 .a-top .a-title { color:#0f172a; } .a-top .icon-btn, .a-top .a-pen { background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; }
 .a-top .icon-btn:hover, .a-top .a-pen:hover { background:#e2e8f0; }
-.a-top .a-pen.on { background:#2f9e44; }
+.a-top .a-pen.on { background:#16a34a; }
 #tab-patienten > .card > .card-header .btn { flex:none; white-space:nowrap; } .np-ic { display:none; vertical-align:middle; }
 @media (max-width:520px) { .np-t { display:none; } .np-ic { display:inline-block; } #tab-patienten > .card > .card-header .btn { padding:8px 12px; } }
 .a-top .icon-btn { width:28px; min-width:0; height:28px; min-height:0; padding:0; background:none; border:none; color:#8b98a9; } .a-top .icon-btn svg { width:18px; height:18px; } .a-top .icon-btn:hover { background:#f1f5f9; color:#475569; }
@@ -573,7 +580,7 @@ body { overflow-x:clip; }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
-#zl-arts { flex-wrap:nowrap; gap:4px; } #zl-arts .za-b { flex:1 1 0; min-width:0; flex-direction:column; gap:1px; height:auto; padding:5px 2px; font-size:11px; border-radius:8px; justify-content:center; } #zl-arts .za-l { display:inline-flex; align-items:center; gap:4px; max-width:100%; overflow:hidden; white-space:nowrap; } #zl-arts .za-b b { font-size:12px; white-space:nowrap; } #zl-arts .za-b i { width:7px; height:7px; }
+#zl-arts { flex-wrap:nowrap; gap:4px; } #zl-arts .za-b { flex:1 1 0; min-width:0; flex-direction:column; gap:1px; height:auto; padding:5px 2px; font-size:11px; border-radius:8px; justify-content:center; } #zl-arts .za-l { display:inline-flex; align-items:center; gap:4px; max-width:100%; overflow:hidden; white-space:nowrap; } #zl-arts .za-b b { font-size:12px; white-space:nowrap; } @media (max-width:760px) { #zl-arts { flex:1 1 100%; width:100%; } #zl-arts .za-b { font-size:10.5px; } #zl-arts .za-b b { font-size:11.5px; } } #zl-arts .za-b i { width:7px; height:7px; }
 #inv-seg { flex-wrap:nowrap; gap:4px; overflow-x:auto; } #inv-seg .za-b { height:30px; padding:0 5px; font-size:11.5px; gap:3px; flex:1 1 auto; min-width:0; border-radius:8px; justify-content:center; }
 .sr-fab { position:fixed; right:16px; bottom:18px; width:44px; height:44px; border-radius:50%; border:1px solid #cbd5e1; background:rgba(255,255,255,.88); color:#64748b; box-shadow:0 4px 14px rgba(15,23,42,.18); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; z-index:60; backdrop-filter:blur(4px); } .sr-fab.on { background:#dbeafe; color:#2563eb; border-color:#93c5fd; }
 .sr-bar { display:none; position:fixed; left:14px; right:70px; bottom:18px; z-index:60; box-shadow:0 4px 14px rgba(15,23,42,.18); border-radius:10px; background:#fff; } .sr-bar input { height:44px; }
@@ -1109,7 +1116,8 @@ function kaStart() {
   <!-- TAB: NACHRICHTENVORLAGEN -->
   <div id="tab-nachrichten" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="nvDefaults()">Standardvorlagen laden</button><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div></div>
+      <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div>
+      <div style="margin-bottom:10px;"><button type="button" class="btn btn-sm btn-secondary" onclick="nvDefaults()">Standardvorlagen laden</button></div>
       <div id="nv-list"></div>
       <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Platzhalter: {Anrede} {Vorname} {Nachname} {Name} {Datum} {DatumWochentag} {Termin} {TerminDatum} {Uhrzeit} {NaechsterTermin} {Behandlung} sowie die fertigen Anreden {AnredeFormell} (Sehr geehrte Frau …), {AnredeInformell} (Liebe …) und {AnredeEnglisch} (Dear Ms. …) sowie {LinkAnmeldung}, {LinkAnamnese} und {LinkErinnerung} für die Webformulare. Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
     </div>
@@ -1263,13 +1271,7 @@ function kaStart() {
   <!-- TAB 5: LAGER -->
   <div id="tab-lager" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Lager</span></div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
-        <button type="button" class="btn btn-sm" onclick="openWare()">+ Wareneingang</button>
-        <button type="button" class="btn btn-sm" onclick="openProdukt(null)">+ Produkt</button>
-        <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('lg-file').click()">Produkte importieren</button>
-        <input type="file" id="lg-file" style="display:none" onchange="lagerImport(this)">
-      </div>
+      <div class="card-header"><span class="card-title">Lager</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="openProdukt(null)">+ Produkt</button><button type="button" class="btn btn-sm" onclick="openWare()">+ Wareneingang</button></div></div>
       <div id="lg-warn"></div>
       <div class="scroll">
         <table class="pt" style="min-width:680px; font-size:14px;">
@@ -1278,6 +1280,7 @@ function kaStart() {
         </table>
       </div>
       <div id="lg-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Produkte angelegt</div>
+      <div style="margin-top:10px;"><button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('lg-file').click()">Produkte importieren</button><input type="file" id="lg-file" style="display:none" onchange="lagerImport(this)"></div>
       <div id="lg-sum" style="font-size:13px; color:#475569; margin-top:10px;"></div>
       <div style="font-size:12px; color:#94a3b8; margin-top:6px;">Preise netto je Einheit. Marge = (VK minus letzter EK) geteilt durch VK.</div>
     </div>
@@ -1315,7 +1318,7 @@ function kaStart() {
   <div class="modal-box tm-box">
     <div class="tm-head" id="tm-head">
       <div style="flex:1; min-width:0;"><div id="t-title" class="tm-title">Neuer Termin</div></div>
-      <input type="color" id="t-farbe" class="tm-dot" value="#2f9e44" title="Farbe des Termins" aria-label="Farbe des Termins" oninput="tmSub()">
+      <input type="color" id="t-farbe" class="tm-dot" value="#16a34a" title="Farbe des Termins" aria-label="Farbe des Termins" oninput="tmSub()">
       <button type="button" class="close-btn" onclick="closeTermin()">&times;</button>
     </div>
     <div class="tm-body">
@@ -1698,7 +1701,7 @@ function kaStart() {
         <div class="form-group"><label>Von links <span id="tp-xv"></span></label><input type="range" id="tp-x" min="0" max="85" value="55" oninput="updateSigPrev()"></div>
         <div class="form-group"><label>Von oben <span id="tp-yv"></span></label><input type="range" id="tp-y" min="0" max="95" value="86" oninput="updateSigPrev()"></div>
       </div>
-      <div id="tp-prev" style="position:relative; width:150px; aspect-ratio:1/1.414; background:#fff; border:1px solid #94a3b8; margin:6px 0;"><div id="tp-box" style="position:absolute; border:2px solid #2f9e44; background:#2f9e4433;"></div></div>
+      <div id="tp-prev" style="position:relative; width:150px; aspect-ratio:1/1.414; background:#fff; border:1px solid #94a3b8; margin:6px 0;"><div id="tp-box" style="position:absolute; border:2px solid #16a34a; background:#16a34a33;"></div></div>
       <button type="button" class="btn btn-secondary" onclick="testSig()">Testlauf mit Probe-Unterschrift</button>
     </div>
     <div style="margin-top:10px;"><button type="button" class="btn btn-secondary" id="tp-view" onclick="viewTpl()">Vorlage ansehen</button></div>
@@ -2033,7 +2036,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-30-b';
+var KA_V = '2026-10-30-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2736,7 +2739,7 @@ function openTermin(k, t, fromAkte) {
   document.getElementById('t-notiz').value = '';
   document.getElementById('t-leistung').value = ''; tLeist = []; renderTLeist();
   document.getElementById('t-ganztag').checked = false; toggleGanztag();
-  document.getElementById('t-farbe').value = '#2f9e44'; tmSub();
+  document.getElementById('t-farbe').value = '#16a34a'; tmSub();
   openModal('modal-termin');
 }
 function editTermin(id, fromAkte) {
@@ -2752,7 +2755,7 @@ function editTermin(id, fromAkte) {
   document.getElementById('t-patient').value = e.patient;
   document.getElementById('t-leistung').value = ''; tLeist = evLeistungen(e).slice(); if (!tLeist.length && e.behandlung && e.behandlung !== 'Beratung') tLeist = [e.behandlung]; renderTLeist();
   document.getElementById('t-notiz').value = e.notiz || '';
-  document.getElementById('t-farbe').value = e.color || '#2f9e44'; terminKatColor();
+  document.getElementById('t-farbe').value = e.color || '#16a34a'; terminKatColor();
   document.getElementById('t-ganztag').checked = false; toggleGanztag();
   document.getElementById('t-del').style.display = 'inline-block';
   openModal('modal-termin');
@@ -2984,7 +2987,7 @@ function dupTermin(id) {
   var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
   closeModal('modal-tview'); openTermin(e.date, e.time);
   document.getElementById('t-patient').value = e.patient; document.getElementById('t-notiz').value = e.notiz || '';
-  tLeist = evLeistungen(e).slice(); renderTLeist(); document.getElementById('t-farbe').value = e.color || '#2f9e44';
+  tLeist = evLeistungen(e).slice(); renderTLeist(); document.getElementById('t-farbe').value = e.color || '#16a34a';
   tDur = e.dur; document.getElementById('t-ende').value = fromMin(toMin(e.time) + e.dur); dLabel(e.dur);
 }
 function tvMail(p, vorlName, fallback) {
@@ -5518,6 +5521,7 @@ function statBox(label, val, color) {
   var b = mk('b', '', val); if (color) b.style.color = color; d.appendChild(b); return d;
 }
 var ZA_COL = { Karte: '#2563eb', Bar: '#16a34a', 'Überweisung': '#7c3aed', PayPal: '#0ea5e9', Gutschein: '#db2777' };
+function zEur(v) { return window.innerWidth <= 760 && Math.abs(v - Math.round(v)) < 0.005 ? Math.round(v).toLocaleString('de-DE') + ' €' : eur(v); }
 function renderZahlungen() {
   var tin = document.getElementById('zl-in'); if (!tin) return;
   document.getElementById('zl-month').value = zMonth;
@@ -5533,7 +5537,7 @@ function renderZahlungen() {
   var tot = allP.reduce(function (a, p) { return a + p.amount; }, 0);
   var segBtn = function (key, dot, label, sum) {
     var b = mk('button', 'za-b' + ((zArt || '') === key ? ' on' : '')); b.type = 'button';
-    var lb = mk('span', 'za-l'); if (dot) { var d = mk('i'); d.style.background = dot; lb.appendChild(d); } lb.appendChild(document.createTextNode(label === 'Überweisung' ? 'Überw.' : label)); b.title = label; b.appendChild(lb); b.appendChild(mk('b', '', eur(sum)));
+    var lb = mk('span', 'za-l'); if (dot) { var d = mk('i'); d.style.background = dot; lb.appendChild(d); } lb.appendChild(document.createTextNode(label === 'Überweisung' ? 'Überw.' : label)); b.title = label; b.appendChild(lb); b.appendChild(mk('b', '', zEur(sum)));
     b.onclick = function () { zArt = ((zArt || '') === key) ? '' : key; renderZahlungen(); }; zs.appendChild(b);
   };
   segBtn('', null, 'Alle', tot);
@@ -6036,7 +6040,7 @@ function renderTemplates() {
   templates.forEach(function (t) {
     var row = tb.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
     var b = mk('button', 'pn', t.name); b.type = 'button'; b.onclick = function () { openTpl(t.id); }; c0.appendChild(b);
-    c1.textContent = katOf(t); c2.textContent = t.neu ? 'ja' : '-';
+    c1.textContent = katOf(t); c2.textContent = t.neu ? 'ja' : '-'; c2.className = t.neu ? 'tp-neu' : 'tp-no';
     var n = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(t.id) >= 0; }).length;
     c3.textContent = n ? n + ' Leistung' + (n > 1 ? 'en' : '') : '-';
   });
@@ -7473,7 +7477,7 @@ function akteBuild(P, files, dep) {
   });
   /* Termine: gleiche Tagesdokumentation zuordnen, wenn an dem Tag genau ein Termin liegt */
   var byDay = {}; termine.forEach(function (t, i) { (byDay[t.datum.slice(0, 10)] = byDay[t.datum.slice(0, 10)] || []).push(i); });
-  var events = termine.map(function (t) { return { date: t.datum.slice(0, 10), time: t.datum.slice(11, 16), dur: 60, behandlung: t.behandlung || 'Beratung', notiz: t.notiz, color: '#2f9e44', alt: true }; });
+  var events = termine.map(function (t) { return { date: t.datum.slice(0, 10), time: t.datum.slice(11, 16), dur: 60, behandlung: t.behandlung || 'Beratung', notiz: t.notiz, color: '#16a34a', alt: true }; });
   verl.forEach(function (v) {
     var d = byDay[v.datum.slice(0, 10)];
     if (d && d.length === 1) { termine[d[0]].verl.push(v); } else p.doku.push({ ts: dep.tsParse(v.datum), text: v.text });
@@ -7667,7 +7671,7 @@ function doImportPatienten(d, files, q) {
     patients.push(p); ensurePatients(); added++;
     (src.termine || []).forEach(function (t) {
       var dt = tsParse(t.ts), dd = new Date(dt);
-      events.push({ id: nid++, date: iso(dd), time: pad(dd.getHours()) + ':' + pad(dd.getMinutes()), dur: +t.dur || 60, patient: nameKey(p), behandlung: T(t.behandlung) || 'Beratung', notiz: T(t.notiz), doku: t.doku ? T(t.doku) : undefined, color: '#2f9e44' });
+      events.push({ id: nid++, date: iso(dd), time: pad(dd.getHours()) + ':' + pad(dd.getMinutes()), dur: +t.dur || 60, patient: nameKey(p), behandlung: T(t.behandlung) || 'Beratung', notiz: T(t.notiz), doku: t.doku ? T(t.doku) : undefined, color: '#16a34a' });
       ev++;
     });
   });
