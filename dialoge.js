@@ -17,7 +17,7 @@
     '.ka-dlg-foot .btn-danger { background:#fff; color:#b91c1c; border:1px solid #dc2626; }';
   document.head.appendChild(css);
 
-  var WARN = /nicht|kein|fehl|bitte|ungültig|Fehler|konnte|stimmt|zu groß|Zu viele|Offline|Verbindung/i;
+  var WARN = /nicht|kein|fehl|bitte|ungültig|Fehler|konnte|stimmt|zu groß|Zu viele|Offline|Verbindung|gibt es schon/i;
 
   function toasts() {
     var t = document.getElementById('ka-toasts');
