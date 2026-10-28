@@ -2177,7 +2177,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-q';
+var KA_V = '2026-10-31-r';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -7921,7 +7921,7 @@ function importPatienten(inp) {
   return importPatienten2(inp, fl);
 }
 function importPatienten2(inp, fl) {
-  var fail = function () { alert('Die Datei konnte nicht gelesen werden.'); inp.value = ''; };
+  var fail = function (e) { alert('Die Datei konnte nicht gelesen werden.' + (e && e.message ? ' (' + e.message + ')' : '')); inp.value = ''; };
   var zip = fl.filter(function (f) { return /\.zip$/i.test(f.name); })[0];
   var mf = zip ? null : fl.filter(function (f) { return /\.json$/i.test(f.name); })[0];
   if (!zip && !mf) { alert('Bitte die ZIP-Datei wählen, oder die Datei manifest.json zusammen mit den zugehörigen Dateien.'); inp.value = ''; return; }
@@ -7929,11 +7929,8 @@ function importPatienten2(inp, fl) {
   if (zips.length > 1) { inp.value = ''; biOpen(zips); return; }
   var done = function (o) { inp.value = ''; return doImportPatienten(o.d, o.files); };
   if (zip) {
-    var r = new FileReader(); r.onerror = fail;
-    r.onload = function () {
-      readZip(r.result).then(function (m) { if (!m['manifest.json']) { inp.value = ''; biOpen([zip]); return Promise.reject(new Error('batch')); } return m['manifest.json'].text().then(function (t) { return { d: JSON.parse(t), files: m }; }); }).then(done, function (e) { if (e && e.message === 'batch') return; fail(); });
-    };
-    r.readAsArrayBuffer(zip);
+    /* Die ZIP wird stückweise gelesen (nicht komplett in den Speicher), auch große Dateien gehen */
+    readZip(zip).then(function (m) { if (!m['manifest.json']) { inp.value = ''; biOpen([zip]); return Promise.reject(new Error('batch')); } return m['manifest.json'].text().then(function (t) { return { d: JSON.parse(t), files: m }; }); }).then(done, function (e) { if (e && e.message === 'batch') return; fail(e); });
   } else {
     mf.text().then(function (t) {
       var files = {}; fl.forEach(function (f) { if (f !== mf) files[f.name] = f.type ? f : new Blob([f], { type: mimeOf(f.name) }); });
@@ -7941,10 +7938,10 @@ function importPatienten2(inp, fl) {
     }).then(done, fail);
   }
 }
-function doImportPatienten(d, files, q) {
+async function doImportPatienten(d, files, q) {
   if (!d || d.format !== 'ka-patienten' || !Array.isArray(d.patients)) { if (q) return Promise.reject(new Error('kein Patienten-Importpaket')); alert('Das ist keine Patienten-Importdatei. Für eine komplette Sicherung nutze oben "Laden".'); return Promise.resolve(); }
   var added = 0, ev = 0, nf = 0, miss = 0, jobs = [], T = function (v) { return String(v == null ? '' : v); };
-  d.patients.forEach(async function (src) {
+  for (var pi0 = 0; pi0 < d.patients.length; pi0++) await (async function (src) {
     var name = (T(src.vorname) + ' ' + T(src.nachname)).trim();
     if (!T(src.vorname).trim() || !T(src.nachname).trim()) return;
     var old = patients.filter(function (x) { return nameKey(x).toLowerCase() === name.toLowerCase(); })[0];
@@ -7973,7 +7970,7 @@ function doImportPatienten(d, files, q) {
       events.push({ id: nid++, date: iso(dd), time: pad(dd.getHours()) + ':' + pad(dd.getMinutes()), dur: +t.dur || 60, patient: nameKey(p), behandlung: T(t.behandlung) || 'Beratung', notiz: T(t.notiz), doku: t.doku ? T(t.doku) : undefined, color: '#16a34a' });
       ev++;
     });
-  });
+  })(d.patients[pi0]);
   return Promise.all(jobs).then(function () {
     persist(); renderPatients(); renderCal(); if (curP && document.getElementById('modal-akte').classList.contains('active')) renderVerlauf();
     if (q) return { added: added, ev: ev, nf: nf, miss: miss };
