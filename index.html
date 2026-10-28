@@ -2105,7 +2105,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-e';
+var KA_V = '2026-10-31-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -6728,7 +6728,8 @@ function renderWebf() {
   var box = document.getElementById('wf-list'); if (!box) return; box.innerHTML = '';
   var ic = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>';
   fNamen();
-  WEBF.forEach(function (w) {
+  var hid = settings.wfHidden || [];
+  WEBF.filter(function (w) { return hid.indexOf(w[1]) < 0; }).forEach(function (w) {
     var url = webfUrl(w[1]), r = mk('div', 'wf-row');
     r.appendChild(mk('b', 'wf-t', w[0]));
     var ln = mk('div', 'wf-ln'), a = mk('a', 'wf-a', url); a.href = url; a.target = '_blank'; a.rel = 'noopener'; ln.appendChild(a);
@@ -6739,11 +6740,20 @@ function renderWebf() {
       var it = []; if (FNAME_DEF[String(w[1]).replace(/\.html.*/, '')]) it.push(['Umbenennen', function () { fRename(w); }]);
       it.push(['Texte als Liste', function () { ftOpen(w); }]);
       if (/^(anmeldung|anamnese|erinnerung)\.html/.test(w[1])) it.push(['Felder als Liste', function () { ffOpen(w); }]);
+      it.push(['Löschen', async function () {
+        if (!await kaConfirm('Formular „' + w[0] + '“ aus der Liste löschen?\n\nDie Seite selbst bleibt online und der Link funktioniert weiter, bis Du ihn nicht mehr verschickst. Gelöschte Formulare kannst Du unten wiederherstellen.', { ok: 'Löschen' })) return;
+        settings.wfHidden = (settings.wfHidden || []).concat([w[1]]); persist(); renderWebf();
+      }]);
       tlMenu(ev, it);
     });
     r.appendChild(ln);
     box.appendChild(r);
   });
+  if (hid.length) {
+    var rb = mk('button', 'btn btn-secondary btn-sm', 'Gelöschte Formulare wiederherstellen (' + hid.length + ')'); rb.type = 'button'; rb.style.marginTop = '8px';
+    rb.onclick = async function () { if (!await kaConfirm(hid.length + (hid.length === 1 ? ' gelöschtes Formular' : ' gelöschte Formulare') + ' wieder in der Liste anzeigen?', { ok: 'Wiederherstellen', danger: false })) return; settings.wfHidden = []; persist(); renderWebf(); };
+    box.appendChild(rb);
+  }
 }
 /* Felder der Webformulare: ausblenden, Pflicht, eigene Zusatzfragen. settings.formFelder[Formular] = { hide, req, extra } */
 var ffCur = '', ffDesc = null, ffExtra = [];
