@@ -2177,7 +2177,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-s';
+var KA_V = '2026-10-31-t';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -7877,7 +7877,7 @@ function biOpen(files) {
 }
 function biClose() { if (bi.running) { bi.cancel = true; document.getElementById('bi-status').textContent = 'Wird nach der aktuellen Datei beendet...'; return; } closeModal('modal-bimp'); }
 async function biOne(file, o) {
-  var map = await readZip(await file.arrayBuffer()), keys = Object.keys(map).filter(function (k) { return !/\/$/.test(k); });
+  var map = await readZip(file), keys = Object.keys(map).filter(function (k) { return !/\/$/.test(k); });
   var mfk = keys.filter(function (k) { return /(^|\/)manifest\.json$/.test(k); })[0];
   if (mfk) { var d = JSON.parse(await map[mfk].text()), fm = {}; keys.forEach(function (k) { fm[k] = map[k]; }); var cnt = await doImportPatienten(d, fm, o); return { ok: true, text: file.name + ': ' + (cnt ? cnt.added : 0) + ' Patient(en) im eigenen Format' }; }
   var files = keys.map(function (k) { var base = k.split('/').pop(), m = /^(\d+)_(.*)$/.exec(base); return { id: m ? +m[1] : 0, name: m ? m[2] : base, blob: map[k] }; });
