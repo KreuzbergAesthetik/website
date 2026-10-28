@@ -715,7 +715,6 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .fab-kal { --fc:var(--c-termin); } .fab-pat { --fc:var(--c-patient); } .fab-rec { --fc:var(--c-rechnung); } .fab-search { --fc:var(--c-mehr); } 
 .gs-bar { display:none; position:fixed; left:12px; right:72px; bottom:calc(16px + env(safe-area-inset-bottom)); align-items:center; background:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(15,23,42,.28); z-index:45; } .gs-bar .gs-box { background:#fff; min-height:46px; }
 .fab-col .gs-res { position:fixed; left:8px; right:70px; top:auto; bottom:calc(72px + env(safe-area-inset-bottom)); max-height:60vh; z-index:46; }
-body.akte-open .fab-col, body.akte-open .gs-bar { display:none !important; }
 /* Patientenakte: Aktionen im Stil der Patientenübersicht */
 .a-cats { gap:5px; }
 .a-cat, .plus-btn { border-radius:10px; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:0; cursor:pointer; }
@@ -757,8 +756,8 @@ body.akte-open .fab-col, body.akte-open .gs-bar { display:none !important; }
 .ak-act.hl { background:color-mix(in srgb, var(--c-senden) 10%, #fff); border-color:color-mix(in srgb, var(--c-senden) 45%, #fff); }
 .ak-grey { color:var(--c-mehr); } .ak-datei { color:#0d9488; } .ak-rec { color:var(--c-rechnung); }
 .sr-btn, .sr-fab, .gs-fab { border-radius:50%; }
-/* Dezente Buttons: feiner Hintergrund in der Farbe des Symbols, Text nur wo er sicher passt */
-.pt-ib, .fab, .a-cat, .plus-btn, .iv-b:not(.iv-back):not(.iv-del), .tv-fbtn:not(.tv-fdel), .tv-acts .tv-tool, .ak-act, .inv-flt { background:#f1f5f9; background:color-mix(in srgb, currentColor 9%, #f8fafc); border:1px solid #e2e8f0; border-color:color-mix(in srgb, currentColor 22%, #e2e8f0); box-shadow:none; }
+/* Buttons: hellgrauer Hintergrund mit dünnem Rand, Symbole in der Kategoriefarbe, Text nur wo er sicher passt */
+.pt-ib, .fab, .a-cat, .a-cat[class*=" d"], .plus-btn, .iv-b:not(.iv-back):not(.iv-del), .tv-fbtn:not(.tv-fdel), .tv-acts .tv-tool, .ak-act, .inv-flt { background:#eef0f4; border:1px solid #d5dae2; box-shadow:none; }
 .fab, .a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.16); }
 .fab-search.on { background:#dbeafe; }
 .pt-lb, .fab span, .a-lb, .tv-fbtn span { display:none !important; }
@@ -767,6 +766,12 @@ body.akte-open .fab-col, body.akte-open .gs-bar { display:none !important; }
 @media (max-width:699px) { .iv-b:not(.iv-back) span { display:none; } }
 .ak-act { flex-direction:row; height:36px; min-width:0; padding:0 12px; gap:6px; } .ak-act span { font-size:12.5px; font-weight:600; }
 .inv-flt { width:36px; height:36px; flex:none; border-radius:10px; color:#475569; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; align-self:center; } .inv-flt svg { width:19px; height:19px; } .inv-flt.on { color:#b45309; background:#fffbeb; border-color:#f59e0b; }
+/* Patientenakte: Kurzbefehle füllen die Breite links neben dem Plus-Menü, das Plus sitzt neben der Lupe */
+.a-fab { left:auto; right:74px; bottom:calc(19px + env(safe-area-inset-bottom)); transform:none; width:auto; max-width:calc(100% - 90px); z-index:44; }
+.a-fab .a-cats { flex:none; gap:6px; }
+.a-cat.d0 { --ac:var(--c-doku); } .a-cat.d3 { --ac:var(--c-rezept); } .a-cat.d4 { --ac:var(--c-senden); } .a-cat.d5 { --ac:#1fa855; } .a-cat.d6, .a-cat.d7 { --ac:#0d9488; }
+.a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.14); }
+@media (max-width:699px) { .a-cat.hm { display:none; } }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2172,7 +2177,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-p';
+var KA_V = '2026-10-31-q';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2643,6 +2648,8 @@ function gsToggle(force) {
   if (open) { inp.focus(); gsRun(true); } else { inp.value = ''; res.style.display = 'none'; inp.blur(); }
 }
 function hdAdd(k) {
+  /* In der Patientenakte sind Termin und Rechnung für diesen Patienten vorausgefüllt */
+  if (document.body.classList.contains('akte-open') && curP && (k === 'termin' || k === 'rec')) { aAct(k === 'termin' ? 'termin' : 'rechnung'); return; }
   /* Die Knöpfe im Header gehören zu keiner Seite: immer eine frische, leere Maske */
   if (k === 'termin') openTermin(); else if (k === 'pat') { ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen', 'p-adr-str', 'p-adr-nr', 'p-adr-plz', 'p-adr-ort'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; }); openModal('modal-patient'); }
   else if (k === 'rec') openInvoice(null);
@@ -6735,11 +6742,11 @@ var AM_GROUPS = [
   { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
 /* Symbolleiste: Termin, Rechnung und Rezept (häufigste Aktionen) starten direkt, die anderen öffnen ihre Kategorie */
-var AM_DOCK = [{ t: 'Dokumentieren', lb: 'Doku', ic: 'book', g: 0, c: 'd0' }, { t: 'Termin', lb: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', lb: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Nachrichten', lb: 'Senden', ic: 'mail', g: 2, c: 'd4' }];
+var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4' }, { t: 'WhatsApp schreiben', ic: 'wa', act: 'wa', c: 'd5', hm: 1 }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6' }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1 }];
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
   AM_DOCK.forEach(function (d) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c; b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic) + '<span class="a-lb">' + d.lb + '</span>';
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c + (d.hm ? ' hm' : ''); b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
     b.onclick = function (ev) { if (d.act) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); } else toggleAMenu(ev, d.g); }; box.appendChild(b);
   });
 })();
@@ -6801,6 +6808,7 @@ function aAct(x) {
   else if (x === 'bild') { zuNext = null; document.getElementById('a-img-in').click(); }
   else if (x === 'dokument') { dokPick = true; renderPick(); }
   else if (x === 'mail') openMail();
+  else if (x === 'wa') waOpen(curP, '');
   else if (x === 'produkt') openVb(null);
   else if (x === 'rechnung') openInvoice(curP);
   else if (x === 'rezept') openRx(null);
