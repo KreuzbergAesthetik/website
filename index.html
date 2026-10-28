@@ -536,7 +536,7 @@ body { overflow-x:clip; }
 .card { box-shadow:0 2px 8px rgba(15,23,42,.08); } .card:not(.hc):not(.hero) { border-color:var(--line); }
 .card-title { font-size:17px; font-weight:800; color:#0f172a; }
 .tab-content > .card:not(.hc):not(.hero) { border-left:6px solid var(--tc,#94a3b8); }
-#tab-kalender { --tc:#7c3aed; } #tab-patienten { --tc:#1e3a8a; } #tab-rechnungen { --tc:#2563eb; } #tab-todos { --tc:#ea580c; }
+#tab-kalender { --tc:#7c3aed; } #tab-patienten { --tc:#1e3a8a; } #tab-rechnungen { --tc:#16a34a; } #tab-todos { --tc:#ea580c; }
 #tab-settings { --tc:#64748b; } #tab-lager { --tc:#0d9488; } #tab-leistungen { --tc:#db2777; } #tab-dokumente { --tc:#64748b; } #tab-nachrichten { --tc:#0ea5e9; }
 #tab-textbausteine { --tc:#8b5cf6; } #tab-webformulare { --tc:#f59e0b; } #tab-zahlungen { --tc:#16a34a; } #tab-statistik { --tc:#2563eb; }
 /* Tabellen: leicht, nur feine Linien zwischen den Zeilen */
@@ -719,7 +719,6 @@ body.akte-open .fab-col, body.akte-open .gs-bar { display:none !important; }
 /* Patientenakte: Aktionen im Stil der Patientenübersicht */
 .a-cats { gap:5px; }
 .a-cat, .plus-btn { width:46px; height:46px; border-radius:10px; border:1px solid #d5dce6; background:#fff; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:0; cursor:pointer; box-shadow:0 3px 10px rgba(15,23,42,.2); }
-.a-cat[class*=" d"] { background:#fff; border-color:#d5dce6; }
 .a-cat svg, .plus-btn svg { width:20px; height:20px; } .a-lb { font-size:9.5px; font-weight:700; line-height:1; }
 .a-cat.d0 { --ac:var(--c-doku); } .a-cat.d1 { --ac:var(--c-termin); } .a-cat.d2 { --ac:var(--c-rechnung); } .a-cat.d4 { --ac:var(--c-senden); } .plus-btn { color:var(--c-mehr); }
 @media (max-width:699px) { .a-lb { display:none; } .a-cat, .plus-btn { width:42px; height:42px; } }
@@ -758,6 +757,16 @@ body.akte-open .fab-flt { display:none !important; }
 .ak-act.hl { background:color-mix(in srgb, var(--c-senden) 10%, #fff); border-color:color-mix(in srgb, var(--c-senden) 45%, #fff); }
 .ak-grey { color:var(--c-mehr); } .ak-datei { color:#0d9488; } .ak-rec { color:var(--c-rechnung); }
 .sr-btn, .sr-fab, .gs-fab { border-radius:50%; }
+/* Dezente Buttons: feiner Hintergrund in der Farbe des Symbols, Text nur wo er sicher passt */
+.pt-ib, .fab, .a-cat, .plus-btn, .iv-b:not(.iv-back):not(.iv-del), .tv-fbtn:not(.tv-fdel), .tv-acts .tv-tool, .ak-act, .inv-flt { background:#f1f5f9; background:color-mix(in srgb, currentColor 9%, #f8fafc); border:1px solid #e2e8f0; border-color:color-mix(in srgb, currentColor 22%, #e2e8f0); box-shadow:none; }
+.fab, .a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.16); }
+.fab-search.on { background:#dbeafe; }
+.pt-lb, .fab span, .a-lb, .tv-fbtn span { display:none !important; }
+.fab { width:46px; height:46px; } .fab.fab-search { width:48px; height:48px; } .a-cat, .plus-btn { width:42px; height:42px; } .tv-fbtn { width:40px; min-width:40px; height:40px; padding:0; }
+@media (min-width:700px) { .pt-acts .pt-ib { width:40px; height:40px; } .pt-hg, .pt-wrap { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) 264px; } .pt td.pc-er { line-height:40px; } }
+@media (max-width:699px) { .iv-b:not(.iv-back) span { display:none; } }
+.ak-act { flex-direction:row; height:36px; min-width:0; padding:0 12px; gap:6px; } .ak-act span { font-size:12.5px; font-weight:600; }
+.inv-flt { width:36px; height:36px; flex:none; border-radius:10px; color:#475569; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; align-self:center; } .inv-flt svg { width:19px; height:19px; } .inv-flt.on { color:#b45309; background:#fffbeb; border-color:#f59e0b; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1061,10 +1070,10 @@ function kaStart() {
     <div class="card">
       <div class="card-header" style="gap:8px; margin-bottom:8px; align-items:stretch;">
         <div class="seg" id="inv-kind" style="flex:1; min-width:0;"></div>
+        <button type="button" class="inv-flt" id="inv-flt" onclick="invPerMenu(event)" title="Zeitraum der Anzeige wählen" aria-label="Zeitraum wählen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
         <button type="button" class="btn btn-sm inv-plus" id="inv-b-new" onclick="invNew()" title="Neue Rechnung" aria-label="Neue Rechnung">+</button>
       </div>
       <div id="entw-list" style="display:none"></div>
-      <button type="button" class="fab fab-flt" id="inv-flt" onclick="invPerMenu(event)" title="Zeitraum der Anzeige wählen" aria-label="Zeitraum wählen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Zeitraum</span></button>
       <div id="inv-main">
       <div id="inv-open"></div>
       <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
@@ -2163,7 +2172,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-n';
+var KA_V = '2026-10-31-o';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3895,7 +3904,7 @@ function invPerMenu(ev) {
   var r = ev.currentTarget.getBoundingClientRect(), m = mk('div', 'nv-pop'); m.id = 'inv-pop';
   ['alle', 'monat', 'lmonat', 'quartal', 'jahr', 'ljahr'].forEach(function (k) { var b = mk('button', '', (invPer.k === k ? '✓ ' : '') + INV_PER_LBL[k]); b.type = 'button'; b.onclick = function () { m.remove(); invPer.k = k; renderInvoices(); }; m.appendChild(b); });
   var e = mk('button', '', (invPer.k === 'eigen' ? '✓ ' : '') + 'Eigener Zeitraum …'); e.type = 'button'; e.onclick = function () { m.remove(); invPerCustom(); }; m.appendChild(e);
-  m.style.bottom = (window.innerHeight - r.top + 8) + 'px'; m.style.right = Math.max(8, window.innerWidth - r.right) + 'px'; document.body.appendChild(m);
+  m.style.top = (r.bottom + 6) + 'px'; m.style.right = Math.max(8, window.innerWidth - r.right) + 'px'; document.body.appendChild(m);
   setTimeout(function () { document.addEventListener('click', function f() { var p = document.getElementById('inv-pop'); if (p) p.remove(); document.removeEventListener('click', f); }); }, 0);
 }
 function invPerCustom() {
@@ -4006,7 +4015,7 @@ function renderInvoices() {
   [].forEach.call(document.querySelectorAll('[data-ik]'), function (e) { e.innerHTML = e.getAttribute('data-ik') === invSort.k ? (invSort.dir > 0 ? '&#9650;' : '&#9660;') : ''; });
   document.getElementById('inv-empty').style.display = invoices.length ? 'none' : 'block';
   var ob = document.getElementById('inv-open'); if (ob) { ob.innerHTML = ''; var bx = openBox(); if (bx) ob.appendChild(bx); }
-  var fb0 = document.getElementById('inv-flt'); if (fb0) { fb0.classList.toggle('on', invPer.k !== 'alle'); fb0.querySelector('span').textContent = invPer.k === 'alle' ? 'Zeitraum' : (invPer.k === 'eigen' ? 'Eigener' : INV_PER_LBL[invPer.k].replace('Dieser ', '').replace('Dieses ', '').replace('Letzter ', 'Letzter ').replace('Letztes ', 'Letztes ')); }
+  var fb0 = document.getElementById('inv-flt'); if (fb0) { fb0.classList.toggle('on', invPer.k !== 'alle'); fb0.title = invPer.k === 'alle' ? 'Zeitraum der Anzeige wählen' : 'Zeitraum: ' + invPerText(); }
   /* Filter und Suche */
   var inR = invoices.filter(invInRange), cnt = { '': inR.length, offen: 0, ueberfaellig: 0, bezahlt: 0, storno: 0 };
   inR.forEach(function (i) { var k = invKind(i); cnt[k]++; if (k === 'ueberfaellig') cnt.offen++; });
@@ -6165,7 +6174,7 @@ function renderUnterlagen() {
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); box.appendChild(r); return r;
   };
-  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.innerHTML = tvSvg(/whatsapp/i.test(txt) ? 'wa' : /hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/whatsapp/i.test(txt) ? 'wa' : /hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
   var unReset = function (keys) {
     var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
