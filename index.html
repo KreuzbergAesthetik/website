@@ -577,13 +577,13 @@ body { overflow-x:clip; }
 .pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:center; min-height:30px; } .pt-l .pt-dr { margin-top:-4px; } .pt .pidb { margin-top:3px; }
 .pn-l { white-space:nowrap; font-size:16px; font-weight:800; color:#0f172a; } .pn-f { display:inline-block; font-weight:400; color:#64748b; }
 #tab-patienten .pt td.pc-er { color:#94a3b8; }
-#tab-rechnungen .pt td:nth-child(1) .pn, #tab-rechnungen .pt td:nth-child(3), #tab-rechnungen .pt td:nth-child(4) { font-weight:700; }
-#tab-zahlungen .pt td:nth-child(2), #tab-zahlungen .pt td:nth-child(5), #zl-open .hm-main { font-weight:700; } #zl-open .hm-main small { font-weight:400; }
-#lg-table td:nth-child(-n+3), #lg-table td:first-child .pn { font-weight:700; }
-.pt td.pc-er { line-height:30px; padding-top:5px; vertical-align:top; }
+#tab-rechnungen .pt td:nth-child(1) .pn, #tab-rechnungen .pt td:nth-child(4) { font-weight:700; }
+#tab-zahlungen .pt td:nth-child(5) { font-weight:700; }
+#lg-table td:nth-child(-n+2), #lg-table td:first-child .pn { font-weight:700; }
+.pt td.pc-er { line-height:40px; padding-top:5px; vertical-align:top; }
 .pt-tit2 { font-size:11px; font-weight:400; color:#64748b; margin-left:5px; }
 .pt-info, .pt-acts .pt-wide-b, .pt-hi, .pt-ha { display:none; }
-@media (min-width:700px) { .pt-hg { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 96px; gap:14px; } .pt-hi, .pt-ha { display:block; cursor:default; } .pt-wrap { grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 96px; align-items:start; gap:14px; } .pt-info { display:grid; grid-template-rows:30px 30px; gap:3px; min-width:0; font-size:12.5px; color:#64748b; } .pt-i1, .pt-i2 { display:flex; align-items:center; gap:12px; min-width:0; white-space:nowrap; overflow:hidden; } .pt-acts .pt-wide-b { display:inline-flex; } .pt-wrap .pt-acts { grid-template-columns:repeat(3,30px); } .pt-chip { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#fee2e2; color:#b91c1c; border-radius:6px; padding:1px 8px; font-size:12px; flex:none; } .pt-ct a { color:#5b6f95; text-decoration:none; } .pt-ct a:hover { text-decoration:underline; } .pt-ct { display:contents; } }
+@media (min-width:700px) { .pt-hg { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 128px; gap:14px; } .pt-hi, .pt-ha { display:block; cursor:default; } .pt-wrap { grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 128px; align-items:start; gap:14px; } .pt-info { display:grid; grid-template-rows:40px 40px; gap:3px; min-width:0; font-size:12.5px; color:#64748b; } .pt-i1, .pt-i2 { display:flex; align-items:center; gap:12px; min-width:0; white-space:nowrap; overflow:hidden; } .pt-acts .pt-wide-b { display:inline-flex; } .pt-wrap .pt-acts { grid-template-columns:repeat(3,40px); } .pt-chip { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#fee2e2; color:#b91c1c; border-radius:6px; padding:1px 8px; font-size:12px; flex:none; } .pt-ct a { color:#5b6f95; text-decoration:none; } .pt-ct a:hover { text-decoration:underline; } .pt-ct { display:contents; } }
 .pt-lt { display:flex; align-items:center; gap:6px; margin-top:2px; min-width:0; } .pt-lt .pt-ev { min-width:0; overflow:hidden; text-overflow:ellipsis; } .pt-lt .pt-inv { width:28px; height:24px; flex:none; } .pt-lt .pt-inv svg { width:15px; height:15px; }
 #inv-kind { display:flex; width:100%; } #inv-kind button { flex:1 1 0; min-width:0; padding:4px 1px; font-size:11.5px; hyphens:manual; white-space:normal; line-height:1.15; }
 .inv-a { font-weight:700; } .inv-a.a-open { color:#dc2626; } .inv-a.a-late { color:#991b1b; text-decoration:underline; } .inv-a.a-part { color:#ea580c; } .inv-a.a-ok { color:#15803d; } .inv-a.a-st { color:#94a3b8; text-decoration:line-through; }
@@ -596,7 +596,7 @@ body { overflow-x:clip; }
 .inv-plus { width:36px; height:36px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
-.pt-acts { display:grid; grid-template-columns:repeat(2,30px); gap:3px; margin-top:0; } .pt-acts .pt-ib { width:30px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#94a3b8; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
+.pt-acts { display:grid; grid-template-columns:repeat(2,40px); gap:4px; margin-top:0; } .pt-acts .pt-ib { width:40px; height:40px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#94a3b8; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:21px; height:21px; } .pt-ib:hover { background:#f1f5f9; }
 .pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; } .pt-dot.d-rem { background:#ea580c; } .pt-dot.d-next { background:#16a34a; } .pt-dot.d-send { background:#eab308; }
 .pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
@@ -629,7 +629,7 @@ body { overflow-x:clip; }
 .za-t { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; } .za { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:#334155; } .za i, .zart i { width:9px; height:9px; border-radius:50%; flex:none; } .za b { color:#0f172a; }
 .zart { display:inline-flex; align-items:center; gap:7px; }
 .row-actions .btn { white-space:nowrap; } .pc-ds { display:none; color:#94a3b8; font-size:11px; margin-top:1px; }
-@media (max-width:520px) { #tab-zahlungen .hm-l { display:none; } #tab-zahlungen .hm-s { display:inline; } #tab-zahlungen .pt { min-width:0 !important; font-size:12.5px !important; } #tab-zahlungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-zahlungen .pt th, #tab-zahlungen .pt td { padding:8px 4px; } #tab-zahlungen .pt .pn { white-space:nowrap; font-size:12.5px; } #tab-rechnungen .card-header { flex-wrap:wrap; } }
+@media (max-width:520px) { #tab-zahlungen .hm-l { display:none; } #tab-zahlungen .hm-s { display:inline; } #tab-zahlungen .pt { min-width:0 !important; font-size:12.5px !important; } #tab-zahlungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-zahlungen .pt th, #tab-zahlungen .pt td { padding:8px 4px; } #tab-zahlungen .pt .pn { white-space:nowrap; font-size:12.5px; } #tab-zahlungen .zart { font-size:0; } #tab-zahlungen .zart i { margin:0; } #tab-zahlungen .pt td:nth-child(5) { white-space:nowrap; } #zl-open .hm-main > span { display:block; } #tab-rechnungen .card-header { flex-wrap:wrap; } }
 #st-kpi { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; } @media (min-width:600px) { #st-kpi { grid-template-columns:repeat(3,1fr); } }
 .inv-rb { border:1px dashed #cbd5e1; background:#fff; color:#334155; border-radius:16px; padding:4px 12px; font-size:13px; cursor:pointer; font-family:inherit; } .inv-rb:hover { background:#f1f5f9; }
 @media (max-width:520px) {
@@ -883,7 +883,7 @@ function kaStart() {
       <button type="button" id="gs-rec" title="Neue Rechnung" aria-label="Neue Rechnung anlegen" onclick="hdAdd('rec')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(0 3) scale(.82)"><path d="M4 10h11"/><path d="M4 14h9"/><path d="M18 6.2A7 7 0 0 0 13.4 4.5 7.6 7.6 0 0 0 6 12c0 4.1 3.3 7.5 7.4 7.5 1.9 0 3.6-.7 4.8-1.9"/></g><path d="M19 2.5v6M16 5.5h6"/></svg></button>
     </div>
     <div class="hd-act">
-      <span class="live-dot" title="System aktiv" aria-label="System aktiv"></span>
+
       <button type="button" class="ico-btn" id="al-btn" title="Sperren" aria-label="App sperren" style="display:none;" onclick="alLockNow()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
       <input type="file" id="imp-file" multiple style="display:none" onchange="importData(this)">
     </div>
@@ -2050,7 +2050,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-b';
+var KA_V = '2026-10-31-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2451,7 +2451,7 @@ function renderPatients() {
     if (fl0.rem) addDot('d-rem', 'Terminerinnerung fällig: ' + fmtTermin(fl0.rem));
     if (fl0.next) addDot('d-next', 'Nächster Termin gebucht: ' + fmtTermin(fl0.next));
     var nb = mk('button', 'pn pn-nm'); nb.type = 'button'; nb.title = full + (p.titel ? ' (' + p.titel + ')' : ''); nb.onclick = function () { viewAkte(p); };
-    var nl1 = mk('span', 'pn-l'); nl1.appendChild(document.createTextNode(noT(p.nachname) + ','));
+    var nl1 = mk('span', 'pn-l'); nl1.appendChild(document.createTextNode((noT(p.nachname) || '').toUpperCase() + ','));
     nb.appendChild(nl1); nb.appendChild(document.createTextNode(' ')); var nl2 = mk('span', 'pn-f', noT(p.vorname)); if (p.titel) nl2.appendChild(mk('small', 'pt-tit2', p.titel)); nb.appendChild(nl2); nrow.appendChild(nb);
     c1.appendChild(nrow);
     var sub = p.dob || '';
@@ -2582,7 +2582,7 @@ function evBlock(e, lane, lanes) {
   var pos = lanes > 1 ? 'left:calc(' + (lane * 100 / lanes) + '% + 2px);right:auto;width:calc(' + (100 / lanes) + '% - 4px);' : '';
   var cats = evKats(e), seg = '', chips = '';
   if (cats.length > 1) { seg = '<span class="evseg">' + cats.map(function (c) { return '<i style="background:' + c.color + '"></i>'; }).join('') + '</span>'; if (h >= 62) chips = '<div class="evchips">' + cats.map(function (c) { return '<i style="background:' + c.color + '">' + esc(c.name) + '</i>'; }).join('') + '</div>'; }
-  return '<div class="ev' + (e.phase === 'Abgesagt' ? ' cancel' : '') + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + evFlag(e) + '<b>' + e.time + '</b> ' + esc(dnS(e.patient)) + '<br>' + esc(e.behandlung) + chips + '</div>';
+  return '<div class="ev' + (e.phase === 'Abgesagt' ? ' cancel' : '') + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + evFlag(e) + '<b>' + e.time + '</b> ' + nmHtml(dnS(e.patient)) + '<br>' + esc(e.behandlung) + chips + '</div>';
 }
 
 /* Überlappende Termine nebeneinander statt übereinander */
@@ -2646,7 +2646,7 @@ function monthGrid() {
     var list = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time < b.time ? -1 : 1; });
     html += '<div class="mc' + (d.getMonth() !== m ? ' out' : '') + (k === today ? ' today' : '') + '" onclick="openDay(\'' + k + '\')"><div class="n">' + d.getDate() + '</div>';
     list.slice(0, 3).forEach(function (e) {
-      html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openTerminView(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + esc(dnS(e.patient)) + '</div>';
+      html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openTerminView(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + nmHtml(dnS(e.patient)) + '</div>';
     });
     if (list.length > 3) html += '<div style="color:#64748b;margin-top:2px;">+' + (list.length - 3) + ' weitere</div>';
     html += EXT.pills(k);
@@ -2846,7 +2846,7 @@ function hasAllergy(p) { var a = p && (p.allergien || '').trim().toLowerCase(); 
 function hmRow(time, main, sub, onclick, extra, cls) {
   var r = mk('div', 'hm-row' + (cls ? ' ' + cls : '')); r.onclick = onclick;
   if (time !== null) r.appendChild(mk('div', 'hm-time', time));
-  var m = mk('div', 'hm-main'); m.appendChild(document.createTextNode(main)); if (sub) m.appendChild(mk('small', '', sub)); r.appendChild(m);
+  var m = mk('div', 'hm-main'); m.appendChild(main && main.nodeType ? main : document.createTextNode(main)); if (sub) m.appendChild(mk('small', '', sub)); r.appendChild(m);
   if (extra) r.appendChild(extra); return r;
 }
 function hmFill(id, rows, emptyTxt) {
@@ -2902,7 +2902,7 @@ function renderHome() {
       else ml.forEach(function (t) { var c2 = mk('span', 'badge badge-amber', 'Offen: ' + t); c2.title = t; ex.appendChild(c2); });
     }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
-    var row = hmRow(e.time + ' bis ' + endStr, dnS(e.patient), e.behandlung || '', function () { openAkteFromTermin(e.id); }, null, isNext ? 'next' : '');
+    var row = hmRow(e.time + ' bis ' + endStr, nmEl(dnS(e.patient)), e.behandlung || '', function () { openAkteFromTermin(e.id); }, null, isNext ? 'next' : '');
     if (ex) row.querySelector('.hm-main').appendChild(ex);
     return row;
   }), 'Heute stehen keine Termine an.');
@@ -2920,7 +2920,7 @@ function renderHome() {
   if (expd) imp.appendChild(hmImportantRow(expd + (expd === 1 ? ' Charge abgelaufen' : ' Chargen abgelaufen'), 'Bitte aus dem Bestand nehmen', function () { switchTab('lager'); }, 'Zum Lager', function () { switchTab('lager'); }));
   var ziel = parseInt(settings.zahlungsziel, 10) || 14;
   var verzug = invoices.filter(function (i) { return !invState(i).full && Math.round((new Date(today) - new Date(i.date)) / 86400000) > ziel; }).sort(function (a, b) { return a.date.localeCompare(b.date); });
-  verzug.slice(0, 3).forEach(function (i) { imp.appendChild(hmImportantRow('Zahlungsverzug: ' + i.name, i.nr + ' vom ' + fmtD(i.date) + ' · offen ' + eur(i.total - paidSum(i)), function () { viewInvoice(i.id); }, 'Zahlung', function () { viewInvId = i.id; openPay(); })); });
+  verzug.slice(0, 3).forEach(function (i) { imp.appendChild(hmImportantRow('Zahlungsverzug: ' + invNm(i), i.nr + ' vom ' + fmtD(i.date) + ' · offen ' + eur(i.total - paidSum(i)), function () { viewInvoice(i.id); }, 'Zahlung', function () { viewInvId = i.id; openPay(); })); });
   if (verzug.length > 3) imp.appendChild(mk('div', 'hm-empty', 'und ' + (verzug.length - 3) + ' weitere überfällige Rechnungen'));
   patients.forEach(function (p) {
     var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(p.dob || ''); if (!m || +m[1] !== now.getDate() || +m[2] !== now.getMonth() + 1) return;
@@ -2950,7 +2950,7 @@ function renderHome() {
     var dd = addDays(now, di - wd), k = iso(dd), ev = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time.localeCompare(b.time); });
     if (!ev.length) continue; any = true;
     wk.appendChild(mk('div', 'hm-sec', WDL[dd.getDay()] + ', ' + dd.getDate() + '. ' + MN[dd.getMonth()] + (k === today ? ' (heute)' : '')));
-    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, dnS(e.patient), e.behandlung || '', function () { openAkteFromTermin(e.id); })); });
+    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, nmEl(dnS(e.patient)), e.behandlung || '', function () { openAkteFromTermin(e.id); })); });
   }
   if (!any) wk.appendChild(mk('div', 'hm-empty', 'Diese Woche stehen keine Termine an.'));
   /* Umsatz und Ausgaben des Jahres */
@@ -2962,7 +2962,7 @@ function renderHome() {
   fin.appendChild(tb);
   /* offene Punkte */
   var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !e.alt && !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
-  var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, dnS(e.patient), fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : ''), function () { openDokuFromTermin(e.id); }); });
+  var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, nmEl(dnS(e.patient)), fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : ''), function () { openDokuFromTermin(e.id); }); });
   if (nd.length > 5) ndRows.push(mk('div', 'hm-empty', 'und ' + (nd.length - 5) + ' weitere'));
   hmFill('hm-nodoku', ndRows, 'Alles dokumentiert.');
   var op = invoices.filter(function (i) { return !invState(i).full; }).sort(function (a, b) { return a.date.localeCompare(b.date); }), sum = 0;
@@ -2972,7 +2972,7 @@ function renderHome() {
   if (op.length) opRows.push(mk('div', 'hm-empty', 'Offen insgesamt: ' + eur(sum)));
   hmFill('hm-open', opRows, 'Keine offenen Rechnungen.');
   var fm = flagsMap(), an = patients.filter(function (p) { return fm.get(p).anam; }).sort(function (a, b) { var x = fm.get(a).anam.e, y = fm.get(b).anam.e; return (x.date + x.time).localeCompare(y.date + y.time); });
-  var anRows = an.slice(0, 5).map(function (p) { var z = fm.get(p).anam; return hmRow(null, dnP(p), 'Termin ' + fmtTermin(z.e) + ' · ' + anamText(z.info), function () { viewAkte(p); setAkTab('anl'); }); });
+  var anRows = an.slice(0, 5).map(function (p) { var z = fm.get(p).anam; return hmRow(null, nmEl(dnP(p)), 'Termin ' + fmtTermin(z.e) + ' · ' + anamText(z.info), function () { viewAkte(p); setAkTab('anl'); }); });
   if (an.length > 5) anRows.push(mk('div', 'hm-empty', 'und ' + (an.length - 5) + ' weitere'));
   hmFill('hm-anam', anRows, 'Alle Anamnesen für die nächsten Termine sind aktuell.');
 }
@@ -3148,7 +3148,15 @@ function validDob(v) {
 var DOB_MSG = 'Bitte das Geburtsdatum im Format TT.MM.JJJJ eingeben, z.B. 23.09.1978.';
 function nameKey(p) { return p.vorname + ' ' + p.nachname; }
 /* Anzeige: Nachname, Vorname (die Zuordnung läuft weiter über nameKey) */
-function dnP(p) { return p.nachname + ', ' + p.vorname; }
+function dnP(p) { return (noTitel(p.nachname) || p.nachname || '').toUpperCase() + ', ' + (noTitel(p.vorname) || p.vorname || ''); }
+/* Interne Namensanzeige: NACHNAME, Vorname mit fettem Nachnamen */
+function nmHtml(t) { t = String(t || ''); var k = t.indexOf(', '); return k < 0 ? esc(t) : '<b>' + esc(t.slice(0, k)) + '</b>' + esc(t.slice(k)); }
+function nmEl(t) { var e = document.createElement('span'); e.innerHTML = nmHtml(t); return e; }
+function invNm(i) {
+  var p = i.pid ? patients.filter(function (x) { return x.id === i.pid; })[0] : null; if (p) return dnP(p);
+  var w = String(i.name || '').replace(/^(Frau|Herr|Divers)\s+/, '').trim().split(/\s+/); if (w.length < 2) return w.join(' ');
+  var n = w.pop(); return n.toUpperCase() + ', ' + (noTitel(w.join(' ')) || w.join(' '));
+}
 function dnS(n) { var p = patients.filter(function (x) { return nameKey(x) === n; })[0]; return p ? dnP(p) : n; }
 function newId() { return Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
 function tsOf(x) { return x.ts || parseInt(String(x.id || '0').split('-')[0], 10) || 0; }
@@ -3864,7 +3872,7 @@ function renderInvoices() {
     var row = tb.insertRow(); row.className = i.storniert ? '' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
-    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm); c2.textContent = String(i.name || '').replace(/^(Frau|Herr|Divers)\s+/, ''); c3.textContent = eur(i.total); c0.className = 'nw';
+    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm); c2.appendChild(nmEl(invNm(i))); c3.textContent = eur(i.total); c0.className = 'nw';
     /* Betrag statt Status-Spalte: rot = offen, dunkelrot = überfällig, orange = Teilzahlung, grün = bezahlt, grau = storniert */
     var st = invState(i), late = !st.full && invLate(i), amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
     amt.title = i.storniert ? 'Storniert' : st.full ? 'Bezahlt' : late ? 'Überfällig' : st.txt; c3.textContent = ''; c3.className = 'nw'; c3.appendChild(amt);
@@ -5381,7 +5389,7 @@ function todoRow(t) {
   cb.onchange = function () { t.done = cb.checked; t.doneTs = cb.checked ? Date.now() : 0; persist(); refreshTodoViews(); };
   var main = mk('div', 'td-main'); main.appendChild(mk('div', 'td-text', t.text));
   var sub = mk('div', 'td-sub'), p = t.pid ? patients.filter(function (x) { return x.id === t.pid; })[0] : null, ev = t.eid ? events.filter(function (x) { return x.id === t.eid; })[0] : null;
-  var parts = []; if (p) parts.push(dnP(p)); if (ev) parts.push('Termin ' + fmtTermin(ev)); sub.textContent = parts.join(' · ');
+  var parts = []; if (p) parts.push(dnP(p)); if (ev) parts.push('Termin ' + fmtTermin(ev)); sub.innerHTML = parts.map(function (x, k) { return k === 0 && p ? nmHtml(x) : esc(x); }).join(' · ');
   if (t.due) { var du = mk('span', '', (parts.length ? ' · ' : '') + 'fällig ' + fmtD(t.due)); if (!t.done && t.due < today) { du.style.color = '#b91c1c'; du.style.fontWeight = '600'; du.textContent += ' (überfällig)'; } sub.appendChild(du); }
   if (parts.length || t.due) main.appendChild(sub);
   main.onclick = function () { openTodo(t.id); };
@@ -5572,7 +5580,7 @@ function renderZahlungen() {
   tin.innerHTML = '';
   pays.forEach(function (p) {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
-    var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 6) + zd.slice(8) + '</span>'; c0.className = 'nw'; c1.textContent = String(p.inv.name || '').replace(/^(Frau|Herr|Divers)\s+/, ''); c4.className = 'nw';
+    var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 6) + zd.slice(8) + '</span>'; c0.className = 'nw'; c1.appendChild(nmEl(invNm(p.inv))); c4.className = 'nw';
     var b = mk('button', 'pn'); b.type = 'button'; var nrm = /^(.*?-)(\d+)$/.exec(String(p.inv.nr || '')); if (nrm) { b.appendChild(document.createTextNode(nrm[1])); b.appendChild(document.createElement('br')); b.appendChild(document.createTextNode(nrm[2])); } else b.textContent = p.inv.nr; b.style.lineHeight = '1.25'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar);
     c4.appendChild(mk('span', '', eur(p.amount)));
@@ -5585,7 +5593,7 @@ function renderZahlungen() {
   open.forEach(function (i) {
     var b0 = mk('button', 'btn btn-secondary btn-sm', 'Zahlung'); b0.type = 'button'; b0.onclick = function (ev) { ev.stopPropagation(); viewInvId = i.id; openPay(); };
     var b = mk('span'); b.style.cssText = 'display:inline-flex; flex-direction:column; align-items:flex-end; gap:5px; flex:none;'; var am = mk('b', '', eur(i.total - paidSum(i))); am.style.cssText = 'white-space:nowrap; color:#b45309;'; b.appendChild(am); b.appendChild(b0);
-    var late = invLate(i), d = invDaysOld(i), row = hmRow(fmtD(i.date), i.name, i.nr + ' · offen' + (late ? ' · seit ' + d + ' Tagen überfällig' : ''), function () { viewInvoice(i.id); }, b);
+    var late = invLate(i), d = invDaysOld(i), row = hmRow(fmtD(i.date), nmEl(invNm(i)), i.nr + ' · offen' + (late ? ' · seit ' + d + ' Tagen überfällig' : ''), function () { viewInvoice(i.id); }, b);
     var tm0 = row.querySelector('.hm-time'); if (tm0) { var zd0 = fmtD(i.date); tm0.innerHTML = '<span class="hm-l">' + zd0 + '</span><span class="hm-s">' + zd0.slice(0, 6) + zd0.slice(8) + '</span>'; }
     row.classList.add(late ? 'hm-late' : 'hm-openp'); op.appendChild(row);
   });
