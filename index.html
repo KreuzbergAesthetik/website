@@ -741,6 +741,17 @@ body.akte-open .fab-col, body.akte-open .gs-bar { display:none !important; }
 .tv-fbtn { height:46px; min-width:58px; padding:0 8px; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:#fff; border:1px solid #d5dce6; border-radius:10px; color:var(--tfc,#64748b); cursor:pointer; box-shadow:0 2px 6px rgba(15,23,42,.1); } .tv-fbtn svg { width:19px; height:19px; } .tv-fbtn span { font-size:9.5px; font-weight:700; line-height:1; }
 .tf-copy { --tfc:var(--c-mehr); } .tf-pen { --tfc:var(--c-doku); } .tf-cancel { --tfc:#ea580c; } .tv-fdel { --tfc:#dc2626; border-color:#dc2626; }
 @media (max-width:699px) { #pt-er-row { display:none !important; } .iv-b:not(.iv-back) span { font-size:9.5px; letter-spacing:-.2px; } }
+/* Rote Leiste mit rotem Rahmen, Zeitraum-Knopf schwebt links neben den Buttons */
+.open-box.late { border:1px solid #dc2626; border-left:4px solid #dc2626; }
+.fab-flt { position:fixed; right:70px; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:45; --fc:#475569; } .fab-flt.on { --fc:#b45309; border-color:#f59e0b; background:#fffbeb; }
+#tab-rechnungen:not(.active) .fab-flt { display:none; }
+body.akte-open .fab-flt { display:none !important; }
+.fab.fab-search { border-radius:50%; width:48px; height:48px; } .fab.fab-search span { display:none; } .fab.fab-search svg { width:22px; height:22px; }
+/* Löschen: ohne Rahmen, rot, etwas abseits */
+.iv-b.iv-del span, .tv-fbtn.tv-fdel span { display:none !important; } .iv-b.iv-del, .tv-fbtn.tv-fdel { min-width:0; width:36px; } .tv-fbtn.tv-fdel svg, .iv-b.iv-del svg { width:20px; height:20px; }
+.iv-b.iv-del { border:none; background:none; box-shadow:none; margin-right:10px; }
+@media (min-width:600px) { .iv-bar .iv-b.iv-del { position:absolute; right:14px; top:10px; margin:0; } }
+.tv-fbtn.tv-fdel { border:none; background:none; box-shadow:none; margin-right:auto; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1047,6 +1058,7 @@ function kaStart() {
         <button type="button" class="btn btn-sm inv-plus" id="inv-b-new" onclick="invNew()" title="Neue Rechnung" aria-label="Neue Rechnung">+</button>
       </div>
       <div id="entw-list" style="display:none"></div>
+      <button type="button" class="fab fab-flt" id="inv-flt" onclick="invPerMenu(event)" title="Zeitraum der Anzeige wählen" aria-label="Zeitraum wählen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Zeitraum</span></button>
       <div id="inv-main">
       <div id="inv-open"></div>
       <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
@@ -2145,7 +2157,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-k';
+var KA_V = '2026-10-31-m';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3858,19 +3870,48 @@ async function saveInvoice() {
 /* Offene Posten: Summe, Anzahl und überfällige (nach Zahlungsziel) */
 function invDaysOld(i) { return Math.round((new Date(iso(new Date())) - new Date(i.date)) / 86400000); }
 function invLate(i) { return invDaysOld(i) > (parseInt(settings.zahlungsziel, 10) || 14); }
-function invOpenInfo() {
-  var l = invoices.filter(function (i) { return !invState(i).full; }), sum = 0, lateN = 0, lateSum = 0;
+var invPer = { k: 'alle', from: '', to: '' };
+function invPerRange() {
+  var n = new Date(), y = n.getFullYear(), m = n.getMonth(), iso0 = function (d) { return iso(d); }, k = invPer.k;
+  if (k === 'monat') return [iso0(new Date(y, m, 1)), iso0(new Date(y, m + 1, 0))];
+  if (k === 'lmonat') return [iso0(new Date(y, m - 1, 1)), iso0(new Date(y, m, 0))];
+  if (k === 'quartal') { var q = Math.floor(m / 3) * 3; return [iso0(new Date(y, q, 1)), iso0(new Date(y, q + 3, 0))]; }
+  if (k === 'jahr') return [y + '-01-01', y + '-12-31'];
+  if (k === 'ljahr') return [(y - 1) + '-01-01', (y - 1) + '-12-31'];
+  if (k === 'eigen') return [invPer.from || '0000-01-01', invPer.to || '9999-12-31'];
+  return null;
+}
+function invInRange(i) { var r = invPerRange(); return !r || (String(i.date) >= r[0] && String(i.date) <= r[1]); }
+var INV_PER_LBL = { alle: 'Alle', monat: 'Dieser Monat', lmonat: 'Letzter Monat', quartal: 'Dieses Quartal', jahr: 'Dieses Jahr', ljahr: 'Letztes Jahr', eigen: 'Eigener Zeitraum' };
+function invPerText() { if (invPer.k === 'eigen') return (invPer.from ? fmtD(invPer.from) : 'Anfang') + ' bis ' + (invPer.to ? fmtD(invPer.to) : 'heute'); return INV_PER_LBL[invPer.k]; }
+function invPerMenu(ev) {
+  ev.stopPropagation(); var old = document.getElementById('inv-pop'); if (old) { old.remove(); return; }
+  var r = ev.currentTarget.getBoundingClientRect(), m = mk('div', 'nv-pop'); m.id = 'inv-pop';
+  ['alle', 'monat', 'lmonat', 'quartal', 'jahr', 'ljahr'].forEach(function (k) { var b = mk('button', '', (invPer.k === k ? '✓ ' : '') + INV_PER_LBL[k]); b.type = 'button'; b.onclick = function () { m.remove(); invPer.k = k; renderInvoices(); }; m.appendChild(b); });
+  var e = mk('button', '', (invPer.k === 'eigen' ? '✓ ' : '') + 'Eigener Zeitraum …'); e.type = 'button'; e.onclick = function () { m.remove(); invPerCustom(); }; m.appendChild(e);
+  m.style.bottom = (window.innerHeight - r.top + 8) + 'px'; m.style.right = Math.max(8, window.innerWidth - r.right) + 'px'; document.body.appendChild(m);
+  setTimeout(function () { document.addEventListener('click', function f() { var p = document.getElementById('inv-pop'); if (p) p.remove(); document.removeEventListener('click', f); }); }, 0);
+}
+function invPerCustom() {
+  var d = document.createElement('div'); d.className = 'ka-dlg';
+  d.innerHTML = '<div class="ka-dlg-box"><div class="ka-dlg-msg"><b>Eigener Zeitraum</b></div><div class="grid-2"><div class="form-group"><label>Von</label><input type="date" id="ip-from" class="form-control"></div><div class="form-group"><label>Bis</label><input type="date" id="ip-to" class="form-control"></div></div><div class="ka-dlg-foot"><button type="button" class="btn btn-cancel" id="ip-no">Abbrechen</button><button type="button" class="btn btn-save" id="ip-ok">Anwenden</button></div></div>';
+  document.body.appendChild(d); d.querySelector('#ip-from').value = invPer.from; d.querySelector('#ip-to').value = invPer.to;
+  d.querySelector('#ip-no').onclick = function () { d.remove(); };
+  d.querySelector('#ip-ok').onclick = function () { var f = d.querySelector('#ip-from').value, t = d.querySelector('#ip-to').value; if (!f && !t) { alert('Bitte mindestens ein Datum angeben.'); return; } if (f && t && f > t) { alert('Das Anfangsdatum liegt nach dem Enddatum.'); return; } invPer = { k: 'eigen', from: f, to: t }; d.remove(); renderInvoices(); };
+}
+function invOpenInfo(range) {
+  var l = invoices.filter(function (i) { return !invState(i).full && (!range || invInRange(i)); }), sum = 0, lateN = 0, lateSum = 0;
   l.forEach(function (i) { var o = r2(i.total - paidSum(i)); sum += o; if (invLate(i)) { lateN++; lateSum += o; } });
   return { list: l, sum: r2(sum), lateN: lateN, lateSum: r2(lateSum) };
 }
 function openBox() {
-  var o = invOpenInfo(); if (!o.list.length) return null;
+  var o = invOpenInfo(true); if (!o.list.length) return null;
   var b = mk('div', 'open-box' + (o.lateN ? ' late' : '')), a = mk('div');
   a.appendChild(mk('b', '', eur(o.sum)));
   b.appendChild(a);
   var late = o.list.filter(function (i) { return invLate(i); }).sort(function (x, y) { return String(x.date).localeCompare(String(y.date)); });
   var nm = function (i) { return i.nr + ' · ' + invNm(i) + ' (' + invDaysOld(i) + ' Tage)'; };
-  var t = mk('div', 'ob-t', o.list.length + (o.list.length === 1 ? ' offene Rechnung' : ' offene Rechnungen') + (late.length ? ' · überfällig: ' + late.slice(0, 2).map(nm).join('; ') + (late.length > 2 ? ' und ' + (late.length - 2) + ' weitere' : '') : ''));
+  var t = mk('div', 'ob-t', o.list.length + (o.list.length === 1 ? ' offene Rechnung' : ' offene Rechnungen') + (late.length ? ' · überfällig: ' + late.slice(0, 2).map(nm).join('; ') + (late.length > 2 ? ' und ' + (late.length - 2) + ' weitere' : '') : '') + (invPer.k !== 'alle' ? ' · ' + invPerText() : ''));
   b.appendChild(t); return b;
 }
 var invSort = { k: 'nr', dir: -1 }, invF = '';
@@ -3959,22 +4000,23 @@ function renderInvoices() {
   [].forEach.call(document.querySelectorAll('[data-ik]'), function (e) { e.innerHTML = e.getAttribute('data-ik') === invSort.k ? (invSort.dir > 0 ? '&#9650;' : '&#9660;') : ''; });
   document.getElementById('inv-empty').style.display = invoices.length ? 'none' : 'block';
   var ob = document.getElementById('inv-open'); if (ob) { ob.innerHTML = ''; var bx = openBox(); if (bx) ob.appendChild(bx); }
+  var fb0 = document.getElementById('inv-flt'); if (fb0) { fb0.classList.toggle('on', invPer.k !== 'alle'); fb0.querySelector('span').textContent = invPer.k === 'alle' ? 'Zeitraum' : (invPer.k === 'eigen' ? 'Eigener' : INV_PER_LBL[invPer.k].replace('Dieser ', '').replace('Dieses ', '').replace('Letzter ', 'Letzter ').replace('Letztes ', 'Letztes ')); }
   /* Filter und Suche */
-  var cnt = { '': invoices.length, offen: 0, ueberfaellig: 0, bezahlt: 0, storno: 0 };
-  invoices.forEach(function (i) { var k = invKind(i); cnt[k]++; if (k === 'ueberfaellig') cnt.offen++; });
+  var inR = invoices.filter(invInRange), cnt = { '': inR.length, offen: 0, ueberfaellig: 0, bezahlt: 0, storno: 0 };
+  inR.forEach(function (i) { var k = invKind(i); cnt[k]++; if (k === 'ueberfaellig') cnt.offen++; });
   var sg = document.getElementById('inv-seg'); sg.innerHTML = '';
   [['', 'Alle'], ['offen', 'Offen'], ['ueberfaellig', 'Überfällig'], ['bezahlt', 'Bezahlt'], ['storno', 'Storno']].forEach(function (f) {
     var bt = mk('button', 'za-b' + (invF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(cnt[f[0]])));
     bt.onclick = function () { invF = (invF === f[0]) ? '' : f[0]; renderInvoices(); }; sg.appendChild(bt);
   });
   var q = (document.getElementById('inv-q').value || '').trim().toLowerCase();
-  var shown = invoices.filter(function (i) {
+  var shown = inR.filter(function (i) {
     var k = invKind(i);
     if (invF === 'offen' && k !== 'offen' && k !== 'ueberfaellig') return false; if (invF && invF !== 'offen' && k !== invF) return false;
     return !q || (i.nr + ' ' + i.name + ' ' + eur(i.total) + ' ' + fmtD(i.date) + ' ' + String(i.total).replace('.', ',')).toLowerCase().indexOf(q) >= 0;
   });
   if (!shown.length && invoices.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
-  shown.sort(function (a, b) { var oa = invState(a).full ? 1 : 0, ob2 = invState(b).full ? 1 : 0; return (oa - ob2) || invCmp(a, b); }).forEach(function (i) {
+  shown.sort(invCmp).forEach(function (i) {
     var row = tb.insertRow(); row.className = i.storniert ? '' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
     var b = mk('button', 'pn', i.nr); b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
