@@ -575,7 +575,11 @@ body { overflow-x:clip; }
 .pt-tit { font-size:12px; color:#64748b; margin-left:8px; white-space:nowrap; flex:none; }
 .pt-dr { display:flex; flex-direction:column; gap:1px; } .pt-dr .pt-dob { min-width:0; } .pt-ev { flex:none; font-size:12px; color:#94a3b8; white-space:nowrap; } .pt-ev.next { color:#15803d; font-weight:600; }
 .pt-wrap { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; } .pt-l { min-width:0; } .pt-l .pn-nm { white-space:normal; text-align:left; overflow:visible; line-height:1.25; } .pt-l .pn-row { align-items:center; min-height:30px; } .pt-l .pt-dr { margin-top:-4px; } .pt .pidb { margin-top:3px; }
-.pn-l { white-space:nowrap; } .pn-f { display:inline-block; }
+.pn-l { white-space:nowrap; font-size:16px; font-weight:800; color:#0f172a; } .pn-f { display:inline-block; font-weight:400; color:#64748b; }
+#tab-patienten .pt td.pc-er { color:#94a3b8; }
+#tab-rechnungen .pt td:nth-child(1) .pn, #tab-rechnungen .pt td:nth-child(3), #tab-rechnungen .pt td:nth-child(4) { font-weight:700; }
+#tab-zahlungen .pt td:nth-child(2), #tab-zahlungen .pt td:nth-child(5), #zl-open .hm-main { font-weight:700; } #zl-open .hm-main small { font-weight:400; }
+#lg-table td:nth-child(-n+3), #lg-table td:first-child .pn { font-weight:700; }
 .pt td.pc-er { line-height:30px; padding-top:5px; vertical-align:top; }
 .pt-tit2 { font-size:11px; font-weight:400; color:#64748b; margin-left:5px; }
 .pt-info, .pt-acts .pt-wide-b, .pt-hi, .pt-ha { display:none; }
@@ -1011,15 +1015,13 @@ function kaStart() {
           <button type="button" class="btn btn-sm" onclick="openLeist(-1)">+ Leistung</button>
         </div>
       </div>
-      <div id="lk-box" style="margin-bottom:14px;"></div>
-      <div id="rab-box" style="margin-bottom:14px;"></div>
       <div class="cal-bar" style="margin-bottom:10px;">
         <input type="text" id="ls-filter" class="form-control" placeholder="Leistungsname..." autocomplete="off" oninput="lsPage = 1; renderLeist()" style="flex:1 1 200px;">
         <select id="ls-fkat" class="form-control" style="width:auto; max-width:240px;" onchange="lsPage = 1; renderLeist()" aria-label="Gruppe"></select>
       </div>
       <div class="scroll">
         <table class="pt" style="min-width:640px; font-size:14px;">
-          <thead><tr><th style="width:52px; cursor:pointer;" onclick="lsSortBy('id')">ID</th><th style="cursor:pointer;" onclick="lsSortBy('name')">Leistung</th><th style="width:150px; cursor:pointer;" onclick="lsSortBy('kat')">Gruppe</th><th style="width:100px; cursor:pointer;" onclick="lsSortBy('price')">Preis</th><th style="width:64px;">MwSt</th><th style="width:76px; cursor:pointer;" onclick="lsSortBy('dauer')">Dauer</th><th style="width:118px;"></th></tr></thead>
+          <thead><tr><th style="width:52px; cursor:pointer;" onclick="lsSortBy('id')">ID</th><th style="cursor:pointer;" onclick="lsSortBy('name')">Leistung</th><th style="width:150px; cursor:pointer;" onclick="lsSortBy('kat')">Gruppe</th><th style="width:100px; cursor:pointer;" onclick="lsSortBy('price')">Preis</th><th style="width:64px;">MwSt</th><th style="width:118px;"></th></tr></thead>
           <tbody id="ls-table"></tbody>
         </table>
       </div>
@@ -1029,6 +1031,10 @@ function kaStart() {
         <div id="ls-pager" class="seg"></div>
       </div>
       <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Diese Leistungen erscheinen im Termin und in der Rechnung. Wählst Du dort eine Leistung, füllen sich Preis und Dauer automatisch.</div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div id="lk-box" style="margin-bottom:14px;"></div>
+      <div id="rab-box"></div>
     </div>
   </div>
 
@@ -1124,7 +1130,10 @@ function kaStart() {
       <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div>
       <div style="margin-bottom:10px;"><button type="button" class="btn btn-sm btn-secondary" onclick="nvDefaults()">Standardvorlagen laden</button></div>
       <div id="nv-list"></div>
-      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Platzhalter: {Anrede} {Vorname} {Nachname} {Name} {Datum} {DatumWochentag} {Termin} {TerminDatum} {Uhrzeit} {NaechsterTermin} {Behandlung} sowie die fertigen Anreden {AnredeFormell} (Sehr geehrte Frau …), {AnredeInformell} (Liebe …) und {AnredeEnglisch} (Dear Ms. …) sowie {LinkAnmeldung}, {LinkAnamnese} und {LinkErinnerung} für die Webformulare. Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Platzhalter</span></div>
+      <div style="font-size:12.5px; color:#64748b; line-height:1.5;">{Anrede} {Vorname} {Nachname} {Name} {Datum} {DatumWochentag} {Termin} {TerminDatum} {Uhrzeit} {NaechsterTermin} {Behandlung} sowie die fertigen Anreden {AnredeFormell} (Sehr geehrte Frau …), {AnredeInformell} (Liebe …) und {AnredeEnglisch} (Dear Ms. …) sowie {LinkAnmeldung}, {LinkAnamnese} und {LinkErinnerung} für die Webformulare. Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Pakete für neue Patienten</span><button type="button" class="btn btn-sm" onclick="openPaket(-1)">+ Paket</button></div>
@@ -2041,7 +2050,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-30-g';
+var KA_V = '2026-10-31-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3389,17 +3398,17 @@ function renderLeist() {
   list.sort(function (a, b) { var x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * lsSort.dir; });
   var per = parseInt(document.getElementById('ls-per').value, 10) || list.length || 1, pages = Math.max(1, Math.ceil(list.length / per)); if (lsPage > pages) lsPage = pages;
   list.slice((lsPage - 1) * per, lsPage * per).forEach(function (k) {
-    var i = all.indexOf(k), row = tb.insertRow(), c = [0, 1, 2, 3, 4, 5, 6].map(function () { return row.insertCell(); });
+    var i = all.indexOf(k), row = tb.insertRow(), c = [0, 1, 2, 3, 4, 5].map(function () { return row.insertCell(); });
     c[0].textContent = k.id; c[0].style.color = '#64748b';
     var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c[1].appendChild(b);
     c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); var gn = mk('span', 'ls-gn', kc.name); c[2].appendChild(gn); } else c[2].textContent = '-';
-    c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %'; c[5].textContent = k.dauer ? k.dauer + ' min' : '-';
-    c[6].style.cssText = 'white-space:nowrap;';
-    c[6].appendChild(lsAct('copy', 'Kopieren', function () { lsCopy(i); }, ''));
-    c[6].appendChild(lsAct('pen', 'Bearbeiten', function () { openLeist(i); }, ''));
-    c[6].appendChild(lsAct('trash', 'Löschen', function () { lsDelete(i); }, 'del'));
+    c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %';
+    c[5].style.cssText = 'white-space:nowrap;';
+    c[5].appendChild(lsAct('copy', 'Kopieren', function () { lsCopy(i); }, ''));
+    c[5].appendChild(lsAct('pen', 'Bearbeiten', function () { openLeist(i); }, ''));
+    c[5].appendChild(lsAct('trash', 'Löschen', function () { lsDelete(i); }, 'del'));
   });
-  if (all.length && !list.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 7; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
+  if (all.length && !list.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 6; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
   var pg = document.getElementById('ls-pager'); pg.innerHTML = ''; pg.style.display = pages > 1 ? 'inline-flex' : 'none';
   for (var p = 1; p <= pages; p++) (function (p) { var b = mk('button', '', String(p)); b.type = 'button'; b.className = p === lsPage ? 'on' : ''; b.onclick = function () { lsPage = p; renderLeist(); }; pg.appendChild(b); })(p);
 }
