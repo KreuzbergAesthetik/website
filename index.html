@@ -427,6 +427,13 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
   #tp-table td:first-child { display:block; background:none; color:inherit; font-size:15px; padding:0; margin:0; }
   #tp-table td.tp-no { display:none; } #tp-table td.tp-neu { font-size:0; background:#d1fae5; color:#065f46; } #tp-table td.tp-neu::after { content:'Neuer Patient'; font-size:11.5px; }
 }
+.nv-sec { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.6px; margin:14px 0 6px; } .nv-sec .btn { text-transform:none; letter-spacing:0; } .nv-lock { font-weight:500; text-transform:none; letter-spacing:0; color:#94a3b8; }
+.nv-t { display:flex; gap:10px; align-items:flex-start; background:#f6f8fb; border-radius:10px; padding:10px; margin-bottom:6px; cursor:pointer; } .nv-t .m { flex:1; min-width:0; } .nv-t .nm { font-size:15px; font-weight:600; color:#0f172a; } .nv-t .sub { font-size:12px; color:#64748b; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.nv-ch { flex:none; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; background:#dbeafe; color:#1e40af; } .nv-ch.sms { background:#d1fae5; color:#065f46; } .nv-ch.both { background:#ede9fe; color:#5b21b6; }
+.ph-row { display:flex; gap:10px; align-items:center; background:#f6f8fb; border-radius:10px; padding:8px 10px; margin-bottom:5px; } .ph-row .m { flex:1; min-width:0; } .ph-tag { font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:700; color:#075985; } .ph-ex { font-size:12.5px; color:#334155; margin-top:1px; overflow-wrap:anywhere; } .ph-d { font-size:12px; color:#64748b; margin-left:6px; }
+.ph-edit { flex:none; width:30px; height:30px; border-radius:8px; border:1px solid #d5dce6; background:#fff; color:#94a3b8; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; } .ph-edit svg { width:15px; height:15px; }
+.nv-phs { display:flex; flex-wrap:wrap; gap:5px; } .nv-phs button { background:#e0f2fe; color:#075985; border:0; border-radius:6px; padding:4px 8px; font-size:12.5px; font-family:ui-monospace,Menlo,monospace; cursor:pointer; } .nv-phs button.more { background:#f1f5f9; color:#475569; font-family:inherit; }
+.nv-pop { position:fixed; z-index:200; background:#fff; border-radius:10px; box-shadow:0 6px 22px rgba(15,23,42,.25); padding:4px; } .nv-pop button { display:block; background:none; border:0; padding:10px 14px; font-size:14px; color:#334155; cursor:pointer; white-space:nowrap; border-radius:8px; } .nv-pop button:hover { background:#f1f5f9; }
 .hm-chips { display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-top:5px; } .hm-chips .badge { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
 .hm-time { width:96px; font-weight:600; flex:none; font-size:14px; }
 .hm-main { flex:1; min-width:0; } .hm-main small { display:block; color:#64748b; font-size:12px; }
@@ -1127,18 +1134,15 @@ function kaStart() {
   <!-- TAB: NACHRICHTENVORLAGEN -->
   <div id="tab-nachrichten" class="tab-content">
     <div class="card">
-      <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div>
-      <div style="margin-bottom:10px;"><button type="button" class="btn btn-sm btn-secondary" onclick="nvDefaults()">Standardvorlagen laden</button></div>
+      <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="nvMenu(event)" title="Mehr" aria-label="Mehr">&#8943;</button><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div></div>
       <div id="nv-list"></div>
+      <div class="nv-sec"><span>Pakete für neue Patienten</span><button type="button" class="btn btn-sm btn-secondary" onclick="openPaket(-1)">+ Paket</button></div>
+      <div id="pk-list"></div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Ein Paket verschickt in einer Nachricht die Links zu den gewählten Online-Formularen. Die gewählten Vorlagen (z. B. Datenschutz) werden dabei in die Akte gelegt und vor Ort unterschrieben. Im Text steht {Links} für die Liste der Formular-Links, dazu gehen alle Platzhalter der Nachrichtenvorlagen.</div>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Platzhalter</span></div>
-      <div style="font-size:12.5px; color:#64748b; line-height:1.5;">{Anrede} {Vorname} {Nachname} {Name} {Datum} {DatumWochentag} {Termin} {TerminDatum} {Uhrzeit} {NaechsterTermin} {Behandlung} sowie die fertigen Anreden {AnredeFormell} (Sehr geehrte Frau …), {AnredeInformell} (Liebe …) und {AnredeEnglisch} (Dear Ms. …) sowie {LinkAnmeldung}, {LinkAnamnese} und {LinkErinnerung} für die Webformulare. Beim Schreiben einer E-Mail in der Patientenakte wählst Du die Vorlage aus, die Platzhalter werden ersetzt.</div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Pakete für neue Patienten</span><button type="button" class="btn btn-sm" onclick="openPaket(-1)">+ Paket</button></div>
-      <div id="pk-list"></div>
-      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Ein Paket verschickt in einer Nachricht die Links zu den gewählten Online-Formularen. Die gewählten Vorlagen (z. B. Datenschutz) werden dabei in die Akte gelegt und vor Ort unterschrieben. Im Text steht {Links} für die Liste der Formular-Links, dazu gehen alle Platzhalter der Nachrichtenvorlagen.</div>
+      <div id="ph-list"></div>
     </div>
   </div>
 
@@ -1670,13 +1674,49 @@ function kaStart() {
   <div class="modal-box">
     <div class="modal-header"><strong>Nachrichtenvorlage</strong><button type="button" class="close-btn" onclick="closeModal('modal-nv')">&times;</button></div>
     <div class="form-group"><label>Name der Vorlage</label><input type="text" id="nv-name" class="form-control" autocomplete="off"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Gruppe</label><select id="nv-gruppe" class="form-control"></select></div>
+      <div class="form-group"><label>Kanal</label><select id="nv-kanal" class="form-control"><option>E-Mail</option><option>SMS</option><option>E-Mail · SMS</option></select></div>
+    </div>
     <div class="form-group"><label>Betreff</label><input type="text" id="nv-betreff" class="form-control" autocomplete="off"></div>
     <div class="form-group"><label>Nachricht</label><textarea id="nv-text" class="form-control" rows="8"></textarea></div>
+    <div class="form-group"><label>Platzhalter einfügen (antippen)</label><div id="nv-phs" class="nv-phs"></div></div>
     <div class="form-group"><label>Anhänge (Vorlagen aus Praxis → Vorlagen)</label><div id="nv-att"></div></div>
     <div class="foot-bar">
       <button type="button" id="nv-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteNachr()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
       <button type="button" class="btn btn-cancel" onclick="closeModal('modal-nv')">Abbrechen</button>
       <button type="button" class="btn btn-save" onclick="saveNachr()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PLATZHALTER -->
+<div id="modal-ph" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="ph-title">Platzhalter</strong><button type="button" class="close-btn" onclick="closeModal('modal-ph')">&times;</button></div>
+    <div class="form-group"><label>Name (ohne Klammern, nur Buchstaben und Ziffern)</label><input type="text" id="ph-name" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Wird ersetzt durch</label><textarea id="ph-text" class="form-control" rows="3"></textarea></div>
+    <div id="ph-hint" style="font-size:12px; color:#64748b; margin-bottom:8px;"></div>
+    <div class="foot-bar">
+      <button type="button" id="ph-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deletePh()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ph')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="savePh()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ANREDE -->
+<div id="modal-an" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="an-title">Anrede</strong><button type="button" class="close-btn" onclick="closeModal('modal-an')">&times;</button></div>
+    <div class="form-group"><label>Bei Frau</label><input type="text" id="an-0" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Bei Herr</label><input type="text" id="an-1" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Sonst (Divers oder ohne Angabe)</label><input type="text" id="an-2" class="form-control" autocomplete="off"></div>
+    <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Erlaubt sind {Vorname}, {Nachname} und {Name}.</div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-secondary" onclick="resetAn()">Zurücksetzen</button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-an')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveAn()">Speichern</button>
     </div>
   </div>
 </div>
@@ -2050,7 +2090,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-c';
+var KA_V = '2026-10-31-d';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5651,7 +5691,94 @@ async function nvDefaults() {
   neu.forEach(function (n) { settings.nachrichten.push({ id: newId(), name: n.name, betreff: n.betreff, text: n.text }); });
   persist(); renderNachr();
 }
-function renderNachr() { renderPakete(); settings.nachrichten = settings.nachrichten || []; simpleList('nv-list', settings.nachrichten, openNachr, function (x) { return (x.betreff || '') + (x.text ? ' · ' + x.text.replace(/\s+/g, ' ').slice(0, 70) : ''); }); }
+var NV_GROUPS = ['Termin', 'Formulare', 'Rechnung und Befund', 'Sonstiges'], NV_KANAELE = ['E-Mail', 'SMS', 'E-Mail · SMS'];
+function nvGroupOf(x) {
+  if (NV_GROUPS.indexOf(x.gruppe) >= 0) return x.gruppe; var n = String(x.name || '');
+  if (/termin|erinner|absage/i.test(n)) return 'Termin'; if (/anmelde|anamnes|aufklär|formular/i.test(n)) return 'Formulare'; if (/kosten|rechnung|befund/i.test(n)) return 'Rechnung und Befund'; return 'Sonstiges';
+}
+function nvKanalOf(x) { return NV_KANAELE.indexOf(x.kanal) >= 0 ? x.kanal : (/sms/i.test(x.name || '') ? 'SMS' : 'E-Mail'); }
+function nvCleanName(x) { return String(x.name || '').replace(/\s*\((E-Mail|SMS)\)\s*$/i, '').replace(/\s+(SMS|Email|E-Mail)$/i, ''); }
+function renderNachr() {
+  settings.nachrichten = settings.nachrichten || []; renderPakete(); renderPlatzhalter();
+  var box = document.getElementById('nv-list'); if (!box) return; box.innerHTML = '';
+  NV_GROUPS.forEach(function (g) {
+    var items = settings.nachrichten.map(function (x, i) { return { x: x, i: i }; }).filter(function (o) { return nvGroupOf(o.x) === g; }); if (!items.length) return;
+    box.appendChild(mk('div', 'nv-sec', g));
+    items.forEach(function (o) {
+      var x = o.x, k = nvKanalOf(x), t = mk('div', 'nv-t'), m = mk('div', 'm');
+      m.appendChild(mk('div', 'nm', x.name)); var sub = (x.betreff || '') || String(x.text || '').replace(/\s+/g, ' ').slice(0, 80); if (sub) m.appendChild(mk('div', 'sub', sub));
+      t.appendChild(m); t.appendChild(mk('span', 'nv-ch' + (k === 'SMS' ? ' sms' : k === 'E-Mail' ? '' : ' both'), k)); t.onclick = function () { openNachr(o.i); }; box.appendChild(t);
+    });
+  });
+  if (!settings.nachrichten.length) box.appendChild(mk('div', 'hm-empty', 'Noch nichts angelegt. Über ⋯ kannst Du die Standardvorlagen laden.'));
+}
+function nvMenu(ev) {
+  ev.stopPropagation(); var old = document.getElementById('nv-pop'); if (old) { old.remove(); return; }
+  var r = ev.currentTarget.getBoundingClientRect(), m = mk('div', 'nv-pop'); m.id = 'nv-pop';
+  var it = mk('button', '', 'Standardvorlagen laden'); it.type = 'button'; it.onclick = function () { m.remove(); nvDefaults(); }; m.appendChild(it);
+  m.style.top = (r.bottom + 6) + 'px'; m.style.right = Math.max(8, window.innerWidth - r.right) + 'px'; document.body.appendChild(m);
+  setTimeout(function () { document.addEventListener('click', function f() { var p = document.getElementById('nv-pop'); if (p) p.remove(); document.removeEventListener('click', f); }); }, 0);
+}
+/* Platzhalter: eingebaute (fest), Anreden (umformulierbar) und eigene */
+var PH_BUILTIN = [
+  ['Aus der Akte', [['Anrede', 'Frau, Herr oder leer'], ['Vorname', 'Vorname des Patienten'], ['Nachname', 'Nachname des Patienten'], ['Name', 'Vorname und Nachname']]],
+  ['Termin und Datum', [['Datum', 'heutiges Datum'], ['DatumWochentag', 'heutiges Datum mit Wochentag'], ['Termin', 'nächster Termin mit Datum und Uhrzeit'], ['TerminDatum', 'Datum des nächsten Termins mit Wochentag'], ['NaechsterTermin', 'nächster Termin kurz, z. B. 12.11. um 14:00'], ['Uhrzeit', 'Uhrzeit des nächsten Termins'], ['Behandlung', 'Behandlung des nächsten Termins']]],
+  ['Links', [['LinkAnmeldung', 'Anmeldeformular'], ['LinkAnamnese', 'Anamnese mit dem Code des Patienten'], ['LinkErinnerung', 'Erinnerungsformular'], ['Links', 'nur in Paketen: Liste der Formular-Links']]]
+];
+var AN_DEF = { Formell: ['Sehr geehrte Frau {Nachname}', 'Sehr geehrter Herr {Nachname}', 'Guten Tag {Vorname} {Nachname}'], Informell: ['Liebe {Vorname}', 'Lieber {Vorname}', 'Hallo {Vorname}'], Englisch: ['Dear Ms. {Nachname}', 'Dear Mr. {Nachname}', 'Dear {Vorname} {Nachname}'] };
+function anTpl(k) { var s = (settings.anreden || {})[k]; return Array.isArray(s) && s.length === 3 ? s : AN_DEF[k]; }
+function anFill(k, an, vn, nn) { return anTpl(k)[an === 'Frau' ? 0 : an === 'Herr' ? 1 : 2].replace(/\{Vorname\}/g, vn).replace(/\{Nachname\}/g, nn).replace(/\{Name\}/g, (vn + ' ' + nn).trim()); }
+function phReserved() { var r = ['AnredeFormell', 'AnredeInformell', 'AnredeEnglisch']; PH_BUILTIN.forEach(function (g) { g[1].forEach(function (x) { r.push(x[0]); }); }); return r; }
+function phAll() { return (settings.platzhalter || []).map(function (x) { return x.name; }).concat(['Vorname', 'Nachname', 'AnredeInformell', 'AnredeFormell', 'TerminDatum', 'Uhrzeit', 'Behandlung', 'Name', 'Datum', 'Anrede', 'AnredeEnglisch', 'DatumWochentag', 'Termin', 'NaechsterTermin', 'LinkAnmeldung', 'LinkAnamnese', 'LinkErinnerung']); }
+function renderPlatzhalter() {
+  var box = document.getElementById('ph-list'); if (!box) return; box.innerHTML = '';
+  var edit = function (fn, label) { var b = mk('button', 'ph-edit'); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); b.innerHTML = tvSvg('pen'); b.onclick = function (ev) { ev.stopPropagation(); fn(); }; return b; };
+  var sec = function (t, extra) { var h = mk('div', 'nv-sec'); h.appendChild(mk('span', '', t)); if (extra) h.appendChild(extra); box.appendChild(h); };
+  var row = function (name, ex, btn, desc) { var r = mk('div', 'ph-row'), m = mk('div', 'm'); m.appendChild(mk('span', 'ph-tag', '{' + name + '}')); if (desc) m.appendChild(mk('span', 'ph-d', desc)); if (ex) m.appendChild(mk('div', 'ph-ex', ex)); r.appendChild(m); if (btn) r.appendChild(btn); if (btn) r.style.cursor = 'pointer'; box.appendChild(r); return r; };
+  var add = mk('button', 'btn btn-sm btn-secondary', '+ Platzhalter'); add.type = 'button'; add.onclick = function () { openPh(-1); };
+  sec('Eigene', add);
+  var cu = settings.platzhalter || [];
+  cu.forEach(function (x, i) { var r = row(x.name, String(x.text || '').replace(/\s+/g, ' ').slice(0, 90), edit(function () { openPh(i); }, 'Platzhalter bearbeiten')); r.onclick = function () { openPh(i); }; });
+  if (!cu.length) box.appendChild(mk('div', 'hm-empty', 'Noch keine eigenen Platzhalter, zum Beispiel {Praxisname} oder {Telefon}.'));
+  sec('Anreden (umformulierbar)');
+  [['Formell', 'AnredeFormell'], ['Informell', 'AnredeInformell'], ['Englisch', 'AnredeEnglisch']].forEach(function (a) { var r = row(a[1], anFill(a[0], 'Frau', 'Anna', 'Beispiel'), edit(function () { openAn(a[0]); }, 'Anrede bearbeiten')); r.onclick = function () { openAn(a[0]); }; });
+  PH_BUILTIN.forEach(function (g) { var lk = mk('span', 'nv-lock', 'fest'); sec(g[0], lk); g[1].forEach(function (x) { row(x[0], '', null, x[1]); }); });
+}
+var phIdx = -1, anKey = '';
+function openPh(i) {
+  phIdx = i; var x = i >= 0 ? settings.platzhalter[i] : null;
+  document.getElementById('ph-title').textContent = x ? 'Platzhalter bearbeiten' : 'Neuer Platzhalter';
+  document.getElementById('ph-name').value = x ? x.name : ''; document.getElementById('ph-text').value = x ? x.text : '';
+  document.getElementById('ph-hint').textContent = x ? 'In Vorlagen schreibst Du {' + x.name + '}.' : '';
+  document.getElementById('ph-del').style.display = x ? '' : 'none'; openModal('modal-ph');
+}
+function savePh() {
+  var n = document.getElementById('ph-name').value.trim().replace(/^\{|\}$/g, ''), t = document.getElementById('ph-text').value;
+  if (!/^[A-Za-zÄÖÜäöüß0-9_]+$/.test(n)) { alert('Der Name darf nur Buchstaben, Ziffern und _ enthalten, ohne Leerzeichen.'); return; }
+  settings.platzhalter = settings.platzhalter || [];
+  if (phReserved().indexOf(n) >= 0 || settings.platzhalter.some(function (x, i) { return i !== phIdx && x.name === n; })) { alert('Diesen Namen gibt es schon.'); return; }
+  var x = { name: n, text: t }; if (phIdx >= 0) settings.platzhalter[phIdx] = x; else settings.platzhalter.push(x);
+  persist(); closeModal('modal-ph'); renderPlatzhalter();
+}
+async function deletePh() { if (phIdx < 0 || !await kaConfirm('Platzhalter löschen? Vorlagen, die ihn verwenden, zeigen ihn dann unverändert in Klammern.')) return; settings.platzhalter.splice(phIdx, 1); persist(); closeModal('modal-ph'); renderPlatzhalter(); }
+function openAn(k) {
+  anKey = k; document.getElementById('an-title').textContent = 'Anrede „' + k + '“'; var t = anTpl(k);
+  for (var i = 0; i < 3; i++) document.getElementById('an-' + i).value = t[i]; openModal('modal-an');
+}
+function saveAn() {
+  var v = [0, 1, 2].map(function (i) { return document.getElementById('an-' + i).value.trim(); });
+  if (v.some(function (x) { return !x; })) { alert('Bitte alle drei Zeilen ausfüllen.'); return; }
+  settings.anreden = settings.anreden || {}; settings.anreden[anKey] = v; persist(); closeModal('modal-an'); renderPlatzhalter();
+}
+function resetAn() { if (settings.anreden) delete settings.anreden[anKey]; persist(); closeModal('modal-an'); renderPlatzhalter(); }
+var nvLast = 'nv-text';
+document.addEventListener('focusin', function (ev) { if (ev.target && (ev.target.id === 'nv-betreff' || ev.target.id === 'nv-text')) nvLast = ev.target.id; });
+function nvPhChips(all) {
+  var box = document.getElementById('nv-phs'); if (!box) return; box.innerHTML = '';
+  var names = phAll(), show = all ? names : names.slice(0, (settings.platzhalter || []).length + 7);
+  show.forEach(function (n) { var b = mk('button', '', '{' + n + '}'); b.type = 'button'; b.onmousedown = function (ev) { ev.preventDefault(); }; b.onclick = function () { var f = document.getElementById(nvLast) || document.getElementById('nv-text'), a = f.selectionStart == null ? f.value.length : f.selectionStart, e = f.selectionEnd == null ? a : f.selectionEnd; f.value = f.value.slice(0, a) + '{' + n + '}' + f.value.slice(e); f.focus(); f.selectionStart = f.selectionEnd = a + n.length + 2; }; box.appendChild(b); });
+  if (!all) { var mb = mk('button', 'more', 'mehr ▾'); mb.type = 'button'; mb.onclick = function () { nvPhChips(true); }; box.appendChild(mb); }
+}
 /* Standard-Textbausteine, abgeleitet aus den Schreibweisen in den bisherigen Rechnungen (ohne Namen, Chargen und Preise).
    Zahlen und Zonen sind Beispiele und werden vor dem Einsetzen angepasst. */
 var TB_STD = [
@@ -5711,11 +5838,13 @@ function openNachr(i) {
   nvIdx = i; var x = i >= 0 ? settings.nachrichten[i] : null;
   document.getElementById('nv-name').value = x ? x.name : ''; document.getElementById('nv-betreff').value = x ? x.betreff : ''; document.getElementById('nv-text').value = x ? x.text : '';
   nvAttRender(x ? x.anhang || [] : []);
+  var gs = document.getElementById('nv-gruppe'); gs.innerHTML = ''; NV_GROUPS.forEach(function (g) { var o = mk('option', '', g); o.value = g; gs.appendChild(o); });
+  gs.value = x ? nvGroupOf(x) : 'Sonstiges'; document.getElementById('nv-kanal').value = x ? nvKanalOf(x) : 'E-Mail'; nvLast = 'nv-text'; nvPhChips(false);
   document.getElementById('nv-del').style.display = x ? '' : 'none'; openModal('modal-nv');
 }
 function saveNachr() {
   var n = document.getElementById('nv-name').value.trim(); if (!n) { alert('Bitte einen Namen eingeben.'); return; }
-  var x = { id: nvIdx >= 0 ? settings.nachrichten[nvIdx].id : newId(), name: n, betreff: document.getElementById('nv-betreff').value.trim(), text: document.getElementById('nv-text').value, anhang: [].slice.call(document.querySelectorAll('#nv-att input:checked')).map(function (c) { return c.value; }) };
+  var x = { id: nvIdx >= 0 ? settings.nachrichten[nvIdx].id : newId(), name: n, gruppe: document.getElementById('nv-gruppe').value, kanal: document.getElementById('nv-kanal').value, betreff: document.getElementById('nv-betreff').value.trim(), text: document.getElementById('nv-text').value, anhang: [].slice.call(document.querySelectorAll('#nv-att input:checked')).map(function (c) { return c.value; }) };
   if (nvIdx >= 0) settings.nachrichten[nvIdx] = x; else settings.nachrichten.push(x);
   persist(); closeModal('modal-nv'); renderNachr();
 }
@@ -5762,13 +5891,12 @@ function fillPlatzhalter(text, p) {
   var an = p.anrede || '', nn = p.nachname || '', vn = p.vorname || '';
   var wd = function (iso0) { var d = new Date(iso0 + 'T12:00:00'); return WDL[d.getDay()] + ', ' + fmtD(iso0); };
   var map = { Anrede: an, Vorname: vn, Nachname: nn, Name: nameKey(p), Datum: fmtD(today), Termin: nx ? fmtTermin(nx) : '', Behandlung: nx ? (nx.behandlung || '') : '',
-    AnredeFormell: an === 'Frau' ? 'Sehr geehrte Frau ' + nn : an === 'Herr' ? 'Sehr geehrter Herr ' + nn : 'Guten Tag ' + vn + ' ' + nn,
-    AnredeInformell: an === 'Frau' ? 'Liebe ' + vn : an === 'Herr' ? 'Lieber ' + vn : 'Hallo ' + vn,
-    AnredeEnglisch: an === 'Frau' ? 'Dear Ms. ' + nn : an === 'Herr' ? 'Dear Mr. ' + nn : 'Dear ' + vn + ' ' + nn,
+    AnredeFormell: anFill('Formell', an, vn, nn), AnredeInformell: anFill('Informell', an, vn, nn), AnredeEnglisch: anFill('Englisch', an, vn, nn),
     DatumWochentag: wd(today), TerminDatum: nx ? wd(nx.date) : '', Uhrzeit: nx ? nx.time : '',
     LinkAnmeldung: webfUrl('anmeldung.html'), LinkAnamnese: webfUrl('anamnese.html') + '?c=' + pCode(p), LinkErinnerung: webfUrl('erinnerung.html'),
     NaechsterTermin: nx ? nx.date.slice(8, 10) + '.' + nx.date.slice(5, 7) + '. um ' + nx.time : '' };
-  return String(text || '').replace(/\{([A-Za-z]+)\}/g, function (m, k) { return map[k] !== undefined ? map[k] : m; });
+  (settings.platzhalter || []).forEach(function (x) { if (x && x.name && map[x.name] === undefined) map[x.name] = String(x.text || ''); });
+  return String(text || '').replace(/\{([A-Za-zÄÖÜäöüß0-9_]+)\}/g, function (m, k) { return map[k] !== undefined ? map[k] : m; });
 }
 var mailAtt = [];
 function mailAttAdd(id, name) { if (!mailAtt.some(function (a) { return a.id === id; })) mailAtt.push({ id: id, name: name }); }
