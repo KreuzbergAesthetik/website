@@ -687,6 +687,21 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   .a-side .a-tile.a-warn { order:-1; }
   .a-side .grid-2 { grid-template-columns:1fr; }
 }
+/* Patientenliste: farbige, beschriftete Aktionen, Tablet einzeilig */
+.pt-lb { display:none; }
+.pt-ib.ib-cal { color:#7c3aed; } .pt-ib.ib-book { color:#2563eb; } .pt-ib.ib-mail { color:#0284c7; } .pt-ib.ib-euro { color:#16a34a; } .pt-ib.ib-pill { color:#db2777; } .pt-ib.ib-plus { color:#64748b; }
+@media (min-width:700px) {
+  .pt-hg, .pt-wrap { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) 300px; }
+  .pt-l .pn-nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pt-wrap { align-items:center; }
+  .pt-info { display:flex; flex-wrap:wrap; align-items:center; align-content:center; gap:2px 12px; min-width:0; max-height:50px; overflow:hidden; }
+  .pt-i1, .pt-i2 { display:flex; flex-wrap:wrap; align-items:center; gap:2px 12px; min-width:0; white-space:nowrap; }
+  .pt-wrap .pt-acts { display:flex; gap:4px; }
+  .pt-acts .pt-ib { width:46px; height:50px; flex-direction:column; gap:3px; }
+  .pt-ib svg { width:20px; height:20px; }
+  .pt-lb { display:block; font-size:10px; line-height:1; font-weight:600; }
+  .pt td.pc-er { line-height:50px; padding-top:6px; font-size:12.5px; }
+}
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2090,7 +2105,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-d';
+var KA_V = '2026-10-31-e';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2502,24 +2517,24 @@ function renderPatients() {
     if (dots.childNodes.length) c1.appendChild(dots);
     /* Schnellaktionen */
     var acts = mk('div', 'pt-acts');
-    var ib = function (k, t, fn) { var b = mk('button', 'pt-ib'); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k); b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
-    ib('cal', 'Termin anlegen', function () { curP = p; var n = new Date(); openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true); document.getElementById('t-patient').value = nameKey(p); });
-    ib('book', 'Dokumentation hinzufügen', function () { viewAkte(p); openDkPick(null); });
+    var ib = function (k, t, fn, lb) { var b = mk('button', 'pt-ib ib-' + k); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k) + '<span class="pt-lb">' + (lb || '') + '</span>'; b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
+    ib('cal', 'Termin anlegen', function () { curP = p; var n = new Date(); openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true); document.getElementById('t-patient').value = nameKey(p); }, 'Termin');
+    ib('book', 'Dokumentation hinzufügen', function () { viewAkte(p); openDkPick(null); }, 'Doku');
     var fst = formStatus(p);
     ib('mail', 'Senden: E-Mail, WhatsApp, Formulare' + (fst.t ? ' · ' + fst.t : ''), function (ev) {
       curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
       tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]].concat(formMenuItems(p)));
-    });
+    }, 'Senden');
     acts.lastChild.classList.add('st-' + fst.s);
     ib('euro', 'Rechnung', function (ev) {
       curP = p; var it = [['Rechnung erstellen', function () { openInvoice(p); }], ['Kostenvoranschlag erstellen', function () { openInvoiceKind(p, 'kv'); }]];
       invoices.filter(function (i) { return i.pid === p.id && !i.kind && !(invState(i).full || i.sentAt); }).slice(0, 4).forEach(function (i) { it.push(['Rechnung ' + (i.nr || '') + ' ansehen und senden', function () { curP = p; viewInvoice(i.id); }]); });
       tlMenu(ev, it);
-    });
+    }, 'Rechnung');
     acts.lastChild.classList.add('pt-wide-b');
-    ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); });
+    ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); }, 'Rezept');
     acts.lastChild.classList.add('pt-wide-b');
-    ib('plus', 'Alle Aktionen', function (ev) { ptAMenu(ev, p); });
+    ib('plus', 'Alle Aktionen', function (ev) { ptAMenu(ev, p); }, 'Mehr');
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
     var info = mk('div', 'pt-info'), i1 = mk('div', 'pt-i1'), i2 = mk('div', 'pt-i2'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
