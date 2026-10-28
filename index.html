@@ -2177,7 +2177,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-r';
+var KA_V = '2026-10-31-s';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -7604,24 +7604,52 @@ function tsParse(v) {
 function readZip(x) { return (typeof Blob !== 'undefined' && x instanceof Blob) ? readZipBlob(x) : readZipBuf(x); }
 /* ZIP direkt aus einer Datei lesen, ohne sie ganz in den Arbeitsspeicher zu laden (auch für mehrere GB geeignet) */
 async function readZipBlob(file) {
-  var size = file.size, tl = Math.min(size, 65557), tail = new DataView(await file.slice(size - tl).arrayBuffer()), i = tl - 22;
+  var size = file.size, dec = new TextDecoder('utf-8'), list = [], out = {};
+  var big = function (dv, o) { return Number(dv.getBigUint64(o, true)); };
+  var tl = Math.min(size, 65557 + 76), tail = new DataView(await file.slice(size - tl).arrayBuffer()), i = tl - 22;
   while (i >= 0 && tail.getUint32(i, true) !== 0x06054b50) i--;
-  if (i < 0) throw new Error('zip');
-  var n = tail.getUint16(i + 10, true), cdSize = tail.getUint32(i + 12, true), cdOff = tail.getUint32(i + 16, true);
-  var cdBuf = await file.slice(cdOff, cdOff + cdSize).arrayBuffer(), cd = new DataView(cdBuf), u8 = new Uint8Array(cdBuf), dec = new TextDecoder('utf-8'), p = 0, list = [];
-  for (var k = 0; k < n; k++) {
-    if (cd.getUint32(p, true) !== 0x02014b50) break;
-    var nl = cd.getUint16(p + 28, true), el = cd.getUint16(p + 30, true), cl = cd.getUint16(p + 32, true);
-    list.push({ name: dec.decode(u8.subarray(p + 46, p + 46 + nl)), meth: cd.getUint16(p + 10, true), csz: cd.getUint32(p + 20, true), lo: cd.getUint32(p + 42, true) });
-    p += 46 + nl + el + cl;
+  if (i >= 0) {
+    var n = tail.getUint16(i + 10, true), cdSize = tail.getUint32(i + 12, true), cdOff = tail.getUint32(i + 16, true);
+    if ((n === 0xFFFF || cdSize === 0xFFFFFFFF || cdOff === 0xFFFFFFFF) && i >= 20 && tail.getUint32(i - 20, true) === 0x07064b50) {   /* ZIP64 */
+      var z64 = big(tail, i - 20 + 8), r64 = new DataView(await file.slice(z64, z64 + 56).arrayBuffer());
+      if (r64.getUint32(0, true) === 0x06064b50) { n = big(r64, 32); cdSize = big(r64, 40); cdOff = big(r64, 48); }
+    }
+    var cdBuf = await file.slice(cdOff, cdOff + cdSize).arrayBuffer(), cd = new DataView(cdBuf), u8 = new Uint8Array(cdBuf), p = 0;
+    for (var k = 0; k < n; k++) {
+      if (p + 46 > cdBuf.byteLength || cd.getUint32(p, true) !== 0x02014b50) break;
+      var fl = cd.getUint16(p + 8, true), meth = cd.getUint16(p + 10, true), csz = cd.getUint32(p + 20, true), usz = cd.getUint32(p + 24, true), nl = cd.getUint16(p + 28, true), el = cd.getUint16(p + 30, true), cl = cd.getUint16(p + 32, true), lo = cd.getUint32(p + 42, true);
+      if (csz === 0xFFFFFFFF || usz === 0xFFFFFFFF || lo === 0xFFFFFFFF) {   /* ZIP64-Zusatzfeld */
+        var q = p + 46 + nl, qe = q + el;
+        while (q + 4 <= qe) { var hid = cd.getUint16(q, true), hl = cd.getUint16(q + 2, true); if (hid === 1) { var w = q + 4; if (usz === 0xFFFFFFFF) { usz = big(cd, w); w += 8; } if (csz === 0xFFFFFFFF) { csz = big(cd, w); w += 8; } if (lo === 0xFFFFFFFF) { lo = big(cd, w); } break; } q += 4 + hl; }
+      }
+      list.push({ name: dec.decode(u8.subarray(p + 46, p + 46 + nl)), meth: meth, csz: csz, lo: lo, enc: !!(fl & 1) });
+      p += 46 + nl + el + cl;
+    }
+  } else {
+    /* Kein Dateiende gefunden (zum Beispiel unvollständig heruntergeladen): die Einträge der Reihe nach lesen */
+    var head = new DataView(await file.slice(0, Math.min(size, 4)).arrayBuffer());
+    if (size < 4 || head.getUint32(0, true) !== 0x04034b50) throw new Error('keine ZIP-Datei, ' + Math.round(size / 1048576) + ' MB');
+    var pos = 0;
+    while (pos + 30 <= size) {
+      var lh0 = new DataView(await file.slice(pos, pos + 30).arrayBuffer());
+      if (lh0.getUint32(0, true) !== 0x04034b50) break;
+      var f0 = lh0.getUint16(6, true), m0 = lh0.getUint16(8, true), c0 = lh0.getUint32(18, true), nl0 = lh0.getUint16(26, true), el0 = lh0.getUint16(28, true);
+      if ((f0 & 8) && c0 === 0) break;
+      var nm0 = dec.decode(new Uint8Array(await file.slice(pos + 30, pos + 30 + nl0).arrayBuffer()));
+      if (pos + 30 + nl0 + el0 + c0 > size) break;
+      list.push({ name: nm0, meth: m0, csz: c0, lo: pos, enc: !!(f0 & 1) });
+      pos += 30 + nl0 + el0 + c0;
+    }
+    if (!list.length) throw new Error('ZIP-Ende nicht gefunden, ' + Math.round(size / 1048576) + ' MB, vermutlich unvollständig');
   }
-  var out = {};
   for (var a = 0; a < list.length; a += 200) {
     await Promise.all(list.slice(a, a + 200).map(async function (e) {
       if (/\/$/.test(e.name)) return;
+      if (e.enc) { if (/(manifest|info|daten)\.json/.test(e.name)) throw new Error('ZIP ist passwortgeschützt'); return; }
       var lh = new DataView(await file.slice(e.lo, e.lo + 30).arrayBuffer()), ds = e.lo + 30 + lh.getUint16(26, true) + lh.getUint16(28, true), part = file.slice(ds, ds + e.csz);
       if (e.meth === 0) out[e.name] = new Blob([part], { type: mimeOf(e.name) });
       else if (e.meth === 8) out[e.name] = new Blob([await new Response(part.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob()], { type: mimeOf(e.name) });
+      else if (/(manifest|info|daten)\.json/.test(e.name)) throw new Error('Komprimierung ' + e.meth + ' wird nicht unterstützt');
     }));
   }
   return out;
