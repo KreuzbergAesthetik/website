@@ -596,7 +596,7 @@ body { overflow-x:clip; }
 .inv-plus { width:36px; height:36px; padding:0 !important;  font-size:22px; line-height:1; flex:none; }
 .entw-row { display:flex; width:100%; gap:10px; align-items:baseline; padding:12px 10px; margin-bottom:8px; border:1px solid #d5dde7; background:#f1f4f8; border-radius:10px; text-align:left; cursor:pointer; font-size:14px; } .entw-n { flex:1; min-width:0; font-weight:600; color:#0f172a; } .entw-d { color:#64748b; font-size:13px; }
 .pt-ib { position:relative; } .pt-ib.st-ok { background:#dcfce7; border-color:#16a34a; color:#15803d; } .pt-ib.st-ok svg { opacity:.3; } .pt-ib.st-ok::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; color:#15803d; } .pt-ib.st-wait { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
-.pt-acts { display:grid; grid-template-columns:repeat(2,30px); gap:3px; margin-top:0; } .pt-acts .pt-ib { width:30px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
+.pt-acts { display:grid; grid-template-columns:repeat(2,30px); gap:3px; margin-top:0; } .pt-acts .pt-ib { width:30px; height:30px; flex:none; } .pt-ib { width:34px; height:30px; border:1px solid #d5dce6; border-radius:8px; background:#fff; color:#94a3b8; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; } .pt-ib svg { width:17px; height:17px; } .pt-ib:hover { background:#f1f5f9; }
 .pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; } .pt-dot.d-rem { background:#ea580c; } .pt-dot.d-next { background:#16a34a; } .pt-dot.d-send { background:#eab308; }
 .pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
@@ -1021,7 +1021,7 @@ function kaStart() {
       </div>
       <div class="scroll">
         <table class="pt" style="min-width:640px; font-size:14px;">
-          <thead><tr><th style="width:52px; cursor:pointer;" onclick="lsSortBy('id')">ID</th><th style="cursor:pointer;" onclick="lsSortBy('name')">Leistung</th><th style="width:150px; cursor:pointer;" onclick="lsSortBy('kat')">Gruppe</th><th style="width:100px; cursor:pointer;" onclick="lsSortBy('price')">Preis</th><th style="width:64px;">MwSt</th><th style="width:118px;"></th></tr></thead>
+          <thead><tr><th style="width:52px; cursor:pointer;" onclick="lsSortBy('id')">ID</th><th style="cursor:pointer;" onclick="lsSortBy('name')">Leistung</th><th style="width:150px; cursor:pointer;" onclick="lsSortBy('kat')">Gruppe</th><th style="width:100px; cursor:pointer;" onclick="lsSortBy('price')">Preis</th><th style="width:64px;">MwSt</th><th style="width:76px; cursor:pointer;" onclick="lsSortBy('dauer')">Dauer</th></tr></thead>
           <tbody id="ls-table"></tbody>
         </table>
       </div>
@@ -2050,7 +2050,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-a';
+var KA_V = '2026-10-31-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -3402,11 +3402,7 @@ function renderLeist() {
     c[0].textContent = k.id; c[0].style.color = '#64748b';
     var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c[1].appendChild(b);
     c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); var gn = mk('span', 'ls-gn', kc.name); c[2].appendChild(gn); } else c[2].textContent = '-';
-    c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %';
-    c[5].style.cssText = 'white-space:nowrap;';
-    c[5].appendChild(lsAct('copy', 'Kopieren', function () { lsCopy(i); }, ''));
-    c[5].appendChild(lsAct('pen', 'Bearbeiten', function () { openLeist(i); }, ''));
-    c[5].appendChild(lsAct('trash', 'Löschen', function () { lsDelete(i); }, 'del'));
+    c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %'; c[5].textContent = k.dauer ? k.dauer + ' min' : '-';
   });
   if (all.length && !list.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 6; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
   var pg = document.getElementById('ls-pager'); pg.innerHTML = ''; pg.style.display = pages > 1 ? 'inline-flex' : 'none';
@@ -5579,8 +5575,7 @@ function renderZahlungen() {
     var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 6) + zd.slice(8) + '</span>'; c0.className = 'nw'; c1.textContent = String(p.inv.name || '').replace(/^(Frau|Herr|Divers)\s+/, ''); c4.className = 'nw';
     var b = mk('button', 'pn'); b.type = 'button'; var nrm = /^(.*?-)(\d+)$/.exec(String(p.inv.nr || '')); if (nrm) { b.appendChild(document.createTextNode(nrm[1])); b.appendChild(document.createElement('br')); b.appendChild(document.createTextNode(nrm[2])); } else b.textContent = p.inv.nr; b.style.lineHeight = '1.25'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar);
-    var cw = mk('span'); cw.style.cssText = 'display:flex; align-items:flex-start; justify-content:space-between; gap:8px;'; cw.appendChild(mk('span', '', eur(p.amount)));
-    var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Zahlung bearbeiten'; pe.setAttribute('aria-label', 'Zahlung bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:14px;height:14px;display:block;'; pe.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; width:20px; height:18px; min-width:0; min-height:0; margin-top:-1px; padding:0; background:none; border:0; flex:none; color:#94a3b8;'; cw.appendChild(pe); c4.appendChild(cw);
+    c4.appendChild(mk('span', '', eur(p.amount)));
     row.style.cursor = 'pointer'; row.onclick = function (ev) { if (ev.target.closest('.pn')) return; openPayEdit(p.inv.id, p.ref); };
   });
   if (!pays.length) { var er = tin.insertRow(), ec = er.insertCell(); ec.colSpan = 5; ec.textContent = 'Keine Zahlungen im Zeitraum'; ec.style.color = '#94a3b8'; }
@@ -5622,9 +5617,10 @@ async function deleteAusgabe() {
 
 /* ===== Nachrichtenvorlagen und Textbausteine ===== */
 var nvIdx = -1, txIdx = -1;
-function simpleList(boxId, list, fn, sub) {
+function simpleList(boxId, list, fn, sub, sorted) {
   var box = document.getElementById(boxId); if (!box) return; box.innerHTML = '';
-  list.forEach(function (x, i) { box.appendChild(hmRow(null, x.name, sub(x), function () { fn(i); })); });
+  var ord = list.map(function (x, i) { return i; }); if (sorted) ord.sort(function (a, b) { return String(list[a].name).localeCompare(String(list[b].name), 'de', { sensitivity: 'base', numeric: true }); });
+  ord.forEach(function (i) { var x = list[i]; box.appendChild(hmRow(null, x.name, sub(x), function () { fn(i); })); });
   if (!list.length) box.appendChild(mk('div', 'hm-empty', 'Noch nichts angelegt.'));
 }
 var NV_STD = [
@@ -5694,7 +5690,7 @@ function tbDefaults() {
   settings.tbVer = TB_VER;
   try { kaSet('ka_settings', JSON.stringify(settings)); } catch (x) {}
 }
-function renderTxt() { tbDefaults(); settings.textbausteine = settings.textbausteine || []; simpleList('tb-list', settings.textbausteine, openTxt, function (x) { return x.text.replace(/\s+/g, ' ').slice(0, 90); }); }
+function renderTxt() { tbDefaults(); settings.textbausteine = settings.textbausteine || []; simpleList('tb-list', settings.textbausteine, openTxt, function (x) { return x.text.replace(/\s+/g, ' ').slice(0, 90); }, true); }
 function nvAttRender(sel) {
   var box = document.getElementById('nv-att'); box.innerHTML = '';
   if (!templates.length) { box.appendChild(mk('div', 'hm-empty', 'Noch keine Vorlagen unter Praxis → Vorlagen hochgeladen.')); return; }
