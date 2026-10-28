@@ -5,7 +5,7 @@
 (function () {
   var css = document.createElement('style');
   css.textContent =
-    '#ka-toasts { position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:9999; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }' +
+    '#ka-toasts { position:fixed; left:12px; right:12px; bottom:calc(34px + env(safe-area-inset-bottom)); z-index:9999; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }' +
     '.ka-toast { pointer-events:auto; max-width:520px; width:100%; background:#0f172a; color:#fff; border-radius:12px; padding:12px 14px; font-size:14px; line-height:1.4; display:flex; gap:10px; align-items:flex-start; box-shadow:0 6px 22px rgba(15,23,42,.35); white-space:pre-line; cursor:pointer; }' +
     '.ka-toast i { flex:none; font-style:normal; font-weight:700; font-size:16px; line-height:1.3; }' +
     '.ka-toast.warn i { color:#fca5a5; } .ka-toast.ok i { color:#86efac; }' +
