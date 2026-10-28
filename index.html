@@ -752,6 +752,12 @@ body.akte-open .fab-flt { display:none !important; }
 .iv-b.iv-del { border:none; background:none; box-shadow:none; margin-right:10px; }
 @media (min-width:600px) { .iv-bar .iv-b.iv-del { position:absolute; right:14px; top:10px; margin:0; } }
 .tv-fbtn.tv-fdel { border:none; background:none; box-shadow:none; margin-right:auto; }
+/* Anlagen und Finanzen: Aktionen im Stil der Patientenübersicht, Suche rund */
+.ak-act { min-width:56px; height:46px; padding:0 8px; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:#fff; border:1px solid #d5dce6; border-radius:10px; color:var(--c-senden); cursor:pointer; box-shadow:0 2px 6px rgba(15,23,42,.1); flex:none; font-family:inherit; }
+.ak-act svg { width:19px; height:19px; } .ak-act span { font-size:9.5px; font-weight:700; line-height:1; color:inherit; }
+.ak-act.hl { background:color-mix(in srgb, var(--c-senden) 10%, #fff); border-color:color-mix(in srgb, var(--c-senden) 45%, #fff); }
+.ak-grey { color:var(--c-mehr); } .ak-datei { color:#0d9488; } .ak-rec { color:var(--c-rechnung); }
+.sr-btn, .sr-fab, .gs-fab { border-radius:50%; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1482,7 +1488,7 @@ function kaStart() {
   </div>
   <div id="at-anl" style="display:none;">
   <div id="a-unt-block" class="card" style="display:none;">
-    <div class="card-header" style="margin-bottom:12px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="document.getElementById('akt-form-file').click()" title="Ausgefülltes Formular (PDF) einlesen">Import</button><input type="file" id="akt-form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)"></div>
+    <div class="card-header" style="margin-bottom:12px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><button type="button" class="ak-act ak-grey" onclick="document.getElementById('akt-form-file').click()" title="Ausgefülltes Formular (PDF) einlesen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>Import</span></button><input type="file" id="akt-form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)"></div>
     <div id="a-unt"></div>
   </div>
 
@@ -1490,8 +1496,8 @@ function kaStart() {
     <div class="card-header" style="margin-bottom:6px;">
       <div class="ak-h" style="margin:0; border:none; padding:0;">Bilder und Dateien</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button type="button" id="md-addf" class="btn btn-secondary" style="padding:6px 10px;" onclick="zuNext = null; document.getElementById('a-img-in').click()">+ Foto</button>
-        <button type="button" id="md-addd" class="btn btn-secondary" style="padding:6px 10px;" onclick="zuNext = null; document.getElementById('a-doc-in').click()">+ Datei</button>
+        <button type="button" id="md-addf" class="ak-act ak-datei" onclick="zuNext = null; document.getElementById('a-img-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span>Foto</span></button>
+        <button type="button" id="md-addd" class="ak-act ak-datei" onclick="zuNext = null; document.getElementById('a-doc-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 12v5M9.5 14.5h5"/></svg><span>Datei</span></button>
       </div>
     </div>
     <div class="cal-bar">
@@ -1504,7 +1510,7 @@ function kaStart() {
   </div>
   <div id="at-fin" style="display:none;">
   <div id="a-fin-block" class="card">
-    <div class="card-header" style="margin-bottom:6px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Finanzen</div><button type="button" class="btn btn-secondary" style="padding:6px 10px;" onclick="openInvoice(curP)">+ Rechnung</button></div>
+    <div class="card-header" style="margin-bottom:6px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Finanzen</div><button type="button" class="ak-act ak-rec" onclick="openInvoice(curP)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7a7 7 0 100 10M5 10h9M5 14h9"/></svg><span>Rechnung</span></button></div>
     <div id="a-fin"></div>
   </div>
   </div>
@@ -2157,7 +2163,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-m';
+var KA_V = '2026-10-31-n';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -6159,7 +6165,7 @@ function renderUnterlagen() {
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); box.appendChild(r); return r;
   };
-  var bt = function (txt, dark, fn) { var b = mk('button', 'btn un-btn' + (dark ? '' : ' btn-secondary'), txt); b.type = 'button'; b.onclick = fn; return b; };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.innerHTML = tvSvg(/whatsapp/i.test(txt) ? 'wa' : /hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
   var unReset = function (keys) {
     var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
