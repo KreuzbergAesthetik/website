@@ -106,7 +106,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px; }
 .btn { background:#0f172a; color:#fff; border:none; padding:9px 16px; font-size:14px; font-weight:500; cursor:pointer; }
 .btn:hover { background:#1e293b; }
 .btn-secondary { background:#f1f5f9; color:#334155; } .btn-secondary:hover { background:#e2e8f0; }
-.btn.btn-cancel { background:#e2e8f0; color:#334155; } .btn.btn-cancel:hover { background:#cbd5e1; }
+.btn.btn-cancel { background:#e3ecfb; color:#334155; box-shadow:inset 0 0 0 1px #b7c8ea; } .btn.btn-cancel:hover { background:#d3e1f8; }
 .btn.btn-save { background:#16a34a; color:#fff; } .btn.btn-save:hover { background:#278a3a; }
 .btn.btn-del { background:#dc2626; color:#fff; } .btn.btn-del:hover { background:#b91c1c; }
 .ed-box { background:#fff !important; border:2px solid #64748b; border-radius:10px !important; padding:12px !important; box-shadow:0 4px 14px rgba(15,23,42,.15); margin:10px 0 !important; }
@@ -757,7 +757,7 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .ak-grey { color:var(--c-mehr); } .ak-datei { color:#0d9488; } .ak-rec { color:var(--c-rechnung); }
 .sr-btn, .sr-fab, .gs-fab { border-radius:50%; }
 /* Buttons: hellgrauer Hintergrund mit dünnem Rand, Symbole in der Kategoriefarbe, Text nur wo er sicher passt */
-.pt-ib, .fab, .a-cat, .a-cat[class*=" d"], .plus-btn, .iv-b:not(.iv-back):not(.iv-del), .tv-fbtn:not(.tv-fdel), .tv-acts .tv-tool, .ak-act, .inv-flt { background:#eef0f4; border:1px solid #d5dae2; box-shadow:none; }
+.pt-ib, .fab, .a-cat, .a-cat[class*=" d"], .plus-btn, .iv-b:not(.iv-back):not(.iv-del), .tv-fbtn:not(.tv-fdel), .tv-acts .tv-tool, .ak-act, .inv-flt { background:#e3ecfb; border:1px solid #b7c8ea; box-shadow:none; }
 .fab, .a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.16); }
 .fab-search.on { background:#dbeafe; }
 .pt-lb, .fab span, .a-lb, .tv-fbtn span { display:none !important; }
@@ -2177,7 +2177,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-t';
+var KA_V = '2026-10-31-u';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
