@@ -12,7 +12,7 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 body { background:#e6ebf3; color:#0f172a; padding-bottom:40px; }
-header { background:#fff; border:2px solid #1e3a8a; box-shadow:0 4px 12px rgba(15,23,42,.28); position:sticky; top:0; z-index:30; }
+header { background:#fff; border-bottom:1px solid #e2e8f0; box-shadow:0 4px 12px rgba(15,23,42,.28); position:sticky; top:0; z-index:30; }
 
 .hd-act { display:flex; align-items:center; }
 
@@ -280,7 +280,7 @@ body.akte-open main { display:none; }
 .a-tile ul li button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; }
 @media (max-width:640px) { .a-tiles { grid-template-columns:1fr 1fr; } .a-title { font-size:19px; align-items:center; } .a-idc { flex-direction:row; align-items:center; gap:4px; padding-top:0; } .a-idc .a-sex { margin:0; } .a-nm { align-items:baseline; gap:6px; } .a-nl { min-width:0; text-overflow:ellipsis; flex:0 1 auto; } .a-nf { min-width:0; text-overflow:ellipsis; flex:0 1 auto; }  }
 @media (max-width:440px) { .a-tile { min-height:0; } } .a-tiles { gap:8px; } @media (max-width:640px) { .a-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); } .a-tile { grid-column:1 / -1; min-height:0; padding:9px 28px 9px 10px; font-size:13.5px; } .a-tile.a-half { grid-column:auto; } .a-tile.ed, .a-tile.ed.a-half { grid-column:1 / -1; } .a-tile h4 { font-size:12px; } }
-.a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; color:#0f172a; border:1px solid #dbe2ea; border-left:6px solid #1e3a8a; border-radius:14px; margin-bottom:12px; box-shadow:0 3px 10px rgba(15,23,42,.12); }
+.a-top { position:sticky; top:calc(var(--hdh,112px) - 1px); z-index:25; display:flex; align-items:center; gap:10px; background:#fff; color:#0f172a; border:2px solid #1e3a8a; border-left-width:6px; border-radius:14px; margin-bottom:12px; box-shadow:0 3px 10px rgba(15,23,42,.12); }
 .a-sex { font-size:17px; color:#64748b; margin-left:8px; font-weight:400; }
 .a-fab { display:none; position:fixed; z-index:40; }
 body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
@@ -2177,7 +2177,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-w';
+var KA_V = '2026-10-31-x';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
