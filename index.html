@@ -1013,7 +1013,7 @@ function kaStart() {
       <div id="inv-seg" class="za-seg" style="margin-bottom:10px;"></div>
       <div class="scroll">
         <table class="pt" style="min-width:560px; font-size:14px;">
-          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort pc-d" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
+          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort pc-d" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Rechnung <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
           <tbody id="inv-table"></tbody>
         </table>
       </div>
@@ -2105,7 +2105,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-f';
+var KA_V = '2026-10-31-g';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
