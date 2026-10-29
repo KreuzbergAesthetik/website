@@ -772,6 +772,9 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .a-cat.d0 { --ac:var(--c-doku); } .a-cat.d3 { --ac:var(--c-rezept); } .a-cat.d4 { --ac:var(--c-senden); } .a-cat.d5 { --ac:#1fa855; } .a-cat.d6, .a-cat.d7 { --ac:#0d9488; }
 .a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.14); }
 @media (max-width:699px) { .a-cat.hm { display:none; } }
+/* Stifte: unsichtbar, bei Mausover sichtbar; am Handy genügt der Tipp auf die Zeile bzw. Chargen-Bezeichnung */
+.ph-edit, .ra-pen { opacity:0; transition:opacity .15s; } .ph-edit:focus-visible, .ra-pen:focus-visible { opacity:1; }
+@media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen { opacity:1; } }
 /* Zeilen-Buttons erst bei Hover (Maus) oder nach Tipp auf die Zeile zeigen; Platz und Anordnung bleiben gleich */
 #tab-patienten .pt-acts, #tab-zahlungen tbody .btn.btn-sm { opacity:0; pointer-events:none; transition:opacity .15s; }
 #tab-patienten .pt-wrap, #tab-zahlungen tbody td:has(> .btn.btn-sm) { position:relative; }
@@ -2187,7 +2190,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-b';
+var KA_V = '2026-11-01-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -7451,9 +7454,9 @@ function openProdukt(id) {
     box.style.display = cs.length ? 'block' : 'none';
     cs.forEach(function (c) {
       var r = mk('div', ''); r.style.cssText = 'display:flex; gap:8px; align-items:center; justify-content:space-between; padding:6px 0; border-top:1px solid #e2e8f0; font-size:13px;';
-      r.appendChild(mk('span', '', 'Charge ' + (c.nr || '-') + (c.verfall ? ' · bis ' + fmtD(c.verfall) : '')));
+      var cl = mk('span', '', 'Charge ' + (c.nr || '-') + (c.verfall ? ' · bis ' + fmtD(c.verfall) : '')); cl.style.cursor = 'pointer'; cl.onclick = function () { openWare(c.id); }; r.appendChild(cl);
       var inp = mk('input', 'form-control'); inp.type = 'text'; inp.setAttribute('inputmode', 'decimal'); inp.style.cssText = 'width:90px;'; inp.value = qty(c.rest); inp.setAttribute('data-cid', c.id); inp.title = 'Restmenge korrigieren';
-      var pe = mk('button', 'x-btn'); pe.type = 'button'; pe.title = 'Charge bearbeiten'; pe.setAttribute('aria-label', 'Charge bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:16px;height:16px;'; pe.onclick = function () { openWare(c.id); };
+      var pe = mk('button', 'x-btn ra-pen'); pe.type = 'button'; pe.title = 'Charge bearbeiten'; pe.setAttribute('aria-label', 'Charge bearbeiten'); pe.innerHTML = tvSvg('pen'); pe.firstChild.style.cssText = 'width:16px;height:16px;'; pe.onclick = function () { openWare(c.id); };
       var rr = mk('span'); rr.style.cssText = 'display:inline-flex; gap:6px; align-items:center;'; rr.appendChild(inp); rr.appendChild(pe);
       r.appendChild(rr); list.appendChild(r);
     });
