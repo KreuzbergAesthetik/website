@@ -772,6 +772,16 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .a-cat.d0 { --ac:var(--c-doku); } .a-cat.d3 { --ac:var(--c-rezept); } .a-cat.d4 { --ac:var(--c-senden); } .a-cat.d5 { --ac:#1fa855; } .a-cat.d6, .a-cat.d7 { --ac:#0d9488; }
 .a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.14); }
 @media (max-width:699px) { .a-cat.hm { display:none; } }
+/* Zeilen-Buttons erst bei Hover (Maus) oder nach Tipp auf die Zeile zeigen; Platz und Anordnung bleiben gleich */
+#tab-patienten .pt-acts, #tab-zahlungen tbody .btn.btn-sm { opacity:0; pointer-events:none; transition:opacity .15s; }
+#tab-patienten .pt-wrap, #tab-zahlungen tbody td:has(> .btn.btn-sm) { position:relative; }
+#tab-patienten .pt-wrap::after, #tab-zahlungen tbody td:has(> .btn.btn-sm)::after { content:'\22EF'; position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:22px; line-height:1; pointer-events:none; transition:opacity .15s; }
+tr.ra-open .pt-acts, tr.ra-open .btn.btn-sm, tr:focus-within .pt-acts, tr:focus-within .btn.btn-sm { opacity:1 !important; pointer-events:auto !important; }
+tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::after { opacity:0; }
+@media (hover:hover) and (pointer:fine) {
+  #tab-patienten tr:hover .pt-acts, #tab-zahlungen tbody tr:hover .btn.btn-sm { opacity:1; pointer-events:auto; }
+  #tab-patienten tr:hover .pt-wrap::after, #tab-zahlungen tbody tr:hover td::after { opacity:0; }
+}
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2177,7 +2187,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-a';
+var KA_V = '2026-11-01-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -8437,6 +8447,16 @@ async function egCheck() {
   [h, th, q, lst, foot].forEach(function (n) { box.appendChild(n); }); ov.appendChild(box); document.body.appendChild(ov); fill();
 }
 try { egCheck(); document.addEventListener('visibilitychange', function () { if (!document.hidden) egCheck(); }); if (/eingang=1/.test(location.search)) history.replaceState(null, '', location.pathname); } catch (x) {}
+
+/* Zeilen-Buttons: Tipp auf die Zeile zeigt sie, Tipp daneben blendet sie wieder aus */
+document.addEventListener('click', function (ev) {
+  var t = ev.target; if (!t || !t.closest) return;
+  var row = t.closest('#tab-patienten tbody tr, #tab-zahlungen tbody tr');
+  if (row && !row.querySelector('.pt-acts, .btn.btn-sm')) row = null;
+  [].forEach.call(document.querySelectorAll('tr.ra-open'), function (x) { if (x !== row) x.classList.remove('ra-open'); });
+  if (!row || t.closest('button, a, input, select, textarea, label')) return;
+  row.classList.toggle('ra-open');
+});
 try { srchInit(); } catch (x) {}
 try { EXT.reload(); EXT.ui(); setTimeout(function () { EXT.refresh(); }, 4000); setInterval(function () { if (document.visibilityState === 'visible') EXT.refresh(); }, 900000); } catch (x) {}
 try { KS.init(); } catch (x) {}
