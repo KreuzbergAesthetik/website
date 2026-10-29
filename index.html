@@ -31,7 +31,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; box-shadow:0 4px 12px
 .gs-h { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; padding:8px 8px 2px; }
 .gs-r { display:block; width:100%; text-align:left; background:none; border:none; padding:8px; border-radius:8px; cursor:pointer; font-size:14px; color:#0f172a; }
 .gs-r:hover { background:#f1f5f9; } .gs-r small { display:block; color:#64748b; font-size:12px; }
-.nav-menu { position:fixed; z-index:45; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(15,23,42,.2); min-width:230px; padding:6px; }
+.nav-menu { position:fixed; z-index:45; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(15,23,42,.2); min-width:230px; padding:6px; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y; }
 .nav-menu button { display:block; width:100%; text-align:left; background:none; border:none; padding:10px; font-size:14px; cursor:pointer; border-radius:6px; color:#0f172a; }
 .nav-menu button:hover:not(:disabled) { background:#f1f5f9; } .nav-menu button:disabled { color:#94a3b8; cursor:default; } .nav-menu small { color:#94a3b8; font-size:11px; margin-left:6px; }
 .nav-sep { height:1px; background:#e2e8f0; margin:4px 0; }
@@ -2177,7 +2177,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-z';
+var KA_V = '2026-11-01-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -2251,7 +2251,7 @@ function toggleNavMenu(ev) {
   if (m.style.display !== 'none') { m.style.display = 'none'; return; }
   fillNavMenu();
   var r = ev.currentTarget.getBoundingClientRect(); m.style.display = 'block';
-  m.style.top = (r.bottom + 4) + 'px'; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
+  m.style.top = (r.bottom + 4) + 'px'; m.style.maxHeight = Math.max(120, window.innerHeight - r.bottom - 12) + 'px'; m.scrollTop = 0; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Letzte Seite merken: nach dem Neuladen (z. B. Ziehen nach unten) geht es dort weiter, wo man war */
