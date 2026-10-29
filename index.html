@@ -774,7 +774,9 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 @media (max-width:699px) { .a-cat.hm { display:none; } }
 /* Stifte: unsichtbar, bei Mausover sichtbar; am Handy genügt der Tipp auf die Zeile bzw. Chargen-Bezeichnung */
 .ph-edit, .ra-pen { opacity:0; transition:opacity .15s; } .ph-edit:focus-visible, .ra-pen:focus-visible { opacity:1; }
-@media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen { opacity:1; } }
+@media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen, div:hover > .ra-pen { opacity:1; } }
+/* Plus/Pfeil der Zeitstrahl-Einträge: mit der Maus erst beim Überfahren sichtbar (Touch: bleibt sichtbar) */
+@media (hover:hover) and (pointer:fine) { .tl-plus { opacity:0; transition:opacity .15s; } .tl-item:hover .tl-plus, .tl-plus:focus-visible, .tl-plus[aria-expanded=true] { opacity:1; } }
 /* Zeilen-Buttons erst bei Hover (Maus) oder nach Tipp auf die Zeile zeigen; Platz und Anordnung bleiben gleich */
 #tab-patienten .pt-acts, #tab-zahlungen tbody .btn.btn-sm { opacity:0; pointer-events:none; transition:opacity .15s; }
 #tab-patienten .pt-wrap, #tab-zahlungen tbody td:has(> .btn.btn-sm) { position:relative; }
@@ -2190,7 +2192,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-c';
+var KA_V = '2026-11-01-d';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4278,8 +4280,8 @@ function invPayBlock(inv) {
   w.style.cssText = 'margin-top:16px; padding-top:10px; border-top:1px dashed #cbd5e1; font-size:13px; color:#334155;';
   var h = mk('b', '', 'Zahlungen'); h.style.cssText = 'display:block; margin-bottom:4px;'; w.appendChild(h);
   var line = function (txt, fn) {
-    var r = mk('div'); r.style.cssText = 'display:flex; align-items:center; gap:8px; padding:3px 0;'; var t = mk('span', '', txt); t.style.flex = '1'; r.appendChild(t);
-    var b = mk('button', 'x-btn'); b.type = 'button'; b.title = 'Zahlung bearbeiten'; b.setAttribute('aria-label', 'Zahlung bearbeiten'); b.innerHTML = tvSvg('pen'); b.firstChild.style.cssText = 'width:16px;height:16px;'; b.onclick = fn; r.appendChild(b); w.appendChild(r);
+    var r = mk('div'); r.style.cssText = 'display:flex; align-items:center; gap:8px; padding:3px 0;'; var t = mk('span', '', txt); t.style.flex = '1'; t.style.cursor = 'pointer'; t.onclick = fn; r.appendChild(t);
+    var b = mk('button', 'x-btn ra-pen'); b.type = 'button'; b.title = 'Zahlung bearbeiten'; b.setAttribute('aria-label', 'Zahlung bearbeiten'); b.innerHTML = tvSvg('pen'); b.firstChild.style.cssText = 'width:16px;height:16px;'; b.onclick = fn; r.appendChild(b); w.appendChild(r);
   };
   if (pays.length) pays.forEach(function (x) { line(fmtD(x.date) + ' · ' + x.art + ' · ' + eur(x.amount), function () { openPayEdit(inv.id, x); }); });
   else line('Als bezahlt vermerkt (' + eur(inv.total) + ')', function () { openPayEdit(inv.id, null); });
