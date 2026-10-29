@@ -2177,7 +2177,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-10-31-y';
+var KA_V = '2026-10-31-z';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -8378,6 +8378,65 @@ async function syncBackups() {
     });
   } catch (e) { box.textContent = e.message; }
 }
+
+/* ===== Eingangskorb: Fotos aus dem Teilen-Menü des Handys (Service Worker legt sie vorübergehend ab) ===== */
+var EG = { urls: [], keys: [], open: false };
+async function egList() {
+  try {
+    if (!window.caches) return [];
+    var c = await caches.open('ka-eingang'), ks = await c.keys(), out = [];
+    for (var i = 0; i < ks.length; i++) { var r = await c.match(ks[i]); if (r) out.push({ key: ks[i].url, name: decodeURIComponent(r.headers.get('X-Name') || 'Foto.jpg'), blob: await r.blob() }); }
+    return out;
+  } catch (e) { return []; }
+}
+async function egClear(keys) { try { var c = await caches.open('ka-eingang'); for (var i = 0; i < keys.length; i++) await c.delete(keys[i]); } catch (e) {} }
+async function egCheck() {
+  if (EG.open) return;
+  var items = await egList(); if (!items.length) return;
+  EG.open = true; ensurePatients();
+  var ov = document.createElement('div'), box = document.createElement('div'), sel = null;
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9990;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:12px';
+  box.style.cssText = 'background:#fff;border-radius:16px;padding:16px;width:100%;max-width:460px;max-height:92vh;overflow:auto;box-shadow:0 10px 30px rgba(15,23,42,.35)';
+  var urls = items.map(function (it) { return URL.createObjectURL(it.blob); });
+  var h = document.createElement('div'); h.style.cssText = 'font-weight:700;font-size:16px;margin-bottom:8px'; h.textContent = items.length + (items.length === 1 ? ' Foto' : ' Fotos') + ' zuordnen';
+  var th = document.createElement('div'); th.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px';
+  urls.forEach(function (u) { var im = document.createElement('img'); im.src = u; im.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #c3cedf'; th.appendChild(im); });
+  var q = document.createElement('input'); q.type = 'text'; q.className = 'form-control'; q.placeholder = 'Patient suchen …'; q.autocomplete = 'off'; q.style.cssText = 'width:100%;margin-bottom:8px';
+  var lst = document.createElement('div'); lst.style.cssText = 'max-height:30vh;overflow:auto;margin-bottom:12px';
+  var foot = document.createElement('div'); foot.style.cssText = 'display:flex;gap:8px;justify-content:space-between;align-items:center';
+  var del = document.createElement('button'); del.type = 'button'; del.className = 'btn btn-sm'; del.textContent = '🗑'; del.title = 'Verwerfen'; del.style.cssText = 'background:none;border:0;box-shadow:none;color:#dc2626;font-size:18px';
+  var rt = document.createElement('span'); rt.style.cssText = 'display:flex;gap:8px';
+  var later = document.createElement('button'); later.type = 'button'; later.className = 'btn btn-cancel'; later.textContent = 'Später';
+  var ok = document.createElement('button'); ok.type = 'button'; ok.className = 'btn btn-save'; ok.textContent = 'Zur Akte'; ok.disabled = true;
+  var close = function () { urls.forEach(function (u) { URL.revokeObjectURL(u); }); if (ov.parentNode) ov.parentNode.removeChild(ov); EG.open = false; };
+  function fill() {
+    var t = q.value.trim().toLowerCase(); lst.innerHTML = '';
+    var l = patients.filter(function (p) { return !t || (dnP(p) + ' ' + (p.nr || '')).toLowerCase().indexOf(t) >= 0; });
+    l.sort(function (a, b) { return (b.erstellt || 0) - (a.erstellt || 0); });
+    l.slice(0, 40).forEach(function (p) {
+      var r = document.createElement('div'); r.innerHTML = nmHtml(dnP(p));
+      r.style.cssText = 'padding:10px;border-radius:10px;cursor:pointer;border:1px solid ' + (sel === p ? '#16a34a' : 'transparent') + ';background:' + (sel === p ? '#f0fdf4' : '#fff');
+      r.onclick = function () { sel = p; ok.disabled = false; fill(); };
+      lst.appendChild(r);
+    });
+    if (!l.length) lst.textContent = 'Kein Patient gefunden.';
+  }
+  q.oninput = fill;
+  later.onclick = close;
+  del.onclick = async function () { if (!await kaConfirm('Diese Fotos löschen?')) return; await egClear(items.map(function (i) { return i.key; })); close(); };
+  ok.onclick = async function () {
+    if (!sel) return; ok.disabled = true; var p = sel, base = Date.now(), added = [];
+    for (var i = 0; i < items.length; i++) {
+      var b = await readImg(items[i].blob); if (!b) continue; var id = newId();
+      if (await fPut(id, items[i].name, b)) added.push({ id: id, ts: base + i, name: items[i].name });
+    }
+    if (added.length === items.length) { p.bilder = (p.bilder || []).concat(added); persist(); await egClear(items.map(function (i) { return i.key; })); close(); viewAkte(p); alert(added.length + (added.length === 1 ? ' Foto' : ' Fotos') + ' gespeichert.'); }
+    else { if (added.length) { p.bilder = (p.bilder || []).concat(added); persist(); } await egClear(items.filter(function (it, i) { return i < added.length; }).map(function (i) { return i.key; })); alert('Nicht alle Fotos konnten gespeichert werden. Der Rest bleibt im Eingang.'); close(); }
+  };
+  rt.appendChild(later); rt.appendChild(ok); foot.appendChild(del); foot.appendChild(rt);
+  [h, th, q, lst, foot].forEach(function (n) { box.appendChild(n); }); ov.appendChild(box); document.body.appendChild(ov); fill();
+}
+try { egCheck(); document.addEventListener('visibilitychange', function () { if (!document.hidden) egCheck(); }); if (/eingang=1/.test(location.search)) history.replaceState(null, '', location.pathname); } catch (x) {}
 try { srchInit(); } catch (x) {}
 try { EXT.reload(); EXT.ui(); setTimeout(function () { EXT.refresh(); }, 4000); setInterval(function () { if (document.visibilityState === 'visible') EXT.refresh(); }, 900000); } catch (x) {}
 try { KS.init(); } catch (x) {}
