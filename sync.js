@@ -192,6 +192,12 @@ var KS = (function () {
     var pub = await crypto.subtle.exportKey('jwk', kp.publicKey), priv = await crypto.subtle.exportKey('jwk', kp.privateKey);
     return { pub: pub, priv: priv };
   }
+  /* Öffentlicher Schlüssel aus dem privaten dieses Geräts: so passt der Schlüssel der Formulare immer zum Postfach */
+  async function ensurePub(c) {
+    if (!c || !c.priv || !c.priv.n || !c.priv.e || S.pubOk === c.tok) return;
+    await api('pubset', { k: JSON.stringify({ kty: 'RSA', n: c.priv.n, e: c.priv.e, alg: 'RSA-OAEP-256', ext: true, key_ops: ['encrypt'] }), _c: c });
+    S.pubOk = c.tok;
+  }
   async function setup(pw, code) {
     var d = await derive(pw), c = { tok: d.tok, ek: d.ek };
     var r = await api('init', { e: code || '', _c: c });
@@ -233,7 +239,7 @@ var KS = (function () {
       if (!core) throw new Error('Auf dem Server liegt noch kein Stand. Bitte zuerst abgleichen.');
       var r = await api('init', { e: code || '', _c: nc });
       if (!r.neu) throw new Error('Mit diesem Passwort gibt es schon einen Bereich. Bitte ein anderes wählen.');
-      made = true;
+      made = true; await ensurePub({ tok: nc.tok, ek: nc.ek, priv: c.priv });
       var names = st.objs.map(function (o) { return o.n; }).sort(function (a, b) { return (a === 'core') - (b === 'core'); }), rev = 0;
       for (var i = 0; i < names.length; i++) {
         progress('Verschlüssele neu (' + (i + 1) + ' von ' + names.length + ') …');
@@ -294,6 +300,7 @@ var KS = (function () {
     var c = cfg(); if (!c) { alert('Der Abgleich ist noch nicht eingerichtet (Praxis, Abgleich).'); return; }
     if (S.busy) return; S.busy = true; ui();
     try {
+      await ensurePub(c).catch(function () {});
       var st = await api('status'); S.inbox = st.inbox || [];
       if (!S.inbox.length) { alert('Das Postfach ist leer.'); return; }
       var entries = [], ids = [], bad = [];
