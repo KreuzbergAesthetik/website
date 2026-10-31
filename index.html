@@ -4737,6 +4737,38 @@ function logMailSent(p, betreff, text) {
 }
 function logAdd(type, text) { curP.log = (curP.log || []).concat([{ ts: Date.now(), type: type, text: text }]); }
 
+/* Unveränderliche Änderungshistorie der Patientenakte. Die normalen Daten bleiben editierbar; jede relevante Änderung erhält zusätzlich einen append-only Audit-Eintrag. */
+var AUD_LABEL = { anrede:'Anrede', titel:'Titel', vorname:'Vorname', nachname:'Nachname', dob:'Geburtsdatum', phone:'Telefon', email:'E-Mail', adresse:'Anschrift', allergien:'Allergien', diagnosen:'Erkrankungen / Diagnosen', notizen:'Notiz' };
+function auditNorm(v) {
+  if (v == null) return '';
+  if (typeof v === 'string') return v.trim();
+  if (Array.isArray(v)) return v.map(auditNorm).join('\n');
+  if (typeof v === 'object') { try { return JSON.stringify(v); } catch (x) { return String(v); } }
+  return String(v);
+}
+function auditPush(p, area, changes) {
+  if (!p) return;
+  var c = (changes || []).map(function (x) { return { field: x.field || 'Wert', from: auditNorm(x.from), to: auditNorm(x.to) }; }).filter(function (x) { return x.from !== x.to; });
+  if (!c.length) return;
+  p.audit = (p.audit || []).concat([{ ts: Date.now(), area: area || 'Patientenakte', changes: c }]);
+}
+function auditOne(p, area, field, from, to) { auditPush(p, area, [{ field: field, from: from, to: to }]); }
+function auditDiff(p, area, before, after, fields) {
+  var c = [];
+  (fields || []).forEach(function (f) { var k = Array.isArray(f) ? f[0] : f, lab = Array.isArray(f) ? f[1] : (AUD_LABEL[k] || k); c.push({ field: lab, from: before ? before[k] : '', to: after ? after[k] : '' }); });
+  auditPush(p, area, c);
+}
+function auditDocState(d) {
+  d = d || {}; var v = d.verw || {}, verw = [];
+  DK_VERW.forEach(function (x) { if (v[x[0]]) verw.push(x[1]); }); if (String(v.text || '').trim()) verw.push(String(v.text).trim());
+  return { anamnese:d.anamnese || '', befund:d.befund || '', behandlung:d.behandlung || '', aufklaerung:d.aufklaerung || '', leist:d.leist || '', produkte:d.produkte || '', ausblick:d.ausblick || '', rechnung:d.rechnung || '', verw:verw.join('\n') };
+}
+function auditDocPlain(d, fallback) {
+  var a = auditDocState(d), out = [];
+  [['anamnese','Anamnese'],['befund','Befund'],['behandlung','Behandlung'],['aufklaerung','Aufklärung'],['leist','Leistungen'],['produkte','Produkte'],['ausblick','Ausblick'],['rechnung','Rechnungstext'],['verw','Verwaltung']].forEach(function (x) { if (String(a[x[0]] || '').trim()) out.push(x[1] + ': ' + a[x[0]]); });
+  return out.join('\n') || String(fallback || '').trim();
+}
+
 /* Kopfbereich: Titel und Kacheln (Kontakt, Notiz, Medikation, Allergien, Diagnosen, Anschrift) */
 var tileEdit = '', akTab = 'akte';
 function tilePen(fn) { var b = mk('button', 'a-pen'); b.type = 'button'; b.innerHTML = ICON_PEN; b.title = 'Bearbeiten'; b.setAttribute('aria-label', 'Bearbeiten'); b.onclick = fn; return b; }
@@ -4771,8 +4803,10 @@ function txtTile(key, title, cls, ph) {
   });
 }
 function tileSave(key) {
-  var v = key === 'adresse' ? addrRead('a-adr-') : document.getElementById('a-tile-in').value.trim(), changed = v !== (curP[key] || '');
-  curP[key] = v; if (key === 'notizen' && changed && v) logAdd('notiz', v);
+  var old = curP[key] || '', v = key === 'adresse' ? addrRead('a-adr-') : document.getElementById('a-tile-in').value.trim(), changed = v !== old;
+  curP[key] = v;
+  if (changed) auditOne(curP, 'Patientenakte', AUD_LABEL[key] || key, old, v);
+  if (key === 'notizen' && changed && v) logAdd('notiz', v);
   tileEdit = ''; persist(); renderHead(); renderVerlauf(); renderPatients();
 }
 function renderHead() {
@@ -4823,9 +4857,9 @@ function renderHead() {
     var ul = mk('ul'); list.forEach(function (m, i) {
       var li = mk('li'), md = medSplit(m), tx = mk('span', 'med-t'); tx.title = ed ? 'Tippen zum Bearbeiten' : m;
       tx.appendChild(mk('b', 'med-n', md.n)); if (md.d) tx.appendChild(mk('span', 'med-d', ' ' + md.d));
-      if (ed) { tx.style.cursor = 'pointer'; tx.onclick = async function () { var v = await kaPrompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v) { p.medikation[i] = v; persist(); renderHead(); renderVerlauf(); } }; }
+      if (ed) { tx.style.cursor = 'pointer'; tx.onclick = async function () { var v = await kaPrompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v && v !== m) { p.medikation[i] = v; auditOne(p, 'Medikation', 'Medikament', m, v); persist(); renderHead(); renderVerlauf(); } }; }
       li.appendChild(tx);
-      if (ed) { var b = mk('button', '', '×'); b.type = 'button'; b.onclick = function () { p.medikation.splice(i, 1); persist(); renderHead(); }; li.appendChild(b); }
+      if (ed) { var b = mk('button', '', '×'); b.type = 'button'; b.onclick = function () { var old = p.medikation[i]; p.medikation.splice(i, 1); auditOne(p, 'Medikation', 'Medikament', old, '[entfernt]'); persist(); renderHead(); renderVerlauf(); }; li.appendChild(b); }
       ul.appendChild(li);
     }); t.appendChild(ul);
     if (ed) {
@@ -4862,10 +4896,13 @@ function toggleStamm() {
   var g = function (k) { return document.getElementById('se-' + k).value.trim(); };
   if (!g('vorname') || !g('nachname')) { alert('Vorname und Nachname dürfen nicht leer sein.'); return; }
   if (!validDob(g('dob'))) { alert(DOB_MSG); return; }
-  var old = nameKey(curP);
+  var old = nameKey(curP), before = {};
+  HEAD_FIELDS.forEach(function (k) { before[k[0]] = curP[k[0]] || ''; });
   if (patients.some(function (x) { return x !== curP && nameKey(x).toLowerCase() === (g('vorname') + ' ' + g('nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon.'); return; }
   HEAD_FIELDS.forEach(function (k) { if (k[0] !== 'adresse') curP[k[0]] = g(k[0]); });
   curP.adresse = addrRead('se-adr-');
+  var after = {}; HEAD_FIELDS.forEach(function (k) { after[k[0]] = curP[k[0]] || ''; });
+  auditDiff(curP, 'Stammdaten', before, after, HEAD_FIELDS);
   var nn = nameKey(curP);
   if (nn !== old) events.forEach(function (e) { if (String(e.patientId) === String(curP.id) || e.patient === old) { e.patientId = curP.id; e.patient = nn; } });
   persist(); renderPatients(); renderCal(); viewAkte(curP);
@@ -5021,7 +5058,7 @@ function mgMerge(keep, other, pick) {
     if (b && !a) keep[k] = b; else if (a && b && a.toLowerCase().indexOf(b.toLowerCase()) < 0) keep[k] = a + '\n' + b;
   });
   var med = (keep.medikation = keep.medikation || []); (other.medikation || []).forEach(function (m) { if (med.indexOf(m) < 0) med.push(m); });
-  ['doku', 'log', 'bilder', 'dokumente', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
+  ['doku', 'log', 'audit', 'bilder', 'dokumente', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
   if (other.code) { if (!keep.code) keep.code = other.code; else if (other.code !== keep.code) keep.codes2 = (keep.codes2 || []).concat([other.code]); }
   (other.codes2 || []).forEach(function (c) { keep.codes2 = (keep.codes2 || []).concat([c]); });
   Object.keys(other).forEach(function (k) { if (keep[k] === undefined && other[k] !== undefined && k !== 'id' && k !== 'nr') keep[k] = other[k]; });
@@ -5137,6 +5174,7 @@ function addMed() {
   var inp = document.getElementById('a-med-in'), v = inp.value.trim();
   if (!v) return;
   curP.medikation = (curP.medikation || []).concat([v]);
+  auditOne(curP, 'Medikation', 'Medikament', '[nicht vorhanden]', v);
   logAdd('med', v); persist(); renderHead(); renderVerlauf(); document.getElementById('a-med-in').focus();
 }
 
@@ -5268,6 +5306,7 @@ function tlRow(it) {
     sh = tlShell(it.k, 'Dokumentation');
     sh.body.appendChild(xBtn(async function () {
       if (!await kaConfirm('Dokumentation löschen?')) return;
+      auditOne(curP, 'Dokumentation', 'Freie Dokumentation', auditDocPlain(d.dok, d.text), '[gelöscht]');
       curP.doku = curP.doku.filter(function (y) { return y !== d; }); persist(); renderVerlauf();
     }));
     var dtb = mk('div'); dtb.style.cssText = 'font-size:13px; margin:4px 0 0; padding:6px 8px; background:#f8fafc; border-radius:6px; white-space:pre-wrap; cursor:pointer;';
@@ -5275,7 +5314,7 @@ function tlRow(it) {
     dtb.onclick = function () { openDokFree(d); }; sh.body.appendChild(dtb);
     sh.body.appendChild(attachBlock(curP, 'd' + d.ts));
     tlPlus(sh, [['Mit Termin verknüpfen', function () { openDkPick(d); }], ['Datum und Uhrzeit ändern', function () {
-      askDateTime(d.ts, function (t) { var oz = 'd' + d.ts, nz = 'd' + t; [curP.bilder, curP.dokumente].forEach(function (l) { (l || []).forEach(function (x) { if (x.zu === oz) x.zu = nz; }); }); d.ts = t; persist(); renderVerlauf(); });
+      askDateTime(d.ts, function (t) { var oldTs = d.ts, oz = 'd' + d.ts, nz = 'd' + t; [curP.bilder, curP.dokumente].forEach(function (l) { (l || []).forEach(function (x) { if (x.zu === oz) x.zu = nz; }); }); d.ts = t; auditOne(curP, 'Dokumentation', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); });
     }]].concat(attItems('d' + d.ts), attMove('d' + d.ts)));
   } else if (it.t === 'rechnung') {
     var iv = it.inv;
@@ -5284,6 +5323,17 @@ function tlRow(it) {
     line.style.cssText = 'font-weight:600; cursor:pointer;';
     line.onclick = function () { viewInvoice(iv.id); };
     sh.body.appendChild(line);
+  } else if (it.t === 'audit') {
+    var au = it.a;
+    sh = tlShell(it.k, 'Änderungshistorie');
+    var ah = mk('div', '', au.area || 'Patientenakte'); ah.style.fontWeight = '600'; sh.body.appendChild(ah);
+    (au.changes || []).forEach(function (c) {
+      var w = mk('div'); w.style.cssText = 'margin-top:7px; padding-top:7px; border-top:1px solid #e2e8f0;';
+      var f = mk('div', '', c.field || 'Wert'); f.style.cssText = 'font-size:12px; font-weight:600; color:#475569; margin-bottom:3px;'; w.appendChild(f);
+      var o = mk('div', '', 'Vorher: ' + (String(c.from || '').trim() || '[leer]')); o.style.cssText = 'white-space:pre-wrap; color:#64748b;'; w.appendChild(o);
+      var n = mk('div', '', 'Danach: ' + (String(c.to || '').trim() || '[leer]')); n.style.cssText = 'white-space:pre-wrap; color:#0f172a; margin-top:2px;'; w.appendChild(n);
+      sh.body.appendChild(w);
+    });
   } else if (it.t === 'angelegt') {
     sh = tlShell(it.k, 'Patient'); sh.body.appendChild(mk('div', '', 'Patient angelegt'));
   } else {
@@ -5296,13 +5346,14 @@ function tlRow(it) {
       var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
       var cb = mk('button', 'btn btn-cancel', 'Abbrechen'); cb.type = 'button'; cb.onclick = function () { tlEditLog = null; renderVerlauf(); };
       var sv = mk('button', 'btn btn-save', 'Speichern'); sv.type = 'button';
-      sv.onclick = function () { var v = ta.value.trim(); if (!v) { alert('Der Text darf nicht leer sein. Zum Entfernen bitte „Löschen“ wählen.'); return; } lg.text = v; tlEditLog = null; persist(); renderVerlauf(); };
+      sv.onclick = function () { var v = ta.value.trim(); if (!v) { alert('Der Text darf nicht leer sein. Zum Entfernen bitte „Löschen“ wählen.'); return; } var oldText = lg.text; lg.text = v; if (v !== oldText) auditOne(curP, 'Verlaufseintrag', 'Text', oldText, v); tlEditLog = null; persist(); renderVerlauf(); };
       fb.appendChild(cb); fb.appendChild(sv); sh.body.appendChild(fb);
     } else {
       var tx = mk('div', '', it.t === 'med' ? String(lg.text).replace(/^Medikament hinzugefügt:\s*/, '') : lg.text);
       tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
-      tlPlus(sh, [['Bearbeiten', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { lg.ts = t; persist(); renderVerlauf(); }); }], ['Löschen', async function () {
+      tlPlus(sh, [['Bearbeiten', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { var oldTs = lg.ts; lg.ts = t; auditOne(curP, 'Verlaufseintrag', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); }); }], ['Löschen', async function () {
         if (!await kaConfirm('Eintrag aus dem Zeitstrahl löschen?')) return;
+        auditOne(curP, 'Verlaufseintrag', 'Eintrag', lg.text, '[gelöscht]');
         curP.log = (curP.log || []).filter(function (y) { return y !== lg; }); persist(); renderVerlauf();
       }]]);
     }
@@ -5316,6 +5367,7 @@ function renderVerlauf() {
   events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
   (curP.doku || []).forEach(function (d) { items.push({ k: d.ts, t: 'doku', d: d }); });
   (curP.log || []).forEach(function (l) { if (!(l.type === 'mail' && /^E-Mail-Fenster/.test(l.text))) items.push({ k: l.ts, t: l.type, l: l }); });
+  (curP.audit || []).forEach(function (a) { items.push({ k: a.ts, t: 'audit', a: a }); });
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
   lager.verbrauch.forEach(function (v) { if (v.pid === curP.id) items.push({ k: v.ts, t: 'verbrauch', v: v }); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
@@ -5571,11 +5623,13 @@ function openDokEv(e) {
 }
 function saveDok() {
   var e = dkEv; if (!e) return;
-  var g = function (id) { var el = document.getElementById(id); return el ? (el.value || '').trim() : ''; };
+  var oldDok = auditDocState(dokOf(e)), g = function (id) { var el = document.getElementById(id); return el ? (el.value || '').trim() : ''; };
   if (!e.pseudo) dkApplyProd(e);
   var verw = { text: g('dk-verwtext') }; DK_VERW.forEach(function (v) { verw[v[0]] = document.getElementById('dk-v-' + v[0]).checked; });
   e.dok = { anamnese: g('dk-anamnese'), befund: g('dk-befund'), behandlung: g('dk-behandlung'), aufklaerung: g('dk-aufklaerung'), verw: verw, leist: g('dk-leist'), produkte: g('dk-produkte'), ausblick: g('dk-ausblick'), rechnung: g('dk-rechnung') };
   e.doku = dokuText(e);
+  var ap = e.pseudo ? curP : patOf(e), aa = e.pseudo ? 'Freie Dokumentation' : 'Dokumentation · ' + fmtTermin(e);
+  auditDiff(ap, aa, oldDok, auditDocState(e.dok), [['anamnese','Anamnese'],['befund','Befund'],['behandlung','Behandlung'],['aufklaerung','Aufklärung'],['leist','Leistungen'],['produkte','Produkte'],['ausblick','Ausblick und Procedere'],['rechnung','Rechnungstext'],['verw','Verwaltung']]);
   if (e.pseudo) {
     var d0 = e.pseudo; d0.dok = e.dok; d0.text = e.doku;
     if (!String(d0.text).trim()) curP.doku = (curP.doku || []).filter(function (y) { return y !== d0; });
