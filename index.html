@@ -2346,21 +2346,21 @@ function flagsMap() {
   todos.forEach(function (t) { if (!t.done && t.pid && m.byId[t.pid]) m.byId[t.pid].todos.push(t); });
   invoices.forEach(function (i) { if (i.eid) invEv[i.eid] = 1; if (i.pid) { inv[i.pid + '|' + i.date] = 1; if (i.leistung) inv[i.pid + '|' + i.leistung] = 1; } });
   events.forEach(function (e) {
-    var p = byName[e.patient]; if (!p || e.phase === 'Abgesagt' || e.keineRechnung || invEv[e.id] || inv[p.id + '|' + e.date]) return;
+    var p = eventPatient(e); if (!p || e.phase === 'Abgesagt' || e.keineRechnung || invEv[e.id] || inv[p.id + '|' + e.date]) return;
     var end = new Date(e.date + 'T' + e.time + ':00').getTime() + (+e.dur || 60) * 60000;
     if (end < now && end > cut) m.byId[p.id].unb.push(e);
   });
   var tdy = iso(new Date()), lim = iso(new Date(now + 14 * 86400000));
   var seen = {};
-  events.filter(function (e) { return e.phase !== 'Abgesagt' && e.date >= tdy && e.date <= lim && byName[e.patient]; })
+  events.filter(function (e) { return e.phase !== 'Abgesagt' && e.date >= tdy && e.date <= lim && eventPatient(e); })
     .sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); }).forEach(function (e) {
-      var p = byName[e.patient]; if (seen[p.id]) return; seen[p.id] = 1;
+      var p = eventPatient(e); if (!p || seen[p.id]) return; seen[p.id] = 1;
       var ai = anamInfo(p); if (ai.state !== 'ok') m.byId[p.id].anam = { info: ai, e: e };
     });
   /* nächster gebuchter Termin; Erinnerung fällig, wenn er innerhalb von settings.remDays Tagen liegt und noch nicht erinnert wurde */
   var remLim = iso(new Date(now + (settings.remDays == null ? 2 : +settings.remDays) * 86400000));
   events.forEach(function (e) {
-    var p = byName[e.patient]; if (!p || e.phase === 'Abgesagt') return;
+    var p = eventPatient(e); if (!p || e.phase === 'Abgesagt') return;
     var t = new Date(e.date + 'T' + e.time + ':00').getTime(); if (!(t >= now)) return;
     var q = m.byId[p.id]; if (!q.next || t < q.nextT) { q.next = e; q.nextT = t; }
   });
@@ -2381,7 +2381,7 @@ function anamConfirm(p) {
   bestAdd(p, 'anamnese', 'vorOrt'); p.log = p.log || []; p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese vor Ort bestätigt' });
   persist(); renderUnterlagen(); if (curP === p) { renderHead(); renderVerlauf(); }
 }
-function evFlag(e) { var m = flagsMap(), p = m.byName[e.patient]; return p && m.get(p).todos.length ? '<span class="evfl" title="Offenes To-Do">!</span>' : ''; }
+function evFlag(e) { var m = flagsMap(), p = eventPatient(e); return p && m.get(p).todos.length ? '<span class="evfl" title="Offenes To-Do">!</span>' : ''; }
 function flagPills(p, noTodo) {
   var f = flagsMap().get(p), out = [];
   if (f.todos.length && !noTodo) { var a = mk('span', 'fl fl-red', 'To-Do' + (f.todos.length > 1 ? ' ×' + f.todos.length : '')); a.title = f.todos.map(function (t) { return t.text; }).join('\n'); out.push(a); }
@@ -2472,7 +2472,7 @@ function ensurePatients() {
   patients.forEach(function (p) { if (!(p.nr > 0)) p.nr = ++mx; });
   if (typeof settings === 'object' && settings && settings.titelMig && Array.isArray(events)) patients.forEach(function (p) {
     var v = noTitel(p.vorname), n = noTitel(p.nachname), k = nameKey(p);
-    if ((v !== p.vorname || n !== p.nachname) && (v || n) && !events.some(function (e) { return e.patient === k; })) { if (!p.titel) p.titel = splitTitel(p).titel; p.vorname = v; p.nachname = n; }
+    if ((v !== p.vorname || n !== p.nachname) && (v || n) && !events.some(function (e) { return eventBelongs(e, p); })) { if (!p.titel) p.titel = splitTitel(p).titel; p.vorname = v; p.nachname = n; }
   });
   patients.forEach(function (p) {
     /* Titel als eigenes Feld: aus dem Namen und aus Notizzeilen „Titel: …“ übernehmen, der Name bleibt unverändert */
@@ -2488,7 +2488,7 @@ function ensurePatients() {
     if (p.anamneseBest) { (p.best = p.best || []).push({ k: 'anamnese', art: 'vorOrt', ts: p.anamneseBest }); delete p.anamneseBest; }
   });
 }
-/* Einmalig: akademische Titel aus Vor- und Nachname lösen. Termine hängen über den Namen am Patienten und werden mitgeändert.
+/* Einmalig: akademische Titel aus Vor- und Nachname lösen. Termine hängen über die Patienten-ID an der Akte; der lesbare Name im Termin wird mitgeändert.
    Die alten Namen merkt sich ka_bak_titel, damit sich die Umstellung rückgängig machen lässt. */
 function titelMigration() {
   if (settings.titelMig) return;
@@ -2503,7 +2503,7 @@ function titelMigration() {
     if (!p.titel) p.titel = splitTitel(p).titel;
     map.push({ id: p.id, oldV: p.vorname, oldN: p.nachname, oldKey: old, newKey: nk });
     p.vorname = v; p.nachname = n; keys[old]--; keys[nk] = 1;
-    events.forEach(function (e) { if (e.patient === old) e.patient = nk; });
+    events.forEach(function (e) { if (String(e.patientId) === String(p.id) || e.patient === old) { e.patientId = p.id; e.patient = nk; } });
   });
   try {
     if (map.length) kaSet('ka_bak_titel', JSON.stringify({ ts: Date.now(), map: map }));
@@ -2518,7 +2518,7 @@ async function titelRueckgaengig() {
   b.map.forEach(function (m) {
     var p = patients.filter(function (x) { return x.id === m.id; })[0]; if (!p || nameKey(p) !== m.newKey) return;
     p.vorname = m.oldV; p.nachname = m.oldN;
-    events.forEach(function (e) { if (e.patient === m.newKey) e.patient = m.oldKey; });
+    events.forEach(function (e) { if (String(e.patientId) === String(p.id) || e.patient === m.newKey) { e.patientId = p.id; e.patient = m.oldKey; } });
   });
   kaSet('ka_bak_titel', 'null'); persist(); renderPatients(); alert('Erledigt.');
 }
@@ -2574,7 +2574,7 @@ function renderPatients() {
   var nowT = Date.now(), evMap = {};
   events.forEach(function (e) {
     if (e.phase === 'Abgesagt') return; var t = new Date(e.date + 'T' + e.time).getTime(); if (!t) return;
-    var m = evMap[e.patient] = evMap[e.patient] || { next: null, last: null };
+    var ep = eventPatient(e); if (!ep) return; var ek = String(ep.id), m = evMap[ek] = evMap[ek] || { next: null, last: null };
     if (t >= nowT) { if (!m.next || t < m.next.t) m.next = { t: t, e: e }; } else if (!m.last || t > m.last.t) m.last = { t: t, e: e };
   });
   var fmtS = function (t) { var d = new Date(t); return WD[(d.getDay() + 6) % 7] + ' ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + (d.getFullYear() === new Date().getFullYear() ? '' : String(d.getFullYear()).slice(2)) + (t >= nowT ? ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) : ''); };
@@ -2598,7 +2598,7 @@ function renderPatients() {
     nb.appendChild(nl1); nb.appendChild(document.createTextNode(' ')); var nl2 = mk('span', 'pn-f', noT(p.vorname)); if (p.titel) nl2.appendChild(mk('small', 'pt-tit2', p.titel)); nb.appendChild(nl2); nrow.appendChild(nb);
     c1.appendChild(nrow);
     var sub = p.dob || '';
-    var em = evMap[nameKey(p)] || {};
+    var em = evMap[String(p.id)] || {};
     if (sub) { var dr = mk('div', 'pt-dr'); dr.appendChild(mk('span', 'pt-dob', sub)); c1.appendChild(dr); }
     var inv0 = em.last ? invoices.filter(function (i) { return i.eid === em.last.e.id || (i.pid === p.id && i.date === em.last.e.date); })[0] : null;
     if (em.last && inv0 && !(invState(inv0).full || inv0.sentAt)) { var yd = mk('span', 'pt-dot d-send'); yd.title = 'Rechnung erstellt, noch nicht versendet'; yd.setAttribute('aria-label', yd.title); dots.appendChild(yd); }
@@ -2735,7 +2735,7 @@ function evBlock(e, lane, lanes) {
   var pos = lanes > 1 ? 'left:calc(' + (lane * 100 / lanes) + '% + 2px);right:auto;width:calc(' + (100 / lanes) + '% - 4px);' : '';
   var cats = evKats(e), seg = '', chips = '';
   if (cats.length > 1) { seg = '<span class="evseg">' + cats.map(function (c) { return '<i style="background:' + c.color + '"></i>'; }).join('') + '</span>'; if (h >= 62) chips = '<div class="evchips">' + cats.map(function (c) { return '<i style="background:' + c.color + '">' + esc(c.name) + '</i>'; }).join('') + '</div>'; }
-  return '<div class="ev' + (e.phase === 'Abgesagt' ? ' cancel' : '') + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + evFlag(e) + '<b>' + e.time + '</b> ' + nmHtml(dnS(e.patient)) + '<br>' + esc(e.behandlung) + chips + '</div>';
+  return '<div class="ev' + (e.phase === 'Abgesagt' ? ' cancel' : '') + (cats.length > 1 ? ' multi' : '') + (e.status === 'Bestätigt' ? ' ok' : '') + '" onpointerdown="evDown(event,' + e.id + ')" oncontextmenu="return false" style="top:' + top + 'px;height:' + h + 'px;' + pos + col(e) + '" title="' + esc(e.behandlung) + '">' + seg + evFlag(e) + '<b>' + e.time + '</b> ' + nmHtml(eventPatientDisplay(e)) + '<br>' + esc(e.behandlung) + chips + '</div>';
 }
 
 /* Überlappende Termine nebeneinander statt übereinander */
@@ -2799,7 +2799,7 @@ function monthGrid() {
     var list = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time < b.time ? -1 : 1; });
     html += '<div class="mc' + (d.getMonth() !== m ? ' out' : '') + (k === today ? ' today' : '') + '" onclick="openDay(\'' + k + '\')"><div class="n">' + d.getDate() + '</div>';
     list.slice(0, 3).forEach(function (e) {
-      html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openTerminView(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + nmHtml(dnS(e.patient)) + '</div>';
+      html += '<div class="mp' + (e.status === 'Bestätigt' ? ' ok' : '') + '" onclick="event.stopPropagation();openTerminView(' + e.id + ')" style="cursor:pointer;' + col(e) + '">' + e.time + ' ' + nmHtml(eventPatientDisplay(e)) + '</div>';
     });
     if (list.length > 3) html += '<div style="color:#64748b;margin-top:2px;">+' + (list.length - 3) + ' weitere</div>';
     html += EXT.pills(k);
@@ -2858,7 +2858,7 @@ function step(n) {
 }
 function goToday() { cur = new Date(); renderCal(); }
 function openDay(k) { var p = k.split('-'); cur = new Date(+p[0], +p[1] - 1, +p[2]); view = 'tag'; renderCal(); }
-var tDur = 60;
+var tDur = 60, tPatientId = null;
 function toMin(t) { var p = t.split(':'); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); }
 function fromMin(m) { m = ((m % 1440) + 1440) % 1440; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); }
 function dLabel(d) { document.getElementById('t-dlabel').innerText = d > 0 ? '(' + d + ' min)' : '(Ende vor Beginn)'; }
@@ -2898,8 +2898,9 @@ function closeTermin() {
 }
 function openTermin(k, t, fromAkte) {
   retP = fromAkte ? curP : null;
+  tPatientId = fromAkte && curP ? curP.id : null;
   editId = null; document.getElementById('t-del').style.display = 'none'; document.getElementById('t-title').textContent = 'Neuer Termin';
-  document.getElementById('t-patient').value = '';
+  document.getElementById('t-patient').value = tPatientId ? nameKey(curP) : '';
   document.getElementById('t-datum').value = k || iso(cur);
   document.getElementById('t-zeit').value = t || '11:30';
   tDur = 60; shiftEnd();
@@ -2919,7 +2920,7 @@ function editTermin(id, fromAkte) {
   document.getElementById('t-zeit').value = e.time;
   document.getElementById('t-ende').value = fromMin(toMin(e.time) + e.dur);
   dLabel(e.dur);
-  document.getElementById('t-patient').value = e.patient;
+  var ep = eventPatient(e); tPatientId = ep ? ep.id : null; document.getElementById('t-patient').value = ep ? nameKey(ep) : (e.patient || '');
   document.getElementById('t-leistung').value = ''; tLeist = evLeistungen(e).slice(); if (!tLeist.length && e.behandlung && e.behandlung !== 'Beratung') tLeist = [e.behandlung]; renderTLeist();
   document.getElementById('t-notiz').value = e.notiz || '';
   document.getElementById('t-farbe').value = e.color || '#16a34a'; terminKatColor();
@@ -2994,7 +2995,7 @@ function goHome() {
 /* ===== Startseite ===== */
 var MN3 = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 var WDL = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-function patOf(e) { return patients.filter(function (p) { return nameKey(p) === e.patient; })[0]; }
+function patOf(e) { return eventPatient(e); }
 function hasAllergy(p) { var a = p && (p.allergien || '').trim().toLowerCase(); return !!a && a !== 'keine' && a !== '-' && a !== 'nein'; }
 function hmRow(time, main, sub, onclick, extra, cls) {
   var r = mk('div', 'hm-row' + (cls ? ' ' + cls : '')); r.onclick = onclick;
@@ -3055,7 +3056,7 @@ function renderHome() {
       else ml.forEach(function (t) { var c2 = mk('span', 'badge badge-amber', 'Offen: ' + t); c2.title = t; ex.appendChild(c2); });
     }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
-    var row = hmRow(e.time + ' bis ' + endStr, nmEl(dnS(e.patient)), e.behandlung || '', function () { openAkteFromTermin(e.id); }, null, isNext ? 'next' : '');
+    var row = hmRow(e.time + ' bis ' + endStr, nmEl(eventPatientDisplay(e)), e.behandlung || '', function () { openAkteFromTermin(e.id); }, null, isNext ? 'next' : '');
     if (ex) row.querySelector('.hm-main').appendChild(ex);
     return row;
   }), 'Heute stehen keine Termine an.');
@@ -3103,7 +3104,7 @@ function renderHome() {
     var dd = addDays(now, di - wd), k = iso(dd), ev = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time.localeCompare(b.time); });
     if (!ev.length) continue; any = true;
     wk.appendChild(mk('div', 'hm-sec', WDL[dd.getDay()] + ', ' + dd.getDate() + '. ' + MN[dd.getMonth()] + (k === today ? ' (heute)' : '')));
-    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, nmEl(dnS(e.patient)), e.behandlung || '', function () { openAkteFromTermin(e.id); })); });
+    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, nmEl(eventPatientDisplay(e)), e.behandlung || '', function () { openAkteFromTermin(e.id); })); });
   }
   if (!any) wk.appendChild(mk('div', 'hm-empty', 'Diese Woche stehen keine Termine an.'));
   /* Umsatz und Ausgaben des Jahres */
@@ -3115,7 +3116,7 @@ function renderHome() {
   fin.appendChild(tb);
   /* offene Punkte */
   var nd = events.filter(function (e) { var end = toMin(e.time) + (e.dur || 60); return !e.alt && !dokFilled(e) && (e.date < today || (e.date === today && end <= nowMin)); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
-  var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, nmEl(dnS(e.patient)), fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : ''), function () { openDokuFromTermin(e.id); }); });
+  var ndRows = nd.slice(0, 5).map(function (e) { return hmRow(null, nmEl(eventPatientDisplay(e)), fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : ''), function () { openDokuFromTermin(e.id); }); });
   if (nd.length > 5) ndRows.push(mk('div', 'hm-empty', 'und ' + (nd.length - 5) + ' weitere'));
   hmFill('hm-nodoku', ndRows, 'Alles dokumentiert.');
   var op = invoices.filter(function (i) { return !invState(i).full; }).sort(function (a, b) { return a.date.localeCompare(b.date); }), sum = 0;
@@ -3153,7 +3154,7 @@ function setPhase(id, k) {
 function dupTermin(id) {
   var e = events.filter(function (x) { return x.id === id; })[0]; if (!e) return;
   closeModal('modal-tview'); openTermin(e.date, e.time);
-  document.getElementById('t-patient').value = e.patient; document.getElementById('t-notiz').value = e.notiz || '';
+  var ep = eventPatient(e); tPatientId = ep ? ep.id : null; document.getElementById('t-patient').value = ep ? nameKey(ep) : (e.patient || ''); document.getElementById('t-notiz').value = e.notiz || '';
   tLeist = evLeistungen(e).slice(); renderTLeist(); document.getElementById('t-farbe').value = e.color || '#16a34a';
   tDur = e.dur; document.getElementById('t-ende').value = fromMin(toMin(e.time) + e.dur); dLabel(e.dur);
 }
@@ -3179,7 +3180,7 @@ function openTerminView(id, keep) {
   var wen = mk('div', 'tv-wann'); var ganzT = e.time === fromMin(DSTART * 60) && e.dur === (DEND - DSTART) * 60;
   wen.innerHTML = WD[(d.getDay() + 6) % 7] + ', ' + d.getDate() + '. ' + MN[d.getMonth()].slice(0, 3) + '. · ' + (ganzT ? '<b>ganztägig</b>' : '<b>' + e.time + '</b> – <b>' + fromMin(toMin(e.time) + e.dur) + '</b> Uhr <span>(' + e.dur + ' min)</span>');
   hm.appendChild(wen);
-  var nm = p ? (dnP(p) + (ageOf(p.dob) !== '' ? ' (' + ageOf(p.dob) + ')' : '')) : e.patient;
+  var nm = p ? (dnP(p) + (ageOf(p.dob) !== '' ? ' (' + ageOf(p.dob) + ')' : '')) : eventPatientName(e);
   var nl = mk('a', 'tv-name', nm); nl.href = '#'; nl.title = 'Patientenakte öffnen';
   if (p) nl.onclick = function (ev) { ev.preventDefault(); closeModal('modal-tview'); viewAkte(p); }; else { nl.removeAttribute('href'); nl.style.cursor = 'default'; nl.style.textDecoration = 'none'; }
   hm.appendChild(nl);
@@ -3249,7 +3250,7 @@ function openDokuFromTermin(id) {
   if (noClick) return;
   var e = events.filter(function (x) { return x.id === id; })[0];
   if (!e) return;
-  var p = patients.filter(function (x) { return (x.vorname + ' ' + x.nachname) === e.patient; })[0];
+  var p = eventPatient(e);
   if (!p) { alert('Für diesen Termin ist kein Patient angelegt.'); return; }
   viewAkte(p);
   openDok(e.id);
@@ -3300,8 +3301,23 @@ function validDob(v) {
 }
 var DOB_MSG = 'Bitte das Geburtsdatum im Format TT.MM.JJJJ eingeben, z.B. 23.09.1978.';
 function nameKey(p) { return p.vorname + ' ' + p.nachname; }
-/* Anzeige: Nachname, Vorname (die Zuordnung läuft weiter über nameKey) */
+function patById(id) { return patients.filter(function (p) { return String(p.id) === String(id); })[0] || null; }
+function eventPatient(e) {
+  if (!e) return null;
+  var p = e.patientId != null ? patById(e.patientId) : null;
+  if (p) return p;
+  var hit = patients.filter(function (x) { return nameKey(x) === e.patient; });
+  return hit.length === 1 ? hit[0] : null;
+}
+function eventBelongs(e, p) {
+  if (!e || !p) return false;
+  if (e.patientId != null) return String(e.patientId) === String(p.id);
+  return e.patient === nameKey(p);
+}
+function eventPatientName(e) { var p = eventPatient(e); return p ? nameKey(p) : String(e && e.patient || ''); }
+/* Anzeige: Nachname, Vorname. Beziehungen laufen intern über die Patienten-ID; der Name im Termin bleibt nur als lesbarer Fallback erhalten. */
 function dnP(p) { return (noTitel(p.nachname) || p.nachname || '').toUpperCase() + ', ' + (noTitel(p.vorname) || p.vorname || ''); }
+function eventPatientDisplay(e) { var p = eventPatient(e); return p ? dnP(p) : dnS(e && e.patient); }
 /* Interne Namensanzeige: NACHNAME, Vorname mit fettem Nachnamen */
 function nmHtml(t) { t = String(t || ''); var k = t.indexOf(', '); return k < 0 ? esc(t) : '<b>' + esc(t.slice(0, k)) + '</b>' + esc(t.slice(k)); }
 function nmEl(t) { var e = document.createElement('span'); e.innerHTML = nmHtml(t); return e; }
@@ -3311,6 +3327,23 @@ function invNm(i) {
   var n = w.pop(); return n.toUpperCase() + ', ' + (noTitel(w.join(' ')) || w.join(' '));
 }
 function dnS(n) { var p = patients.filter(function (x) { return nameKey(x) === n; })[0]; return p ? dnP(p) : n; }
+function migrateEventPatientIds() {
+  if (!Array.isArray(events) || !events.length) return;
+  var changed = false;
+  events.forEach(function (e) {
+    var p = e.patientId != null ? patById(e.patientId) : null;
+    if (!p && e.patient) { var hit = patients.filter(function (x) { return nameKey(x) === e.patient; }); if (hit.length === 1) p = hit[0]; }
+    if (!p) return;
+    if (String(e.patientId) !== String(p.id)) { e.patientId = p.id; changed = true; }
+    var n = nameKey(p); if (e.patient !== n) { e.patient = n; changed = true; }
+  });
+  if (!changed) return;
+  try {
+    kaSet('ka_events', JSON.stringify(events));
+    var b = JSON.parse(kaGet('ka_sync_base') || 'null'); if (b) { b.dirty = true; kaSet('ka_sync_base', JSON.stringify(b)); }
+  } catch (x) {}
+}
+migrateEventPatientIds();
 function newId() { return Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
 function tsOf(x) { return x.ts || parseInt(String(x.id || '0').split('-')[0], 10) || 0; }
 /* ===== Dateispeicher (IndexedDB): Fotos und Dokumente liegen nicht im kleinen localStorage ===== */
@@ -3702,7 +3735,7 @@ function fillTermine(p) {
   var sel = document.getElementById('inv-termin'); sel.innerHTML = '';
   var o0 = mk('option', '', p ? 'Keinen Termin übernehmen' : 'Erst Patient auswählen'); o0.value = ''; sel.appendChild(o0);
   if (!p) return;
-  events.filter(function (e) { return e.patient === nameKey(p); })
+  events.filter(function (e) { return eventBelongs(e, p); })
     .sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
     .forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '') + (dokFilled(e) ? ' · mit Dokumentation' : '')); o.value = String(e.id); sel.appendChild(o); });
 }
@@ -4834,18 +4867,18 @@ function toggleStamm() {
   HEAD_FIELDS.forEach(function (k) { if (k[0] !== 'adresse') curP[k[0]] = g(k[0]); });
   curP.adresse = addrRead('se-adr-');
   var nn = nameKey(curP);
-  if (nn !== old) events.forEach(function (e) { if (e.patient === old) e.patient = nn; });
+  if (nn !== old) events.forEach(function (e) { if (String(e.patientId) === String(curP.id) || e.patient === old) { e.patientId = curP.id; e.patient = nn; } });
   persist(); renderPatients(); renderCal(); viewAkte(curP);
 }
 async function deletePatient() {
   var p = curP;
   if (invoices.some(function (i) { return i.pid === p.id; })) { alert('Zu diesem Patienten gibt es Rechnungen. Diese müssen aufbewahrt werden, deshalb kann er nicht gelöscht werden.'); return; }
   if (lager.verbrauch.some(function (v) { return v.pid === p.id; })) { alert('Zu diesem Patienten gibt es Produktbuchungen aus dem Lager. Deshalb kann er nicht gelöscht werden.'); return; }
-  var name = nameKey(p), n = events.filter(function (e) { return e.patient === name; }).length;
+  var name = nameKey(p), n = events.filter(function (e) { return eventBelongs(e, p); }).length;
   if (!await kaConfirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
   (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });
   patients = patients.filter(function (x) { return x !== p; });
-  events = events.filter(function (e) { return e.patient !== name; });
+  events = events.filter(function (e) { return !eventBelongs(e, p); });
   stammEdit = false; curP = null;
   persist(); renderPatients(); renderCal(); closeModal('modal-akte');
 }
@@ -4885,7 +4918,7 @@ function openVbEdit(vb) {
   tg.style.display = vb.pid ? '' : 'none';
   if (vb.pid) {
     var pt = patients.filter(function (x) { return x.id === vb.pid; })[0], o0 = mk('option', '', 'Kein Termin'); o0.value = ''; ts.appendChild(o0);
-    events.filter(function (e) { return pt && e.patient === nameKey(pt); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = e.id; ts.appendChild(o); });
+    events.filter(function (e) { return pt && eventBelongs(e, pt); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = e.id; ts.appendChild(o); });
     ts.value = vb.eid ? String(vb.eid) : '';
   }
   openModal('modal-vbe');
@@ -4905,7 +4938,7 @@ function saveVbEdit() {
 /* ===== Doppelte Akten zusammenlegen ===== */
 var mgA = null, mgB = null, mgKeep = 'a', mgPick = {};
 var MG_FIELDS = [['anrede', 'Anrede'], ['titel', 'Titel'], ['vorname', 'Vorname'], ['nachname', 'Nachname'], ['dob', 'Geburtsdatum'], ['phone', 'Telefon'], ['email', 'E-Mail'], ['adresse', 'Anschrift']];
-function mgCounts(p) { var n = nameKey(p); return { t: events.filter(function (e) { return e.patient === n; }).length, r: invoices.filter(function (i) { return i.pid === p.id; }).length, d: (p.dokumente || []).length + (p.bilder || []).length, l: (p.log || []).length + (p.doku || []).length }; }
+function mgCounts(p) { return { t: events.filter(function (e) { return eventBelongs(e, p); }).length, r: invoices.filter(function (i) { return i.pid === p.id; }).length, d: (p.dokumente || []).length + (p.bilder || []).length, l: (p.log || []).length + (p.doku || []).length }; }
 function mgWeight(p) { var c = mgCounts(p); return c.t + c.r * 2 + c.d + c.l; }
 function mgDigits(t) { return String(t || '').replace(/\D/g, '').replace(/^(00)?49/, '').replace(/^0+/, ''); }
 function mgScore(a, b) {
@@ -4994,7 +5027,7 @@ function mgMerge(keep, other, pick) {
   Object.keys(other).forEach(function (k) { if (keep[k] === undefined && other[k] !== undefined && k !== 'id' && k !== 'nr') keep[k] = other[k]; });
   keep.erstellt = Math.min(keep.erstellt || Date.now(), other.erstellt || Date.now());
   var newK = nameKey(keep);
-  events.forEach(function (e) { if (e.patient === oldO || e.patient === oldK) e.patient = newK; });
+  events.forEach(function (e) { if (String(e.patientId) === String(oid) || String(e.patientId) === String(keep.id) || e.patient === oldO || e.patient === oldK) { e.patientId = keep.id; e.patient = newK; } });
   invoices.forEach(function (i) { if (i.pid === oid) i.pid = keep.id; }); entw.forEach(function (i) { if (i.pid === oid) i.pid = keep.id; });
   todos.forEach(function (t) { if (t.pid === oid) t.pid = keep.id; });
   lager.verbrauch.forEach(function (v) { if (v.pid === oid) v.pid = keep.id; });
@@ -5181,7 +5214,7 @@ function newFreeDoku() {
 }
 function openDkPick(doc) {
   dkpDoc = doc || null;
-  var evs = events.filter(function (e) { return e.patient === nameKey(curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
+  var evs = events.filter(function (e) { return eventBelongs(e, curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); });
   if (!doc && !evs.length) { newFreeDoku(); return; }
   if (doc && !evs.length) { alert('Für diesen Patienten gibt es noch keinen Termin, mit dem die Dokumentation verknüpft werden kann.'); return; }
   var sel = document.getElementById('dkp-sel'); sel.innerHTML = ''; var today = iso(new Date()), pre = null;
@@ -5280,7 +5313,7 @@ function tlRow(it) {
 function renderVerlauf() {
   renderFin(); renderUnterlagen(); renderMedien();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
-  events.forEach(function (e) { if (e.patient === name) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
+  events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
   (curP.doku || []).forEach(function (d) { items.push({ k: d.ts, t: 'doku', d: d }); });
   (curP.log || []).forEach(function (l) { if (!(l.type === 'mail' && /^E-Mail-Fenster/.test(l.text))) items.push({ k: l.ts, t: l.type, l: l }); });
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
@@ -5476,7 +5509,7 @@ function openDok(id) { var e = events.filter(function (x) { return x.id === id; 
 /* Freie Dokumentation (ohne Termin) in derselben Maske bearbeiten */
 function openDokFree(d) {
   var dt = new Date(d.ts);
-  openDokEv({ id: -1, pseudo: d, patient: nameKey(curP), date: iso(dt), time: pad(dt.getHours()) + ':' + pad(dt.getMinutes()), dok: d.dok ? JSON.parse(JSON.stringify(d.dok)) : null, doku: d.text || '' });
+  openDokEv({ id: -1, pseudo: d, patientId: curP.id, patient: nameKey(curP), date: iso(dt), time: pad(dt.getHours()) + ':' + pad(dt.getMinutes()), dok: d.dok ? JSON.parse(JSON.stringify(d.dok)) : null, doku: d.text || '' });
 }
 function dkCancel() {
   var e = dkEv; closeModal('modal-dok');
@@ -5485,7 +5518,7 @@ function dkCancel() {
 }
 function openDokEv(e) {
   dkEv = e; var d = dokOf(e), box = document.getElementById('dk-body'); box.innerHTML = '';
-  document.getElementById('dk-title').textContent = 'Dokumentation · ' + dnS(e.patient) + ' · ' + fmtTermin(e);
+  document.getElementById('dk-title').textContent = 'Dokumentation · ' + eventPatientDisplay(e) + ' · ' + fmtTermin(e);
   dkTodos = todos.filter(function (t) { return t.eid === e.id; }).map(function (t) { return Object.assign({}, t); });
   dkPend = []; dkDel = [];
   var dkT = {}; DK_TEXT.forEach(function (k) { dkT[k[0]] = dkTextSec('dk-' + k[0], k[1], d[k[0]], 1, true); });
@@ -6030,7 +6063,7 @@ function pCode(p) {
   return p.code;
 }
 function fillPlatzhalter(text, p) {
-  var today = iso(new Date()), nx = events.filter(function (e) { return e.patient === nameKey(p) && e.date >= today; }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); })[0];
+  var today = iso(new Date()), nx = events.filter(function (e) { return eventBelongs(e, p) && e.date >= today; }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); })[0];
   var an = p.anrede || '', nn = p.nachname || '', vn = p.vorname || '';
   var wd = function (iso0) { var d = new Date(iso0 + 'T12:00:00'); return WDL[d.getDay()] + ', ' + fmtD(iso0); };
   var map = { Anrede: an, Vorname: vn, Nachname: nn, Name: nameKey(p), Datum: fmtD(today), Termin: nx ? fmtTermin(nx) : '', Behandlung: nx ? (nx.behandlung || '') : '',
@@ -6107,7 +6140,7 @@ function addTplsTo(p, list, zu, then) {
 }
 /* beim Anlegen eines Termins: zur Leistung gehörende Unterlagen vorschlagen */
 async function offerVorlagen(e) {
-  var p = patients.filter(function (x) { return nameKey(x) === e.patient; })[0]; if (!p) return;
+  var p = eventPatient(e); if (!p) return;
   var miss = tplsForEvent(e).filter(function (t) { return !hasTpl(p, t); });
   if (!miss.length) return;
   if (!await kaConfirm('Zu "' + (e.leistung || e.behandlung) + '" gehören diese Unterlagen:\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n') + '\n\nJetzt der Akte von ' + nameKey(p) + ' hinzufügen?')) return;
@@ -6234,7 +6267,7 @@ function renderUnterlagen() {
   });
   /* Vorlagen zum Unterschreiben */
   var req = templates.filter(function (t) { return t.neu; });
-  events.forEach(function (e) { if (e.patient === n && e.date >= today) tplsForEvent(e).forEach(function (t) { if (req.indexOf(t) < 0) req.push(t); }); });
+  events.forEach(function (e) { if (eventBelongs(e, p) && e.date >= today) tplsForEvent(e).forEach(function (t) { if (req.indexOf(t) < 0) req.push(t); }); });
   templates.forEach(function (t) { if (req.indexOf(t) < 0 && tplDoc(p, t)) req.push(t); });
   box.appendChild(mk('div', 'un-grp', 'In der Praxis unterschreiben'));
   req.forEach(function (t) {
@@ -6489,7 +6522,7 @@ function addTemplates(inp) {
 var zuNext = null, gal = null, zuCtx = null, medFilter = 'dok', medKat = '', medLimit = 30;
 function validZu(p) {
   var v = {}, n = nameKey(p);
-  events.forEach(function (e) { if (e.patient === n) v['e' + e.id] = 1; });
+  events.forEach(function (e) { if (eventBelongs(e, p)) v['e' + e.id] = 1; });
   (p.doku || []).forEach(function (d) { v['d' + d.ts] = 1; });
   return v;
 }
@@ -6514,7 +6547,7 @@ function fileGroups(p, kind) {
 }
 function autoZu() {
   var p = curP, n = nameKey(p), days = {}, valid = validZu(p), c = 0;
-  events.forEach(function (e) { if (e.patient === n) (days[e.date] = days[e.date] || []).push(e); });
+  events.forEach(function (e) { if (eventBelongs(e, p)) (days[e.date] = days[e.date] || []).push(e); });
   (p.bilder || []).concat(p.dokumente || []).forEach(function (x) {
     if (x.zu && valid[x.zu]) return;
     var l = days[iso(new Date(tsOf(x)))];
@@ -6582,13 +6615,13 @@ function openZu(p, list) {
   var sel = document.getElementById('zu-sel'); sel.innerHTML = '';
   var o0 = mk('option', '', 'Keine Zuordnung (frei in der Zeitleiste)'); o0.value = ''; sel.appendChild(o0);
   var n = nameKey(p), day = iso(new Date(tsOf(list[0])));
-  events.filter(function (e) { return e.patient === n; }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
+  events.filter(function (e) { return eventBelongs(e, p); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); })
     .forEach(function (e) { var o = mk('option', '', 'Termin ' + fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = 'e' + e.id; sel.appendChild(o); });
   (p.doku || []).slice().sort(function (a, b) { return b.ts - a.ts; }).forEach(function (d) {
     var o = mk('option', '', 'Dokumentation ' + fmtDT(d.ts) + ' · ' + String(d.text || '').split('\n')[0].slice(0, 40)); o.value = 'd' + d.ts; sel.appendChild(o);
   });
   var cur = list[0].zu || '';
-  if (!cur) { var same = events.filter(function (e) { return e.patient === n && e.date === day; })[0]; if (same) cur = 'e' + same.id; }
+  if (!cur) { var same = events.filter(function (e) { return eventBelongs(e, p) && e.date === day; })[0]; if (same) cur = 'e' + same.id; }
   sel.value = cur;
   document.getElementById('zu-info').textContent = list.length + (list.length === 1 ? ' Datei' : ' Dateien') + ' vom ' + fmtDT(tsOf(list[0])) + (cur && !list[0].zu ? '. Vorschlag: Termin am selben Tag.' : '.');
   openModal('modal-zu');
@@ -7573,7 +7606,7 @@ function openVb(eid) {
   prods.forEach(function (p) { var o = mk('option', '', p.name + ' (' + qty(bestand(p.id)) + ' ' + (p.einheit || '') + ')'); o.value = p.id; sel.appendChild(o); });
   var ts = document.getElementById('vb-termin'); ts.innerHTML = '';
   var o0 = mk('option', '', 'Kein Termin'); o0.value = ''; ts.appendChild(o0);
-  events.filter(function (e) { return e.patient === nameKey(curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = e.id; ts.appendChild(o); });
+  events.filter(function (e) { return eventBelongs(e, curP); }).sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }).forEach(function (e) { var o = mk('option', '', fmtTermin(e) + (e.behandlung ? ' · ' + e.behandlung : '')); o.value = e.id; ts.appendChild(o); });
   ts.value = eid ? String(eid) : '';
   document.getElementById('vb-menge').value = '';
   vbProdChanged(); openModal('modal-vb');
@@ -7904,7 +7937,7 @@ async function biOne(file, o) {
   if (old) {
     if (o.dup === 'skip') return { skip: true, text: name + ': übersprungen (gibt es schon)' };
     p.id = old.id; (old.bilder || []).concat(old.dokumente || []).forEach(function (x) { fDel(x.id); });
-    patients = patients.filter(function (x) { return x !== old; }); events = events.filter(function (e) { return e.patient !== nameKey(old); });
+    patients = patients.filter(function (x) { return x !== old; }); events = events.filter(function (e) { return !eventBelongs(e, old); });
   }
   if (!o.mail) p.log = p.log.filter(function (l) { return l.type !== 'mail'; });
   var evs = r.events.map(function (e) { e.patient = name; e.id = nid++; return e; }), nf = 0, bad = 0;
@@ -7916,7 +7949,7 @@ async function biOne(file, o) {
     var rec = { id: id, ts: a.ts + i, name: a.name }; if (a.kat) rec.kat = a.kat; if (a.zuIdx >= 0) rec.zu = 'e' + evs[a.zuIdx].id;
     (a.kind === 'bild' ? p.bilder : p.dokumente).push(rec); nf++;
   }
-  patients.push(p); ensurePatients(); events = events.concat(evs); persist();
+  patients.push(p); ensurePatients(); evs.forEach(function (e) { e.patientId = p.id; e.patient = nameKey(p); }); events = events.concat(evs); persist();
   return { ok: true, text: name + ': ' + evs.length + ' Termine, ' + (p.doku.length + evs.filter(function (e) { return e.doku; }).length) + ' Dokumentationen, ' + nf + ' Dateien' + (bad ? ', ' + bad + ' Datei(en) nicht gespeichert' : ''), report: r.report.map(function (x) { return name + ': ' + x; }) };
 }
 async function biRun() {
@@ -7994,7 +8027,7 @@ async function doImportPatienten(d, files, q) {
       p.id = old.id;
       (old.bilder || []).concat(old.dokumente || []).forEach(function (x) { fDel(x.id); });
       patients = patients.filter(function (x) { return x !== old; });
-      events = events.filter(function (e) { return e.patient !== nameKey(old); });
+      events = events.filter(function (e) { return !eventBelongs(e, old); });
     }
     (src.medikation || []).forEach(function (m) { p.medikation.push(T(m)); });
     (src.doku || []).forEach(function (x, i) { p.doku.push({ ts: tsParse(x.ts) + i, text: T(x.text) }); });
@@ -8010,7 +8043,7 @@ async function doImportPatienten(d, files, q) {
     patients.push(p); ensurePatients(); added++;
     (src.termine || []).forEach(function (t) {
       var dt = tsParse(t.ts), dd = new Date(dt);
-      events.push({ id: nid++, date: iso(dd), time: pad(dd.getHours()) + ':' + pad(dd.getMinutes()), dur: +t.dur || 60, patient: nameKey(p), behandlung: T(t.behandlung) || 'Beratung', notiz: T(t.notiz), doku: t.doku ? T(t.doku) : undefined, color: '#16a34a' });
+      events.push({ id: nid++, date: iso(dd), time: pad(dd.getHours()) + ':' + pad(dd.getMinutes()), dur: +t.dur || 60, patientId: p.id, patient: nameKey(p), behandlung: T(t.behandlung) || 'Beratung', notiz: T(t.notiz), doku: t.doku ? T(t.doku) : undefined, color: '#16a34a' });
       ev++;
     });
   })(d.patients[pi0]);
@@ -8025,11 +8058,11 @@ function savePatient() {
   var g = function (id) { return document.getElementById(id).value.trim(); };
   if (!g('p-vorname') || !g('p-nachname')) { alert('Bitte mind. Vorname und Nachname eingeben.'); return; }
   if (!validDob(g('p-dob'))) { alert(DOB_MSG); return; }
-  if (patients.some(function (x) { return nameKey(x).toLowerCase() === (g('p-vorname') + ' ' + g('p-nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon. Termine und Rechnungen werden über den Namen zugeordnet, bitte den Namen unterscheidbar eintragen (z.B. mit zweitem Vornamen).'); return; }
+  if (patients.some(function (x) { return nameKey(x).toLowerCase() === (g('p-vorname') + ' ' + g('p-nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon. Bitte prüfe, ob es sich um dieselbe Person handelt, oder ergänze zur sicheren Unterscheidung z.B. einen zweiten Vornamen.'); return; }
   patients.push({ anrede: g('p-anrede'), vorname: g('p-vorname'), nachname: g('p-nachname'), dob: g('p-dob'), phone: g('p-phone'), email: g('p-email'), adresse: addrRead('p-adr-'), allergien: g('p-allergien'), notizen: g('p-notizen') });
-  ensurePatients(); persist(); renderPatients();
+  ensurePatients(); migrateEventPatientIds(); persist(); renderPatients();
   var newP = patients[patients.length - 1];
-  if (patFromTermin) { patFromTermin = false; document.getElementById('t-patient').value = nameKey(newP); }
+  if (patFromTermin) { patFromTermin = false; tPatientId = newP.id; document.getElementById('t-patient').value = nameKey(newP); }
   ['p-anrede', 'p-vorname', 'p-nachname', 'p-dob', 'p-phone', 'p-email', 'p-allergien', 'p-notizen', 'p-adr-str', 'p-adr-nr', 'p-adr-plz', 'p-adr-ort'].forEach(function (id) { document.getElementById(id).value = ''; });
   closeModal('modal-patient');
   offerNeu(newP);
@@ -8038,10 +8071,11 @@ function savePatient() {
 function tPatDDHide() { var d = document.getElementById('t-pat-dd'); if (d) d.style.display = 'none'; }
 function tPatDD() {
   var inp = document.getElementById('t-patient'), d = document.getElementById('t-pat-dd'), q = inp.value.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (tPatientId != null) { var tp = patById(tPatientId); if (!tp || nameKey(tp).toLowerCase() !== q) tPatientId = null; }
   d.innerHTML = '';
   if (!q) { d.style.display = 'none'; return; }
   var hit = patients.filter(function (p) { var n = nameKey(p).toLowerCase(); return n.indexOf(q) === 0 || (' ' + n).indexOf(' ' + q) >= 0 || (p.nachname + ' ' + p.vorname).toLowerCase().indexOf(q) === 0; }).sort(function (a, b) { return nameKey(a).localeCompare(nameKey(b), 'de'); }).slice(0, 8);
-  hit.forEach(function (p) { var b = mk('button', '', nameKey(p) + (p.dob ? ' · ' + p.dob : '')); b.type = 'button'; b.onmousedown = function (ev) { ev.preventDefault(); }; b.onclick = function () { inp.value = nameKey(p); d.style.display = 'none'; }; d.appendChild(b); });
+  hit.forEach(function (p) { var b = mk('button', '', nameKey(p) + (p.dob ? ' · ' + p.dob : '')); b.type = 'button'; b.onmousedown = function (ev) { ev.preventDefault(); }; b.onclick = function () { tPatientId = p.id; inp.value = nameKey(p); d.style.display = 'none'; }; d.appendChild(b); });
   var exact = patients.some(function (p) { return nameKey(p).toLowerCase() === q; });
   if (!exact) {
     var nb = mk('button', 'pd-new', '+ Neuen Patienten anlegen: ' + inp.value.trim()); nb.type = 'button'; nb.onmousedown = function (ev) { ev.preventDefault(); };
@@ -8070,10 +8104,14 @@ async function saveTermin() {
   if (document.getElementById('t-leistung').value.trim()) tLeistAdd(document.getElementById('t-leistung').value);
   var pname = document.getElementById('t-patient').value.trim().replace(/\s+/g, ' ');
   if (!pname) { alert('Bitte einen Patienten eingeben.'); return; }
-  if (!patients.some(function (x) { return nameKey(x) === pname; }) && !await kaConfirm('Der Patient "' + pname + '" ist nicht angelegt. Der Termin kann dann keiner Akte zugeordnet werden. Trotzdem speichern?')) return;
+  var pp = tPatientId != null ? patById(tPatientId) : null;
+  if (pp && nameKey(pp) !== pname) pp = null;
+  if (!pp) { var hit = patients.filter(function (x) { return nameKey(x) === pname; }); if (hit.length === 1) pp = hit[0]; }
+  if (!pp && !await kaConfirm('Der Patient "' + pname + '" ist nicht angelegt. Der Termin kann dann keiner Akte zugeordnet werden. Trotzdem speichern?')) return;
   var ev = {
     date: datum, time: zeit, dur: dur,
-    patient: pname,
+    patientId: pp ? pp.id : null,
+    patient: pp ? nameKey(pp) : pname,
     behandlung: tLeist.join(', '),
     notiz: document.getElementById('t-notiz').value,
     color: document.getElementById('t-farbe').value,
@@ -8285,7 +8323,7 @@ async function applyImport(d, inp, restorer) {
   try {
     if (!d || !Array.isArray(d.events) || !Array.isArray(d.patients)) throw new Error('Format');
     if (!await kaConfirm('Aktuelle Daten durch die Sicherung ersetzen? (' + d.events.length + ' Termine, ' + d.patients.length + ' Patienten)')) { if (inp) inp.value = ''; return; }
-    events = d.events; patients = d.patients; ensurePatients();
+    events = d.events; patients = d.patients; ensurePatients(); migrateEventPatientIds();
     if (Array.isArray(d.templates)) templates = d.templates;
     if (Array.isArray(d.invoices)) invoices = d.invoices;
     if (d.settings && typeof d.settings === 'object') settings = Object.assign(settings, d.settings);
