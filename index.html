@@ -34,6 +34,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; box-shadow:0 4px 12px
 .nav-menu { position:fixed; z-index:45; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(15,23,42,.2); min-width:230px; padding:6px; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y; }
 .nav-menu button { display:block; width:100%; text-align:left; background:none; border:none; padding:10px; font-size:14px; cursor:pointer; border-radius:6px; color:#0f172a; }
 .nav-menu button:hover:not(:disabled) { background:#f1f5f9; } .nav-menu button:disabled { color:#94a3b8; cursor:default; } .nav-menu small { color:#94a3b8; font-size:11px; margin-left:6px; }
+.nav-group { padding:10px 10px 4px; color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; } .nav-group:not(:first-child) { margin-top:5px; border-top:1px solid #e2e8f0; padding-top:10px; }
 .nav-sep { height:1px; background:#e2e8f0; margin:4px 0; }
 .nav-badge { background:#dc2626; color:#fff; border-radius:10px; font-size:11px; }
 .viz-wrap { position:relative; } .viz-wrap svg { display:block; width:100%; height:auto; }
@@ -652,7 +653,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
 .al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
 .al-box img { width:72px; height:72px; margin-bottom:8px; } .al-box h2 { font-size:17px; margin-bottom:14px; } .al-box input { text-align:center; }
 .al-msg { color:#b91c1c; font-size:13px; min-height:18px; margin-top:8px; }
-@media (max-width:760px) { header .nav-btn { padding-left:1px; padding-right:1px; font-size:12.5px; } header .nav-btn.nav-more { padding-left:10px; padding-right:10px; } }
+@media (max-width:760px) { header .nav-btn { padding-left:1px; padding-right:1px; font-size:12.5px; } header .nav-btn.nav-more { padding-left:10px; padding-right:10px; } .nav-more-label { display:none; } }
 
 /* Kalender im Querformat: eine Werkzeugzeile, breite Karte, Raster mit eigener Bildlaufleiste und fester Tageszeile */
 @media (min-width:700px) {
@@ -983,7 +984,7 @@ function kaStart() {
   <button type="button" class="nav-btn nav-main" id="btn-kalender" onclick="switchTab('kalender')">Kalender</button>
   <button type="button" class="nav-btn nav-main" id="btn-patienten" onclick="switchTab('patienten')">Patienten</button>
   <button type="button" class="nav-btn nav-main" id="btn-todos" onclick="switchTab('todos')">To-Dos <span id="todo-badge" class="nav-badge" style="display:none;"></span></button>
-  <button type="button" class="nav-btn nav-more" id="btn-praxis" onclick="toggleNavMenu(event)" title="Praxis" aria-label="Praxis"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+  <button type="button" class="nav-btn nav-more" id="btn-praxis" onclick="toggleNavMenu(event)" title="Praxis" aria-label="Praxis"><span class="nav-more-label">Praxis</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
 </nav>
   <div class="hd-act">
 
@@ -2192,18 +2193,21 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-n';
+var KA_V = '2026-11-01-o';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
-var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
-  ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
-  ['', 'Patientenstammdaten'], ['', 'Automationen'], ['webformulare', 'Webformulare', 'renderWebf'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung']];
-var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0]; }).map(function (x) { return x[0]; });
+var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
+  ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
+  ['#', 'Kommunikation & Vorlagen'], ['webformulare', 'Webformulare', 'renderWebf'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'],
+  ['#', 'Daten & Technik'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung'],
+  ['#', 'Geplant'], ['', 'Patientenstammdaten'], ['', 'Automationen']];
+var NAV_PINNED = ['rechnungen'];
+var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0] && x[0] !== '#'; }).map(function (x) { return x[0]; });
 /* Navigationsleiste: so viele Seiten aus dem Praxis-Menü, wie in die Breite passen; der Rest steht hinter dem Pfeil */
 (function () {
   var nav = document.querySelector('header nav'), more = document.getElementById('btn-praxis');
   PRAXIS_NAV.forEach(function (x) {
-    if (x === '-' || !x[0]) return;
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'nav-btn nav-x' + (x[0] === 'rechnungen' || x[0] === 'zahlungen' ? ' nav-main' : ''); b.id = 'btn-' + x[0]; b.textContent = x[1]; b.style.display = 'none'; b.onclick = function () { switchTab(x[0]); };
+    if (!x || !x[0] || x[0] === '#' || NAV_PINNED.indexOf(x[0]) < 0) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'nav-btn nav-x nav-main'; b.id = 'btn-' + x[0]; b.textContent = x[1]; b.style.display = 'none'; b.onclick = function () { switchTab(x[0]); };
     nav.insertBefore(b, more);
   });
 })();
@@ -2222,6 +2226,7 @@ function fillNavMenu() {
   var box = document.getElementById('nav-menu'); box.innerHTML = ''; var last = '';
   PRAXIS_NAV.forEach(function (x) {
     if (x === '-') { if (last && last !== '-') { var sp = document.createElement('div'); sp.className = 'nav-sep'; box.appendChild(sp); last = '-'; } return; }
+    if (x[0] === '#') { var h = document.createElement('div'); h.className = 'nav-group'; h.textContent = x[1]; box.appendChild(h); last = 'h'; return; }
     var vb = x[0] && document.getElementById('btn-' + x[0]); if (vb && vb.classList.contains('nav-x') && vb.style.display !== 'none') return;
     var b = document.createElement('button'); b.type = 'button';
     if (x[0]) { b.textContent = x[1]; b.onclick = function () { navGo(x[0]); }; } else { b.disabled = true; b.innerHTML = x[1] + ' <small>geplant</small>'; }
@@ -2233,7 +2238,7 @@ function fillNavMenu() {
 try { document.fonts.ready.then(navFit); } catch (x) {}
 window.addEventListener('resize', navFit); window.addEventListener('orientationchange', navFit); window.addEventListener('load', navFit); setTimeout(navFit, 0);
 var TAB_RENDER = { kalender: 'renderCal', start: 'renderHome', todos: 'renderTodos' };
-PRAXIS_NAV.forEach(function (x) { if (x[0]) TAB_RENDER[x[0]] = x[2]; });
+PRAXIS_NAV.forEach(function (x) { if (x[0] && x[0] !== '#') TAB_RENDER[x[0]] = x[2]; });
 /* Fehleranzeige: Meldet Fehler sichtbar, statt dass Knöpfe stillschweigend nichts tun */
 function errBanner(msg) {
   var b = document.getElementById('err-bar');
