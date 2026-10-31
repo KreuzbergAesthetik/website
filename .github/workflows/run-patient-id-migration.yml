@@ -20,11 +20,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          echo "source=$(git hash-object index.html)"
           test "$(git hash-object index.html)" = "030f4567f88ec38294782cc6b09284380e4ce572"
           awk '/^[[:space:]]*H4sI/{gsub(/^[[:space:]]+/,""); print; exit}' .github/workflows/apply-patient-id-migration.yml > /tmp/patient-id.patch.gz.b64
           base64 -d /tmp/patient-id.patch.gz.b64 | gzip -dc > /tmp/patient-id.patch
+          echo "patch=$(sha256sum /tmp/patient-id.patch | cut -d' ' -f1) bytes=$(wc -c < /tmp/patient-id.patch)"
+          test "$(sha256sum /tmp/patient-id.patch | cut -d' ' -f1)" = "481d62a83b811c96732d117b9400a5c34d5af0b26c679cd4b1c2ec3e351f854e"
           git apply --check /tmp/patient-id.patch
           git apply /tmp/patient-id.patch
+          echo "target=$(git hash-object index.html)"
           test "$(git hash-object index.html)" = "6d8859beb0b3b38f0ac5b165f76043b51c7e1427"
           python - <<'PY'
           from pathlib import Path
