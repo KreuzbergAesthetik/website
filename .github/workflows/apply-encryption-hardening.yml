@@ -1,0 +1,30 @@
+name: Apply encryption hardening
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/encryption-hardening-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply mandatory encryption migration
+        run: python3 tools/apply-encryption-hardening.py
+      - name: Validate patch
+        run: |
+          git diff --check
+          node tests/static-check.mjs
+      - name: Commit hardened encryption
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js tests/browser-smoke.mjs tests/static-check.mjs
+          git diff --cached --quiet && exit 0
+          git commit -m "Lokale Praxisdaten verpflichtend verschlüsseln"
+          git push
