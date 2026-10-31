@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: praxis-app-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
