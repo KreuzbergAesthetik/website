@@ -1,0 +1,32 @@
+name: Apply backup hardening
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/apply-backup-hardening.py'
+      - '.github/workflows/apply-backup-hardening.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply backup hardening
+        run: python3 tools/apply-backup-hardening.py
+      - name: Static regression checks
+        run: npm run test:static
+      - name: Commit hardened backup flow
+        run: |
+          if git diff --quiet -- index.html sw.js; then
+            echo 'No changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html sw.js
+          git commit -m 'Backup und Wiederherstellung absichern'
+          git push
