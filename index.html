@@ -2192,7 +2192,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-i';
+var KA_V = '2026-11-01-j';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5377,11 +5377,13 @@ function renderVerlauf() {
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
   box.innerHTML = '';
   var auditFilter = mk('label');
-  auditFilter.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;margin:0 0 10px;cursor:pointer;';
+  auditFilter.style.cssText = 'display:inline-flex;align-items:center;margin:0 0 8px;cursor:pointer;';
+  auditFilter.title = 'Änderungshistorie anzeigen';
   var auditCheck = mk('input'); auditCheck.type = 'checkbox'; auditCheck.checked = tlAuditVisible;
+  auditCheck.title = 'Änderungshistorie anzeigen';
+  auditCheck.setAttribute('aria-label', 'Änderungshistorie anzeigen');
   auditCheck.onchange = function () { tlAuditVisible = auditCheck.checked; renderVerlauf(); };
   auditFilter.appendChild(auditCheck);
-  auditFilter.appendChild(document.createTextNode('Änderungshistorie anzeigen'));
   box.appendChild(auditFilter);
   var day = null, card = null;
   items.forEach(function (it) {
