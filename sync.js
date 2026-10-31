@@ -6,7 +6,7 @@
 var KS = (function () {
   var EP = 'https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/abgleich';
   var STORES = ['events', 'patients', 'templates', 'invoices', 'settings', 'lager', 'ausgaben', 'todos', 'entw'];
-  var S = { busy: false, applying: false, timer: null, poll: null, inbox: [], err: '', msg: '', obj: [], rev: 0, started: false };
+  var S = { busy: false, applying: false, timer: null, poll: null, inbox: [], err: '', msg: '', obj: [], rev: 0, started: false, autoInbox: '' };
   var enc = new TextEncoder(), dec = new TextDecoder();
 
   /* ---------- kleine Helfer ---------- */
@@ -28,6 +28,7 @@ var KS = (function () {
   function stateHash() { return h53(JSON.stringify(collect())); }
   function nameOf(id) { return 'f_' + String(id).replace(/[^A-Za-z0-9_-]/g, '_'); }
   function err(e) { return e && e.message ? e.message : String(e); }
+  function inboxSig() { return (S.inbox || []).map(function (x) { return x.id; }).sort().join('|'); }
 
   /* ---------- Verschlüsselung ---------- */
   async function derive(pw) {
@@ -177,7 +178,12 @@ var KS = (function () {
       if (e.status === 409) { S.err = 'Ein anderes Gerät war schneller. Beim nächsten Abgleich entscheidest Du.'; var bb = base(); bb.dirty = true; setBase(bb); }
       else if (e.status === 404 && /nichts eingerichtet/.test(err(e))) S.err = 'Das Abgleich-Passwort wurde geändert. Bitte hier auf „Trennen“ tippen und mit dem neuen Passwort verbinden.';
       else S.err = err(e);
-    } finally { S.busy = false; S.msg = ''; ui(); }
+    } finally {
+      S.busy = false; S.msg = ''; ui();
+      var sig = inboxSig();
+      if (!sig) S.autoInbox = '';
+      else if (!S.err && !modalOpen() && S.autoInbox !== sig) { S.autoInbox = sig; setTimeout(function () { abrufen(true); }, 0); }
+    }
   }
   function touch() {
     if (settings.calOn && !S.applying) { clearTimeout(S.calT); S.calT = setTimeout(calPush, 15000); }
@@ -296,13 +302,13 @@ var KS = (function () {
     var raw = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, priv, wrapped), ak = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
     return JSON.parse(dec.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, ak, ct)));
   }
-  async function abrufen() {
+  async function abrufen(auto) {
     var c = cfg(); if (!c) { alert('Der Abgleich ist noch nicht eingerichtet (Praxis, Abgleich).'); return; }
-    if (S.busy) return; S.busy = true; ui();
+    if (S.busy) return; S.busy = true; S.err = ''; ui();
     try {
       await ensurePub(c).catch(function () {});
       var st = await api('status'); S.inbox = st.inbox || [];
-      if (!S.inbox.length) { alert('Das Postfach ist leer.'); return; }
+      if (!S.inbox.length) { if (!auto) alert('Das Postfach ist leer.'); return; }
       var entries = [], ids = [], bad = [];
       for (var i = 0; i < S.inbox.length; i++) {
         var id = S.inbox[i].id;
@@ -313,10 +319,13 @@ var KS = (function () {
       }
       var ok = entries.length ? await formularImport(entries) : [];
       for (var k = 0; k < ids.length; k++) if (ok && ok[k]) await api('ibdel', { id: ids[k] }).catch(function () {});
-      if (bad.length && await kaConfirm(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden (anderer Schlüssel oder beschädigt). Aus dem Postfach löschen?')) for (var m = 0; m < bad.length; m++) await api('ibdel', { id: bad[m] }).catch(function () {});
+      if (bad.length) {
+        if (auto) S.err = bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden. Bitte manuell abrufen.';
+        else if (await kaConfirm(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden (anderer Schlüssel oder beschädigt). Aus dem Postfach löschen?')) for (var m = 0; m < bad.length; m++) await api('ibdel', { id: bad[m] }).catch(function () {});
+      }
       st = await api('status'); S.inbox = st.inbox || [];
-    } catch (e) { alert('Abrufen nicht möglich: ' + err(e)); }
-    finally { S.busy = false; ui(); }
+    } catch (e) { if (auto) S.err = 'Postfach: ' + err(e); else alert('Abrufen nicht möglich: ' + err(e)); }
+    finally { S.busy = false; if (auto) S.autoInbox = inboxSig(); ui(); }
   }
 
   /* ---------- Anzeige ---------- */
