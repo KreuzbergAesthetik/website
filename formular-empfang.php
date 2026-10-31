@@ -11,7 +11,7 @@
  */
 
 $EMPFAENGER = 'info@kreuzberg-aesthetik.de';           // Hierhin gehen die Formulare
-$ERLAUBT    = ['https://fellamanuel-arch.github.io'];            // Seiten, die senden dürfen (Adresse der Formulare)
+$ERLAUBT    = ['https://kreuzbergaesthetik.github.io'];          // Seiten, die senden dürfen (Adresse der Formulare)
 $MAX_BYTES  = 8 * 1024 * 1024;                                   // größtes erlaubtes PDF
 
 header('Content-Type: application/json; charset=utf-8');
@@ -27,7 +27,7 @@ function fail($code, $msg) { http_response_code($code); echo json_encode(['ok' =
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') fail(405, 'Nur POST erlaubt.');
 if ($origin && !in_array($origin, $ERLAUBT, true)) fail(403, 'Nicht erlaubt.');
-if (!empty($_POST['website'])) { echo json_encode(['ok' => true]); exit; }   // Spam-Falle: Menschen lassen das Feld leer
+if (!empty($_POST['website'])) { echo json_encode(['ok' => true]); exit; }
 
 $typ = $_POST['typ'] ?? '';
 $labels = ['anmeldung' => 'Patientenanmeldung', 'anamnese' => 'Anamnese', 'erinnerung' => 'Terminerinnerung', 'aufklaerung' => 'Aufklärung'];
@@ -47,7 +47,6 @@ $text = "Über die Website wurde ein Formular ausgefüllt:\n\n" . $labels[$typ] 
 $gesendet = false;
 $wp = __DIR__ . '/wp-load.php';
 if (file_exists($wp)) {
-    /* WordPress: nutzt die dort eingerichtete Mailkonfiguration (zuverlässiger als das einfache PHP-Mailen) */
     require_once $wp;
     $tmp = sys_get_temp_dir() . '/' . uniqid('form_', true) . '_' . $fname;
     file_put_contents($tmp, $pdf);
