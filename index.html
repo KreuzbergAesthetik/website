@@ -1501,7 +1501,7 @@ function kaStart() {
   <div class="a-pane">
   <div id="at-akte">
   <div class="card">
-    <div class="ak-h" style="margin-top:0;">Zeitleiste</div>
+    <div class="ak-h" style="margin-top:0;display:flex;align-items:center;justify-content:space-between;">Zeitleiste<span id="a-audit-filter"></span></div>
     <div id="a-dok-pick" class="pick-box" style="display:none;">
       <div class="pick-h">Datei hinzufügen</div>
       <button type="button" class="btn btn-secondary" style="width:100%;" onclick="zuNext = null; document.getElementById('a-doc-in').click()">Datei aus dem Gerät wählen</button>
@@ -5377,14 +5377,15 @@ function renderVerlauf() {
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
   box.innerHTML = '';
   var auditFilter = mk('label');
-  auditFilter.style.cssText = 'display:inline-flex;align-items:center;margin:0 0 8px;cursor:pointer;';
+  auditFilter.style.cssText = 'display:inline-flex;align-items:center;margin:0;cursor:pointer;';
   auditFilter.title = 'Änderungshistorie anzeigen';
   var auditCheck = mk('input'); auditCheck.type = 'checkbox'; auditCheck.checked = tlAuditVisible;
   auditCheck.title = 'Änderungshistorie anzeigen';
   auditCheck.setAttribute('aria-label', 'Änderungshistorie anzeigen');
   auditCheck.onchange = function () { tlAuditVisible = auditCheck.checked; renderVerlauf(); };
   auditFilter.appendChild(auditCheck);
-  box.appendChild(auditFilter);
+  var auditSlot = document.getElementById('a-audit-filter');
+  auditSlot.innerHTML = ''; auditSlot.appendChild(auditFilter);
   var day = null, card = null;
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
