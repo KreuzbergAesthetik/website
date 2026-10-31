@@ -14,13 +14,20 @@ page.on('pageerror', err => pageErrors.push(String(err?.stack || err)));
 
 try {
   await page.goto(base, { waitUntil: 'networkidle', timeout: 30000 });
-  await page.waitForFunction(() => window.KA && window.KA.booted === true, null, { timeout: 15000 });
+  await page.waitForSelector('#al-pw2', { state: 'visible', timeout: 10000 });
+  await page.fill('#al-pw', 'CiAppPasswort-123!');
+  await page.fill('#al-pw2', 'CiAppPasswort-123!');
+  await page.click('#al-submit');
+  await page.waitForFunction(() => window.KA && window.KA.booted === true && !document.documentElement.classList.contains('locked'), null, { timeout: 15000 });
 
   const checks = await page.evaluate(async () => {
     const out = {};
 
     // App und zentrale Funktionen sind wirklich ausführbar.
     out.booted = !!(window.KA && KA.booted);
+    const lockCfg = JSON.parse(localStorage.getItem('ka_lock') || 'null');
+    out.mandatoryEncryption = !!lockCfg && lockCfg.enc === true && KA.enc === true;
+    out.noDisableControls = !document.getElementById('al-off') && !document.getElementById('al-encb') && !document.getElementById('al-decb');
     out.functions = [
       typeof switchTab,
       typeof persist,
@@ -76,8 +83,10 @@ try {
 
     // Persistenz schreibt den aktuellen Patientenstand in den App-Speicher.
     persist();
+    await kaIdle();
     const savedPatients = JSON.parse(kaGet('ka_patients') || '[]');
-    out.persist = savedPatients.some(p => p.id === 'ci-p1');
+    const rawPatients = localStorage.getItem('ka_patients') || '';
+    out.persist = savedPatients.some(p => p.id === 'ci-p1') && rawPatients.startsWith('enc1:');
 
     // Änderungshistorie: vorher/nachher und Zeitstempel bleiben erhalten.
     const auditPatient = { id:'ci-audit', audit:[] };

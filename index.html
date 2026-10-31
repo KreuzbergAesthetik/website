@@ -793,18 +793,20 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 <script src="docs.js"></script>
 <script src="sync.js"></script>
 <script src="extcal.js"></script>
-<script>try { if (localStorage.getItem('ka_lock')) document.documentElement.classList.add('locked'); } catch (e) {}</script>
+<script>try { document.documentElement.classList.add('locked'); } catch (e) {}</script>
 </head>
 <body>
 <div id="applock"><form class="al-box" onsubmit="alUnlock(event)" autocomplete="off">
   <img src="icon-192.png" alt="">
-  <h2>Kreuzberg Ästhetik</h2>
+  <h2 id="al-title">Kreuzberg Ästhetik</h2>
+  <div id="al-hint" style="display:none; font-size:13px; color:#64748b; line-height:1.45; margin:-4px 0 12px;"></div>
   <input type="password" id="al-pw" class="form-control" placeholder="Passwort" autocomplete="current-password" aria-label="Passwort">
+  <input type="password" id="al-pw2" class="form-control" placeholder="Passwort wiederholen" autocomplete="new-password" aria-label="Passwort wiederholen" style="display:none; margin-top:8px;">
   <div class="al-msg" id="al-msg"></div>
-  <button type="submit" class="btn btn-save" style="width:100%; margin-top:6px;">Entsperren</button>
+  <button type="submit" class="btn btn-save" id="al-submit" style="width:100%; margin-top:6px;">Entsperren</button>
 </form></div>
 <script>
-/* ===== Speicher mit optionaler Verschlüsselung (AES-GCM) und App-Sperre ===== */
+/* ===== Speicher mit verpflichtender Verschlüsselung (AES-GCM) und App-Sperre ===== */
 var KA = { enc: false, key: null, mem: {}, q: {}, busy: null, bad: false, booted: false }, KA_ENC = 'enc1:', AL_KEY = 'ka_lock';
 function kaB64(buf) { var a = new Uint8Array(buf), s = ''; for (var i = 0; i < a.length; i += 8192) s += String.fromCharCode.apply(null, a.subarray(i, i + 8192)); return btoa(s); }
 function kaUnB64(t) { var s = atob(t), a = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
@@ -846,31 +848,71 @@ function alImportKey(raw) { return crypto.subtle.importKey('raw', raw, { name: '
 async function alCheck(pw) { var c = alGet(); if (!c) return true; return c.enc ? !!(await alUnwrap(pw, c)) : (await alHash(pw, c.salt)) === c.hash; }
 
 var alFails = 0, alUntil = 0, alTimer = null, alHiddenAt = 0;
+function alPrepare() {
+  var c = alGet(), fresh = !c, inp = document.getElementById('al-pw'), inp2 = document.getElementById('al-pw2');
+  var title = document.getElementById('al-title'), hint = document.getElementById('al-hint'), submit = document.getElementById('al-submit');
+  if (!inp || !inp2 || !title || !hint || !submit) return;
+  title.textContent = fresh ? 'Sicherheit einrichten' : 'Kreuzberg Ästhetik';
+  hint.style.display = fresh ? '' : 'none';
+  hint.textContent = fresh ? 'Lege einmalig ein Passwort mit mindestens 8 Zeichen fest. Patientendaten und Dateien werden damit auf diesem Gerät verschlüsselt.' : '';
+  inp2.style.display = fresh ? '' : 'none'; inp2.value = '';
+  inp.autocomplete = fresh ? 'new-password' : 'current-password';
+  submit.textContent = fresh ? 'Verschlüsselung aktivieren' : (c && !c.enc ? 'Entsperren & verschlüsseln' : 'Entsperren');
+}
 function alLockNow() {
   if (!alGet()) return;
   document.querySelectorAll('.modal-overlay.active').forEach(function (m) { m.dataset.dirty = ''; });
   document.documentElement.classList.add('locked');
-  document.getElementById('al-pw').value = ''; document.getElementById('al-msg').textContent = '';
+  document.getElementById('al-pw').value = ''; document.getElementById('al-msg').textContent = ''; alPrepare();
   setTimeout(function () { document.getElementById('al-pw').focus(); }, 50);
 }
+async function alActivateEncryption(pw, min) {
+  var raw = crypto.getRandomValues(new Uint8Array(32)), salt = alHex(crypto.getRandomValues(new Uint8Array(16)));
+  KA.key = await alImportKey(raw);
+  alPut({ enc: true, salt: salt, wrap: await alWrap(pw, raw, salt), min: Number.isFinite(+min) ? +min : 5, sweep: true });
+  await kaLoadAll(); await kaIdle();
+  return raw;
+}
 async function alUnlock(ev) {
-  ev.preventDefault(); var msg = document.getElementById('al-msg'), inp = document.getElementById('al-pw'), c = alGet();
+  ev.preventDefault();
+  var msg = document.getElementById('al-msg'), inp = document.getElementById('al-pw'), inp2 = document.getElementById('al-pw2'), c = alGet();
   var wait = Math.ceil((alUntil - Date.now()) / 1000);
   if (wait > 0) { msg.textContent = 'Bitte ' + wait + ' Sekunden warten.'; return; }
-  var ok = false, raw = null;
-  try { if (c && c.enc) { raw = await alUnwrap(inp.value, c); ok = !!raw; } else ok = await alCheck(inp.value); } catch (e) { msg.textContent = 'Dieser Browser kann die Sperre nicht prüfen.'; return; }
-  if (ok) {
-    if (c && c.enc && !KA.enc) {
-      try { KA.key = await alImportKey(raw); await kaLoadAll(); } catch (e) { KA.key = null; msg.textContent = 'Die Daten konnten nicht gelesen werden.'; return; }
+  if (!c) {
+    if (!(window.crypto && crypto.subtle)) { msg.textContent = 'Dieser Browser unterstützt die Verschlüsselung nicht.'; return; }
+    if (inp.value.length < 8) { msg.textContent = 'Das Passwort braucht mindestens 8 Zeichen.'; return; }
+    if (inp.value !== inp2.value) { msg.textContent = 'Die beiden Passwörter sind nicht gleich.'; return; }
+    msg.textContent = 'Daten werden verschlüsselt …';
+    try { await alActivateEncryption(inp.value, 5); c = alGet(); }
+    catch (e) { KA.key = null; msg.textContent = 'Die Verschlüsselung konnte nicht eingerichtet werden. Bitte erneut versuchen.'; return; }
+  } else if (!c.enc) {
+    var okLegacy = false;
+    try { okLegacy = await alCheck(inp.value); } catch (e) {}
+    if (!okLegacy) {
+      alFails++; inp.value = ''; msg.textContent = 'Passwort falsch.';
+      if (alFails >= 3) { alUntil = Date.now() + Math.min(60, Math.pow(2, alFails - 2)) * 1000; msg.textContent = 'Passwort falsch. Bitte kurz warten.'; }
+      return;
     }
-    alFails = 0; inp.value = ''; msg.textContent = '';
-    if (!KA.booted) kaBoot(false);
-    document.documentElement.classList.remove('locked'); alArm();
-    if (c && c.enc && c.sweep) kaFilesToEnc().catch(function () {});
-    return;
+    msg.textContent = 'Bestehende Daten werden verschlüsselt …';
+    try { await alActivateEncryption(inp.value, c.min); c = alGet(); }
+    catch (e) { KA.key = null; msg.textContent = 'Die Verschlüsselung konnte nicht abgeschlossen werden. Bitte erneut entsperren.'; return; }
+  } else {
+    var raw = null;
+    try { raw = await alUnwrap(inp.value, c); } catch (e) {}
+    if (!raw) {
+      alFails++; inp.value = ''; msg.textContent = 'Passwort falsch.';
+      if (alFails >= 3) { alUntil = Date.now() + Math.min(60, Math.pow(2, alFails - 2)) * 1000; msg.textContent = 'Passwort falsch. Bitte kurz warten.'; }
+      return;
+    }
+    if (!KA.enc) {
+      try { KA.key = await alImportKey(raw); await kaLoadAll(); await kaIdle(); }
+      catch (e) { KA.key = null; msg.textContent = 'Die Daten konnten nicht gelesen werden.'; return; }
+    }
   }
-  alFails++; inp.value = ''; msg.textContent = 'Passwort falsch.';
-  if (alFails >= 3) { alUntil = Date.now() + Math.min(60, Math.pow(2, alFails - 2)) * 1000; msg.textContent = 'Passwort falsch. Bitte kurz warten.'; }
+  alFails = 0; inp.value = ''; inp2.value = ''; msg.textContent = '';
+  if (!KA.booted) kaBoot(false);
+  document.documentElement.classList.remove('locked'); alArm();
+  c = alGet(); if (c && c.enc && c.sweep) kaFilesToEnc().catch(function () {});
 }
 function alArm() {
   clearTimeout(alTimer); var c = alGet(); if (!c || document.documentElement.classList.contains('locked')) return;
@@ -883,28 +925,28 @@ document.addEventListener('visibilitychange', function () {
   else if (alHiddenAt && Date.now() - alHiddenAt >= c.min * 60000) alLockNow();
 });
 function alUi() {
-  var c = alGet(), e = c && c.enc;
-  document.getElementById('al-info').textContent = !c ? 'Die App-Sperre ist aus. Lege ein Passwort fest, das beim Öffnen und nach der eingestellten Zeit abgefragt wird.'
-    : e ? 'Sperre und Verschlüsselung sind eingeschaltet. Alle Patientendaten, Fotos und Dateien auf diesem Gerät sind verschlüsselt gespeichert.'
-    : 'Die App-Sperre ist eingeschaltet. Die Daten selbst sind noch nicht verschlüsselt.';
-  document.getElementById('al-curg').style.display = c ? '' : 'none'; document.getElementById('al-off').style.display = c ? '' : 'none';
-  document.getElementById('al-encb').style.display = c && !e ? '' : 'none'; document.getElementById('al-decb').style.display = e ? '' : 'none';
-  document.getElementById('al-warn').textContent = e ? 'Ohne das Passwort lassen sich die Daten nicht wieder herstellen. Es gibt keine „Passwort vergessen“-Funktion. Bitte regelmäßig mit Passwort sichern und das Passwort an einem sicheren Ort aufbewahren.' : 'Die Sperre verdeckt die App. Mit „Daten verschlüsseln“ werden zusätzlich alle Daten auf dem Gerät verschlüsselt. Dann gibt es ohne Passwort keinen Zugriff mehr, auch nicht für mich oder GitHub. Bitte vorher eine Sicherung machen.';
+  var c = alGet();
+  document.getElementById('al-info').textContent = c && c.enc
+    ? 'Sperre und Verschlüsselung sind eingeschaltet. Alle Patientendaten, Fotos und Dateien auf diesem Gerät werden verschlüsselt gespeichert.'
+    : 'Die Verschlüsselung wird beim nächsten Entsperren automatisch eingerichtet.';
+  document.getElementById('al-curg').style.display = c ? '' : 'none';
+  document.getElementById('al-warn').textContent = 'Ohne das Passwort lassen sich die Daten nicht wieder herstellen. Es gibt keine „Passwort vergessen“-Funktion. Bitte regelmäßig verschlüsselt sichern und das Passwort an einem sicheren Ort aufbewahren.';
   document.getElementById('al-min').value = String(c ? c.min : 5);
   ['al-cur', 'al-new', 'al-new2'].forEach(function (i) { document.getElementById(i).value = ''; });
   document.getElementById('al-btn').style.display = c ? '' : 'none';
 }
 async function alSet() {
   var c = alGet(), n = document.getElementById('al-new').value;
-  if (!(window.crypto && crypto.subtle)) { alert('Dieser Browser unterstützt die Sperre nicht (nur über https).'); return; }
+  if (!c || !c.enc) { alert('Die Verschlüsselung muss zuerst beim Start der App eingerichtet werden.'); return; }
+  if (!(window.crypto && crypto.subtle)) { alert('Dieser Browser unterstützt die Verschlüsselung nicht.'); return; }
   var cur = document.getElementById('al-cur').value, raw = null;
-  try { if (c) { if (c.enc) raw = await alUnwrap(cur, c); if (c.enc ? !raw : !(await alCheck(cur))) { alert('Das aktuelle Passwort stimmt nicht.'); return; } } } catch (e) { alert('Prüfung nicht möglich.'); return; }
-  if (n.length < 6) { alert('Das neue Passwort braucht mindestens 6 Zeichen.'); return; }
+  try { raw = await alUnwrap(cur, c); } catch (e) {}
+  if (!raw) { alert('Das aktuelle Passwort stimmt nicht.'); return; }
+  if (n.length < 8) { alert('Das neue Passwort braucht mindestens 8 Zeichen.'); return; }
   if (n !== document.getElementById('al-new2').value) { alert('Die beiden neuen Passwörter sind nicht gleich.'); return; }
   var salt = alHex(crypto.getRandomValues(new Uint8Array(16))), min = +document.getElementById('al-min').value;
-  if (c && c.enc) alPut({ enc: true, salt: salt, wrap: await alWrap(n, raw, salt), min: min, sweep: c.sweep });
-  else alPut({ salt: salt, hash: await alHash(n, salt), min: min });
-  alUi(); alArm(); alert(c ? 'Das Passwort wurde geändert.' : 'Die App-Sperre ist eingeschaltet.');
+  alPut({ enc: true, salt: salt, wrap: await alWrap(n, raw, salt), min: min, sweep: c.sweep });
+  alUi(); alArm(); alert('Das Passwort wurde geändert.');
 }
 function alSetMin() { var c = alGet(); if (!c) return; c.min = +document.getElementById('al-min').value; alPut(c); alArm(); }
 
@@ -942,28 +984,13 @@ async function alEncryptAll() {
     progSet(100, 'Fertig. Die Daten sind jetzt verschlüsselt.'); document.getElementById('pg-close').style.display = ''; alUi();
   } catch (e) { progClose(true); alert('Das Verschlüsseln wurde unterbrochen: ' + (e && e.message ? e.message : e) + '\n\nDie Daten sind nicht verloren. Beim nächsten Entsperren wird der Rest nachgeholt.'); }
 }
-async function alDecryptAll(silent) {
-  var c = alGet(), cur = document.getElementById('al-cur').value;
-  if (!c || !c.enc) return true;
-  if (!(await alCheck(cur))) { alert('Bitte oben das aktuelle Passwort eingeben.'); return false; }
-  if (!silent && !await kaConfirm('Die Verschlüsselung wird aufgehoben. Die Daten liegen danach wieder unverschlüsselt auf dem Gerät. Die App-Sperre bleibt.\n\nFortfahren?')) return false;
-  progOpen('Verschlüsselung wird aufgehoben');
-  try {
-    await kaIdle();
-    Object.keys(KA.mem).forEach(function (k) { localStorage.setItem(k, KA.mem[k]); });
-    await kaFilesToPlain(function (i, n) { progSet(10 + 85 * i / Math.max(1, n), 'Datei ' + i + ' von ' + n); });
-    var salt = alHex(crypto.getRandomValues(new Uint8Array(16)));
-    alPut({ salt: salt, hash: await alHash(cur, salt), min: c.min });
-    KA.enc = false; KA.key = null; KA.mem = {}; KA.q = {};
-    progSet(100, 'Fertig.'); document.getElementById('pg-close').style.display = ''; alUi(); return true;
-  } catch (e) { progClose(true); alert('Das Aufheben wurde unterbrochen: ' + (e && e.message ? e.message : e) + '\n\nDie Daten bleiben verschlüsselt und sind nicht verloren.'); return false; }
+async function alDecryptAll() {
+  alert('Die lokale Verschlüsselung ist für Praxisdaten verpflichtend und kann nicht deaktiviert werden.');
+  return false;
 }
 async function alRemove() {
-  var c = alGet(); if (!c) return;
-  if (!(await alCheck(document.getElementById('al-cur').value))) { alert('Bitte das aktuelle Passwort eingeben.'); return; }
-  if (c.enc) { if (!(await alDecryptAll(false))) return; if (!await kaConfirm('Verschlüsselung ist aufgehoben. Auch die App-Sperre jetzt entfernen?')) { switchTab('settings'); return; } }
-  else if (!await kaConfirm('App-Sperre wirklich entfernen?')) return;
-  alPut(null); clearTimeout(alTimer); alUi();
+  alert('App-Sperre und Verschlüsselung sind für Praxisdaten verpflichtend und können nicht deaktiviert werden.');
+  return false;
 }
 /* Start: ohne Verschlüsselung sofort, mit Verschlüsselung erst nach dem Entsperren */
 function kaBoot(lockAfter) {
@@ -972,9 +999,9 @@ function kaBoot(lockAfter) {
   if (alGet()) { document.getElementById('al-btn').style.display = ''; if (lockAfter) alLockNow(); }
 }
 function kaStart() {
-  var c = alGet();
-  if (c && c.enc) { document.documentElement.classList.add('locked'); setTimeout(function () { document.getElementById('al-pw').focus(); }, 50); }
-  else kaBoot(true);
+  document.documentElement.classList.add('locked');
+  alPrepare();
+  setTimeout(function () { document.getElementById('al-pw').focus(); }, 50);
 }
 </script>
 
@@ -1215,12 +1242,11 @@ function kaStart() {
     <div id="al-info" style="font-size:12px; color:#64748b; margin-bottom:8px;"></div>
     <div class="form-group" id="al-curg"><label>Aktuelles Passwort</label><input type="password" id="al-cur" class="form-control" autocomplete="off"></div>
     <div class="grid-2">
-      <div class="form-group"><label>Neues Passwort (mind. 6 Zeichen)</label><input type="password" id="al-new" class="form-control" autocomplete="new-password"></div>
+      <div class="form-group"><label>Neues Passwort (mind. 8 Zeichen)</label><input type="password" id="al-new" class="form-control" autocomplete="new-password"></div>
       <div class="form-group"><label>Wiederholen</label><input type="password" id="al-new2" class="form-control" autocomplete="new-password"></div>
     </div>
     <div class="form-group"><label>Automatisch sperren</label><select id="al-min" class="form-control" onchange="alSetMin()"><option value="0">Sobald die App verlassen wird</option><option value="1">Nach 1 Minute</option><option value="5">Nach 5 Minuten</option><option value="15">Nach 15 Minuten</option><option value="30">Nach 30 Minuten</option></select></div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" onclick="alSet()">Passwort festlegen</button><button type="button" class="btn btn-del" id="al-off" onclick="alRemove()">Sperre entfernen</button></div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" id="al-encb" onclick="alEncryptAll()">Daten verschlüsseln</button><button type="button" class="btn btn-cancel" id="al-decb" onclick="alDecryptAll()">Verschlüsselung aufheben</button></div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"><button type="button" class="btn btn-save" onclick="alSet()">Passwort ändern</button></div>
     <div id="al-warn" style="font-size:12px; color:#64748b;"></div>
     <div class="ak-h">E-Mail-Versand (optional)</div>
     <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Ohne Angabe öffnet sich das Mailprogramm des Geräts. Mit der Adresse der Datei sendmail.php (siehe LIESMICH.txt) wird direkt von der Praxisadresse gesendet.</div>
@@ -2193,7 +2219,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-o';
+var KA_V = '2026-11-01-p';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],

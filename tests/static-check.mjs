@@ -53,7 +53,14 @@ for (const marker of ["/wp-json/ka/v1/abgleich", 'autoInbox', 'abrufen', 'inboxS
   assert.ok(sync.includes(marker), `Sync-Invariante fehlt: ${marker}`);
 }
 
-// 9) Manifest und zentrale PWA-Dateien müssen existieren und lesbar sein.
+// 9) Lokale Praxisdaten müssen verpflichtend verschlüsselt werden.
+for (const marker of ['function alPrepare()', 'async function alActivateEncryption(', "document.documentElement.classList.add('locked')", 'mindestens 8 Zeichen', 'verpflichtend und kann nicht deaktiviert werden']) {
+  assert.ok(html.includes(marker), `Verschlüsselungs-Invariante fehlt: ${marker}`);
+}
+assert.ok(!html.includes('>Sperre entfernen</button>'), 'Sperre darf nicht deaktivierbar sein');
+assert.ok(!html.includes('>Verschlüsselung aufheben</button>'), 'Verschlüsselung darf nicht deaktivierbar sein');
+
+// 10) Manifest und zentrale PWA-Dateien müssen existieren und lesbar sein.
 JSON.parse(read('manifest.webmanifest'));
 for (const file of ['icon-192.png','icon-512.png','manifest.webmanifest','index.html','sw.js']) {
   assert.ok(fs.existsSync(file), `PWA-Datei fehlt: ${file}`);
