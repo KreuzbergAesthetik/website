@@ -16,7 +16,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Apply backup hardening
-        run: python3 tools/apply-backup-hardening.py
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('tools/apply-backup-hardening.py')
+          s = p.read_text(encoding='utf-8')
+          old = "s2, n = re.subn(pattern, repl, s, count=1, flags=flags)"
+          new = "s2, n = re.subn(pattern, lambda _m: repl, s, count=1, flags=flags)"
+          if old not in s:
+              raise SystemExit('Patchskript-Hotfix konnte nicht angewendet werden')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
+          python3 tools/apply-backup-hardening.py
       - name: Static regression checks
         run: npm run test:static
       - name: Commit hardened backup flow
