@@ -42,10 +42,26 @@ for (const marker of ['function eventPatient(e)', 'function migrateEventPatientI
   assert.ok(html.includes(marker), `Kritische Datenlogik fehlt: ${marker}`);
 }
 
-// 7) Backup muss weiterhin verschlüsseln und entschlüsseln können.
-for (const marker of ['async function encryptBackup(', 'async function decryptBackup(', "format: 'ka-backup-enc'", "AES-GCM", "PBKDF2-SHA256"]) {
+// 7) Backups müssen verpflichtend verschlüsselt, geprüft und sicher wiederhergestellt werden.
+for (const marker of [
+  'async function encryptBackup(',
+  'async function decryptBackup(',
+  "format: 'ka-backup-enc'",
+  'AES-GCM',
+  'PBKDF2-SHA256',
+  'async function sha256Hex(',
+  'async function backupStateHash(',
+  'async function verifyZipBackup(',
+  'function fCommitStagedFiles(',
+  'version: 4',
+  'sha256:'
+]) {
   assert.ok(html.includes(marker), `Backup-Schutz fehlt: ${marker}`);
 }
+assert.ok(!html.includes('id="bk-nopw"'), 'Unverschlüsselte Backups dürfen nicht angeboten werden');
+assert.ok(!html.includes('id="bk-newpw"'), 'Periodischer Backup-Passwortwechsel darf nicht erzwungen werden');
+assert.ok(!html.includes('Ohne Passwort sichern'), 'Unverschlüsselte Backup-Option darf nicht zurückkehren');
+assert.ok(html.includes('Backup-Passwort braucht mindestens 12 Zeichen'), 'Mindestlänge für das Backup-Passwort fehlt');
 
 // 8) Sync und automatischer Formularimport dürfen nicht still verschwinden.
 const sync = read('sync.js');
