@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'tools/apply-restore-journal.py'
+      - 'tools/run-restore-journal.py'
       - '.github/workflows/apply-restore-journal.yml'
 
 permissions:
@@ -19,7 +20,7 @@ jobs:
         with:
           node-version: '24'
       - name: Apply restore journal patch
-        run: python3 tools/apply-restore-journal.py
+        run: python3 tools/run-restore-journal.py
       - name: Static regression checks
         run: npm run test:static
       - name: Install pinned browser test dependency
