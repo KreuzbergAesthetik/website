@@ -1,0 +1,54 @@
+name: Run audit history migration 2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.audit-history-trigger-2'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply reviewed audit history patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object index.html)" = "6d8859beb0b3b38f0ac5b165f76043b51c7e1427"
+          awk '/^[[:space:]]*H4sI/{gsub(/^[[:space:]]+/,""); print; exit}' .github/workflows/run-audit-history.yml > /tmp/audit.patch.gz.b64
+          base64 -d /tmp/audit.patch.gz.b64 | gzip -dc > /tmp/audit.patch
+          test "$(sha256sum /tmp/audit.patch | cut -d' ' -f1)" = "8c43ed1b1622bc676529bbf8eb1f2a19458305dddefbc29a1bf022c6ea4346fa"
+          git apply -p2 --check /tmp/audit.patch
+          git apply -p2 /tmp/audit.patch
+          test "$(git hash-object index.html)" = "9089ee2c2b5101ba6aa9794118a849bf19d90bfe"
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s = Path('index.html').read_text()
+          blocks = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', s, flags=re.S|re.I)
+          Path('/tmp/index-inline.js').write_text('\n;\n'.join(blocks))
+          sw = Path('sw.js')
+          t = sw.read_text()
+          old = "var V='2026-11-01-g'"
+          new = "var V='2026-11-01-h'"
+          if t.count(old) != 1:
+              raise SystemExit('Unexpected service-worker version')
+          sw.write_text(t.replace(old, new, 1))
+          PY
+          node --check /tmp/index-inline.js
+          git diff --check
+      - name: Commit audit history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html sw.js
+          git commit -m 'Unveränderliche Änderungshistorie für Patientenakte ergänzen'
+          git push origin HEAD:main
