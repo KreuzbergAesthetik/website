@@ -2192,7 +2192,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-m';
+var KA_V = '2026-11-01-n';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4785,6 +4785,14 @@ function setRecordHidden(p, r, hide, area, label) {
 function fileHide(p, r) {
   setRecordHidden(p, r, !r.hiddenFromView, (p.bilder || []).indexOf(r) >= 0 ? 'Bilder' : 'Dokumente', r.name || r.id);
 }
+function restoreVisibilityButton(fn) {
+  var b = mk('button', 'btn btn-secondary btn-sm', 'Wieder einblenden');
+  b.type = 'button'; b.title = 'Dauerhaft in der normalen Ansicht einblenden';
+  b.style.cssText = 'margin-left:8px;padding:3px 7px;font-size:11px;';
+  b.onclick = function (ev) { ev.stopPropagation(); fn(); };
+  return b;
+}
+
 function fileHiddenBadge(r) {
   var b = mk('span', '', 'Ausgeblendet'); b.style.cssText = 'font-size:11px;color:#64748b;margin-left:6px;'; return b;
 }
@@ -5359,6 +5367,8 @@ function tlRow(it) {
     });
   } else if (it.t === 'hiddenfile') {
     sh = tlShell(it.k, 'Ausgeblendete Datei');
+    var fileOwner = curP;
+    if (it.kind === 'bild') sh.body.firstChild.appendChild(restoreVisibilityButton(function () { fileHide(fileOwner, it.file); }));
     if (it.kind === 'bild') sh.body.appendChild(mediaGrid(curP, [it.file]));
     else sh.body.appendChild(docList(curP, [it.file]));
   } else if (it.t === 'angelegt') {
@@ -5387,6 +5397,7 @@ function tlRow(it) {
     var label = rec.nr || rec.name || rec.id || fmtDT(it.k);
     if (rec.hiddenFromView) {
       sh.body.firstChild.appendChild(fileHiddenBadge(rec));
+      sh.body.firstChild.appendChild(restoreVisibilityButton(function () { setRecordHidden(owner, rec, false, area, label); }));
       sh.row.style.opacity = '0.65';
     }
     if (!sh.actions) tlPlus(sh, []);
@@ -6705,7 +6716,12 @@ function galShow() {
   var r = gal.list[gal.i], im = document.getElementById('img-big');
   im.removeAttribute('src'); document.getElementById('img-cnt').textContent = (gal.i + 1) + ' / ' + gal.list.length + (r.name ? '  ·  ' + r.name : '');
   var hideButton = document.querySelector('#modal-img button[onclick="galDelete()"]');
-  if (hideButton) { hideButton.title = r.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden'; hideButton.setAttribute('aria-label', hideButton.title); }
+  if (hideButton) {
+    if (!hideButton.dataset.hideIcon) hideButton.dataset.hideIcon = hideButton.innerHTML;
+    hideButton.title = r.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden'; hideButton.setAttribute('aria-label', hideButton.title);
+    hideButton.classList.toggle('btn-ico', !r.hiddenFromView);
+    if (r.hiddenFromView) hideButton.textContent = 'Wieder einblenden'; else hideButton.innerHTML = hideButton.dataset.hideIcon;
+  }
   if (r.hiddenFromView) document.getElementById('img-cnt').textContent += ' · Ausgeblendet';
   fileURL(r).then(function (u) { if (u && gal && gal.list[gal.i] === r) im.src = u; });
 }
@@ -6789,6 +6805,7 @@ function medDocRow(p, dd) {
   var pill = mk('button', 'md-pill', katOf(dd)); pill.type = 'button'; pill.title = 'Kategorie ändern';
   pill.onclick = function (ev) { tlMenu(ev, KATS.map(function (k) { return [k, function () { var before = auditFileState(dd); dd.kat = k; auditFileChange(p, dd, before); refreshFiles(); renderMedien(); }]; })); };
   l2.appendChild(pill);
+  if (dd.hiddenFromView) l2.appendChild(restoreVisibilityButton(function () { fileHide(p, dd); }));
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
