@@ -36,6 +36,11 @@ try {
       typeof auditOne,
       typeof encryptBackup,
       typeof decryptBackup,
+      typeof sha256Hex,
+      typeof backupStateHash,
+      typeof validateBackupData,
+      typeof fCommitStagedFiles,
+      typeof verifyZipBackup,
       typeof fillNavMenu
     ].every(x => x === 'function');
 
@@ -103,6 +108,35 @@ try {
     let wrongRejected = false;
     try { await decryptBackup(encrypted, 'falsches-passwort'); } catch { wrongRejected = true; }
     out.backupRejectsWrongPassword = wrongRejected;
+
+    // Neue Sicherungen dürfen nicht mehr unverschlüsselt erstellt werden.
+    out.backupMandatoryUi = !document.getElementById('bk-nopw') && !document.getElementById('bk-newpw') && !!document.getElementById('bk-pwbox');
+
+    // SHA-256 und Zustandsintegrität müssen reproduzierbar sein und Manipulation erkennen.
+    const hashAbc = await sha256Hex(new TextEncoder().encode('abc'));
+    out.sha256Works = hashAbc === 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+    const sample = {
+      format:'ka-sicherung', version:4, id:'ci-backup', exportiert:'2026-10-31T00:00:00.000Z',
+      events:[], patients:[], templates:[], invoices:[], settings:{}, lager:{}, ausgaben:[], entw:[], todos:[], dateien:[]
+    };
+    const stateHash = await backupStateHash(sample);
+    sample.integrity = { alg:'SHA-256', state:stateHash };
+    validateBackupData(sample);
+    out.backupStateIntegrity = (await backupStateHash(sample)) === stateHash;
+    sample.events.push({ id:1 });
+    out.backupTamperDetected = (await backupStateHash(sample)) !== stateHash;
+
+    // Restore-Dateien werden erst vorbereitet und dann in einer einzigen IndexedDB-Transaktion umgeschaltet.
+    await fClear();
+    await fPut('ci-old', 'old.txt', new Blob(['old'], { type:'text/plain' }));
+    const pref = '\uffffka_restore_ci_';
+    const stage = pref + '0';
+    await fPut(stage, 'new.txt', new Blob(['new'], { type:'text/plain' }));
+    const swapped = await fCommitStagedFiles(pref, { [stage]:'ci-new' });
+    const oldAfter = await fGet('ci-old');
+    const newAfter = await fGet('ci-new');
+    out.atomicFileSwap = swapped && !oldAfter && !!newAfter && (await newAfter.blob.text()) === 'new';
+    await fClear();
 
     // Sync-Schicht ist geladen, ohne einen echten Serverzugriff auszulösen.
     out.syncApi = !!window.KS && typeof KS.run === 'function' && typeof KS.abrufen === 'function' && typeof KS.touch === 'function';
