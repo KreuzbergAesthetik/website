@@ -63,20 +63,28 @@ assert.ok(!html.includes('id="bk-newpw"'), 'Periodischer Backup-Passwortwechsel 
 assert.ok(!html.includes('Ohne Passwort sichern'), 'Unverschlüsselte Backup-Option darf nicht zurückkehren');
 assert.ok(html.includes('Backup-Passwort braucht mindestens 12 Zeichen'), 'Mindestlänge für das Backup-Passwort fehlt');
 
-// 8) Sync und automatischer Formularimport dürfen nicht still verschwinden.
+// 8) Restore-Journal muss dauerhaft vorhanden bleiben.
+for (const marker of ['__ka_restore_journal_v1', 'async function rjEarlyCore(', 'async function restoreJournalBegin(', 'async function restoreJournalRollback(', 'async function restoreJournalStartup(', 'async function fRollbackJournalFiles(', "restoreJournalPhase(journal, 'committed')"]) {
+  assert.ok(html.includes(marker), `Restore-Journal fehlt: ${marker}`);
+}
+assert.ok(html.includes('fCommitStagedFiles(prefix, mapping, journal.backupPrefix)'), 'Dateitausch behält keinen reversiblen Altbestand');
+assert.ok(html.includes('await restorePersistCore();'), 'Restore schreibt Kerndaten nicht kontrolliert');
+assert.ok(!html.includes("await fClear(); var list = d.dateien || []"), 'Restore darf vorhandene Dateien nicht vorab löschen');
+
+// 9) Sync und automatischer Formularimport dürfen nicht still verschwinden.
 const sync = read('sync.js');
 for (const marker of ["/wp-json/ka/v1/abgleich", 'autoInbox', 'abrufen', 'inboxSig()', 'AES-GCM']) {
   assert.ok(sync.includes(marker), `Sync-Invariante fehlt: ${marker}`);
 }
 
-// 9) Lokale Praxisdaten müssen verpflichtend verschlüsselt werden.
+// 10) Lokale Praxisdaten müssen verpflichtend verschlüsselt werden.
 for (const marker of ['function alPrepare()', 'async function alActivateEncryption(', "document.documentElement.classList.add('locked')", 'mindestens 8 Zeichen', 'verpflichtend und kann nicht deaktiviert werden']) {
   assert.ok(html.includes(marker), `Verschlüsselungs-Invariante fehlt: ${marker}`);
 }
 assert.ok(!html.includes('>Sperre entfernen</button>'), 'Sperre darf nicht deaktivierbar sein');
 assert.ok(!html.includes('>Verschlüsselung aufheben</button>'), 'Verschlüsselung darf nicht deaktivierbar sein');
 
-// 10) Manifest und zentrale PWA-Dateien müssen existieren und lesbar sein.
+// 11) Manifest und zentrale PWA-Dateien müssen existieren und lesbar sein.
 JSON.parse(read('manifest.webmanifest'));
 for (const file of ['icon-192.png','icon-512.png','manifest.webmanifest','index.html','sw.js']) {
   assert.ok(fs.existsSync(file), `PWA-Datei fehlt: ${file}`);

@@ -826,6 +826,56 @@ async function kaFlush() {
   KA.busy = null; if (Object.keys(KA.q).length && !KA.bad) kaFlushSoon();
 }
 async function kaIdle() { while (KA.busy || Object.keys(KA.q).length) { if (!KA.busy) kaFlushSoon(); await KA.busy; if (KA.bad) throw new Error('Speichern fehlgeschlagen'); } }
+var RJ_KEY = '__ka_restore_journal_v1', RJ_DB = 'ka-restore', RJ_STORE = 'journal', RJ_EARLY = false;
+var RJ_CORE_KEYS = ['ka_events','ka_patients','ka_templates','ka_invoices','ka_settings','ka_lager','ka_ausgaben','ka_entw','ka_todos'];
+function rjMetaGet() {
+  var t = localStorage.getItem(RJ_KEY); if (!t) return null;
+  var j; try { j = JSON.parse(t); } catch (x) { throw new Error('Wiederherstellungsjournal ist beschädigt'); }
+  if (!j || j.v !== 1 || typeof j.snapshotId !== 'string' || typeof j.stagePrefix !== 'string' || typeof j.backupPrefix !== 'string') throw new Error('Wiederherstellungsjournal ist ungültig');
+  return j;
+}
+function rjMetaSet(j) { localStorage.setItem(RJ_KEY, JSON.stringify(j)); }
+function rjMetaClear() { localStorage.removeItem(RJ_KEY); }
+function rjDbOpen() {
+  return new Promise(function (res, rej) {
+    try {
+      var rq = indexedDB.open(RJ_DB, 1);
+      rq.onupgradeneeded = function () { if (!rq.result.objectStoreNames.contains(RJ_STORE)) rq.result.createObjectStore(RJ_STORE, { keyPath: 'id' }); };
+      rq.onsuccess = function () { res(rq.result); };
+      rq.onerror = function () { rej(rq.error || new Error('Wiederherstellungsspeicher nicht verfügbar')); };
+    } catch (x) { rej(x); }
+  });
+}
+function rjStore(mode, fn) {
+  return rjDbOpen().then(function (db) {
+    return new Promise(function (res, rej) {
+      var tx = db.transaction(RJ_STORE, mode), out;
+      try { out = fn(tx.objectStore(RJ_STORE)); } catch (x) { try { tx.abort(); } catch (z) {} rej(x); return; }
+      tx.oncomplete = function () { res(out && out.result !== undefined ? out.result : true); };
+      tx.onerror = tx.onabort = function () { rej(tx.error || new Error('Wiederherstellungsspeicher fehlgeschlagen')); };
+    });
+  });
+}
+function rjSnapPut(id, core) { return rjStore('readwrite', function (st) { return st.put({ id: id, ts: Date.now(), core: core }); }); }
+function rjSnapGet(id) { return rjStore('readonly', function (st) { return st.get(id); }); }
+function rjSnapDel(id) { return id ? rjStore('readwrite', function (st) { return st.delete(id); }) : Promise.resolve(true); }
+function rjSnapClear() { return rjStore('readwrite', function (st) { return st.clear(); }); }
+function rjRestoreRaw(core) {
+  RJ_CORE_KEYS.forEach(function (k) {
+    if (!Object.prototype.hasOwnProperty.call(core || {}, k)) throw new Error('Kerndaten-Snapshot ist unvollständig');
+    var v = core[k];
+    if (v === null) localStorage.removeItem(k);
+    else if (typeof v === 'string') localStorage.setItem(k, v);
+    else throw new Error('Kerndaten-Snapshot ist ungültig');
+  });
+}
+async function rjEarlyCore() {
+  var j = rjMetaGet();
+  if (!j || j.phase === 'committed') return j;
+  var snap = await rjSnapGet(j.snapshotId);
+  if (!snap || !snap.core) throw new Error('Wiederherstellungs-Snapshot fehlt');
+  rjRestoreRaw(snap.core); RJ_EARLY = true; return j;
+}
 async function kaLoadAll() {
   var keys = []; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (kaOwn(k)) keys.push(k); }
   var mem = {}, q = {};
@@ -905,12 +955,14 @@ async function alUnlock(ev) {
       return;
     }
     if (!KA.enc) {
-      try { KA.key = await alImportKey(raw); await kaLoadAll(); await kaIdle(); }
+      try { KA.key = await alImportKey(raw); await rjEarlyCore(); await kaLoadAll(); await kaIdle(); }
       catch (e) { KA.key = null; msg.textContent = 'Die Daten konnten nicht gelesen werden.'; return; }
     }
   }
   alFails = 0; inp.value = ''; inp2.value = ''; msg.textContent = '';
   if (!KA.booted) kaBoot(false);
+  try { var rjr = typeof restoreJournalStartup === 'function' ? await restoreJournalStartup() : ''; if (rjr === 'reload') { location.reload(); return; } }
+  catch (e) { msg.textContent = 'Die unterbrochene Wiederherstellung konnte nicht sicher abgeschlossen werden. ' + (e && e.message ? e.message : ''); return; }
   document.documentElement.classList.remove('locked'); alArm();
   c = alGet(); if (c && c.enc && c.sweep) kaFilesToEnc().catch(function () {});
 }
@@ -2216,7 +2268,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-q';
+var KA_V = '2026-11-01-r';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -8353,28 +8405,49 @@ function exportData() {
 }
 function blobB64(b) { return new Promise(function (res) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1] || ''); }; r.onerror = function () { res(''); }; r.readAsDataURL(b); }); }
 function fKeys() {
-  return fTx('readonly', function (st) { return st.getAllKeys(); }).then(function (r) { return Array.isArray(r) ? r : []; });
+  return fTx('readonly', function (st) { return st.getAllKeys(); }).then(function (r) { if (!Array.isArray(r)) throw new Error('Dateispeicher nicht verfügbar'); return r; });
 }
 async function fDropStage(prefix) {
+  if (!prefix) return;
   var keys = await fKeys();
-  for (var i = 0; i < keys.length; i++) if (String(keys[i]).indexOf(prefix) === 0) await fDel(keys[i]);
+  for (var i = 0; i < keys.length; i++) if (String(keys[i]).indexOf(prefix) === 0) { var r = await fDel(keys[i]); if (r === null) throw new Error('Temporäre Dateien konnten nicht bereinigt werden'); }
 }
-function fCommitStagedFiles(prefix, mapping) {
+async function fHasPrefix(prefix) { var keys = await fKeys(); return keys.some(function (k) { return String(k).indexOf(prefix) === 0; }); }
+function restorePackId(id) { return encodeURIComponent(JSON.stringify(id)); }
+function restoreUnpackId(id, prefix) { return JSON.parse(decodeURIComponent(String(id).slice(prefix.length))); }
+function fCommitStagedFiles(prefix, mapping, backupPrefix) {
   return fOpen().then(function (db) {
     if (!db) return false;
     return new Promise(function (res) {
-      var tx = db.transaction('files', 'readwrite'), st = tx.objectStore('files'), rq = st.openCursor(), ok = true;
+      var tx = db.transaction('files', 'readwrite'), st = tx.objectStore('files'), ok = true;
+      var fail = function () { ok = false; try { tx.abort(); } catch (x) {} };
+      var moveNew = function () {
+        var rq2 = st.openCursor();
+        rq2.onsuccess = function () {
+          var cur = rq2.result; if (!cur) return;
+          var id = String(cur.key);
+          if (id.indexOf(prefix) === 0) {
+            var target = mapping[id];
+            if (target === undefined || target === null || target === '') { fail(); return; }
+            var rec = cur.value; rec.id = target;
+            var p = st.put(rec), d = cur.delete(); p.onerror = fail; d.onerror = fail;
+          }
+          cur.continue();
+        };
+        rq2.onerror = fail;
+      };
+      var rq = st.openCursor();
       rq.onsuccess = function () {
-        var cur = rq.result; if (!cur) return;
-        var id = String(cur.key);
-        if (id.indexOf(prefix) === 0) {
-          var target = mapping[id];
-          if (target === undefined || target === null || target === '') { ok = false; try { tx.abort(); } catch (x) {} return; }
-          var rec = cur.value; rec.id = target; st.put(rec); cur.delete();
-        } else cur.delete();
+        var cur = rq.result;
+        if (!cur) { moveNew(); return; }
+        var raw = cur.key, id = String(raw);
+        if (id.indexOf(prefix) !== 0 && id.indexOf(backupPrefix) !== 0) {
+          var rec = cur.value; rec.id = backupPrefix + restorePackId(raw);
+          var p = st.put(rec), d = cur.delete(); p.onerror = fail; d.onerror = fail;
+        }
         cur.continue();
       };
-      rq.onerror = function () { ok = false; try { tx.abort(); } catch (x) {} };
+      rq.onerror = fail;
       tx.oncomplete = function () {
         Object.keys(urlCache).forEach(function (k) { URL.revokeObjectURL(urlCache[k]); }); urlCache = {};
         res(ok);
@@ -8383,9 +8456,99 @@ function fCommitStagedFiles(prefix, mapping) {
     });
   });
 }
-function restoreStagePrefix() { return '\uffffka_restore_' + newId() + '_'; }
-async function restoreInlineFiles(list) {
-  var prefix = restoreStagePrefix(), mapping = {};
+async function fRollbackJournalFiles(j) {
+  if (!(await fHasPrefix(j.backupPrefix))) { await fDropStage(j.stagePrefix); return true; }
+  var db = await fOpen(); if (!db) throw new Error('Dateispeicher nicht verfügbar');
+  return new Promise(function (res, rej) {
+    var tx = db.transaction('files', 'readwrite'), st = tx.objectStore('files'), failed = false;
+    var fail = function () { failed = true; try { tx.abort(); } catch (x) {} };
+    var restoreOld = function () {
+      var rq2 = st.openCursor();
+      rq2.onsuccess = function () {
+        var cur = rq2.result; if (!cur) return;
+        var id = String(cur.key);
+        if (id.indexOf(j.backupPrefix) === 0) {
+          var rec = cur.value;
+          try { rec.id = restoreUnpackId(cur.key, j.backupPrefix); } catch (x) { fail(); return; }
+          var p = st.put(rec), d = cur.delete(); p.onerror = fail; d.onerror = fail;
+        }
+        cur.continue();
+      };
+      rq2.onerror = fail;
+    };
+    var rq = st.openCursor();
+    rq.onsuccess = function () {
+      var cur = rq.result;
+      if (!cur) { restoreOld(); return; }
+      if (String(cur.key).indexOf(j.backupPrefix) !== 0) { var d = cur.delete(); d.onerror = fail; }
+      cur.continue();
+    };
+    rq.onerror = fail;
+    tx.oncomplete = function () { Object.keys(urlCache).forEach(function (k) { URL.revokeObjectURL(urlCache[k]); }); urlCache = {}; res(!failed); };
+    tx.onerror = tx.onabort = function () { rej(tx.error || new Error('Datei-Rollback fehlgeschlagen')); };
+  });
+}
+function restoreStagePrefix() { return '\uffffka_restore_new_' + newId() + '_'; }
+function restoreBackupPrefix() { return '\uffffka_restore_old_' + newId() + '_'; }
+async function restoreJournalBegin() {
+  await kaIdle();
+  if (rjMetaGet()) throw new Error('Eine frühere Wiederherstellung ist noch nicht bereinigt');
+  var core = {};
+  RJ_CORE_KEYS.forEach(function (k) {
+    var v = localStorage.getItem(k);
+    if (v !== null && KA.enc && v.indexOf(KA_ENC) !== 0) throw new Error('Lokale Kerndaten sind noch nicht vollständig verschlüsselt');
+    core[k] = v;
+  });
+  var snapId = 'core-' + newId();
+  await rjSnapPut(snapId, core);
+  var j = { v: 1, ts: Date.now(), phase: 'prepared', snapshotId: snapId, stagePrefix: restoreStagePrefix(), backupPrefix: restoreBackupPrefix() };
+  try { rjMetaSet(j); } catch (x) { await rjSnapDel(snapId); throw x; }
+  return j;
+}
+function restoreJournalPhase(j, phase) { j.phase = phase; rjMetaSet(j); }
+async function restoreJournalFinalize(j) {
+  await fDropStage(j.stagePrefix); await fDropStage(j.backupPrefix);
+  rjMetaClear();
+  try { await rjSnapDel(j.snapshotId); } catch (x) {}
+  return true;
+}
+async function restoreJournalRollback(j) {
+  var snap = await rjSnapGet(j.snapshotId);
+  if (!snap || !snap.core) throw new Error('Rollback-Snapshot fehlt');
+  KA.q = {}; KA.busy = null; KA.bad = false;
+  rjRestoreRaw(snap.core);
+  if (!(await fRollbackJournalFiles(j))) throw new Error('Datei-Rollback fehlgeschlagen');
+  rjMetaClear();
+  try { await rjSnapDel(j.snapshotId); } catch (x) {}
+  await kaLoadAll(); await kaIdle();
+  return true;
+}
+async function restoreJournalStartup() {
+  var j = rjMetaGet();
+  if (!j) { try { await rjSnapClear(); } catch (x) {} return ''; }
+  if (j.phase === 'committed') { await restoreJournalFinalize(j); return ''; }
+  var snap = await rjSnapGet(j.snapshotId);
+  if (!snap || !snap.core) throw new Error('Rollback-Snapshot fehlt');
+  if (!RJ_EARLY) { rjRestoreRaw(snap.core); KA.q = {}; KA.busy = null; KA.bad = false; await kaLoadAll(); await kaIdle(); }
+  if (!(await fRollbackJournalFiles(j))) throw new Error('Datei-Rollback fehlgeschlagen');
+  rjMetaClear();
+  try { await rjSnapDel(j.snapshotId); } catch (x) {}
+  return RJ_EARLY ? '' : 'reload';
+}
+async function restorePersistCore() {
+  kaSet('ka_events', JSON.stringify(events));
+  kaSet('ka_patients', JSON.stringify(patients));
+  kaSet('ka_templates', JSON.stringify(templates));
+  kaSet('ka_invoices', JSON.stringify(invoices));
+  kaSet('ka_settings', JSON.stringify(settings));
+  kaSet('ka_lager', JSON.stringify(lager));
+  kaSet('ka_ausgaben', JSON.stringify(ausgaben));
+  kaSet('ka_entw', JSON.stringify(entw));
+  kaSet('ka_todos', JSON.stringify(todos));
+  await kaIdle();
+}
+async function restoreInlineFiles(list, journal) {
+  var prefix = journal.stagePrefix, mapping = {};
   try {
     for (var i = 0; i < list.length; i++) {
       var f = list[i];
@@ -8394,14 +8557,15 @@ async function restoreInlineFiles(list) {
       if (!(await fPut(sid, f.name || 'Datei', b))) throw new Error('Nicht genügend Gerätespeicher für die Wiederherstellung');
       mapping[sid] = f.id;
     }
-    if (!(await fCommitStagedFiles(prefix, mapping))) throw new Error('Dateien konnten nicht atomar übernommen werden');
+    if (!(await fCommitStagedFiles(prefix, mapping, journal.backupPrefix))) throw new Error('Dateien konnten nicht atomar vorbereitet werden');
+    restoreJournalPhase(journal, 'files-swapped');
     return '';
   } catch (x) {
-    await fDropStage(prefix);
+    await fDropStage(prefix).catch(function () {});
     throw x;
   }
 }
-function restoreFiles(list) { return restoreInlineFiles(list || []); }
+function restoreFiles(list, journal) { return restoreInlineFiles(list || [], journal); }
 /* ===== Sicherung als ZIP: streamt die Dateien, teilt große Mengen in mehrere Teile und verschlüsselt immer ===== */
 var BK_PART = 400 * 1048576, CRC_T = null, bkParts = [];
 function crcTab() { if (!CRC_T) { CRC_T = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); CRC_T[n] = c >>> 0; } } return CRC_T; }
@@ -8564,8 +8728,8 @@ async function verifyZipBackup(key, ctx, d) {
   progSet(100, 'Sicherung vollständig geprüft.');
   return true;
 }
-async function restoreZipFiles(key, ctx, d) {
-  var list = d.dateien || [], prefix = restoreStagePrefix(), mapping = {};
+async function restoreZipFiles(key, ctx, d, journal) {
+  var list = d.dateien || [], prefix = journal.stagePrefix, mapping = {};
   try {
     for (var i = 0; i < list.length; i++) {
       var m = list[i], bytes = await backupEntryBytes(key, ctx, m), sid = prefix + i;
@@ -8574,12 +8738,13 @@ async function restoreZipFiles(key, ctx, d) {
       mapping[sid] = m.id;
       if (i % 15 === 14) await new Promise(function (r) { setTimeout(r, 0); });
     }
-    progSet(97, 'Dateien werden atomar übernommen...');
-    if (!(await fCommitStagedFiles(prefix, mapping))) throw new Error('Dateien konnten nicht sicher übernommen werden. Die bisherigen Dateien bleiben erhalten.');
-    progSet(100, 'Dateien übernommen.');
+    progSet(97, 'Dateien werden reversibel umgeschaltet...');
+    if (!(await fCommitStagedFiles(prefix, mapping, journal.backupPrefix))) throw new Error('Dateien konnten nicht sicher vorbereitet werden. Die bisherigen Dateien bleiben erhalten.');
+    restoreJournalPhase(journal, 'files-swapped');
+    progSet(100, 'Dateien vorbereitet.');
     return '';
   } catch (x) {
-    await fDropStage(prefix);
+    await fDropStage(prefix).catch(function () {});
     throw x;
   }
 }
@@ -8604,9 +8769,9 @@ async function continueZipRestore(pw, ctx) {
     var d = JSON.parse(new TextDecoder().decode(bytes));
     await verifyZipBackup(key, ctx, d);
     progClose(true);
-    var restorer = async function () {
+    var restorer = async function (journal) {
       progOpen('Fotos und Dateien werden sicher vorbereitet');
-      try { return await restoreZipFiles(key, ctx, d); }
+      try { return await restoreZipFiles(key, ctx, d, journal); }
       finally { progClose(true); }
     };
     await applyImport(d, ctx.inp, restorer);
@@ -8645,13 +8810,15 @@ async function doDecrypt() {
   await applyImport(d, importInp);
 }
 async function applyImport(d, inp, restorer) {
-  var committed = false;
+  var journal = null, committed = false;
   try {
     validateBackupData(d);
     if (!await kaConfirm('Die Sicherung wurde gelesen. Aktuelle Daten wirklich durch diesen Stand ersetzen? (' + d.events.length + ' Termine, ' + d.patients.length + ' Patienten)')) { if (inp) inp.value = ''; return; }
+
+    journal = await restoreJournalBegin();
     var msg = '';
-    if (restorer) msg = await restorer();
-    else if (Array.isArray(d.files) && !d.ohneDateien) msg = await restoreFiles(d.files);
+    if (restorer) msg = await restorer(journal);
+    else if (Array.isArray(d.files) && !d.ohneDateien) msg = await restoreFiles(d.files, journal);
 
     events = d.events; patients = d.patients; ensurePatients(); migrateEventPatientIds();
     if (Array.isArray(d.templates)) templates = d.templates;
@@ -8666,14 +8833,33 @@ async function applyImport(d, inp, restorer) {
     events.forEach(function (e) { if (e.id > m) m = e.id; });
     events.forEach(function (e) { if (!e.id) e.id = ++m; });
     nid = m + 1;
-    persist(); if (typeof kaIdle === 'function') await kaIdle(); committed = true;
+
+    await restorePersistCore();
+    restoreJournalPhase(journal, 'committed'); committed = true;
+    await restoreJournalFinalize(journal);
+
     renderPatients(); renderCal(); renderInvoices(); refreshLeistungen(); renderLager(); renderLeist();
     try { await migrateFiles(); } catch (x) {}
+    try { KS.touch(); } catch (x) {}
     alert('Daten wurden geladen.' + (typeof msg === 'string' ? msg : ''));
   } catch (x) {
     progClose(true);
-    if (committed) alert('Die Daten wurden übernommen, aber die Oberfläche konnte nicht vollständig aktualisiert werden. Bitte die App einmal neu laden.');
-    else alert('Sicherung wurde nicht übernommen. Die bisherigen Praxisdaten bleiben erhalten. ' + (x && x.message ? x.message : ''));
+    if (journal && !committed) {
+      try {
+        await restoreJournalRollback(journal);
+        alert('Die Wiederherstellung wurde abgebrochen. Der vorherige Stand wurde automatisch vollständig wiederhergestellt.');
+        location.reload(); return;
+      } catch (rb) {
+        document.documentElement.classList.add('locked');
+        alert('Die Wiederherstellung wurde gestoppt, aber der automatische Rollback konnte nicht vollständig abgeschlossen werden. Bitte die App nicht weiter benutzen und neu laden. (' + (rb && rb.message ? rb.message : 'unbekannter Fehler') + ')');
+        return;
+      }
+    }
+    if (journal && committed) {
+      alert('Die Daten wurden übernommen, aber die technische Bereinigung ist noch nicht abgeschlossen. Die App wird neu geladen und bereinigt den Rest automatisch.');
+      location.reload(); return;
+    }
+    alert('Sicherung wurde nicht übernommen. Die bisherigen Praxisdaten bleiben erhalten. ' + (x && x.message ? x.message : ''));
   }
   if (inp) inp.value = '';
 }
