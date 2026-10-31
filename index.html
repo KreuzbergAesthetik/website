@@ -2192,7 +2192,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-k';
+var KA_V = '2026-11-01-l';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4758,6 +4758,20 @@ function auditDiff(p, area, before, after, fields) {
   (fields || []).forEach(function (f) { var k = Array.isArray(f) ? f[0] : f, lab = Array.isArray(f) ? f[1] : (AUD_LABEL[k] || k); c.push({ field: lab, from: before ? before[k] : '', to: after ? after[k] : '' }); });
   auditPush(p, area, c);
 }
+/* Dateivorgänge protokollieren nur Metadaten, keine Dateiinhalte. */
+function auditFileState(r) {
+  if (!r) return '[nicht vorhanden]';
+  return ['ID: ' + r.id, 'Name: ' + (r.name || ''), 'Datum: ' + (r.ts ? fmtDT(r.ts) : ''),
+    'Kategorie: ' + (r.kat || ''), 'Zuordnung: ' + (r.zu || 'frei'),
+    'Unterschrift: ' + (r.sig && r.sig.ts ? fmtDT(r.sig.ts) : 'keine')].join('\n');
+}
+function auditFileChange(p, r, before, area) {
+  auditOne(p, area || ((p.bilder || []).indexOf(r) >= 0 ? 'Bilder' : 'Dokumente'), 'Datei: ' + (r.name || r.id), before, auditFileState(r));
+}
+function auditFilesAdded(p, list, area) {
+  auditPush(p, area, (list || []).map(function (r) { return { field: 'Hinzugefügt: ' + (r.name || r.id), from: '', to: auditFileState(r) }; }));
+}
+
 function auditDocState(d) {
   d = d || {}; var v = d.verw || {}, verw = [];
   DK_VERW.forEach(function (x) { if (v[x[0]]) verw.push(x[1]); }); if (String(v.text || '').trim()) verw.push(String(v.text).trim());
@@ -5157,7 +5171,9 @@ async function rxMake() {
     var ok = await fPut(id, name, blob); if (!ok) throw new Error('save');
     var oldDoc = rxEdit ? rxDocOf(rxEdit) : null;
     if (oldDoc) { try { await fDel(oldDoc.id); } catch (x) {} p.dokumente = p.dokumente.filter(function (d) { return d !== oldDoc; }); }
-    p.dokumente = (p.dokumente || []).concat([{ id: id, ts: oldDoc ? oldDoc.ts : Date.now(), name: name, kat: 'Rezept', zu: rxZu || undefined }]);
+    var rxRec = { id: id, ts: oldDoc ? oldDoc.ts : Date.now(), name: name, kat: 'Rezept', zu: rxZu || undefined };
+    p.dokumente = (p.dokumente || []).concat([rxRec]);
+    auditFileChange(p, rxRec, auditFileState(oldDoc), 'Dokumente');
     rxRows.forEach(function (r) { if (r.on && r.neu && document.getElementById('rx-merk').checked && (p.medikation || []).indexOf(r.text.trim()) < 0) { p.medikation = (p.medikation || []).concat([r.text.trim()]); } });
     var items = sel.map(function (r) { return r.text.trim(); }), rtext = 'Rezept erstellt: ' + items.join('; ');
     if (rxEdit) { rxEdit.text = rtext; rxEdit.items = items; rxEdit.docId = id; rxEdit.datum = datum; if (rxEdit._tmp) { delete rxEdit._tmp; p.log = (p.log || []).concat([rxEdit]); } }
@@ -5435,6 +5451,7 @@ function addImages(inp) {
   })).then(function (res) {
     var ok = res.filter(Boolean);
     p.bilder = (p.bilder || []).concat(ok);
+    auditFilesAdded(p, ok, 'Bilder');
     persist(); if (curP === p) renderVerlauf();
     if (ok.length < files.length) alert((files.length - ok.length) + ' Bild(er) konnten nicht gespeichert werden.');
   });
@@ -5451,7 +5468,7 @@ function addDocs(inp, key) {
   })).then(function (res) {
     var ok = res.filter(Boolean);
     if (key === 'templates') templates = templates.concat(ok);
-    else { p.dokumente = (p.dokumente || []).concat(ok); dokPick = false; }
+    else { p.dokumente = (p.dokumente || []).concat(ok); auditFilesAdded(p, ok, 'Dokumente'); dokPick = false; }
     persist(); if (curP === p) { renderPick(); renderVerlauf(); }
     if (skipped) alert(skipped + ' Datei(en) sind größer als 30 MB oder konnten nicht gespeichert werden.');
   });
@@ -6193,7 +6210,7 @@ function tplsForEvent(e) {
 function addTplTo(p, t, zu, i) {
   var id = newId();
   return fileBlob(t).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
-    if (ok) p.dokumente = (p.dokumente || []).concat([{ id: id, ts: Date.now() + (i || 0), name: t.name, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }]);
+    if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: t.name, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
     return ok;
   });
 }
@@ -6525,7 +6542,9 @@ function applySign() {
   }).then(function (ok) {
     btn.disabled = false;
     if (!ok) { alert('Die unterschriebene Datei konnte nicht gespeichert werden.'); return; }
+    var before = auditFileState(t.rec);
     t.rec.sig = { ts: now.getTime(), name: nameKey(t.p) };
+    auditFileChange(t.p, t.rec, before, 'Dokumente');
     closeModal('modal-sign'); refreshFiles();
   }).catch(function () { btn.disabled = false; alert('Die Unterschrift konnte nicht in die PDF eingefügt werden. Die Datei bleibt unverändert. (Ist die Datei pdf-lib.min.js hochgeladen und bist Du online?)'); });
 }
@@ -6648,10 +6667,11 @@ function attachBlock(p, key) {
   return box;
 }
 function editGroupDate(list) {
+  var p = curP;
   var first = list.reduce(function (m, x) { return Math.min(m, tsOf(x)); }, Infinity);
   askDateTime(first, function (t) {
     var delta = t - first;
-    list.forEach(function (x) { x.ts = tsOf(x) + delta; });
+    list.forEach(function (x) { var before = auditFileState(x); x.ts = tsOf(x) + delta; auditFileChange(p, x, before); });
     refreshFiles(); try { renderMedien(); } catch (e) {}
   });
 }
@@ -6666,6 +6686,7 @@ function galStep(n) { if (!gal) return; gal.i = (gal.i + n + gal.list.length) % 
 async function galDelete() {
   if (!gal || !await kaConfirm('Dieses Bild löschen?')) return;
   var r = gal.list[gal.i], p = gal.p;
+  auditOne(p, 'Bilder', 'Gelöscht: ' + (r.name || r.id), auditFileState(r), '[gelöscht]');
   fDel(r.id); p.bilder = p.bilder.filter(function (y) { return y.id !== r.id; });
   gal.list.splice(gal.i, 1);
   if (!gal.list.length) { closeModal('modal-img'); gal = null; } else { gal.i = Math.min(gal.i, gal.list.length - 1); galShow(); }
@@ -6694,7 +6715,7 @@ function openZu(p, list) {
 }
 function saveZu() {
   var v = document.getElementById('zu-sel').value;
-  zuCtx.list.forEach(function (x) { if (v) x.zu = v; else delete x.zu; });
+  zuCtx.list.forEach(function (x) { var before = auditFileState(x); if (v) x.zu = v; else delete x.zu; auditFileChange(zuCtx.p, x, before); });
   closeModal('modal-zu'); refreshFiles();
 }
 /* Medien und Dokumente des Patienten an einem Ort */
@@ -6739,7 +6760,7 @@ function medDocRow(p, dd) {
   fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
   var col = mk('div', 'md-col'), l2 = mk('div', 'md-l2'); col.appendChild(a); col.appendChild(l2); r.appendChild(col);
   var pill = mk('button', 'md-pill', katOf(dd)); pill.type = 'button'; pill.title = 'Kategorie ändern';
-  pill.onclick = function (ev) { tlMenu(ev, KATS.map(function (k) { return [k, function () { dd.kat = k; refreshFiles(); renderMedien(); }]; })); };
+  pill.onclick = function (ev) { tlMenu(ev, KATS.map(function (k) { return [k, function () { var before = auditFileState(dd); dd.kat = k; auditFileChange(p, dd, before); refreshFiles(); renderMedien(); }]; })); };
   l2.appendChild(pill);
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); }
@@ -6753,10 +6774,10 @@ function medDocRow(p, dd) {
     ['Umbenennen', async function () {
       var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
       var ex = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[0] || ''; if (ex && !/\.[A-Za-z0-9]{1,6}$/.test(v)) v += ex;
-      dd.name = v; persist(); refreshFiles(); renderMedien();
+      var before = auditFileState(dd); dd.name = v; auditFileChange(p, dd, before); persist(); refreshFiles(); renderMedien();
     }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
-    ['Löschen', async function () { if (!await kaConfirm('Datei "' + dd.name + '" löschen?')) return; fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
+    ['Löschen', async function () { if (!await kaConfirm('Datei "' + dd.name + '" löschen?')) return; auditOne(p, 'Dokumente', 'Gelöscht: ' + dd.name, auditFileState(dd), '[gelöscht]'); fDel(dd.id); p.dokumente = p.dokumente.filter(function (y) { return y.id !== dd.id; }); refreshFiles(); renderMedien(); }]
   ])));
   return r;
 }
@@ -6833,7 +6854,8 @@ function renderPick() {
       var p = curP, id = newId();
       fileBlob(t).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
         if (!ok) { alert('Die Vorlage konnte nicht übernommen werden.'); return; }
-        p.dokumente = (p.dokumente || []).concat([{ id: id, ts: Date.now(), name: t.name, kat: t.kat || katOf(t), tid: t.id }]);
+        var rec = { id: id, ts: Date.now(), name: t.name, kat: t.kat || katOf(t), tid: t.id };
+        p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente');
         dokPick = false; persist(); if (curP === p) { renderPick(); renderVerlauf(); }
       });
     };
@@ -7198,8 +7220,11 @@ async function formularImport(entries) {
     if (Array.isArray(d.extra) && d.extra.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Zusatzangaben (' + ({ anmeldung: 'Anmeldung', anamnese: 'Anamnese', erinnerung: 'Terminerinnerung' }[d.typ] || d.typ) + '):\n' + d.extra.map(function (x) { return x.label + ': ' + (x.wert || '-'); }).join('\n') });
     formMark(p, d.typ, 'got');
     if (pdf) {
-      var id = newId(); await fPut(id, pdf.name, pdf);
-      p.dokumente.push({ id: id, ts: Date.now(), name: pdf.name, kat: d.typ === 'aufklaerung' ? 'Aufklärung' : 'Aufnahme und Anamnese', form: d.typ });
+      var id = newId();
+      if (await fPut(id, pdf.name, pdf)) {
+        var pdfRec = { id: id, ts: Date.now(), name: pdf.name, kat: d.typ === 'aufklaerung' ? 'Aufklärung' : 'Aufnahme und Anamnese', form: d.typ };
+        p.dokumente.push(pdfRec); auditFilesAdded(p, [pdfRec], 'Dokumente');
+      }
     }
     okIdx[i] = true;
     out.push(({ anamnese: 'Anamnese', erinnerung: 'Terminerinnerung', aufklaerung: 'Aufklärung' }[d.typ] || 'Anmeldung') + ': ' + nameKey(p) + (created ? ' (neu angelegt)' : '') + (pdf ? ', PDF angehängt' : ', ohne PDF'));
@@ -8549,6 +8574,7 @@ async function egCheck() {
       var b = await readImg(items[i].blob); if (!b) continue; var id = newId();
       if (await fPut(id, items[i].name, b)) added.push({ id: id, ts: base + i, name: items[i].name });
     }
+    auditFilesAdded(p, added, 'Bilder');
     if (added.length === items.length) { p.bilder = (p.bilder || []).concat(added); persist(); await egClear(items.map(function (i) { return i.key; })); close(); viewAkte(p); alert(added.length + (added.length === 1 ? ' Foto' : ' Fotos') + ' gespeichert.'); }
     else { if (added.length) { p.bilder = (p.bilder || []).concat(added); persist(); } await egClear(items.filter(function (it, i) { return i < added.length; }).map(function (i) { return i.key; })); alert('Nicht alle Fotos konnten gespeichert werden. Der Rest bleibt im Eingang.'); close(); }
   };
