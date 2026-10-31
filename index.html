@@ -2192,7 +2192,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-e';
+var KA_V = '2026-11-01-i';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -5361,19 +5361,28 @@ function tlRow(it) {
   sh.row.className += ' tl-' + it.t;
   return sh.row;
 }
+var tlAuditPatient = null, tlAuditVisible = false;
 function renderVerlauf() {
+  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; }
   renderFin(); renderUnterlagen(); renderMedien();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
   events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
   (curP.doku || []).forEach(function (d) { items.push({ k: d.ts, t: 'doku', d: d }); });
   (curP.log || []).forEach(function (l) { if (!(l.type === 'mail' && /^E-Mail-Fenster/.test(l.text))) items.push({ k: l.ts, t: l.type, l: l }); });
-  (curP.audit || []).forEach(function (a) { items.push({ k: a.ts, t: 'audit', a: a }); });
+  if (tlAuditVisible) (curP.audit || []).forEach(function (a) { items.push({ k: a.ts, t: 'audit', a: a }); });
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
   lager.verbrauch.forEach(function (v) { if (v.pid === curP.id) items.push({ k: v.ts, t: 'verbrauch', v: v }); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
   var dkey = function (k) { var d = new Date(k); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
   box.innerHTML = '';
+  var auditFilter = mk('label');
+  auditFilter.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;margin:0 0 10px;cursor:pointer;';
+  var auditCheck = mk('input'); auditCheck.type = 'checkbox'; auditCheck.checked = tlAuditVisible;
+  auditCheck.onchange = function () { tlAuditVisible = auditCheck.checked; renderVerlauf(); };
+  auditFilter.appendChild(auditCheck);
+  auditFilter.appendChild(document.createTextNode('Änderungshistorie anzeigen'));
+  box.appendChild(auditFilter);
   var day = null, card = null;
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
