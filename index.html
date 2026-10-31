@@ -2192,7 +2192,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-j';
+var KA_V = '2026-11-01-k';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'], '-',
   ['settings', 'Praxisdaten', 'openSettings'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'], '-',
@@ -4805,8 +4805,8 @@ function txtTile(key, title, cls, ph) {
 function tileSave(key) {
   var old = curP[key] || '', v = key === 'adresse' ? addrRead('a-adr-') : document.getElementById('a-tile-in').value.trim(), changed = v !== old;
   curP[key] = v;
-  if (changed) auditOne(curP, 'Patientenakte', AUD_LABEL[key] || key, old, v);
-  if (key === 'notizen' && changed && v) logAdd('notiz', v);
+  // Persönliche Notizen bleiben frei editierbar, ohne automatische Historien- oder Verlaufseinträge.
+  if (changed && key !== 'notizen') auditOne(curP, 'Patientenakte', AUD_LABEL[key] || key, old, v);
   tileEdit = ''; persist(); renderHead(); renderVerlauf(); renderPatients();
 }
 function renderHead() {
