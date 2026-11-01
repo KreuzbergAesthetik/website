@@ -84,7 +84,27 @@ for (const marker of ['function alPrepare()', 'async function alActivateEncrypti
 assert.ok(!html.includes('>Sperre entfernen</button>'), 'Sperre darf nicht deaktivierbar sein');
 assert.ok(!html.includes('>Verschlüsselung aufheben</button>'), 'Verschlüsselung darf nicht deaktivierbar sein');
 
-// 11) Manifest und zentrale PWA-Dateien müssen existieren und lesbar sein.
+// 11) Passkey darf nur als zusätzlicher Schlüsselweg arbeiten; Passwort-Fallback bleibt erhalten.
+const dialogs = read('dialoge.js');
+for (const marker of [
+  'navigator.credentials.create',
+  'navigator.credentials.get',
+  'evalByCredential',
+  'async function pkWrapRaw(',
+  'async function pkUnwrapRaw(',
+  'async function pkUnlock(',
+  'async function pkSetup(',
+  'Mit Passkey entsperren',
+  'Passkey einrichten',
+  'Dein Passwort bleibt als Rückfall erhalten'
+]) {
+  assert.ok(dialogs.includes(marker), `Passkey-Invariante fehlt: ${marker}`);
+}
+assert.ok(dialogs.includes("userVerification: 'required'"), 'Passkey muss Benutzerverifikation verlangen');
+assert.ok(dialogs.includes("name: 'AES-GCM'"), 'Passkey-Wrapping muss AES-GCM verwenden');
+assert.ok(html.includes('id="al-pw"'), 'Passwort-Fallback darf nicht entfernt werden');
+
+// 12) Manifest und zentrale PWA-Dateien müssen existieren und lesbar sein.
 JSON.parse(read('manifest.webmanifest'));
 for (const file of ['icon-192.png','icon-512.png','manifest.webmanifest','index.html','sw.js']) {
   assert.ok(fs.existsSync(file), `PWA-Datei fehlt: ${file}`);
