@@ -1,5 +1,6 @@
 name: Bump security UI version
 
+# einmaliger Lauf
 on:
   push:
     branches: [main]
