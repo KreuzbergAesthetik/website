@@ -244,6 +244,18 @@
     wrapped._kaPkPreserve = true; window.alSet = wrapped;
   }
 
+  function pkPatchNavMenu() {
+    if (typeof window.fillNavMenu !== 'function' || window.fillNavMenu._kaSecurity) return;
+    var orig = window.fillNavMenu;
+    var wrapped = function () {
+      var r = orig.apply(this, arguments);
+      addLockMenuItem();
+      return r;
+    };
+    wrapped._kaSecurity = true;
+    window.fillNavMenu = wrapped;
+  }
+
   function lockUiInit() {
     try {
       if (typeof window.alActivateEncryption === 'function' && !window.alActivateEncryption._kaMin30) {
@@ -265,7 +277,7 @@
         sel.value = String(cur);
         if (c2 && +c2.min !== cur) { c2.min = cur; window.alPut(c2); }
       }
-      pkPatchPasswordChange(); pkRefreshUnlockButton(); pkWatchLockScreen();
+      pkPatchPasswordChange(); pkPatchNavMenu(); pkRefreshUnlockButton(); pkWatchLockScreen();
     } catch (x) {}
   }
 

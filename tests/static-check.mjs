@@ -104,6 +104,7 @@ for (const marker of [
   "mediation: 'required'",
   'function pkMaybeAutoUnlock()',
   'function pkWatchLockScreen()',
+  'function pkPatchNavMenu()',
   'visibilitychange'
 ]) {
   assert.ok(dialogs.includes(marker), `Passkey-Invariante fehlt: ${marker}`);
