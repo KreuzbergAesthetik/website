@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
 const base = process.env.APP_URL || 'http://127.0.0.1:4173/index.html';
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}) });
 const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 await context.addInitScript(() => {
   try { localStorage.clear(); } catch {}

@@ -8,6 +8,6 @@
   },
   "scripts": {
     "test:static": "node tests/static-check.mjs",
-    "test:browser": "node tests/browser-smoke.mjs"
+    "test:browser": "node tests/browser-smoke.mjs && node tests/layout-smoke.mjs"
   }
 }
