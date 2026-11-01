@@ -244,9 +244,9 @@
 
   function addLockMenuItem() {
     var box = document.getElementById('nav-menu');
-    if (!box || box.querySelector('[data-ka-lock]')) return;
+    if (!box || box.querySelector('[data-ka-security-root]')) return;
     var ver = box.querySelector('.nav-ver');
-    var h = document.createElement('div'); h.className = 'nav-group'; h.textContent = 'Sicherheit'; h.setAttribute('data-ka-lock', '1');
+    var h = document.createElement('div'); h.className = 'nav-group'; h.textContent = 'Sicherheit'; h.setAttribute('data-ka-lock', '1'); h.setAttribute('data-ka-security-root', '1');
     var c = typeof window.alGet === 'function' ? window.alGet() : null;
     var pk = document.createElement('button'); pk.type = 'button'; pk.textContent = c && c.pk ? 'Passkey ersetzen' : 'Passkey einrichten'; pk.setAttribute('data-ka-lock', '1');
     pk.onclick = function () { box.style.display = 'none'; pkSetup(); };
@@ -261,13 +261,23 @@
     add(h); add(pk); if (rm) add(rm); add(b);
   }
 
+  function watchSecurityMenu() {
+    var box = document.getElementById('nav-menu');
+    if (!box) return;
+    addLockMenuItem();
+    if (!box._kaSecurityObserver && window.MutationObserver) {
+      var ob = new MutationObserver(function () {
+        if (!box.querySelector('[data-ka-security-root]')) setTimeout(addLockMenuItem, 0);
+      });
+      ob.observe(box, { childList: true });
+      box._kaSecurityObserver = ob;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     lockUiInit();
     setTimeout(lockUiInit, 1000);
-  });
-  document.addEventListener('click', function (ev) {
-    var t = ev.target && ev.target.closest ? ev.target.closest('#btn-praxis') : null;
-    if (t) setTimeout(addLockMenuItem, 0);
+    setTimeout(watchSecurityMenu, 0);
   });
 
   window.pkSetup = pkSetup;

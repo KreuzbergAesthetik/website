@@ -49,9 +49,11 @@ try {
       .every(id => !!document.getElementById(id));
     out.paymentsNotPinned = !document.getElementById('btn-zahlungen');
     fillNavMenu();
+    await new Promise(resolve => setTimeout(resolve, 0));
     const menuText = document.getElementById('nav-menu').innerText;
-    out.menuGroups = ['Finanzen','Praxis','Kommunikation & Vorlagen','Daten & Technik','Geplant']
+    out.menuGroups = ['Finanzen','Praxis','Kommunikation & Vorlagen','Daten & Technik','Geplant','Sicherheit']
       .every(t => menuText.includes(t));
+    out.securityMenu = menuText.includes('Passkey einrichten') && menuText.includes('App sperren');
 
     // Hauptseiten müssen ohne Ausnahme umschaltbar sein.
     let tabsOk = true;

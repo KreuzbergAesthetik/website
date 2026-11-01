@@ -83,6 +83,10 @@ for (const marker of ['function alPrepare()', 'async function alActivateEncrypti
 }
 assert.ok(!html.includes('>Sperre entfernen</button>'), 'Sperre darf nicht deaktivierbar sein');
 assert.ok(!html.includes('>Verschlüsselung aufheben</button>'), 'Verschlüsselung darf nicht deaktivierbar sein');
+const dialoge = read('dialoge.js');
+for (const marker of ['Passkey einrichten', 'data-ka-security-root', 'MutationObserver', 'watchSecurityMenu']) {
+  assert.ok(dialoge.includes(marker), `Passkey-Menü-Invariante fehlt: ${marker}`);
+}
 
 // 11) Passkey darf nur als zusätzlicher Schlüsselweg arbeiten; Passwort-Fallback bleibt erhalten.
 const dialogs = read('dialoge.js');
