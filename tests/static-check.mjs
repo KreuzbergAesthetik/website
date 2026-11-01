@@ -114,6 +114,10 @@ for (const marker of [
 assert.ok(dialogs.includes("userVerification: 'required'"), 'Passkey muss Benutzerverifikation verlangen');
 assert.ok(dialogs.includes("name: 'AES-GCM'"), 'Passkey-Wrapping muss AES-GCM verwenden');
 assert.ok(html.includes('id="al-pw"'), 'Passwort-Fallback darf nicht entfernt werden');
+const earlyPk = html.indexOf('if (window.pkMaybeAutoUnlock) window.pkMaybeAutoUnlock()');
+const mainBlock = html.indexOf('<script type="text/plain" id="ka-main">');
+assert.ok(earlyPk >= 0 && mainBlock >= 0 && earlyPk < mainBlock, 'Passkey muss vor dem großen App-Hauptblock gestartet werden');
+assert.ok(!dialogs.includes('}, 60);'), 'Passkey-Autostart darf keinen künstlichen 60-ms-Timer mehr haben');
 
 // 12) Manifest und zentrale PWA-Dateien müssen existieren und lesbar sein.
 JSON.parse(read('manifest.webmanifest'));

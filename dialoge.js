@@ -209,9 +209,7 @@
     var c = typeof window.alGet === 'function' ? window.alGet() : null;
     if (!c || !c.pk || !pkSupported()) return;
     pkAutoAttempted = true; pkAutoBusy = true;
-    setTimeout(function () {
-      Promise.resolve(window.pkUnlock ? window.pkUnlock() : pkUnlock()).catch(function () {}).finally(function () { pkAutoBusy = false; });
-    }, 60);
+    Promise.resolve(window.pkUnlock ? window.pkUnlock() : pkUnlock()).catch(function () {}).finally(function () { pkAutoBusy = false; });
   }
   function pkWatchLockScreen() {
     var root = document.documentElement;
