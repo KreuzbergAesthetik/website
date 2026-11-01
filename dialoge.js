@@ -14,7 +14,8 @@
     '.ka-dlg-msg { font-size:15px; color:#334155; line-height:1.45; white-space:pre-line; margin-bottom:14px; max-height:50vh; overflow:auto; }' +
     '.ka-dlg-box input { width:100%; margin-bottom:14px; }' +
     '.ka-dlg-foot { display:flex; justify-content:flex-end; gap:8px; }' +
-    '.ka-dlg-foot .btn-danger { background:#fff; color:#b91c1c; border:1px solid #dc2626; }';
+    '.ka-dlg-foot .btn-danger { background:#fff; color:#b91c1c; border:1px solid #dc2626; }' +
+    '#al-btn { display:none !important; }';
   document.head.appendChild(css);
 
   var WARN = /nicht|kein|fehl|bitte|ungültig|Fehler|konnte|stimmt|zu groß|Zu viele|Offline|Verbindung|gibt es schon/i;
@@ -56,6 +57,49 @@
       setTimeout(function () { if (inp) { inp.focus(); inp.select(); } else ok.focus(); }, 30);
     });
   }
+
+  function lockUiInit() {
+    try {
+      if (typeof window.alActivateEncryption === 'function' && !window.alActivateEncryption._kaMin30) {
+        var origActivate = window.alActivateEncryption;
+        var wrappedActivate = async function (pw, min) { return origActivate(pw, Math.max(30, Number(min) || 30)); };
+        wrappedActivate._kaMin30 = true;
+        window.alActivateEncryption = wrappedActivate;
+      }
+      if (typeof window.alGet === 'function' && typeof window.alPut === 'function') {
+        var c = window.alGet();
+        if (c && (!(+c.min >= 30))) { c.min = 30; window.alPut(c); }
+      }
+      var sel = document.getElementById('al-min');
+      if (sel) {
+        var c2 = typeof window.alGet === 'function' ? window.alGet() : null;
+        var cur = c2 && +c2.min >= 30 ? +c2.min : 30;
+        sel.innerHTML = '<option value="30">Nach 30 Minuten</option><option value="60">Nach 60 Minuten</option><option value="120">Nach 2 Stunden</option>';
+        if ([30, 60, 120].indexOf(cur) < 0) cur = cur > 120 ? 120 : 30;
+        sel.value = String(cur);
+        if (c2 && +c2.min !== cur) { c2.min = cur; window.alPut(c2); }
+      }
+    } catch (x) {}
+  }
+
+  function addLockMenuItem() {
+    var box = document.getElementById('nav-menu');
+    if (!box || box.querySelector('[data-ka-lock]')) return;
+    var ver = box.querySelector('.nav-ver');
+    var h = document.createElement('div'); h.className = 'nav-group'; h.textContent = 'Sicherheit'; h.setAttribute('data-ka-lock', '1');
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = 'App sperren'; b.setAttribute('data-ka-lock', '1');
+    b.onclick = function () { box.style.display = 'none'; if (typeof window.alLockNow === 'function') window.alLockNow(); };
+    if (ver) { box.insertBefore(h, ver); box.insertBefore(b, ver); } else { box.appendChild(h); box.appendChild(b); }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    lockUiInit();
+    setTimeout(lockUiInit, 1000);
+  });
+  document.addEventListener('click', function (ev) {
+    var t = ev.target && ev.target.closest ? ev.target.closest('#btn-praxis') : null;
+    if (t) setTimeout(addLockMenuItem, 0);
+  });
 
   window.alert = toast;
   window.kaToast = toast;
