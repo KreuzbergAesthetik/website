@@ -244,6 +244,21 @@
     wrapped._kaPkPreserve = true; window.alSet = wrapped;
   }
 
+  function pkPatchBoot() {
+    if (typeof window.kaBoot !== 'function' || window.kaBoot._kaPasskeyBoot) return;
+    var orig = window.kaBoot;
+    var wrapped = function () {
+      var r = orig.apply(this, arguments);
+      pkPatchNavMenu();
+      watchSecurityMenu();
+      pkRefreshUnlockButton();
+      pkMaybeAutoUnlock();
+      return r;
+    };
+    wrapped._kaPasskeyBoot = true;
+    window.kaBoot = wrapped;
+  }
+
   function pkPatchNavMenu() {
     if (typeof window.fillNavMenu !== 'function' || window.fillNavMenu._kaSecurity) return;
     var orig = window.fillNavMenu;
@@ -277,7 +292,7 @@
         sel.value = String(cur);
         if (c2 && +c2.min !== cur) { c2.min = cur; window.alPut(c2); }
       }
-      pkPatchPasswordChange(); pkPatchNavMenu(); pkRefreshUnlockButton(); pkWatchLockScreen();
+      pkPatchPasswordChange(); pkPatchBoot(); pkPatchNavMenu(); pkRefreshUnlockButton(); pkWatchLockScreen();
     } catch (x) {}
   }
 
@@ -301,15 +316,26 @@
   }
 
   function watchSecurityMenu() {
-    var box = document.getElementById('nav-menu');
-    if (!box) return;
-    addLockMenuItem();
-    if (!box._kaSecurityObserver && window.MutationObserver) {
-      var ob = new MutationObserver(function () {
-        if (!box.querySelector('[data-ka-security-root]')) setTimeout(addLockMenuItem, 0);
+    var ensure = function () {
+      var box = document.getElementById('nav-menu');
+      if (!box) return false;
+      addLockMenuItem();
+      if (!box._kaSecurityObserver && window.MutationObserver) {
+        var ob = new MutationObserver(function () {
+          if (!box.querySelector('[data-ka-security-root]')) addLockMenuItem();
+        });
+        ob.observe(box, { childList: true });
+        box._kaSecurityObserver = ob;
+      }
+      return true;
+    };
+    if (ensure()) return;
+    if (!document.documentElement._kaSecurityHostObserver && window.MutationObserver) {
+      var hostOb = new MutationObserver(function () {
+        if (ensure()) { hostOb.disconnect(); document.documentElement._kaSecurityHostObserver = null; }
       });
-      ob.observe(box, { childList: true });
-      box._kaSecurityObserver = ob;
+      hostOb.observe(document.documentElement, { childList: true, subtree: true });
+      document.documentElement._kaSecurityHostObserver = hostOb;
     }
   }
 

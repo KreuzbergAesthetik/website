@@ -105,6 +105,8 @@ for (const marker of [
   'function pkMaybeAutoUnlock()',
   'function pkWatchLockScreen()',
   'function pkPatchNavMenu()',
+  'function pkPatchBoot()',
+  '_kaSecurityHostObserver',
   'visibilitychange'
 ]) {
   assert.ok(dialogs.includes(marker), `Passkey-Invariante fehlt: ${marker}`);
