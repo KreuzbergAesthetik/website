@@ -298,19 +298,23 @@
     var box = document.getElementById('nav-menu');
     if (!box || box.querySelector('[data-ka-security-root]')) return;
     var ver = box.querySelector('.nav-ver');
-    var h = document.createElement('div'); h.className = 'nav-group'; h.textContent = 'Sicherheit'; h.setAttribute('data-ka-lock', '1'); h.setAttribute('data-ka-security-root', '1');
-    var c = typeof window.alGet === 'function' ? window.alGet() : null;
-    var pk = document.createElement('button'); pk.type = 'button'; pk.textContent = c && c.pk ? 'Passkey ersetzen' : 'Passkey einrichten'; pk.setAttribute('data-ka-lock', '1');
-    pk.onclick = function () { box.style.display = 'none'; pkSetup(); };
-    var rm = null;
-    if (c && c.pk) {
-      rm = document.createElement('button'); rm.type = 'button'; rm.textContent = 'Passkey entfernen'; rm.setAttribute('data-ka-lock', '1');
-      rm.onclick = function () { box.style.display = 'none'; pkRemove(); };
+    var sec = document.createElement('details'); sec.className = 'nav-section'; sec.setAttribute('data-ka-lock', '1'); sec.setAttribute('data-ka-security-root', '1');
+    var h = document.createElement('summary'); h.className = 'nav-group'; h.textContent = 'Sicherheit'; sec.appendChild(h);
+    var items = document.createElement('div'); items.className = 'nav-items'; sec.appendChild(items);
+    sec.open = !(window.navGroupOpen && window.navGroupOpen['Sicherheit'] === false);
+    sec.addEventListener('toggle', function () { if (window.navGroupOpen) window.navGroupOpen['Sicherheit'] = sec.open; });
+    var KEY = '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3"/>', LOCK = '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>';
+    function item(label, icon, fn) {
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-ka-lock', '1');
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + icon + '</svg><span></span>'; b.lastChild.textContent = label;
+      b.onclick = function () { box.style.display = 'none'; fn(); };
+      items.appendChild(b); return b;
     }
-    var b = document.createElement('button'); b.type = 'button'; b.textContent = 'App sperren'; b.setAttribute('data-ka-lock', '1');
-    b.onclick = function () { box.style.display = 'none'; if (typeof window.alLockNow === 'function') window.alLockNow(); };
-    var add = function (n) { if (ver) box.insertBefore(n, ver); else box.appendChild(n); };
-    add(h); add(pk); if (rm) add(rm); add(b);
+    var c = typeof window.alGet === 'function' ? window.alGet() : null;
+    item(c && c.pk ? 'Passkey ersetzen' : 'Passkey einrichten', KEY, function () { pkSetup(); });
+    if (c && c.pk) item('Passkey entfernen', KEY, function () { pkRemove(); });
+    item('App sperren', LOCK, function () { if (typeof window.alLockNow === 'function') window.alLockNow(); });
+    if (ver) box.insertBefore(sec, ver); else box.appendChild(sec);
   }
 
   function watchSecurityMenu() {

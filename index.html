@@ -809,6 +809,7 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 .inv-a.a-kv{color:#73551c!important}
 #inv-table tr.t-kv td{background:#fffcf3}
 .nav-menu{width:min(340px,calc(100vw - 16px))}
+.nav-menu{grid-template-columns:1fr}
 .nav-section{border-bottom:1px solid #e2e8f0;padding:3px 0}
 .nav-section>.nav-group{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;min-height:43px;padding:10px;font-size:12px;color:#334155}
 .nav-section>.nav-group::-webkit-details-marker{display:none}
@@ -816,6 +817,23 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 .nav-section[open]>.nav-group:after{transform:none}
 .nav-section>button{padding:10px 15px;font-size:14px}
 .nav-section button[aria-current="page"]{background:#eef3fa;color:#012265;font-weight:600}
+.nav-section>.nav-group{min-height:48px}
+.nav-items>button{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;font-size:15px;line-height:1.2}
+.nav-items>button svg{width:22px;height:22px;flex:none;fill:none;stroke:#1e3a8a;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-items>button:disabled svg{stroke:#94a3b8}
+@media (max-width:760px), (orientation:landscape) and (max-height:600px) and (pointer:coarse){
+ .nav-items{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:2px 2px 8px}
+ .nav-items>button{flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;min-height:78px;padding:0 12px;border:1px solid #c3cedf;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.08);font-size:14px;font-weight:600}
+ .nav-items>button svg{width:24px;height:24px}
+ .nav-items>button[aria-current="page"]{border-color:#1e3a8a;background:#eef2ff}
+ .nav-items>button:disabled{opacity:.55}
+}
+/* Handy quer: Kategorien stehen nebeneinander */
+@media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
+ .nav-menu{width:min(940px,calc(100vw - 16px));grid-template-columns:repeat(auto-fit,minmax(280px,1fr));column-gap:12px;align-items:start}
+ .nav-menu .nav-ver{grid-column:1/-1}
+}
+}
 .settings-section{border:1px solid #d6deea;border-radius:12px;margin:0 0 12px;background:#fff;overflow:hidden}
 .settings-section>summary{padding:15px 16px;cursor:pointer;font-size:15px;font-weight:600;color:#334155}
 .settings-section[open]>summary{border-bottom:1px solid #e2e8f0;background:#f8fafc}
@@ -2310,7 +2328,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-zb';
+var KA_V = '2026-11-01-zc';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -2339,9 +2357,26 @@ function navFit() {
   nav.classList.remove('nav-meas');
   var cur = document.querySelector('.tab-content.active'); if (cur) { var id = cur.id.replace(/^tab-/, ''), nb = document.getElementById('btn-' + id), vis = nb && nb.style.display !== 'none'; [].forEach.call(nav.querySelectorAll('.nav-btn'), function (b) { b.classList.remove('active'); }); var t = vis ? nb : (PRAXIS_TABS.indexOf(id) >= 0 ? more : null); if (t) t.classList.add('active'); }
 }
-var navGroupOpen = { 'Finanzen': true };
+var NAV_ICON = {
+  rechnungen: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/>',
+  zahlungen: '<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+  statistik: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  lager: '<path d="M3 8l9-5 9 5v10l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v10"/>',
+  leistungen: '<path d="M5 4h14v16H5zM9 9h6M9 13h6"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+  webformulare: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8"/>',
+  dokumente: '<path d="M6 3h9l4 4v14H6z"/>',
+  nachrichten: '<path d="M4 5h16v11H9l-5 4z"/>',
+  textbausteine: '<path d="M5 6h14M5 12h14M5 18h9"/>',
+  abgleich: '<path d="M20 8a8 8 0 00-14-2M4 4v4h4M4 16a8 8 0 0014 2M20 20v-4h-4"/>',
+  sicherung: '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>',
+  _: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/>'
+};
+function navIcon(id) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (NAV_ICON[id] || NAV_ICON._) + '</svg>'; }
+var navGroupOpen = { 'Finanzen': true }, navGroupInit = false;
 function fillNavMenu() {
   var box = document.getElementById('nav-menu'); box.innerHTML = ''; var group = null;
+  if (!navGroupInit) { navGroupInit = true; if (window.matchMedia('(max-width:760px), (orientation:landscape) and (max-height:600px) and (pointer:coarse)').matches) PRAXIS_NAV.forEach(function (g) { if (g[0] === '#') navGroupOpen[g[1]] = true; }); }   /* Handy: alle Kacheln gleich sichtbar */
   var cur = document.querySelector('.tab-content.active'), active = cur ? cur.id.replace(/^tab-/, '') : '';
   PRAXIS_NAV.forEach(function (x) {
     if (x === '-') return;
@@ -2350,13 +2385,15 @@ function fillNavMenu() {
       var h = document.createElement('summary'); h.className = 'nav-group'; h.textContent = x[1]; group.appendChild(h);
       var title = x[1]; group.open = !!navGroupOpen[title];
       group.addEventListener('toggle', function () { navGroupOpen[title] = groupForTitle(title).open; });
+      var items = document.createElement('div'); items.className = 'nav-items'; group.appendChild(items); group._items = items;
       box.appendChild(group); return;
     }
     var vb = x[0] && document.getElementById('btn-' + x[0]); if (vb && vb.classList.contains('nav-x') && vb.style.display !== 'none') return;
     var b = document.createElement('button'); b.type = 'button';
-    if (x[0]) { b.textContent = x[1]; b.onclick = function () { navGo(x[0]); }; if (x[0] === active) { b.setAttribute('aria-current','page'); if (group) group.open = true; } }
-    else { b.disabled = true; b.textContent = x[1] + ' (geplant)'; }
-    (group || box).appendChild(b);
+    b.innerHTML = navIcon(x[0]) + '<span></span>'; var lab = b.lastChild;
+    if (x[0]) { lab.textContent = x[1]; b.onclick = function () { navGo(x[0]); }; if (x[0] === active) { b.setAttribute('aria-current','page'); if (group) group.open = true; } }
+    else { b.disabled = true; lab.textContent = x[1] + ' (geplant)'; }
+    (group ? group._items : box).appendChild(b);
   });
   function groupForTitle(title) { return [].filter.call(box.querySelectorAll('.nav-section'), function (g) { return g.firstElementChild.textContent === title; })[0] || {open:false}; }
   var vf = document.createElement('div'); vf.className = 'nav-ver'; vf.textContent = kaVersion(); box.appendChild(vf);
@@ -2396,7 +2433,7 @@ function toggleNavMenu(ev) {
   ev.stopPropagation(); var m = document.getElementById('nav-menu');
   if (m.style.display !== 'none') { m.style.display = 'none'; return; }
   fillNavMenu();
-  var r = ev.currentTarget.getBoundingClientRect(); m.style.display = 'block';
+  var r = ev.currentTarget.getBoundingClientRect(); m.style.display = 'grid';
   m.style.top = (r.bottom + 4) + 'px'; m.style.maxHeight = Math.max(120, window.innerHeight - r.bottom - 12) + 'px'; m.scrollTop = 0; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
