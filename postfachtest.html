@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Postfach-Test Kreuzberg Ästhetik</title>
+<link rel="stylesheet" href="forms.css">
+</head>
+<body>
+<div class="top"><img src="icon-192.png" alt="Kreuzberg Ästhetik"></div>
+<div class="wrap" id="formbox">
+  <h1>Postfach-Test</h1>
+  <div class="card">
+    <p>Sendet eine Probe-Anmeldung mit erfundenen Daten (Probe Postfachtest) auf dem normalen Weg an das Postfach. Danach in der Praxis-App auf „Abrufen“ tippen.</p>
+    <p style="font-size:13px;color:#64748b">Nur zum Testen. Die Probe-Akte danach in der App wieder löschen.</p>
+  </div>
+  <div id="res" class="msg" style="display:none"></div>
+  <div class="actions"><button type="button" class="btn primary" id="go">Senden</button></div>
+</div>
+<script src="forms.js"></script>
+<script>
+function show(txt, ok) { var r = $('res'); r.textContent = txt; r.className = 'msg ' + (ok ? 'ok' : 'err'); r.style.display = 'block'; }
+$('go').addEventListener('click', async function () {
+  var go = $('go'); go.disabled = true; go.textContent = 'Wird gesendet …'; $('res').style.display = 'none';
+  try {
+    var key = await praxisKey();
+    if (!key) { show('Der Server hat keinen öffentlichen Schlüssel. Die Anmeldung würde nicht ins Postfach gehen, sondern per E-Mail. Daher nicht gesendet. In der App: Praxis, Geräte-Abgleich einrichten bzw. Abrufen tippen, dann erneut versuchen.', false); return; }
+    var jetzt = new Date(), stamp = pad2(jetzt.getHours()) + ':' + pad2(jetzt.getMinutes()) + ':' + pad2(jetzt.getSeconds());
+    var d = { geschlecht: 'Divers', titel: '', vorname: 'Probe', nachname: 'Postfachtest', dob: '01.01.1990', strasse: 'Teststraße', nr: '1', plz: '10999', stadt: 'Berlin', phone: '+4930000000', email: 'probe@example.invalid', notfall: 'Test ' + stamp, quelle: 'Sonstiges', extra: [] };
+    var data = { format: 'ka-formular', version: 1, typ: 'anmeldung', erstellt: jetzt.toISOString(), patient: { anrede: d.geschlecht, titel: d.titel, vorname: d.vorname, nachname: d.nachname, dob: d.dob, strasse: d.strasse, nr: d.nr, plz: d.plz, stadt: d.stadt, phone: d.phone, email: d.email, notfall: d.notfall }, angaben: { quelle: d.quelle }, extra: d.extra };
+    var P = await newPdf('Patientenanmeldung (Probe)', d.nachname + ', ' + d.vorname);
+    P.text('PROBE MIT ERFUNDENEN DATEN', { size: 12, bold: true, gap: 6 });
+    P.text('Name: ' + d.vorname + ' ' + d.nachname + '\nGeburtsdatum: ' + d.dob + '\nGesendet: ' + stamp, { size: 10.5 });
+    var pdf = await P.finish(data);
+    await deliver('anmeldung', 'Patientenanmeldung_Probe', d.nachname + '_' + d.vorname, data, pdf, '');
+    show('Gesendet um ' + stamp + '. Der Server hat das Paket angenommen. Jetzt in der Praxis-App „Abrufen“ tippen.', true);
+  } catch (x) { show(x && x.message ? x.message : 'Senden hat nicht geklappt.', false); }
+  finally { go.disabled = false; go.textContent = 'Senden'; }
+});
+</script>
+</body>
+</html>
