@@ -54,6 +54,7 @@ try {
     out.menuGroups = ['Finanzen','Praxis','Kommunikation & Vorlagen','Daten & Technik','Geplant','Sicherheit']
       .every(t => menuText.includes(t));
     out.securityMenu = menuText.includes('Passkey einrichten') && menuText.includes('App sperren');
+    out.passkeyAutoApi = typeof window.pkMaybeAutoUnlock === 'function';
 
     // Hauptseiten müssen ohne Ausnahme umschaltbar sein.
     let tabsOk = true;

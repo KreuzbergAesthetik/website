@@ -100,7 +100,11 @@ for (const marker of [
   'async function pkSetup(',
   'Mit Passkey entsperren',
   'Passkey einrichten',
-  'Dein Passwort bleibt als Rückfall erhalten'
+  'Dein Passwort bleibt als Rückfall erhalten',
+  "mediation: 'required'",
+  'function pkMaybeAutoUnlock()',
+  'function pkWatchLockScreen()',
+  'visibilitychange'
 ]) {
   assert.ok(dialogs.includes(marker), `Passkey-Invariante fehlt: ${marker}`);
 }

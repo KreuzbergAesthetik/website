@@ -94,7 +94,7 @@
     var cred = await navigator.credentials.get({ publicKey: {
       challenge: pkRand(32), allowCredentials: [allow], userVerification: 'required', timeout: 60000,
       extensions: { prf: { evalByCredential: by } }
-    } });
+    }, mediation: 'required' });
     var ext = cred && cred.getClientExtensionResults ? cred.getClientExtensionResults() : {};
     var first = ext && ext.prf && ext.prf.results && ext.prf.results.first;
     if (!first) throw new Error('Dieser Passkey unterstützt die benötigte Schlüsselableitung nicht.');
@@ -200,6 +200,33 @@
     var c = typeof window.alGet === 'function' ? window.alGet() : null;
     b.hidden = !(c && c.pk && pkSupported());
   }
+  var pkAutoBusy = false, pkAutoAttempted = false, pkAutoWasLocked = false;
+  function pkMaybeAutoUnlock() {
+    var locked = document.documentElement.classList.contains('locked');
+    if (!locked) { pkAutoWasLocked = false; pkAutoAttempted = false; return; }
+    if (!pkAutoWasLocked) { pkAutoWasLocked = true; pkAutoAttempted = false; }
+    if (pkAutoBusy || pkAutoAttempted || document.visibilityState === 'hidden') return;
+    var c = typeof window.alGet === 'function' ? window.alGet() : null;
+    if (!c || !c.pk || !pkSupported()) return;
+    pkAutoAttempted = true; pkAutoBusy = true;
+    setTimeout(function () {
+      Promise.resolve(window.pkUnlock ? window.pkUnlock() : pkUnlock()).catch(function () {}).finally(function () { pkAutoBusy = false; });
+    }, 60);
+  }
+  function pkWatchLockScreen() {
+    var root = document.documentElement;
+    if (!root._kaPkLockObserver && window.MutationObserver) {
+      var ob = new MutationObserver(function () { pkMaybeAutoUnlock(); });
+      ob.observe(root, { attributes: true, attributeFilter: ['class'] });
+      root._kaPkLockObserver = ob;
+    }
+    if (!document._kaPkVisibilityBound) {
+      document.addEventListener('visibilitychange', function () { if (document.visibilityState !== 'hidden') pkMaybeAutoUnlock(); });
+      document._kaPkVisibilityBound = true;
+    }
+    pkMaybeAutoUnlock();
+  }
+
   function pkPatchPasswordChange() {
     if (typeof window.alSet !== 'function' || window.alSet._kaPkPreserve) return;
     var orig = window.alSet;
@@ -238,7 +265,7 @@
         sel.value = String(cur);
         if (c2 && +c2.min !== cur) { c2.min = cur; window.alPut(c2); }
       }
-      pkPatchPasswordChange(); pkRefreshUnlockButton();
+      pkPatchPasswordChange(); pkRefreshUnlockButton(); pkWatchLockScreen();
     } catch (x) {}
   }
 
@@ -282,6 +309,7 @@
 
   window.pkSetup = pkSetup;
   window.pkUnlock = pkUnlock;
+  window.pkMaybeAutoUnlock = pkMaybeAutoUnlock;
   window.pkRemove = pkRemove;
   window.pkWrapRaw = pkWrapRaw;
   window.pkUnwrapRaw = pkUnwrapRaw;
