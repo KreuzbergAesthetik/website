@@ -821,13 +821,6 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 .nav-items>button{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;font-size:15px;line-height:1.2}
 .nav-items>button svg{width:22px;height:22px;flex:none;fill:none;stroke:#1e3a8a;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nav-items>button:disabled svg{stroke:#94a3b8}
-@media (max-width:760px), (orientation:landscape) and (max-height:600px) and (pointer:coarse){
- .nav-items{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:2px 2px 8px}
- .nav-items>button{flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;min-height:78px;padding:0 12px;border:1px solid #c3cedf;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.08);font-size:14px;font-weight:600}
- .nav-items>button svg{width:24px;height:24px}
- .nav-items>button[aria-current="page"]{border-color:#1e3a8a;background:#eef2ff}
- .nav-items>button:disabled{opacity:.55}
-}
 /* Handy quer: Kategorien stehen nebeneinander */
 @media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
  .nav-menu{width:min(940px,calc(100vw - 16px));grid-template-columns:repeat(auto-fit,minmax(280px,1fr));column-gap:12px;align-items:start}
@@ -2328,7 +2321,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-zc';
+var KA_V = '2026-11-01-zd';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -2376,7 +2369,7 @@ function navIcon(id) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (
 var navGroupOpen = { 'Finanzen': true }, navGroupInit = false;
 function fillNavMenu() {
   var box = document.getElementById('nav-menu'); box.innerHTML = ''; var group = null;
-  if (!navGroupInit) { navGroupInit = true; if (window.matchMedia('(max-width:760px), (orientation:landscape) and (max-height:600px) and (pointer:coarse)').matches) PRAXIS_NAV.forEach(function (g) { if (g[0] === '#') navGroupOpen[g[1]] = true; }); }   /* Handy: alle Kacheln gleich sichtbar */
+  if (!navGroupInit) { navGroupInit = true; if (window.matchMedia('(orientation:landscape) and (max-height:600px) and (pointer:coarse)').matches) PRAXIS_NAV.forEach(function (g) { if (g[0] === '#') navGroupOpen[g[1]] = true; }); }   /* Handy quer: alle Kategorien gleich sichtbar */
   var cur = document.querySelector('.tab-content.active'), active = cur ? cur.id.replace(/^tab-/, '') : '';
   PRAXIS_NAV.forEach(function (x) {
     if (x === '-') return;
