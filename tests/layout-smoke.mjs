@@ -39,7 +39,7 @@ try {
     viewInvoice(test.id);await deleteInvoice();window.kaConfirm=oldConfirm;
     out.deleteTest=!entw.some(e=>e.id===test.id) && invoices.length===2;
     fillNavMenu();out.menuGroups=document.querySelectorAll('#nav-menu .nav-section').length===5;
-    out.settingsGroups=document.querySelectorAll('#tab-settings .settings-section').length===4;
+    out.settingsGroups=document.querySelectorAll('#tab-settings .settings-section').length===5;
     openInvoice(p);invDocumentChanged('kv');out.kindSwitch=invMode==='kv' && document.getElementById('inv-title').textContent.includes('Kostenvoranschlag');
     closeModal('modal-inv');
     return out;

@@ -1342,7 +1342,10 @@ function kaStart() {
     <div class="form-group"><label>Adresse von sendmail.php</label><input type="text" id="s-mailurl" class="form-control" placeholder="https://www.kreuzberg-aesthetik.de/app/sendmail.php" autocomplete="off"></div>
     <div class="form-group"><label>Zugangscode</label><input type="password" id="s-mailtoken" class="form-control" autocomplete="off"></div>
     <div style="font-size:12px; color:#64748b; margin-top:6px;">Die Leistungen mit Preisen pflegst Du jetzt im Reiter Leistungen.</div>
-      </div></details><details class="settings-section"><summary>Namensdarstellung</summary><div class="settings-content">
+      </div></details><details class="settings-section"><summary>Terminerinnerung</summary><div class="settings-content">
+    <div class="form-group" style="max-width:220px"><label>Erinnerung fällig ab (Tage vor dem Termin)</label><input type="text" id="s-remdays" class="form-control" inputmode="numeric" placeholder="2"></div>
+    <div style="font-size:12px; color:#64748b;">Leer lassen = 2 Tage. 0 = erst am Tag des Termins.</div>
+    </div></details><details class="settings-section"><summary>Namensdarstellung</summary><div class="settings-content">
       <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Akademische Titel stehen im eigenen Feld „Titel“, nicht mehr im Namen. Falls die Umstellung etwas durcheinandergebracht hat, kannst Du sie hier zurücknehmen.</div>
       <button type="button" class="btn btn-cancel" onclick="titelRueckgaengig()">Umstellung rückgängig machen</button>
       </div></details><div class="foot-bar"><button type="button" class="btn btn-save" id="s-save" onclick="saveSettings()">Speichern</button></div>
@@ -2307,7 +2310,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-z';
+var KA_V = '2026-11-01-za';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3771,12 +3774,15 @@ async function deleteLeist() {
 function openSettings() {
   var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-ustva': 'ustva', 's-ziel': 'zahlungsziel', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { document.getElementById(id).value = settings[m[id]] || ''; });
+  document.getElementById('s-remdays').value = settings.remDays == null ? '' : settings.remDays;
   if (!settings.ustva) document.getElementById('s-ustva').value = 'quartal'; if (!settings.zahlungsziel) document.getElementById('s-ziel').value = '14';
   alUi();
 }
 function saveSettings() {
   var m = { 's-steuernr': 'steuernr', 's-ustid': 'ustid', 's-inhaber': 'inhaber', 's-bank': 'bank', 's-bic': 'bic', 's-iban': 'iban', 's-paypal': 'paypal', 's-hinweis': 'hinweis', 's-zahlung': 'zahlung', 's-ustva': 'ustva', 's-ziel': 'zahlungsziel', 's-mailurl': 'mailUrl', 's-mailtoken': 'mailToken' };
   Object.keys(m).forEach(function (id) { settings[m[id]] = document.getElementById(id).value.trim(); });
+  var rd = document.getElementById('s-remdays').value.trim();
+  if (/^\d{1,2}$/.test(rd)) settings.remDays = Math.min(30, +rd); else delete settings.remDays;
   persist(); refreshLeistungen();
   var sb = document.getElementById('s-save'); if (sb) { sb.textContent = 'Gespeichert ✓'; setTimeout(function () { sb.textContent = 'Speichern'; }, 1800); }
 }
