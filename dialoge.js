@@ -299,6 +299,7 @@
     if (!box || box.querySelector('[data-ka-security-root]')) return;
     var ver = box.querySelector('.nav-ver');
     var sec = document.createElement('details'); sec.className = 'nav-section'; sec.setAttribute('data-ka-lock', '1'); sec.setAttribute('data-ka-security-root', '1');
+    sec.dataset.ni = 100;
     var h = document.createElement('summary'); h.className = 'nav-group'; h.textContent = 'Sicherheit'; sec.appendChild(h);
     var items = document.createElement('div'); items.className = 'nav-items'; sec.appendChild(items);
     sec.open = !(window.navGroupOpen && window.navGroupOpen['Sicherheit'] === false);
@@ -315,6 +316,7 @@
     if (c && c.pk) item('Passkey entfernen', KEY, function () { pkRemove(); });
     item('App sperren', LOCK, function () { if (typeof window.alLockNow === 'function') window.alLockNow(); });
     if (ver) box.insertBefore(sec, ver); else box.appendChild(sec);
+    if (typeof window.navLayout === 'function') window.navLayout();
   }
 
   function watchSecurityMenu() {

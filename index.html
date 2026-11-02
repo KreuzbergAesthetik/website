@@ -823,8 +823,9 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 .nav-items>button:disabled svg{stroke:#94a3b8}
 /* Handy quer: Kategorien stehen nebeneinander */
 @media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
- .nav-menu{width:min(940px,calc(100vw - 16px));grid-template-columns:repeat(auto-fit,minmax(280px,1fr));column-gap:12px;align-items:start}
- .nav-menu .nav-ver{grid-column:1/-1}
+ .nav-menu{width:min(940px,calc(100vw - 16px))}
+ .nav-cols{display:flex;gap:12px;align-items:flex-start}
+ .nav-col{flex:1 1 0;min-width:0}
 }
 }
 .settings-section{border:1px solid #d6deea;border-radius:12px;margin:0 0 12px;background:#fff;overflow:hidden}
@@ -2321,7 +2322,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-01-zd';
+var KA_V = '2026-11-01-ze';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -2375,6 +2376,7 @@ function fillNavMenu() {
     if (x === '-') return;
     if (x[0] === '#') {
       group = document.createElement('details'); group.className = 'nav-section';
+      group.dataset.ni = box.querySelectorAll('.nav-section').length;
       var h = document.createElement('summary'); h.className = 'nav-group'; h.textContent = x[1]; group.appendChild(h);
       var title = x[1]; group.open = !!navGroupOpen[title];
       group.addEventListener('toggle', function () { navGroupOpen[title] = groupForTitle(title).open; });
@@ -2390,6 +2392,21 @@ function fillNavMenu() {
   });
   function groupForTitle(title) { return [].filter.call(box.querySelectorAll('.nav-section'), function (g) { return g.firstElementChild.textContent === title; })[0] || {open:false}; }
   var vf = document.createElement('div'); vf.className = 'nav-ver'; vf.textContent = kaVersion(); box.appendChild(vf);
+  navLayout();
+}
+/* Handy quer: Kategorien in unabhängigen Spalten. Jede Spalte stapelt für sich, freier Platz bleibt nur unten. Die Zuordnung zur Spalte ist fest (der Reihe nach), damit nichts springt. */
+function navLayout() {
+  var box = document.getElementById('nav-menu'); if (!box) return;
+  var ver = box.querySelector('.nav-ver'), secs = [].slice.call(box.querySelectorAll('.nav-section')).sort(function (p, q) { return (+p.dataset.ni || 0) - (+q.dataset.ni || 0); });
+  var old = box.querySelector('.nav-cols');
+  var land = window.matchMedia('(orientation:landscape) and (max-height:600px) and (pointer:coarse)').matches;
+  if (!land) { if (old) { secs.forEach(function (x) { box.insertBefore(x, ver); }); old.remove(); } return; }
+  var n = Math.min(940, window.innerWidth - 16) >= 780 ? 3 : 2, wrap = document.createElement('div'), cols = [];
+  wrap.className = 'nav-cols';
+  for (var i = 0; i < n; i++) { var c = document.createElement('div'); c.className = 'nav-col'; cols.push(c); wrap.appendChild(c); }
+  secs.forEach(function (x, k) { cols[k % n].appendChild(x); });
+  if (old) old.remove();
+  box.insertBefore(wrap, ver);
 }
 try { document.fonts.ready.then(navFit); } catch (x) {}
 window.addEventListener('resize', navFit); window.addEventListener('orientationchange', navFit); window.addEventListener('load', navFit); setTimeout(navFit, 0);
