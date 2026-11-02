@@ -91,7 +91,9 @@
     var idText = pkB64u(id), allow = { type: 'public-key', id: new Uint8Array(id) };
     if (Array.isArray(transports) && transports.length) allow.transports = transports;
     var by = {}; by[idText] = { first: new Uint8Array(salt) };
-    var cred = await navigator.credentials.get({ publicKey: {
+    /* Frühstart aus dem Seitenkopf (index.html) einmalig übernehmen, sonst normal anfordern */
+    var early = window.__kaPkEarly; window.__kaPkEarly = null;
+    var cred = early && Date.now() - early.t < 30000 && early.id === idText && early.salt === pkB64u(salt) ? await early.p : await navigator.credentials.get({ publicKey: {
       challenge: pkRand(32), allowCredentials: [allow], userVerification: 'required', timeout: 60000,
       extensions: { prf: { evalByCredential: by } }
     }, mediation: 'required' });
