@@ -1,0 +1,111 @@
+name: Implement Wiedervorstellung
+
+on:
+  push:
+    branches: [feature/wiedervorstellung-fehlt]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/wiedervorstellung-fehlt
+      - name: Wiedervorstellung implementieren
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          def repl(old, new, n=1):
+              global s
+              c = s.count(old)
+              if c != n:
+                  raise SystemExit(f'Erwartet {n} Treffer, gefunden {c}: {old[:100]!r}')
+              s = s.replace(old, new, n)
+
+          repl("var KA_V = '2026-11-01-zf';", "var KA_V = '2026-11-03-a';")
+
+          old = """  Object.keys(m.byId).forEach(function (k) { var q = m.byId[k]; if (q.next && q.next.date <= remLim && !bestLast(patients.filter(function (x) { return String(x.id) === k; })[0] || {}, 'termin:' + q.next.id, 'sent')) q.rem = q.next; });
+  Object.keys(m.byId).forEach(function (k) { m.byId[k].unb.sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }); });"""
+          new = """  Object.keys(m.byId).forEach(function (k) { var q = m.byId[k]; if (q.next && q.next.date <= remLim && !bestLast(patients.filter(function (x) { return String(x.id) === k; })[0] || {}, 'termin:' + q.next.id, 'sent')) q.rem = q.next; });
+  /* Wiedervorstellung: ab dem empfohlenen Datum erinnern, solange kein zukünftiger Termin gebucht ist. */
+  Object.keys(m.byId).forEach(function (k) {
+    var q = m.byId[k], p = patients.filter(function (x) { return String(x.id) === k; })[0];
+    if (p && p.wiedervorstellung && p.wiedervorstellung <= tdy && !q.next) q.wieder = p.wiedervorstellung;
+  });
+  Object.keys(m.byId).forEach(function (k) { m.byId[k].unb.sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }); });"""
+          repl(old, new)
+
+          old = """function anamConfirm(p) {
+  bestAdd(p, 'anamnese', 'vorOrt'); p.log = p.log || []; p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese vor Ort bestätigt' });
+  persist(); renderUnterlagen(); if (curP === p) { renderHead(); renderVerlauf(); }
+}"""
+          new = old + """
+function setWiedervorstellung(p, date) {
+  var old = p.wiedervorstellung || '', v = String(date || '').trim();
+  if (old === v) return;
+  if (v) p.wiedervorstellung = v; else delete p.wiedervorstellung;
+  auditOne(p, 'Behandlungsplanung', 'Empfohlene Wiedervorstellung', old ? fmtD(old) : '[nicht festgelegt]', v ? fmtD(v) : '[entfernt]');
+  persist(); if (curP === p) { renderHead(); renderFlags(); } renderPatients();
+}
+function openWiedervorstellungTermin(p) {
+  curP = p; openTermin(p.wiedervorstellung || iso(new Date()), '11:30', true);
+}"""
+          repl(old, new)
+
+          old = """  if (f.anam) { var c = mk('span', 'fl fl-amb', 'Anamnese'); c.title = anamText(f.anam.info) + ' · Termin ' + fmtTermin(f.anam.e); out.push(c); }
+  return out;"""
+          new = """  if (f.anam) { var c = mk('span', 'fl fl-amb', 'Anamnese'); c.title = anamText(f.anam.info) + ' · Termin ' + fmtTermin(f.anam.e); out.push(c); }
+  if (f.wieder) { var w = mk('span', 'fl fl-orange', 'Wiedervorstellung'); w.title = 'Wiedervorstellung fehlt · empfohlen ' + fmtD(f.wieder); out.push(w); }
+  return out;"""
+          repl(old, new)
+
+          old = """  if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
+  if (f.rem) {"""
+          new = """  if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
+  if (f.wieder) out.push({ cls: 'fl-orange', label: 'Wiedervorstellung fehlt · empfohlen ' + fmtD(f.wieder), menu: [['Termin vereinbaren', function () { openWiedervorstellungTermin(p); }], ['Empfehlung entfernen', function () { setWiedervorstellung(p, ''); }]] });
+  if (f.rem) {"""
+          repl(old, new)
+
+          old = """  tiles.appendChild(kt);
+  tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));"""
+          new = """  tiles.appendChild(kt);
+  tiles.appendChild(tileBox('wiedervorstellung', 'Wiedervorstellung', '', function (t, ed) {
+    if (!ed) {
+      var v = p.wiedervorstellung || '';
+      var tx = mk('div', 'a-txt', v ? 'Empfohlen am ' + fmtD(v) : 'Keine Wiedervorstellung geplant');
+      if (!v) tx.style.color = '#94a3b8'; t.appendChild(tx); return;
+    }
+    var inp = mk('input', 'form-control'); inp.type = 'date'; inp.id = 'a-wieder-in'; inp.value = p.wiedervorstellung || ''; t.appendChild(inp);
+    var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
+    var rm = mk('button', 'btn btn-cancel', 'Entfernen'); rm.type = 'button'; rm.style.marginRight = 'auto'; rm.onclick = function () { tileEdit = ''; setWiedervorstellung(p, ''); };
+    var cb = mk('button', 'btn btn-cancel', 'Abbrechen'); cb.type = 'button'; cb.onclick = function () { tileEdit = ''; renderHead(); };
+    var sv = mk('button', 'btn btn-save', 'Speichern'); sv.type = 'button'; sv.onclick = function () { var v = inp.value; if (!v) { alert('Bitte ein Datum wählen oder „Entfernen“ verwenden.'); return; } tileEdit = ''; setWiedervorstellung(p, v); };
+    fb.appendChild(rm); fb.appendChild(cb); fb.appendChild(sv); t.appendChild(fb);
+  }));
+  tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));"""
+          repl(old, new)
+
+          p.write_text(s, encoding='utf-8')
+
+          sw = Path('sw.js')
+          w = sw.read_text(encoding='utf-8')
+          oldv = "var V='2026-11-01-zf'"
+          if w.count(oldv) != 1:
+              raise SystemExit('Service-Worker-Version nicht eindeutig gefunden')
+          sw.write_text(w.replace(oldv, "var V='2026-11-03-a'", 1), encoding='utf-8')
+
+          Path('.github/workflows/implement-wiedervorstellung.yml').unlink()
+      - name: Änderungen committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js .github/workflows/implement-wiedervorstellung.yml
+          git commit -m "Wiedervorstellung als fälligen Hinweis ergänzen"
+          git push origin HEAD:feature/wiedervorstellung-fehlt
