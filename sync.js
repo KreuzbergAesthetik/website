@@ -6,7 +6,7 @@
 var KS = (function () {
   // Entwicklungszweig: produktiven WordPress-Endpunkt bewusst nicht verwenden.
   // Erst eine separate Testinstanz mit synthetischen Daten konfigurieren.
-  var EP = null;
+  var EP = null; // Nur in einer gesonderten TEST-Umgebung konfigurieren. Keine Produktions-URL!
   var STORES = ['events', 'patients', 'templates', 'invoices', 'settings', 'lager', 'ausgaben', 'todos', 'entw'];
   var S = { busy: false, applying: false, timer: null, poll: null, inbox: [], err: '', msg: '', obj: [], rev: 0, started: false, autoInbox: '' };
   var enc = new TextEncoder(), dec = new TextDecoder();
@@ -183,8 +183,8 @@ var KS = (function () {
       else if (e.status === 404 && /nichts eingerichtet/.test(err(e))) S.err = 'Das Abgleich-Passwort wurde geändert. Bitte hier auf „Trennen“ tippen und mit dem neuen Passwort verbinden.';
       else S.err = err(e);
     } finally {
+      // Geräteabgleich und Postfach bleiben strikt getrennte Nutzeraktionen.
       S.busy = false; S.msg = ''; ui();
-      // Postfach bleibt unabhängig: kein automatischer Import nach Geräteabgleich.
     }
   }
   function touch() {
@@ -266,7 +266,9 @@ var KS = (function () {
   async function backups() { var st = await api('status'); return st.objs.filter(function (o) { return /^sich_/.test(o.n); }).map(function (o) { return o.n; }).sort().reverse(); }
   async function restoreBackup(n) {
     var c = cfg(); var core = await unpackJson(c, await getObj(n, c)); applyCore(core);
-    var b = base(); b.dirty = true; setBase(b); refreshUi(); await run(true);
+    var b = base(); b.dirty = true; setBase(b); refreshUi();
+    // Nach Wiederherstellung niemals automatisch überschreiben oder hochladen.
+    S.msg = 'Wiederhergestellt. Änderungen warten auf einen manuellen Abgleich.'; ui();
   }
 
   /* ---------- Kalender ohne Namen (für Google, Apple usw.): immer nur „Belegt“, keine Kürzel ---------- */
@@ -293,7 +295,9 @@ var KS = (function () {
   async function calOn() {
     if (!cfg()) { S.calErr = 'Erst den Geräte-Abgleich einrichten.'; ui(); return; }
     if (!settings.calToken) { var r = crypto.getRandomValues(new Uint8Array(16)); settings.calToken = hex(r); }
-    settings.calOn = true; persist(); await calPush();
+    settings.calOn = true; persist();
+    // Kalenderexport erst nach explizitem Klick auf „Jetzt aktualisieren“.
+    S.calErr = ''; ui();
   }
 
   /* ---------- Postfach ---------- */
@@ -303,13 +307,13 @@ var KS = (function () {
     var raw = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, priv, wrapped), ak = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
     return JSON.parse(dec.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, ak, ct)));
   }
-  async function abrufen(auto) {
+  async function abrufen() {
     var c = cfg(); if (!c) { alert('Der Abgleich ist noch nicht eingerichtet (Praxis, Abgleich).'); return; }
     if (S.busy) return; S.busy = true; S.err = ''; ui();
     try {
       await ensurePub(c).catch(function () {});
       var st = await api('status'); S.inbox = st.inbox || [];
-      if (!S.inbox.length) { if (!auto) alert('Das Postfach ist leer.'); return; }
+      if (!S.inbox.length) { alert('Das Postfach ist leer.'); return; }
       var entries = [], ids = [], bad = [];
       for (var i = 0; i < S.inbox.length; i++) {
         var id = S.inbox[i].id;
@@ -320,27 +324,24 @@ var KS = (function () {
       }
       var ok = entries.length ? await formularImport(entries) : [];
       for (var k = 0; k < ids.length; k++) if (ok && ok[k]) await api('ibdel', { id: ids[k] }).catch(function () {});
-      if (bad.length) {
-        if (auto) S.err = bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden. Bitte manuell abrufen.';
-        else alert(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden. Sie bleiben zur sicheren Prüfung im Postfach.');
-      }
+      if (bad.length) alert(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden. Sie bleiben zur sicheren Prüfung im Postfach.');
       st = await api('status'); S.inbox = st.inbox || [];
-    } catch (e) { if (auto) S.err = 'Postfach: ' + err(e); else alert('Abrufen nicht möglich: ' + err(e)); }
-    finally { S.busy = false; if (auto) S.autoInbox = inboxSig(); ui(); }
+    } catch (e) { S.err = 'Postfach: ' + err(e); alert('Abrufen nicht möglich: ' + err(e)); }
+    finally { S.busy = false; ui(); }
   }
 
   /* ---------- Anzeige ---------- */
   function ago(ts) { if (!ts) return 'noch nie'; var m = Math.round((Date.now() - ts) / 60000); return m < 1 ? 'gerade eben' : m < 60 ? 'vor ' + m + ' Min.' : m < 1440 ? 'vor ' + Math.round(m / 60) + ' Std.' : new Date(ts).toLocaleDateString('de-DE'); }
   function ui() {
     var c = cfg(), b = c ? base() : null, n = S.inbox.length;
-    var btn = document.getElementById('pt-abrufen'); if (btn) { btn.style.display = c && n ? '' : 'none'; btn.textContent = n ? 'Abrufen (' + n + ')' : 'Abrufen'; btn.classList.toggle('has-new', n > 0); }
+    var btn = document.getElementById('pt-abrufen'); if (btn) { btn.style.display = c ? '' : 'none'; btn.textContent = n ? 'Postfach abrufen (' + n + ')' : 'Postfach abrufen'; btn.classList.toggle('has-new', n > 0); }
     var bar = document.getElementById('ks-bar'); if (bar) { bar.style.display = c && n ? 'flex' : 'none'; var t = document.getElementById('ks-bar-t'); if (t) t.textContent = n === 1 ? '1 neues Formular im Postfach' : n + ' neue Formulare im Postfach'; }
     var kb = document.getElementById('kal-box');
     if (kb) {
       var on = !!settings.calOn;
       kb.querySelector('.kb-off').style.display = on ? 'none' : ''; kb.querySelector('.kb-on').style.display = on ? '' : 'none';
       kb.querySelector('.kb-url').value = calUrl();
-      var ke = kb.querySelector('.kb-state'); ke.textContent = S.calErr ? S.calErr : on ? (S.calLast ? 'Zuletzt aktualisiert: ' + ago(S.calLast) : 'Wird aktualisiert …') : ''; ke.style.color = S.calErr ? '#b91c1c' : '#64748b';
+      var ke = kb.querySelector('.kb-state'); ke.textContent = S.calErr ? S.calErr : on ? (S.calLast ? 'Zuletzt manuell aktualisiert: ' + ago(S.calLast) : 'Noch nicht manuell veröffentlicht') : ''; ke.style.color = S.calErr ? '#b91c1c' : '#64748b';
     }
     var box = document.getElementById('sync-box'); if (!box) return;
     box.querySelector('.sy-off').style.display = c ? 'none' : '';
