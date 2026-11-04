@@ -811,6 +811,13 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 #modal-inv .inv-total-row{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #cbd5e1;margin-top:18px;padding-top:14px}
 #modal-inv .inv-total-value{text-align:right;font-weight:700;white-space:nowrap}
 #modal-inv .inv-rab-select{width:auto;max-width:200px;min-width:105px;padding:8px 26px 8px 10px;font-size:13px;cursor:pointer}
+.inv-number-meta{display:flex;align-items:center;gap:5px;white-space:nowrap;margin-top:3px}
+.inv-number-meta .pc-ds{margin:0}
+.inv-number-meta .inv-send-indicator{display:inline-flex;width:auto;margin:0;line-height:1;color:#64748b;cursor:help}
+.inv-payment-meta{white-space:nowrap}
+.inv-pay-tick{color:#16a34a;font-weight:800;margin-left:4px;font-size:14px}
+.inv-pay-cross{color:#dc2626;font-weight:800;margin-left:4px;font-size:15px}
+#inv-table .inv-cell-action b{font-weight:700}
 /* Klar getrennte Bereiche im Rechnungsformular */
 #modal-inv .inv-form-card{border:1px solid #d9e2ec;background:#fff;border-radius:15px;padding:16px;margin:14px 0;box-shadow:0 2px 8px rgba(20,40,65,.035)}
 #modal-inv .inv-form-card>h3{font-size:15px;font-weight:700;color:#20364e;margin:0 0 14px;padding-bottom:9px;border-bottom:1px solid #e8edf3}
@@ -4537,14 +4544,17 @@ function renderInvoices() {
     var b = mk('button', 'pn', i.kind === 'kv' ? 'KV' : i.nr);
     b.type = 'button'; b.title = 'Rechnung öffnen'; b.onclick = function () { viewInvoice(i.id); };
     c0.appendChild(b);
-    var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm);
+    var meta = mk('div', 'inv-number-meta');
+    var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); meta.appendChild(dsm);
     if (i.kind !== 'kv' && invSent(i)) {
       var si = mk('span', 'inv-send-indicator is-sent');
-      si.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
-      si.title = 'Als versendet markiert'; si.setAttribute('aria-label', si.title); c0.appendChild(si);
+      si.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
+      si.title = 'Als versendet markiert' + (typeof i.sentAt === 'number' ? ' am ' + new Date(i.sentAt).toLocaleString('de-DE') : ' (kein Versanddatum gespeichert)');
+      si.setAttribute('aria-label', si.title); meta.appendChild(si);
     }
+    c0.appendChild(meta);
     var patient = i.pid ? patients.filter(function (p) { return p.id === i.pid; })[0] : null;
-    var nameBtn = mk('button', 'inv-cell-action', invNm(i)); nameBtn.type = 'button';
+    var nameBtn = mk('button', 'inv-cell-action'); nameBtn.innerHTML = nmHtml(invNm(i)); nameBtn.type = 'button';
     nameBtn.title = patient ? 'Patientenakte öffnen' : 'Keine zugeordnete Patientenakte';
     nameBtn.disabled = !patient;
     nameBtn.onclick = function () { if (patient) viewAkte(patient); };
@@ -4553,7 +4563,18 @@ function renderInvoices() {
     if (i.kind === 'kv') amt.className = 'inv-a a-kv';
     var payBtn = mk('button', 'inv-cell-action inv-pay-action');
     payBtn.type = 'button'; payBtn.appendChild(amt);
-    var payDate = mk('small', 'pc-ds', i.storniert ? 'Storniert' : i.kind === 'kv' ? 'Kostenvoranschlag' : st.full ? 'Bezahlt' : late ? 'Überfällig' : st.txt);
+    var pays = i.payments || [];
+    var paidDate = pays.length ? pays[pays.length - 1].date : (i.paid ? i.date : null);
+    var payDate = mk('small', 'pc-ds inv-payment-meta');
+    if (i.storniert || i.kind === 'kv') {
+      payDate.textContent = i.storniert ? 'Storniert' : 'Kostenvoranschlag';
+    } else if (st.full) {
+      payDate.textContent = paidDate ? fmtD(paidDate) : 'Bezahlt';
+      var tick = mk('span', 'inv-pay-tick', '✓'); tick.setAttribute('aria-label', 'Bezahlt'); payDate.appendChild(tick);
+    } else {
+      payDate.textContent = st.txt === 'Teilzahlung' ? 'Teilzahlung' : 'Offen';
+      var cross = mk('span', 'inv-pay-cross', '×'); cross.setAttribute('aria-label', 'Nicht vollständig bezahlt'); payDate.appendChild(cross);
+    }
     payBtn.appendChild(payDate);
     payBtn.title = i.kind === 'kv' || i.storniert ? 'Dokument öffnen' : st.full ? 'Zahlung bearbeiten' : 'Zahlung erfassen';
     payBtn.onclick = function () {
