@@ -57,6 +57,14 @@ var KS = (function () {
   /* ---------- Server ---------- */
   async function api(a, fields, file) {
     if (!EP) throw new Error('Testmodus: Serverzugriffe gesperrt. Zuerst isolierten Testserver einrichten.');
+    // Schutz gegen versehentliches Verbinden mit der produktiven Praxis-Website.
+    // Nur ausdrücklich konfigurierte lokale Testinstanzen dürfen angesprochen werden.
+    var testUrl;
+    try { testUrl = new URL(EP, location.href); } catch (e) { throw new Error('Ungültige Testserver-Adresse.'); }
+    var localTest = /^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/.test(testUrl.hostname);
+    if (!localTest || !/^https?:$/.test(testUrl.protocol)) {
+      throw new Error('Entwicklungsversion: Nur ein lokaler Testserver ist erlaubt. Produktive Server sind gesperrt.');
+    }
     var c = fields && fields._c || cfg(); if (!c) throw new Error('Der Abgleich ist nicht eingerichtet.');
     var fd = new FormData(); fd.append('a', a); fd.append('t', c.tok);
     Object.keys(fields || {}).forEach(function (k) { if (k !== '_c') fd.append(k, fields[k]); });
