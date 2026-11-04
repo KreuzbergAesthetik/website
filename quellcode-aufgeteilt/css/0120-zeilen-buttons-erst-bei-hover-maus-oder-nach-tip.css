@@ -11,6 +11,10 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 
 #modal-inv .inv-total-row{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #cbd5e1;margin-top:18px;padding-top:14px}
 #modal-inv .inv-total-value{text-align:right;font-weight:700;white-space:nowrap}
+#modal-inv .inv-total-row>:first-child{min-width:0;flex:1 1 0}
+#modal-inv .inv-total-row>.inv-total-value{flex:none}
+#modal-inv .inv-total-row #inv-rab{min-width:0}
+#modal-inv .inv-total-row .inv-rab-select{width:100%;max-width:200px;min-width:0;box-sizing:border-box}
 #modal-inv .inv-rab-select{width:auto;max-width:200px;min-width:105px;padding:8px 26px 8px 10px;font-size:13px;cursor:pointer}
 .inv-number-meta{display:flex;align-items:center;gap:5px;white-space:nowrap;margin-top:3px}
 .inv-number-meta .pc-ds{margin:0}
