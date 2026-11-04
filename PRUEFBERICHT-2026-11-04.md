@@ -39,9 +39,12 @@ Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den e
 
 | Befund | Warum offen |
 |---|---|
-| Anrede: Formulare duzen, Aufklärungs- und Nachsorgetexte in `docs.js` siezen (68 Stellen). | Richtung (Du oder Sie) festlegen. Die Texte sind rechtlich/medizinisch freizugeben; eine Umformulierung ändert freigabepflichtige Inhalte. |
 | Design gewachsen: 126 Farbwerte, 25 Schriftgrößen, zwei Akzent-Blau, mehrere Grüntöne. | Vereinheitlichen verändert das Aussehen der App. Dafür eine Palette festlegen (Vorschlag mit Vorschau möglich). |
-| Formularseiten sehen anders aus als die App (Hintergrund, Hauptknopf dunkelblau statt grün). | Entscheiden, ob Patientenseiten dem App-Design folgen. |
+
+## Entschieden
+
+- Anrede: Du oder Sie je nach Dokument, bewusst so (Entscheidung Praxisinhaber, 04.11.2026).
+- Formularseiten folgen dem App-Design: blaugrauer Hintergrund, weiße Karten mit Schatten, grüner Absende-Knopf (Version `2026-11-04-d`).
 
 ## Kein Handlungsbedarf
 
