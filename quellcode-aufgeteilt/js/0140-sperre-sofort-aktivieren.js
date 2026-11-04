@@ -1,0 +1,1 @@
+try { document.documentElement.classList.add('locked'); } catch (e) {}

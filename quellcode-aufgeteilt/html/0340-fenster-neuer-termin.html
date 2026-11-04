@@ -1,0 +1,43 @@
+<!-- MODAL: NEUER TERMIN -->
+<div id="modal-termin" class="modal-overlay">
+  <div class="modal-box tm-box">
+    <div class="tm-head" id="tm-head">
+      <div style="flex:1; min-width:0;"><div id="t-title" class="tm-title">Neuer Termin</div></div>
+      <input type="color" id="t-farbe" class="tm-dot" value="#16a34a" title="Farbe des Termins" aria-label="Farbe des Termins" oninput="tmSub()">
+      <button type="button" class="close-btn" onclick="closeTermin()">&times;</button>
+    </div>
+    <div class="tm-body">
+      <div class="tm-tile">
+        <span class="tm-lbl">Wann <em id="t-dlabel">(60 min)</em></span>
+        <div class="tm-dr"><input type="date" id="t-datum" class="form-control" oninput="tmSub()"><label class="tm-sw" title="Ganztägig"><input type="checkbox" id="t-ganztag" onchange="toggleGanztag()"><i></i><span>Ganztag</span></label></div>
+        <div class="tm-times">
+          <input type="time" id="t-zeit" step="900" class="form-control" onchange="shiftEnd(); tmSub()">
+          <span>bis</span>
+          <input type="time" id="t-ende" step="900" class="form-control" onchange="updDur(); tmSub()">
+        </div>
+      </div>
+      <div class="tm-tile" style="position:relative">
+        <span class="tm-lbl">Patient</span>
+        <input type="text" id="t-patient" class="form-control" placeholder="Name eingeben..." autocomplete="off" oninput="tPatDD()" onfocus="tPatDD()" onblur="setTimeout(tPatDDHide,180)">
+        <div id="t-pat-dd" class="pat-dd" style="display:none"></div>
+        <datalist id="t-patient-list"></datalist>
+      </div>
+      <div class="tm-tile">
+        <span class="tm-lbl">Leistung</span>
+        <input type="text" id="t-leistung" class="form-control" list="t-leistung-list" placeholder="Leistung suchen..." autocomplete="off" oninput="terminKatColor()" onchange="tLeistAdd(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();tLeistAdd(this.value);}">
+        <div id="t-lchips" class="tm-chips"></div>
+        <datalist id="t-leistung-list"><option value="Botulinumtoxin"><option value="Hyaluronsäure"><option value="Beratungsgespräch"><option value="Kontrolle"></datalist>
+      </div>
+      <div class="tm-tile">
+        <span class="tm-lbl">Notiz</span>
+        <textarea id="t-notiz" class="form-control" rows="2" placeholder="Notiz"></textarea>
+      </div>
+      <div class="foot-bar">
+      <button type="button" id="t-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteTermin()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+        <button type="button" class="btn btn-cancel" onclick="closeTermin()">Abbrechen</button>
+        <button type="button" class="btn btn-save" onclick="saveTermin()">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+

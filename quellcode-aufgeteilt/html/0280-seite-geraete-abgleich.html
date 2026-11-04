@@ -1,0 +1,49 @@
+  <!-- TAB: GERÄTE-ABGLEICH -->
+  <div id="tab-abgleich" class="tab-content">
+    <div class="card" id="sync-box">
+      <div class="card-header"><span class="card-title">Geräte-Abgleich und Postfach</span></div>
+      <div class="sy-off">
+        <div style="font-size:14px; color:#334155; margin-bottom:12px;">Die App speichert ihre Daten auf Deinem Server und gleicht sie zwischen Tablet, Handy und Computer ab. Alles wird <b>auf dem Gerät verschlüsselt</b>, bevor es hochgeladen wird. Der Server sieht nur unlesbare Daten. Webformulare landen ebenfalls verschlüsselt im Postfach und werden mit einem Tipp übernommen, ohne PDF-Speichern und Import.</div>
+        <div class="form-group"><label>Abgleich-Passwort (mindestens 12 Zeichen)</label><input type="password" id="sy-pw" class="form-control" autocomplete="new-password"></div>
+        <div class="form-group"><label>Einrichtungscode (nur falls im Server-Skript ein Code eingetragen wurde)</label><input type="text" id="sy-code" class="form-control" autocomplete="off"></div>
+        <div class="hm-warn" style="margin-bottom:12px;">Wichtig: Schreibe das Passwort auf und bewahre es sicher auf. Ohne dieses Passwort sind die Daten auf dem Server nicht mehr lesbar, auch für mich nicht.</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-save" onclick="syncGo('setup')">Einrichten (erstes Gerät)</button><button type="button" class="btn btn-secondary" onclick="syncGo('connect')">Mit vorhandenem verbinden</button></div>
+        <div id="sy-msg" style="margin-top:10px; font-size:13px;"></div>
+      </div>
+      <div class="sy-on" style="display:none">
+        <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
+        <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:14px;"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
+        <div id="sy-baks"></div>
+        <div style="font-size:13px; color:#64748b;">Der Abgleich läuft automatisch beim Öffnen der App, beim Zurückkehren zur App und etwa 6 Sekunden nach jeder Änderung. Offline arbeitest Du normal weiter, der Abgleich holt sich nach, was fehlt. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
+      </div>
+    </div>
+    <div class="card" id="ext-box" style="margin-top:16px;">
+      <div class="card-header"><span class="card-title">Privaten Kalender anzeigen</span></div>
+      <div style="font-size:14px; color:#334155; margin-bottom:12px;">Zeigt die Zeiten aus deinem privaten Kalender (Google, Apple, Outlook) als graue Blöcke im Praxis-Kalender, damit du nichts doppelt belegst. Nur lesend, es wird nichts verändert.</div>
+      <div class="eb-off">
+        <div class="form-group"><label>Geheime Adresse im iCal-Format</label><input type="text" id="ext-url" class="form-control" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics" autocomplete="off"></div>
+        <button type="button" class="btn btn-save" onclick="extSave()">Speichern und abrufen</button>
+      </div>
+      <div class="eb-on" style="display:none">
+        <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-bottom:10px;"><input type="checkbox" class="eb-hide" onchange="extHide(this.checked)"> Titel verbergen, nur „Privat“ anzeigen</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-secondary" onclick="EXT.refresh()">Jetzt abrufen</button><button type="button" class="btn btn-cancel" onclick="extOff()">Entfernen</button></div>
+      </div>
+      <div class="eb-state" style="font-size:13px; margin-top:10px;"></div>
+      <div style="font-size:13px; color:#64748b; margin-top:12px;">In Google Kalender: Einstellungen, dein Kalender, „Geheime Adresse im iCal-Format“ kopieren. Der Praxis-Server holt die Datei ab und reicht sie an die App weiter, deine privaten Termine laufen dabei unverschlüsselt über diesen Server (nicht über Dritte). Die Adresse ist ein Geheimnis, wer sie kennt, sieht deinen Kalender. Mit einer neuen Adresse in Google wird die alte ungültig.</div>
+    </div>
+    <div class="card" id="kal-box" style="margin-top:16px;">
+      <div class="card-header"><span class="card-title">Kalender für Google, Apple und Co.</span></div>
+      <div style="font-size:14px; color:#334155; margin-bottom:12px;">Ein Kalender zum Abonnieren, in dem nur die <b>belegte Zeit</b> steht, ohne Patientennamen, ohne Behandlung, ohne Daten. Auf Wunsch stehen die Kürzel der Patienten darin, zum Beispiel „KD“.</div>
+      <div class="kb-off"><button type="button" class="btn btn-save" onclick="KS.calOn()">Kalender einschalten</button></div>
+      <div class="kb-on" style="display:none">
+        <div class="form-group"><label>Was soll im Kalender stehen?</label><select class="form-control kb-mode" onchange="calMode(this.value)"><option value="belegt">Nur „Belegt“</option><option value="kuerzel">Kürzel der Patienten</option></select></div>
+        <div class="form-group"><label>Adresse zum Abonnieren (geheim halten)</label><div style="display:flex; gap:6px;"><input type="text" class="form-control kb-url" readonly style="min-width:0; font-size:12px;"><button type="button" class="btn btn-secondary btn-sm" onclick="calCopy()">Kopieren</button></div></div>
+        <div class="kb-state" style="font-size:13px; margin-bottom:10px;"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-secondary" onclick="KS.calPush()">Jetzt aktualisieren</button><button type="button" class="btn btn-cancel" onclick="calOffAsk()">Ausschalten</button></div>
+        <div style="font-size:13px; color:#64748b; margin-top:12px;">Einrichten in Google Kalender (am Computer): Weitere Kalender, Per URL, Adresse einfügen. Google lädt abonnierte Kalender nur alle paar Stunden neu, die Anzeige hinkt also etwas nach. Wer die Adresse kennt, sieht die belegten Zeiten. Beim Ausschalten wird sie ungültig.</div>
+      </div>
+      <div class="kb-state-off" style="font-size:13px; color:#b91c1c; margin-top:8px;"></div>
+    </div>
+  </div>
+

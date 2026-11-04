@@ -1,0 +1,20 @@
+<!-- MODAL: WARENEINGANG -->
+<div id="modal-ware" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="lw-title">Wareneingang</strong><button type="button" class="close-btn" onclick="closeModal('modal-ware')">&times;</button></div>
+    <div class="form-group"><label>Produkt</label><select id="lw-prod" class="form-control" onchange="wareProdChanged()"></select></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="form-group"><label>Chargennummer</label><input type="text" id="lw-nr" class="form-control" autocomplete="off"></div>
+      <div class="form-group"><label>Verfallsdatum</label><input type="date" id="lw-verfall" class="form-control"></div>
+      <div class="form-group"><label>Menge</label><input type="text" id="lw-menge" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Einkaufspreis netto je Einheit</label><input type="text" id="lw-ek" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Lieferdatum</label><input type="date" id="lw-datum" class="form-control"></div>
+    </div>
+    <div class="foot-bar">
+      <button type="button" id="lw-del" class="btn btn-del btn-ico" style="display:none" title="Charge löschen" aria-label="Charge löschen" onclick="deleteWare()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ware')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveWare()">Speichern</button>
+    </div>
+  </div>
+</div>
+

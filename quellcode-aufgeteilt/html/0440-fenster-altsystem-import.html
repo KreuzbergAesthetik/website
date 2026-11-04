@@ -1,0 +1,20 @@
+<!-- MODAL: ALTSYSTEM-IMPORT -->
+<div id="modal-bimp" class="modal-overlay">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header"><strong>Patienten aus ZIP-Dateien importieren</strong><button type="button" class="close-btn" id="bi-x" onclick="biClose()">&times;</button></div>
+    <div id="bi-info" style="font-size:14px; color:#334155; margin-bottom:10px;"></div>
+    <div id="bi-opts">
+      <div class="form-group"><label>Patient gibt es schon</label><select id="bi-dup" class="form-control"><option value="skip">Überspringen (empfohlen)</option><option value="replace">Durch die Importdaten ersetzen</option></select></div>
+      <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="bi-shrink" checked> Fotos verkleinern (max. 2000 Pixel, spart Speicher)</label>
+      <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="bi-mail"> E-Mails aus dem Altsystem übernehmen (belegt viel Speicher)</label>
+    </div>
+    <div style="height:8px; background:#e2e8f0; border-radius:4px; margin:14px 0 6px;"><div id="bi-bar" style="height:8px; width:0; background:#0f172a; border-radius:4px;"></div></div>
+    <div id="bi-status" style="font-size:13px; color:#475569;"></div>
+    <div id="bi-log" style="max-height:220px; overflow:auto; font-size:12px; line-height:1.5; margin-top:8px; padding:8px; background:#f8fafc; border-radius:8px; display:none;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" id="bi-cancel" onclick="biClose()">Abbrechen</button>
+      <button type="button" class="btn" id="bi-go" onclick="biRun()">Import starten</button>
+    </div>
+  </div>
+</div>
+

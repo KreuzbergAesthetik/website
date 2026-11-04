@@ -1,0 +1,25 @@
+<!-- MODAL: NEUER PATIENT -->
+<div id="modal-patient" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Neuen Patienten anlegen</strong><button type="button" class="close-btn" onclick="closeModal('modal-patient')">&times;</button></div>
+    <div>
+      <div class="form-group"><label>Anrede</label>
+        <select id="p-anrede" class="form-control"><option value="">Keine Angabe</option><option>Frau</option><option>Herr</option><option>Divers</option></select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Vorname *</label><input type="text" id="p-vorname" class="form-control"></div>
+      <div class="form-group"><label>Nachname *</label><input type="text" id="p-nachname" class="form-control"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Geburtsdatum</label><input type="text" id="p-dob" placeholder="TT.MM.JJJJ" inputmode="numeric" maxlength="10" oninput="maskDob(this)" class="form-control"></div>
+      <div class="form-group"><label>Telefon</label><input type="text" id="p-phone" placeholder="+49..." class="form-control"></div>
+    </div>
+    <div class="form-group"><label>E-Mail</label><input type="email" id="p-email" class="form-control"></div>
+    <div class="form-group"><label>Anschrift</label><div id="p-adr-box"></div></div>
+    <div class="form-group"><label>Allergien / Unverträglichkeiten</label><input type="text" id="p-allergien" placeholder="z.B. Keine, Latex..." class="form-control"></div>
+    <div class="form-group"><label>Anamnese / Notizen</label><textarea id="p-notizen" class="form-control" rows="2"></textarea></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-patient')">Abbrechen</button><button type="button" class="btn btn-save" onclick="savePatient()">Speichern</button></div>
+  </div>
+</div>
+

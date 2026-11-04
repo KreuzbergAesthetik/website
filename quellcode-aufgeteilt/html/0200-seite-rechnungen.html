@@ -1,0 +1,29 @@
+  <!-- TAB 4: RECHNUNGEN -->
+  <div id="tab-rechnungen" class="tab-content">
+    <div class="card">
+      <div class="card-header" style="gap:8px; margin-bottom:8px; align-items:stretch;">
+        <div class="seg" id="inv-kind" style="flex:1; min-width:0;"></div>
+        <button type="button" class="inv-flt" id="inv-flt" onclick="invPerMenu(event)" title="Zeitraum der Anzeige wählen" aria-label="Zeitraum wählen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
+        <button type="button" class="btn btn-sm inv-plus" id="inv-b-new" onclick="invNew()" title="Neue Rechnung" aria-label="Neue Rechnung">+</button>
+      </div>
+      <div id="entw-list" style="display:none"></div>
+      <div id="inv-main">
+      <div id="inv-open"></div>
+      <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
+      <div id="inv-seg" class="za-seg" style="margin-bottom:10px;"></div>
+      <div class="scroll">
+        <table class="pt" style="min-width:560px; font-size:14px;">
+          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort pc-d" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Rechnung <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
+          <tbody id="inv-table"></tbody>
+        </table>
+      </div>
+      <div id="inv-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Rechnungen</div>
+      <div class="row-actions" style="justify-content:center; margin-top:14px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="inv-b-check" onclick="invCheck()">Prüfen</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="inv-b-imp" onclick="document.getElementById('rimp-file').click()">Import</button>
+        <input type="file" id="rimp-file" accept="application/pdf,.pdf,application/zip,.zip" multiple style="display:none" onchange="rechnungenImport(this)">
+      </div>
+      </div>
+    </div>
+  </div>
+

@@ -1,0 +1,10 @@
+<!-- MODAL: SICHERUNG ENTSCHLÜSSELN -->
+<div id="modal-bkpw" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Sicherung öffnen</strong><button type="button" class="close-btn" onclick="closeModal('modal-bkpw')">&times;</button></div>
+    <div style="font-size:13px; color:#475569; margin-bottom:10px;">Diese Sicherung ist verschlüsselt. Bitte das Passwort eingeben.</div>
+    <div class="form-group"><label>Passwort</label><input type="password" id="bkp-pw" class="form-control" autocomplete="off"></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-bkpw')">Abbrechen</button><button type="button" class="btn btn-save" onclick="doDecrypt()">Öffnen</button></div>
+  </div>
+</div>
+

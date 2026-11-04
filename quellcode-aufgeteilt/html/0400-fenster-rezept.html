@@ -1,0 +1,23 @@
+<!-- MODAL: REZEPT -->
+<div id="modal-rx" class="modal-overlay">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header"><strong id="rx-title">Rezept</strong><button type="button" class="close-btn" onclick="closeModal('modal-rx')">&times;</button></div>
+    <div class="form-group"><label>Datum</label><input type="date" id="rx-datum" class="form-control"></div>
+    <div class="ak-h" style="margin-top:4px;">Medikamente (anhaken, Dosierung direkt im Feld ergänzen)</div>
+    <div id="rx-list"></div>
+    <div style="display:flex; gap:6px; margin-top:8px;">
+      <input type="text" id="rx-new" class="form-control" placeholder="Neues Medikament, z.B. Ibuprofen 600 mg, 1-1-1, N2" onkeydown="if(event.key==='Enter'){event.preventDefault();rxAdd();}">
+      <button type="button" class="btn" onclick="rxAdd()">+</button>
+    </div>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:10px; font-weight:400;"><input type="checkbox" id="rx-merk" checked> Neue Medikamente in die Medikation der Akte übernehmen</label>
+    <div class="ak-h">Druck auf A6 quer (148 × 105 mm)</div>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center; font-weight:400;"><input type="checkbox" id="rx-label" checked> Praxisstempel rechts mitdrucken</label>
+    <div class="grid-2" style="margin-top:8px;">
+      <div class="form-group"><label>Versatz nach rechts (mm)</label><input type="number" id="rx-dx" class="form-control" step="0.5" value="0"></div>
+      <div class="form-group"><label>Versatz nach unten (mm)</label><input type="number" id="rx-dy" class="form-control" step="0.5" value="0"></div>
+    </div>
+    <div style="font-size:12px; color:#64748b;">Aufbau: „Privat“, Name und Anschrift links, Geburtsdatum und Datum in der Mitte, Medikation darunter, Stempel rechts. Mit dem Versatz richtest du den Druck nach einem Testausdruck aus. Er wird gemerkt.</div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-rx')">Abbrechen</button><button type="button" class="btn btn-save" id="rx-go" onclick="rxMake()">PDF erstellen</button></div>
+  </div>
+</div>
+

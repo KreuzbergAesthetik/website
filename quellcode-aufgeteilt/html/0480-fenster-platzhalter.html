@@ -1,0 +1,15 @@
+<!-- MODAL: PLATZHALTER -->
+<div id="modal-ph" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="ph-title">Platzhalter</strong><button type="button" class="close-btn" onclick="closeModal('modal-ph')">&times;</button></div>
+    <div class="form-group"><label>Name (ohne Klammern, nur Buchstaben und Ziffern)</label><input type="text" id="ph-name" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Wird ersetzt durch</label><textarea id="ph-text" class="form-control" rows="3"></textarea></div>
+    <div id="ph-hint" style="font-size:12px; color:#64748b; margin-bottom:8px;"></div>
+    <div class="foot-bar">
+      <button type="button" id="ph-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deletePh()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ph')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="savePh()">Speichern</button>
+    </div>
+  </div>
+</div>
+

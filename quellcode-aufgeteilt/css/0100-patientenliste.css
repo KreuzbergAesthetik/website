@@ -1,0 +1,101 @@
+/* Patientenliste: farbige, beschriftete Aktionen, Tablet einzeilig */
+
+.pt-ib.ib-cal { color:var(--c-termin); } .pt-ib.ib-book { color:var(--c-doku); } .pt-ib.ib-mail { color:var(--c-senden); } .pt-ib.ib-euro { color:var(--c-rechnung); } .pt-ib.ib-pill { color:var(--c-rezept); } .pt-ib.ib-plus { color:var(--c-mehr); }
+@media (min-width:700px) {
+  .pt-hg, .pt-wrap { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) 300px; }
+  
+  .pt-wrap { align-items:center; }
+  .pt-info { display:flex; flex-wrap:wrap; align-items:center; align-content:center; gap:2px 12px; min-width:0; max-height:50px; overflow:hidden; }
+  .pt-i1, .pt-i2 { display:flex; flex-wrap:wrap; align-items:center; gap:2px 12px; min-width:0; white-space:nowrap; }
+  .pt-wrap .pt-acts { display:flex; gap:4px; }
+  .pt-acts .pt-ib { flex-direction:column; gap:3px; }
+  .pt-ib svg { width:20px; height:20px; }
+  .pt-lb { font-size:10px; line-height:1; font-weight:600; }
+  .pt td.pc-er { padding-top:6px; font-size:12.5px; }
+}
+/* Farben der Aktionen = Farben der Kategorien (seitliche Streifen) */
+:root { --c-termin:#7c3aed; --c-patient:#1e3a8a; --c-rechnung:#16a34a; --c-doku:#1e3a8a; --c-senden:#0ea5e9; --c-rezept:#db2777; --c-mehr:#64748b; --c-zahlung:#16a34a; }
+/* Kopfzeile = Navigation mit Logo als Start-Knopf; Neu-Knöpfe und Suche schweben unten rechts */
+header { display:flex; align-items:center; gap:8px; padding:0 12px; }
+header .logo-img { width:34px; height:34px; flex:none; }
+header nav { flex:1; min-width:0; margin:0; border:0; }
+.hd-act { flex:none; }
+.fab-col { position:fixed; right:14px; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:45; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.fab { border-radius:10px; color:var(--fc,#475569); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; padding:0; }
+.fab svg { width:21px; height:21px; } .fab span { font-size:9.5px; font-weight:700; line-height:1; }
+.fab-kal { --fc:var(--c-termin); } .fab-pat { --fc:var(--c-patient); } .fab-rec { --fc:var(--c-rechnung); } .fab-search { --fc:var(--c-mehr); } 
+.gs-bar { display:none; position:fixed; left:12px; right:72px; bottom:calc(16px + env(safe-area-inset-bottom)); align-items:center; background:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(15,23,42,.28); z-index:45; } .gs-bar .gs-box { background:#fff; min-height:46px; }
+.fab-col .gs-res { position:fixed; left:8px; right:70px; top:auto; bottom:calc(72px + env(safe-area-inset-bottom)); max-height:60vh; z-index:46; }
+/* Patientenakte: Aktionen im Stil der Patientenübersicht */
+.a-cats { gap:5px; }
+.a-cat, .plus-btn { border-radius:10px; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:0; cursor:pointer; }
+.a-cat svg, .plus-btn svg { width:20px; height:20px; } .a-lb { font-size:9.5px; font-weight:700; line-height:1; }
+.a-cat.d0 { --ac:var(--c-doku); } .a-cat.d1 { --ac:var(--c-termin); } .a-cat.d2 { --ac:var(--c-rechnung); } .a-cat.d4 { --ac:var(--c-senden); } .plus-btn { color:var(--c-mehr); }
+@media (max-width:699px) {   }
+.am-tile.c0 { --ac:var(--c-doku); --ab:color-mix(in srgb, var(--c-doku) 8%, #fff); } .am-tile.c1 { --ac:var(--c-termin); --ab:color-mix(in srgb, var(--c-termin) 8%, #fff); } .am-tile.c2 { --ac:var(--c-senden); --ab:color-mix(in srgb, var(--c-senden) 8%, #fff); } .am-tile.c3 { --ac:#0d9488; --ab:#ecfaf8; } .am-tile.c4 { --ac:var(--c-rezept); --ab:color-mix(in srgb, var(--c-rezept) 8%, #fff); }
+/* Name in der Akte immer vollständig */
+@media (max-width:640px) { .a-nm { display:block; white-space:normal; overflow:visible; overflow-wrap:anywhere; } .a-nl, .a-nf { display:inline; overflow:visible; } .a-nl { margin-right:5px; } }
+.a-nl { white-space:normal; overflow-wrap:anywhere; }
+.pn-l { white-space:normal; overflow-wrap:anywhere; } @media (min-width:700px) { .pt-l .pn-nm { white-space:normal; overflow:visible; text-overflow:clip; } }
+/* Erstellt am: standardmäßig ausgeblendet */
+#tab-patienten:not(.pt-shower) .pc-er { display:none !important; }
+#tab-patienten:not(.pt-shower) .pt tbody td:nth-child(2) { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; }
+/* Rechnungsansicht und Termin-Fenster: Aktionen im Stil der Patientenübersicht */
+.iv-b { background:#fff; border:1px solid #d5dce6; color:var(--ivc,#475569); box-shadow:0 3px 10px rgba(15,23,42,.18); }
+.iv-back { background:none; border:none; box-shadow:none; color:#334155; }
+.iv-del { --ivc:#dc2626; border-color:#dc2626; } .iv-pay { --ivc:var(--c-zahlung); } .iv-edit { --ivc:var(--c-doku); } .iv-rec { --ivc:var(--c-rechnung); } .iv-pdf { --ivc:#ea580c; } .iv-send { --ivc:var(--c-senden); }
+@media (min-width:600px) { .iv-b:not(.iv-back) { width:58px; height:48px; flex:none; padding:0; gap:3px; border-radius:10px; } .iv-b:not(.iv-back) span { display:block; font-size:10px; font-weight:700; } }
+.tv-acts .tv-tool { height:60px; gap:5px; color:var(--tcl,#334155); } .tv-acts .tv-tool .tv-lbl { color:var(--tcl,#334155); }
+.tt-book { --tcl:var(--c-doku); } .tt-euro { --tcl:var(--c-rechnung); } .tt-pill { --tcl:var(--c-rezept); } .tt-form { --tcl:#f59e0b; }
+.tv-fbtn { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:#fff; border:1px solid #d5dce6; border-radius:10px; color:var(--tfc,#64748b); cursor:pointer; box-shadow:0 2px 6px rgba(15,23,42,.1); } .tv-fbtn svg { width:19px; height:19px; } .tv-fbtn span { font-size:9.5px; font-weight:700; line-height:1; }
+.tf-copy { --tfc:var(--c-mehr); } .tf-pen { --tfc:var(--c-doku); } .tf-cancel { --tfc:#ea580c; } .tv-fdel { --tfc:#dc2626; border-color:#dc2626; }
+@media (max-width:699px) { #pt-er-row { display:none !important; } .iv-b:not(.iv-back) span { font-size:9.5px; letter-spacing:-.2px; } }
+/* Rote Leiste mit rotem Rahmen, Zeitraum-Knopf schwebt links neben den Buttons */
+.open-box.late { border:1px solid #dc2626; border-left:4px solid #dc2626; }
+ 
+
+
+.fab.fab-search { border-radius:50%; } .fab.fab-search span { display:none; } .fab.fab-search svg { width:22px; height:22px; }
+/* Löschen: ohne Rahmen, rot, etwas abseits */
+.iv-b.iv-del span, .tv-fbtn.tv-fdel span { display:none !important; } .iv-b.iv-del, .tv-fbtn.tv-fdel { min-width:0; width:36px; } .tv-fbtn.tv-fdel svg, .iv-b.iv-del svg { width:20px; height:20px; }
+.iv-b.iv-del { border:none; background:none; box-shadow:none; margin-right:10px; }
+@media (min-width:600px) { .iv-bar .iv-b.iv-del { position:absolute; right:14px; top:10px; margin:0; } }
+.tv-fbtn.tv-fdel { border:none; background:none; box-shadow:none; margin-right:auto; }
+/* Anlagen und Finanzen: Aktionen im Stil der Patientenübersicht, Suche rund */
+.ak-act { display:inline-flex; align-items:center; justify-content:center; border-radius:10px; color:var(--c-senden); cursor:pointer; flex:none; font-family:inherit; }
+.ak-act svg { width:19px; height:19px; } .ak-act span { line-height:1; color:inherit; }
+.ak-act.hl { background:color-mix(in srgb, var(--c-senden) 10%, #fff); border-color:color-mix(in srgb, var(--c-senden) 45%, #fff); }
+.ak-grey { color:var(--c-mehr); } .ak-datei { color:#0d9488; } .ak-rec { color:var(--c-rechnung); }
+.sr-btn, .sr-fab, .gs-fab { border-radius:50%; }
+/* Buttons: hellgrauer Hintergrund mit dünnem Rand, Symbole in der Kategoriefarbe, Text nur wo er sicher passt */
+.pt-ib, .fab, .a-cat, .a-cat[class*=" d"], .plus-btn, .iv-b:not(.iv-back):not(.iv-del), .tv-fbtn:not(.tv-fdel), .tv-acts .tv-tool, .ak-act, .inv-flt { background:#fff; border:1px solid #c3cedf; box-shadow:0 3px 7px rgba(15,23,42,.32); }
+.fab, .a-cat, .plus-btn { box-shadow:0 3px 10px rgba(15,23,42,.34); }
+.fab-search.on { background:#dbeafe; }
+.pt-lb, .fab span, .a-lb, .tv-fbtn span { display:none !important; }
+.fab { width:46px; height:46px; } .fab.fab-search { width:48px; height:48px; } .a-cat, .plus-btn { width:42px; height:42px; } .tv-fbtn { width:40px; min-width:40px; height:40px; padding:0; }
+@media (min-width:700px) { .pt-acts .pt-ib { width:40px; height:40px; } .pt-hg, .pt-wrap { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) 264px; } .pt td.pc-er { line-height:40px; } }
+@media (max-width:699px) { .iv-b:not(.iv-back) span { display:none; } }
+.ak-act { flex-direction:row; height:36px; min-width:0; padding:0 12px; gap:6px; } .ak-act span { font-size:12.5px; font-weight:600; }
+.inv-flt { width:36px; height:36px; flex:none; border-radius:10px; color:#475569; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; align-self:center; } .inv-flt svg { width:19px; height:19px; } .inv-flt.on { color:#b45309; background:#fffbeb; border-color:#f59e0b; }
+/* Patientenakte: Kurzbefehle füllen die Breite links neben dem Plus-Menü, das Plus sitzt neben der Lupe */
+.a-fab { left:auto; right:74px; bottom:calc(19px + env(safe-area-inset-bottom)); transform:none; width:auto; max-width:calc(100% - 90px); z-index:44; }
+.a-fab .a-cats { flex:none; gap:6px; }
+.a-cat.d0 { --ac:var(--c-doku); } .a-cat.d3 { --ac:var(--c-rezept); } .a-cat.d4 { --ac:var(--c-senden); } .a-cat.d5 { --ac:#1fa855; } .a-cat.d6, .a-cat.d7 { --ac:#0d9488; }
+.a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.14); }
+@media (max-width:699px) { .a-cat.hm { display:none; } }
+/* Stifte: unsichtbar, bei Mausover sichtbar; am Handy genügt der Tipp auf die Zeile bzw. Chargen-Bezeichnung */
+.ph-edit, .ra-pen { opacity:0; transition:opacity .15s; } .ph-edit:focus-visible, .ra-pen:focus-visible { opacity:1; }
+@media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen, div:hover > .ra-pen { opacity:1; } }
+/* Plus/Pfeil der Zeitstrahl-Einträge: mit der Maus erst beim Überfahren sichtbar (Touch: bleibt sichtbar) */
+@media (hover:hover) and (pointer:fine) { .tl-plus { opacity:0; transition:opacity .15s; } .tl-item:hover .tl-plus, .tl-plus:focus-visible, .tl-plus[aria-expanded=true] { opacity:1; } }
+/* Zeilen-Buttons erst bei Hover (Maus) oder nach Tipp auf die Zeile zeigen; Platz und Anordnung bleiben gleich */
+#tab-patienten .pt-acts, #tab-zahlungen tbody .btn.btn-sm { opacity:0; pointer-events:none; transition:opacity .15s; }
+#tab-patienten .pt-wrap, #tab-zahlungen tbody td:has(> .btn.btn-sm) { position:relative; }
+#tab-patienten .pt-wrap::after, #tab-zahlungen tbody td:has(> .btn.btn-sm)::after { content:'\22EF'; position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:22px; line-height:1; pointer-events:none; transition:opacity .15s; }
+tr.ra-open .pt-acts, tr.ra-open .btn.btn-sm, tr:focus-within .pt-acts, tr:focus-within .btn.btn-sm { opacity:1 !important; pointer-events:auto !important; }
+tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::after { opacity:0; }
+@media (hover:hover) and (pointer:fine) {
+  #tab-patienten tr:hover .pt-acts, #tab-zahlungen tbody tr:hover .btn.btn-sm { opacity:1; pointer-events:auto; }
+  #tab-patienten tr:hover .pt-wrap::after, #tab-zahlungen tbody tr:hover td::after { opacity:0; }
+}
+

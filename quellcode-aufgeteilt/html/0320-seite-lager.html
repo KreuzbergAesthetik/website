@@ -1,0 +1,20 @@
+  <!-- TAB 5: LAGER -->
+  <div id="tab-lager" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Lager</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="openProdukt(null)">+ Produkt</button><button type="button" class="btn btn-sm" onclick="openWare()">+ Wareneingang</button></div></div>
+      <div id="lg-warn"></div>
+      <div class="scroll">
+        <table class="pt" style="min-width:680px; font-size:14px;">
+          <thead><tr><th>Produkt</th><th>Bestand</th><th>Mindestmenge</th><th>Nächster Verfall</th><th>EK netto</th><th>VK netto</th><th>Marge</th></tr></thead>
+          <tbody id="lg-table"></tbody>
+        </table>
+      </div>
+      <div id="lg-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Produkte angelegt</div>
+      <div style="margin-top:10px;"><button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('lg-file').click()">Produkte importieren</button><input type="file" id="lg-file" style="display:none" onchange="lagerImport(this)"></div>
+      <div id="lg-sum" style="font-size:13px; color:#475569; margin-top:10px;"></div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:6px;">Preise netto je Einheit. Marge = (VK minus letzter EK) geteilt durch VK.</div>
+    </div>
+  </div>
+
+</main>
+

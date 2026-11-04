@@ -1,0 +1,19 @@
+<!-- MODAL: TODO -->
+<div id="modal-todo" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="to-title">To-Do</strong><button type="button" class="close-btn" onclick="closeModal('modal-todo')">&times;</button></div>
+    <div class="form-group"><label>Aufgabe</label><textarea id="to-text" class="form-control" rows="2"></textarea></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Dringlichkeit</label><select id="to-prio" class="form-control"><option value="hoch">Hoch (heute)</option><option value="mittel">Mittel</option><option value="niedrig">Niedrig</option></select></div>
+      <div class="form-group"><label>Fällig am</label><input type="date" id="to-due" class="form-control"></div>
+    </div>
+    <div class="form-group"><label>Patient (optional)</label><input type="text" id="to-pat" class="form-control" list="t-patient-list" autocomplete="off" placeholder="Name eingeben..."></div>
+    <div id="to-ev" style="font-size:12px; color:#64748b; margin-bottom:6px;"></div>
+    <div class="foot-bar">
+      <button type="button" id="to-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteTodo()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-todo')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveTodo()">Speichern</button>
+    </div>
+  </div>
+</div>
+

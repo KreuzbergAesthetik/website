@@ -1,0 +1,12 @@
+<!-- MODAL: AKTEN ZUSAMMENLEGEN -->
+<div id="modal-merge" class="modal-overlay">
+  <div class="modal-box" style="max-width:620px;">
+    <div class="modal-header"><strong id="mg-title">Akten zusammenlegen</strong><button type="button" class="close-btn" onclick="closeModal('modal-merge')">&times;</button></div>
+    <div id="mg-body" style="max-height:62vh; overflow-y:auto; padding-right:2px;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-merge')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="mg-go" style="display:none" onclick="mgDo()">Zusammenlegen</button>
+    </div>
+  </div>
+</div>
+

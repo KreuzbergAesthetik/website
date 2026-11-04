@@ -1,0 +1,16 @@
+<!-- MODAL: PRODUKT VERWENDEN -->
+<div id="modal-vb" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Produkt verwenden</strong><button type="button" class="close-btn" onclick="closeModal('modal-vb')">&times;</button></div>
+    <div id="vb-pat" style="font-size:13px; color:#475569; margin-bottom:8px;"></div>
+    <div class="form-group"><label>Produkt</label><select id="vb-prod" class="form-control" onchange="vbProdChanged()"></select></div>
+    <div class="form-group"><label>Charge (kürzestes Verfallsdatum zuerst)</label><select id="vb-ch" class="form-control" onchange="vbChChanged()"></select></div>
+    <div class="form-group"><label>Menge <span id="vb-rest" style="font-weight:400; color:#64748b;"></span></label><input type="text" id="vb-menge" class="form-control" inputmode="decimal"></div>
+    <div class="form-group"><label>Zum Termin (optional)</label><select id="vb-termin" class="form-control"></select></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-vb')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveVb()">Abbuchen</button>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,18 @@
+<!-- MODAL: AUSGABE -->
+<div id="modal-ausg" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong id="ag-title">Ausgabe</strong><button type="button" class="close-btn" onclick="closeModal('modal-ausg')">&times;</button></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Datum</label><input type="date" id="ag-datum" class="form-control"></div>
+      <div class="form-group"><label>Betrag in Euro</label><input type="text" id="ag-betrag" class="form-control" inputmode="decimal"></div>
+    </div>
+    <div class="form-group"><label>Kategorie</label><select id="ag-kat" class="form-control"></select></div>
+    <div class="form-group"><label>Beschreibung</label><input type="text" id="ag-text" class="form-control" autocomplete="off"></div>
+    <div class="foot-bar">
+      <button type="button" id="ag-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteAusgabe()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ausg')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveAusgabe()">Speichern</button>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,12 @@
+<!-- MODAL: WEBFORMULAR VISUELL BEARBEITEN -->
+<div id="modal-fvis" class="modal-overlay" style="padding:0; align-items:stretch;">
+  <div style="background:#fff; width:100%; max-width:640px; margin:0 auto; display:flex; flex-direction:column; height:100%;">
+    <div style="display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #e2e8f0;">
+      <strong id="fv-title" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Formular</strong>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-fvis')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="fv-save" onclick="fvSave()">Speichern</button>
+    </div>
+    <iframe id="fv-frame" title="Formular" style="flex:1; border:0; width:100%; background:#f8fafc;"></iframe>
+  </div>
+</div>
+

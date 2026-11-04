@@ -1,0 +1,13 @@
+<!-- MODAL: AUSBUCHEN -->
+<div id="modal-aus" class="modal-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><strong id="au-title">Ausbuchen</strong><button type="button" class="close-btn" onclick="closeModal('modal-aus')">&times;</button></div>
+    <div class="form-group"><label>Charge</label><select id="au-ch" class="form-control"></select></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Menge</label><input type="text" id="au-menge" class="form-control" inputmode="decimal"></div>
+      <div class="form-group"><label>Grund</label><select id="au-grund" class="form-control"><option>Verfall</option><option>Verlust/Bruch</option><option>Eigenverbrauch</option><option>Korrektur</option></select></div>
+    </div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-aus')">Abbrechen</button><button type="button" class="btn btn-save" onclick="saveAus()">Ausbuchen</button></div>
+  </div>
+</div>
+

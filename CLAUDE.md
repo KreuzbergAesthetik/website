@@ -45,6 +45,7 @@ Wichtige Dateien:
 - `formular-empfang-wordpress.txt`: Server-Komponente als WordPress/WPCode-Snippet.
 - `formular-empfang.php`, `sendmail.php`: ältere/alternative Serverwege; nicht mit dem verschlüsselten Postfach verwechseln.
 - `tests/`: statische und Playwright-basierte Regressionstests.
+- `quellcode-aufgeteilt/`: nur lesbare Kopie von `index.html`, nach Funktionen zerlegt (CSS, Skript-Abschnitte, Seiten, Fenster). Wird von der App nicht geladen. Änderungen weiter in `index.html`, danach `npm run code:aufteilen`.
 - `.github/workflows/app-ci.yml`: CI für `main` und Pull Requests.
 
 ## Daten und Datenschutz
