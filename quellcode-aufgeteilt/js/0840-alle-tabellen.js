@@ -99,6 +99,7 @@ function invoiceDOM(inv) {
     tr.appendChild(mk('td', '', it.rabatt ? '' : fmtD(it.datum || inv.leistung)));
     tr.appendChild(mk('td', 'c', it.rabatt ? '' : String(it.qty).replace('.', ',')));
     var ptd = mk('td', '', it.text); if (it.note) { var pn = mk('div', '', it.note); pn.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px; white-space:pre-wrap;'; ptd.appendChild(pn); }
+    if (it.goae) { var pg = mk('div', '', goaeLine(it.goae)); pg.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px;'; ptd.appendChild(pg); }
     tr.appendChild(ptd); tr.appendChild(mk('td', 'c', rate + '%')); tr.appendChild(mk('td', 'r', eurP(amt)));
     tb.appendChild(tr);
   });
@@ -113,6 +114,7 @@ function invoiceDOM(inv) {
   smb.lastChild.querySelectorAll('td').forEach(function (td) { td.style.borderBottom = '2px solid #111'; });
   addSum('Gesamt', inv.total, true);
   sm.appendChild(smb); w.appendChild(sm);
+  var gn = goaeNote(inv); if (gn) { var gnd = mk('div', '', gn); gnd.style.cssText = 'font-size:12px; color:#333; margin-top:10px;'; w.appendChild(gnd); }
   if (pays.length) {
     var zt = mk('div', '', 'ZAHLUNGEN'); zt.style.cssText = 'font-size:12px; font-weight:700; margin-top:16px;'; w.appendChild(zt);
     var zb = mk('div'); zb.style.cssText = 'border:1px dashed #333; padding:8px 10px; margin-top:6px; font-size:13px;';

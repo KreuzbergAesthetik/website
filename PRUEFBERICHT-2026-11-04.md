@@ -53,6 +53,8 @@ Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den e
 - Rechnungen: versendete, bezahlte und stornierte Rechnungen sind gesperrt; Korrektur über Stornorechnung mit eigener Nummer und neue Rechnung; Löschen nur für die letzte, unversendete, unbezahlte Nummer (Version `2026-11-04-f`, Test `tests/rechnung-sperre.mjs`).
 - Löschschutz: Akten mit medizinischer Dokumentation 10 Jahre nach der letzten Behandlung nicht löschbar.
 
+- GOÄ: Leistungen mit optionaler GOÄ-Nummer, Punktzahl, Analog-Kennzeichen; Festpreis bleibt, Faktor wird zurückgerechnet; Rechnung zeigt Nummer, Faktor und Hinweis auf die Honorarvereinbarung (Datum aus der Akte). Nummern/Punktzahlen trägt der Praxisinhaber ein (Version `2026-11-04-g`, Test `tests/goae.mjs`). Ob Rechnungen und Honorarvereinbarung den Anforderungen von § 2 und § 12 GOÄ genügen, ist fachlich prüfen zu lassen.
+
 ## Kein Handlungsbedarf
 
 - `Origin`-Prüfung des Servers: nur Filter, die Sicherheit hängt am Zugangs-Token.

@@ -4,10 +4,20 @@
     <div class="modal-header"><strong id="ls-title">Neue Leistung</strong><button type="button" class="close-btn" onclick="closeModal('modal-leist')">&times;</button></div>
     <div class="form-group"><label>Bezeichnung *</label><input type="text" id="ls-name" class="form-control" autocomplete="off"></div>
     <div class="grid-2">
-      <div class="form-group"><label>Preis brutto in Euro *</label><input type="text" id="ls-price" class="form-control" inputmode="decimal"></div>
-      <div class="form-group"><label>MwSt</label><select id="ls-rate" class="form-control"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
+      <div class="form-group"><label>Preis brutto in Euro *</label><input type="text" id="ls-price" class="form-control" inputmode="decimal" oninput="lsFaktorInfo()"></div>
+      <div class="form-group"><label>MwSt</label><select id="ls-rate" class="form-control" onchange="lsFaktorInfo()"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
     </div>
     <div class="grid-2"><div class="form-group"><label>Gruppe (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div><div class="form-group"><label>Dauer in Minuten</label><input type="text" id="ls-dauer" class="form-control" inputmode="numeric" placeholder="z.B. 30"></div></div>
+    <details class="settings-section" id="ls-goae-box"><summary>GOÄ (optional)</summary><div class="settings-content">
+      <div class="grid-2">
+        <div class="form-group"><label>GOÄ-Nummer</label><input type="text" id="ls-goae" class="form-control" autocomplete="off" oninput="lsFaktorInfo()"></div>
+        <div class="form-group"><label>Punktzahl</label><input type="text" id="ls-pkt" class="form-control" inputmode="decimal" oninput="lsFaktorInfo()"></div>
+      </div>
+      <label class="tm-chk" style="font-weight:400; margin-bottom:8px;"><input type="checkbox" id="ls-analog"> Analog berechnet (§ 6 Abs. 2 GOÄ, „entsprechend“)</label>
+      <div class="form-group"><label>Bezeichnung laut GOÄ (optional)</label><input type="text" id="ls-goaetext" class="form-control" autocomplete="off"></div>
+      <div class="form-group"><label>Begründung des Faktors (optional)</label><input type="text" id="ls-begr" class="form-control" autocomplete="off"></div>
+      <div id="ls-faktor" style="font-size:12.5px; margin-top:4px;"></div>
+    </div></details>
     <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
     <a href="#" id="ls-cp" style="display:none; font-size:13px; font-weight:600; color:#1e3a8a; text-decoration:none;" onclick="event.preventDefault(); var i = lsIdx; closeModal('modal-leist'); lsCopy(i);">Diese Leistung kopieren</a>
     <div class="foot-bar">
