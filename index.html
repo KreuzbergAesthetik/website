@@ -854,7 +854,8 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 #tab-settings .foot-bar{border-top:1px solid #d6deea;padding-top:15px}
 @media(max-width:430px){#modal-inv .inv-address-row{grid-template-columns:1fr}#modal-inv .inv-address-row>.form-group:last-child{max-width:190px}#inv-kind button{font-size:12px;padding:8px 4px}}
 
-.inv-send-indicator { display:flex; align-items:center; justify-content:center; width:max-content; margin:5px auto 0; color:#64748b; } .inv-send-indicator.is-sent { color:#64748b; }
+.inv-send-indicator { display:flex; align-items:center; justify-content:center; width:max-content; margin:5px auto 0; color:#64748b; }
+.inv-cell-action { display:block; border:0; background:none; color:inherit; font:inherit; text-align:left; padding:8px 3px; width:100%; cursor:pointer; } .inv-cell-action:disabled { opacity:.65; cursor:default; } .inv-pay-action { text-align:right; } .inv-pay-action .pc-ds { display:block; font-size:11px; margin-top:3px; } .inv-send-indicator.is-sent { color:#64748b; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1249,8 +1250,8 @@ function kaStart() {
       <div id="inv-seg" class="za-seg" style="margin-bottom:6px;"></div>
       <div id="inv-send-seg" class="za-seg" style="margin-bottom:10px;" aria-label="Rechnungen nach Versandstatus filtern"></div>
       <div class="scroll">
-        <table class="pt" style="min-width:560px; font-size:14px;">
-          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort pc-d" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Rechnung <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
+        <table class="pt" style="min-width:0; width:100%; font-size:14px;">
+          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
           <tbody id="inv-table"></tbody>
         </table>
       </div>
@@ -4492,23 +4493,45 @@ function renderInvoices() {
     if (invF === 'offen' && k !== 'offen' && k !== 'ueberfaellig') return false; if (invF && invF !== 'offen' && k !== invF) return false;
     return !q || ((i.kind === 'kv' ? 'KV Kostenvoranschlag ' : '') + i.nr + ' ' + i.name + ' ' + eur(i.total) + ' ' + fmtD(i.date) + ' ' + String(i.total).replace('.', ',')).toLowerCase().indexOf(q) >= 0;
   });
-  if (!shown.length && billingList.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
+  if (!shown.length && billingList.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
   shown.sort(invCmp).forEach(function (i) {
     var row = tb.insertRow(); row.className = i.kind === 'kv' ? 't-kv' : i.storniert ? '' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
-    var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
-    var b = mk('button', 'pn', i.kind === 'kv' ? 'KV' : i.nr); if (i.kind === 'kv') { b.classList.add('inv-kv-label'); b.title = 'Kostenvoranschlag öffnen'; } b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
-    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm);
-    c2.appendChild(nmEl(invNm(i))); c3.textContent = eur(i.total); c0.className = 'nw';
-    /* Betrag statt Status-Spalte: rot = offen, dunkelrot = überfällig, orange = Teilzahlung, grün = bezahlt, grau = storniert */
-    var st = invState(i), late = !st.full && invLate(i), amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
-    if (i.kind === 'kv') { amt.className = 'inv-a a-kv'; amt.title = 'Kostenvoranschlag, keine offene Forderung'; } else amt.title = i.storniert ? 'Storniert' : st.full ? 'Bezahlt' : late ? 'Überfällig' : st.txt; c3.textContent = ''; c3.className = 'nw'; c3.appendChild(amt);
+    var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell();
+    var fd = fmtD(i.date), st = invState(i), late = !st.full && invLate(i);
+    var b = mk('button', 'pn', i.kind === 'kv' ? 'KV' : i.nr);
+    b.type = 'button'; b.title = 'Rechnung öffnen'; b.onclick = function () { viewInvoice(i.id); };
+    c0.appendChild(b);
+    var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm);
     if (i.kind !== 'kv' && invSent(i)) {
       var si = mk('span', 'inv-send-indicator is-sent');
       si.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
-      si.title = 'Als versendet markiert' + (typeof i.sentAt === 'number' ? ' am ' + new Date(i.sentAt).toLocaleDateString('de-DE') : '');
-      si.setAttribute('aria-label', si.title);
-      c3.appendChild(si);
+      si.title = 'Als versendet markiert'; si.setAttribute('aria-label', si.title); c0.appendChild(si);
     }
+    var patient = i.pid ? patients.filter(function (p) { return p.id === i.pid; })[0] : null;
+    var nameBtn = mk('button', 'inv-cell-action', invNm(i)); nameBtn.type = 'button';
+    nameBtn.title = patient ? 'Patientenakte öffnen' : 'Keine zugeordnete Patientenakte';
+    nameBtn.disabled = !patient;
+    nameBtn.onclick = function () { if (patient) viewAkte(patient); };
+    c1.appendChild(nameBtn);
+    var amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
+    if (i.kind === 'kv') amt.className = 'inv-a a-kv';
+    var payBtn = mk('button', 'inv-cell-action inv-pay-action');
+    payBtn.type = 'button'; payBtn.appendChild(amt);
+    var payDate = mk('small', 'pc-ds', i.storniert ? 'Storniert' : i.kind === 'kv' ? 'Kostenvoranschlag' : st.full ? 'Bezahlt' : late ? 'Überfällig' : st.txt);
+    payBtn.appendChild(payDate);
+    payBtn.title = i.kind === 'kv' || i.storniert ? 'Dokument öffnen' : st.full ? 'Zahlung bearbeiten' : 'Zahlung erfassen';
+    payBtn.onclick = function () {
+      if (i.kind === 'kv' || i.storniert) { viewInvoice(i.id); return; }
+      viewInvId = i.id;
+      if (st.full) {
+        var pays = i.payments || [];
+        if (pays.length) openPayEdit(i.id, pays[pays.length - 1]);
+        else if (i.paid) openPayEdit(i.id, null);
+        else viewInvoice(i.id);
+      } else openPay();
+    };
+    c2.appendChild(payBtn);
+    c0.className = 'nw'; c2.className = 'nw';
   });
 }
 /* Rechnungsversand: kleine Kennzeichnung neben der Rechnungsnummer */
