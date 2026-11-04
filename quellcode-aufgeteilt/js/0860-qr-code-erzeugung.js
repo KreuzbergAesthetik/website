@@ -171,7 +171,7 @@ function buildInvoicePdf(inv, logo) {
   y += 23;
   inv.items.forEach(function (it) {
     var amt = it.amount != null ? it.amount : r2(it.qty * it.price), rate = it.rate != null ? it.rate : 0;
-    var ls = pdfWrap(it.text, false, 9.5, 212), ns = (it.note ? pdfWrap(it.note, false, 8.5, 212) : []).concat(it.goae ? pdfWrap(goaeLine(it.goae), false, 8.5, 212) : []), h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
+    var ls = pdfWrap(it.text, false, 9.5, 212), ns = (it.note ? pdfWrap(it.note, false, 8.5, 212) : []).concat(it.goae ? pdfWrap(goaeLine(it.goae, it.text), false, 8.5, 212) : []), h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
     if (y + h > 770) np();
     row(y, h);
     if (!it.rabatt) { txt(66, y + 16, fmtD(it.datum || inv.leistung), 9.5); txtC((cx[1] + cx[2]) / 2, y + 16, String(it.qty).replace('.', ','), 9.5); }

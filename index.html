@@ -1845,14 +1845,14 @@ function kaStart() {
     </div>
     <div class="grid-2"><div class="form-group"><label>Gruppe (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div><div class="form-group"><label>Dauer in Minuten</label><input type="text" id="ls-dauer" class="form-control" inputmode="numeric" placeholder="z.B. 30"></div></div>
     <details class="settings-section" id="ls-goae-box"><summary>GOÄ (optional)</summary><div class="settings-content">
-      <div class="form-group"><label>Vorschlag übernehmen (optional)</label><select id="ls-goae-pick" class="form-control" onchange="lsGoaePick(this.value)"></select><div id="ls-goae-hint" style="font-size:12px; color:#64748b; margin-top:4px;"></div></div>
+      <div class="form-group"><label>GOÄ-Positionen dieser Behandlung</label><div id="ls-goae-list"></div>
+        <div style="display:flex; gap:6px; margin-top:6px;"><select id="ls-goae-pick" class="form-control" style="min-width:0;" onchange="lsGoaePick(this.value)"></select><button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="lsGoaeAdd('')">+ Eigene</button></div>
+        <div id="ls-goae-hint" style="font-size:12px; color:#64748b; margin-top:4px;"></div></div>
       <div class="grid-2">
-        <div class="form-group"><label>GOÄ-Nummer</label><input type="text" id="ls-goae" class="form-control" autocomplete="off" oninput="lsFaktorInfo()"></div>
-        <div class="form-group"><label>Punktzahl</label><input type="text" id="ls-pkt" class="form-control" inputmode="decimal" oninput="lsFaktorInfo()"></div>
+        <div class="form-group"><label>Präparat (Auslage § 10 GOÄ)</label><input type="text" id="ls-ausl-text" class="form-control" autocomplete="off" placeholder="Bezeichnung"></div>
+        <div class="form-group"><label>Präparatkosten netto in Euro</label><input type="text" id="ls-ausl" class="form-control" inputmode="decimal" oninput="lsFaktorInfo()"></div>
       </div>
-      <label class="tm-chk" style="font-weight:400; margin-bottom:8px;"><input type="checkbox" id="ls-analog"> Analog berechnet (§ 6 Abs. 2 GOÄ, „entsprechend“)</label>
-      <div class="form-group"><label>Bezeichnung laut GOÄ (optional)</label><input type="text" id="ls-goaetext" class="form-control" autocomplete="off"></div>
-      <div class="form-group"><label>Begründung des Faktors (optional)</label><input type="text" id="ls-begr" class="form-control" autocomplete="off"></div>
+      <div class="form-group"><label>Begründung des Faktors (optional)</label><input type="text" id="ls-begr" class="form-control" autocomplete="off" placeholder="z. B. Zeitaufwand für Beratung, Behandlung und Betreuung"></div>
       <div id="ls-faktor" style="font-size:12.5px; margin-top:4px;"></div>
     </div></details>
     <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
@@ -2354,7 +2354,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-04-h';
+var KA_V = '2026-11-04-i';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3830,34 +3830,77 @@ var GOAE_VORSCHLAEGE = [
   { nr: '267', pkt: 80, text: 'Medikamentöse Infiltrationsbehandlung im Bereich einer Körperregion, je Sitzung', hint: 'Laut BÄK für Botulinumtoxin oder Hyaluronsäure, wenn eine Seite bzw. eine Region behandelt wird (z. B. eine Wange). Nur eine der Nrn. 267/268 je Sitzung.' },
   { nr: '268', pkt: 130, text: 'Medikamentöse Infiltrationsbehandlung im Bereich mehrerer Körperregionen (auch eine Körperregion beidseitig), je Sitzung', hint: 'Laut BÄK, wenn über die Mittellinie oder beidseitig behandelt wird (ganze Stirn, ganzes Kinn, beide Wangen). Nicht neben Nr. 267.' }
 ];
-function lsGoaePick(v) {
-  var g = GOAE_VORSCHLAEGE.filter(function (x) { return x.nr === v; })[0], h = document.getElementById('ls-goae-hint'); if (!g) { if (h) h.textContent = ''; return; }
-  document.getElementById('ls-goae').value = g.nr; document.getElementById('ls-pkt').value = String(g.pkt); document.getElementById('ls-analog').checked = false; document.getElementById('ls-goaetext').value = g.text;
-  if (h) h.textContent = g.hint ? 'Hinweis: ' + g.hint : '';
-  lsFaktorInfo();
-}
 function goaeFaktor(bruttoEinzel, rate, pkt) { var net = (+bruttoEinzel || 0) / (1 + (+rate || 0) / 100); return pkt > 0 ? Math.round(net / (pkt * GOAE_PW) * 100) / 100 : 0; }
 function goaeFx(f) { return String(f).replace('.', ','); }
-function goaeLine(g) {
-  if (!g || !g.nr) return '';
-  return 'GOÄ ' + (g.analog ? 'A ' + g.nr + ' (entsprechend Nr. ' + g.nr + ')' : 'Nr. ' + g.nr) + (g.text ? ', ' + g.text : '') + ' · Faktor ' + goaeFx(g.faktor) + (g.begr ? ' · Begründung: ' + g.begr : '');
+/* GOÄ-Positionen einer Leistung (ältere Leistungen mit nur einer Nummer werden übernommen) */
+function lsGoaePos(k) { return k ? (k.goaePos || (k.goae ? [{ nr: k.goae, pkt: k.pkt, text: k.goaeText || '', analog: !!k.analog }] : [])) : []; }
+/* Ein Faktor für alle Positionen: (Netto-Festpreis − Präparat) / (Summe Punkte × Punktwert) */
+function goaeCalc(pos, auslageNet, bruttoEinzel, rate) {
+  var net = (+bruttoEinzel || 0) / (1 + (+rate || 0) / 100), rest = net - (+auslageNet || 0), sp = 0;
+  pos.forEach(function (p) { sp += +p.pkt || 0; });
+  if (!(sp > 0)) return null;
+  var f = Math.round(rest / (sp * GOAE_PW) * 100) / 100, sum = 0, m = 1 + (+rate || 0) / 100;
+  var parts = pos.map(function (p) { var n = r2((+p.pkt || 0) * GOAE_PW * f); sum += r2(n * m); return Object.assign({}, p, { netto: n }); });
+  sum += r2((+auslageNet || 0) * m);
+  return { f: f, parts: parts, auslageNet: +auslageNet || 0, brutto: r2(sum) };
 }
-function goaeFromKatalog(name, bruttoEinzel, rate) {
-  var k = (settings.katalog || []).filter(function (x) { return x.name.trim().toLowerCase() === String(name || '').trim().toLowerCase(); })[0];
-  if (!k || !k.goae || !(k.pkt > 0)) return null;
-  return { nr: k.goae, analog: !!k.analog, text: k.goaeText || '', pkt: k.pkt, begr: k.begr || '', faktor: goaeFaktor(Math.abs(bruttoEinzel), rate, k.pkt) };
+function goaeLine(g, itemText) {
+  if (!g || !g.nr) return '';
+  return 'GOÄ ' + (g.analog ? 'A ' + g.nr + ' (entsprechend Nr. ' + g.nr + ')' : 'Nr. ' + g.nr) + (g.text && g.text !== itemText ? ', ' + g.text : '') + (g.pkt ? ' · ' + g.pkt + ' Punkte' : '') + ' · Faktor ' + goaeFx(g.faktor) + (g.gebuehr != null ? ' · Gebühr ' + nf(g.gebuehr) + ' €' : '') + (g.begr ? ' · Begründung: ' + g.begr : '');
+}
+/* Rechnungszeile einer Leistung mit GOÄ in GOÄ-Positionen und Auslage aufteilen; null = keine GOÄ, 'err' = Präparat nicht durch den Preis gedeckt */
+function goaeExpand(it) {
+  var k = (settings.katalog || []).filter(function (x) { return x.name.trim().toLowerCase() === String(it.text || '').trim().toLowerCase(); })[0];
+  var pos = lsGoaePos(k); if (!pos.length) return null;
+  var c = goaeCalc(pos, k.auslageNet, it.price, it.rate); if (!c || c.f <= 0) return 'err';
+  var m = 1 + (+it.rate || 0) / 100, out = [];
+  c.parts.forEach(function (p, j) {
+    var br = r2(p.netto * m);
+    out.push({ text: p.text || ('GOÄ Nr. ' + p.nr), qty: it.qty, price: br, amount: r2(it.qty * br), rate: it.rate, datum: it.datum, note: j === 0 ? 'Behandlung: ' + it.text + (it.note ? '\n' + it.note : '') : '', goae: { nr: p.nr, analog: !!p.analog, text: p.text || '', pkt: +p.pkt, faktor: c.f, gebuehr: p.netto, begr: k.begr || '' } });
+  });
+  if (c.auslageNet > 0) { var ab = r2(c.auslageNet * m); out.push({ text: 'Auslage nach § 10 GOÄ: ' + (k.auslageText || 'Präparat'), qty: it.qty, price: ab, amount: r2(it.qty * ab), rate: it.rate, datum: it.datum, note: '', auslage: true }); }
+  return out;
 }
 function goaeNote(inv) {
   if (!(inv.items || []).some(function (i) { return i.goae; })) return '';
-  return 'Abrechnung nach der Gebührenordnung für Ärzte (GOÄ), Punktwert 5,82873 Cent.' + (inv.honorarVom ? ' Steigerungsfaktor gemäß Honorarvereinbarung nach § 2 GOÄ vom ' + inv.honorarVom + '.' : '');
+  return 'Abrechnung nach der Gebührenordnung für Ärzte (GOÄ), Punktwert 5,82873 Cent.' + ((inv.items || []).some(function (i) { return i.auslage; }) ? ' Auslagen (Präparate) nach § 10 GOÄ gesondert ausgewiesen.' : '') + (inv.honorarVom ? ' Steigerungsfaktor gemäß Honorarvereinbarung nach § 2 GOÄ vom ' + inv.honorarVom + '.' : '');
 }
+/* ---- Leistungsfenster: GOÄ-Positionen bearbeiten ---- */
+var LS_POS = [];
+function lsPosRender() {
+  var box = document.getElementById('ls-goae-list'); if (!box) return; box.innerHTML = '';
+  if (!LS_POS.length) box.appendChild(mk('div', 'hm-empty', 'Noch keine GOÄ-Position. Aus der Liste wählen oder eigene hinzufügen.'));
+  LS_POS.forEach(function (p, i) {
+    var row = mk('div'); row.style.cssText = 'display:grid; grid-template-columns:30px 64px 64px 1fr auto; gap:6px; align-items:center; margin-bottom:6px;';
+    var del = mk('button', 'btn btn-del btn-ico'); del.type = 'button'; del.title = 'Position entfernen'; del.setAttribute('aria-label', del.title);
+    del.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+    del.onclick = function () { LS_POS.splice(i, 1); lsPosRender(); lsFaktorInfo(); };
+    var inp = function (key, ph) { var e = mk('input', 'form-control'); e.type = 'text'; e.placeholder = ph; e.value = p[key] == null ? '' : String(p[key]).replace('.', ','); e.setAttribute('aria-label', ph); e.oninput = function () { p[key] = key === 'pkt' ? numIn(e.value) : e.value.trim(); lsFaktorInfo(); }; return e; };
+    var nr = inp('nr', 'Nr.'), pk = inp('pkt', 'Punkte'), tx = inp('text', 'Bezeichnung laut GOÄ'); pk.inputMode = 'decimal';
+    var al = mk('label'); al.title = 'Analog berechnet (§ 6 Abs. 2 GOÄ)'; al.style.cssText = 'font-size:12px; display:flex; gap:3px; align-items:center; white-space:nowrap;';
+    var cb = mk('input'); cb.type = 'checkbox'; cb.checked = !!p.analog; cb.onchange = function () { p.analog = cb.checked; }; al.appendChild(cb); al.appendChild(document.createTextNode('A'));
+    [del, nr, pk, tx, al].forEach(function (x) { row.appendChild(x); }); box.appendChild(row);
+  });
+}
+function lsGoaeAdd(v) {
+  var g = GOAE_VORSCHLAEGE.filter(function (x) { return x.nr === v; })[0], h = document.getElementById('ls-goae-hint');
+  LS_POS.push(g ? { nr: g.nr, pkt: g.pkt, text: g.text, analog: false } : { nr: '', pkt: '', text: '', analog: false });
+  if (h) h.textContent = g && g.hint ? 'Hinweis zu Nr. ' + g.nr + ': ' + g.hint : '';
+  var bx = document.getElementById('ls-goae-box'); if (bx) bx.open = true;
+  lsPosRender(); lsFaktorInfo();
+}
+function lsGoaePick(v) { if (v) lsGoaeAdd(v); var s = document.getElementById('ls-goae-pick'); if (s) s.value = ''; }
 function lsFaktorInfo() {
   var el = document.getElementById('ls-faktor'); if (!el) return;
-  var pkt = numIn(document.getElementById('ls-pkt').value), pr = numIn(document.getElementById('ls-price').value), rt = parseInt(document.getElementById('ls-rate').value, 10);
-  if (!(pkt > 0) || !(pr > 0)) { el.textContent = 'Mit Punktzahl und Preis wird der Steigerungsfaktor berechnet.'; el.style.color = '#64748b'; return; }
-  var f = goaeFaktor(pr, rt, pkt);
-  el.textContent = 'Steigerungsfaktor ' + goaeFx(f) + ' (Preis ' + nf(pr) + ' € brutto, ' + rt + ' % MwSt, ' + pkt + ' Punkte × 5,82873 Cent)' + (f > 3.5 ? ' · über dem Höchstsatz 3,5: nur mit Honorarvereinbarung' : f > 2.3 ? ' · über dem Schwellenwert 2,3' : '');
-  el.style.color = f > 3.5 ? '#b45309' : '#166534';
+  var pos = LS_POS.filter(function (p) { return p.nr && +p.pkt > 0; }), pr = numIn(document.getElementById('ls-price').value), rt = parseInt(document.getElementById('ls-rate').value, 10), au = numIn(document.getElementById('ls-ausl').value);
+  if (!pos.length || !(pr > 0)) { el.textContent = 'Mit GOÄ-Positionen (Nummer und Punkte) und Preis wird der Steigerungsfaktor berechnet.'; el.style.color = '#64748b'; return; }
+  var c = goaeCalc(pos, au, pr, rt);
+  if (!c || c.f <= 0) { el.textContent = 'Das Präparat kostet mehr als der Preis netto. So ist keine Abrechnung möglich.'; el.style.color = '#b91c1c'; return; }
+  var nrs = pos.map(function (p) { return String(p.nr); }), t = 'Faktor ' + goaeFx(c.f) + ' für alle Positionen: ' + c.parts.map(function (p) { return 'Nr. ' + p.nr + ' ' + nf(p.netto) + ' €'; }).join(', ') + (c.auslageNet > 0 ? ', Präparat ' + nf(c.auslageNet) + ' €' : '') + ' (netto). Rechnung brutto ' + nf(c.brutto) + ' €' + (Math.abs(c.brutto - pr) >= 0.005 ? ' statt ' + nf(pr) + ' € (Rundung des Faktors)' : '') + '.';
+  if (c.f > 3.5) t += ' Über dem Höchstsatz 3,5: nur mit Honorarvereinbarung.'; else if (c.f > 2.3) t += ' Über dem Schwellenwert 2,3.';
+  if (nrs.indexOf('3') >= 0 && nrs.some(function (n) { return n !== '3' && ['5', '6', '7', '8', '800', '801'].indexOf(n) < 0; })) t += ' Achtung: Nr. 3 ist nur allein oder mit einer Untersuchung (Nr. 5, 6, 7, 8, 800, 801) berechnungsfähig.';
+  if (nrs.indexOf('267') >= 0 && nrs.indexOf('268') >= 0) t += ' Achtung: Nr. 267 und 268 nicht nebeneinander.';
+  el.textContent = t; el.style.color = c.f > 3.5 ? '#b45309' : '#166534';
 }
 function openLeist(i) {
   lsIdx = i; var k = i >= 0 ? settings.katalog[i] : null;
@@ -3865,10 +3908,10 @@ function openLeist(i) {
   document.getElementById('ls-name').value = k ? k.name : '';
   document.getElementById('ls-price').value = k ? nf(k.price) : '';
   document.getElementById('ls-rate').value = k ? String(k.rate) : '19';
-  document.getElementById('ls-goae').value = k && k.goae || ''; document.getElementById('ls-pkt').value = k && k.pkt ? String(k.pkt).replace('.', ',') : ''; document.getElementById('ls-analog').checked = !!(k && k.analog);
-  document.getElementById('ls-goaetext').value = k && k.goaeText || ''; document.getElementById('ls-begr').value = k && k.begr || '';
-  document.getElementById('ls-goae-box').open = !!(k && k.goae); lsFaktorInfo();
-  var gp = document.getElementById('ls-goae-pick'); gp.innerHTML = ''; var g0 = mk('option', '', 'Nummer aus der Liste wählen …'); g0.value = ''; gp.appendChild(g0);
+  LS_POS = lsGoaePos(k).map(function (p) { return Object.assign({}, p); });
+  document.getElementById('ls-ausl-text').value = k && k.auslageText || ''; document.getElementById('ls-ausl').value = k && k.auslageNet ? nf(k.auslageNet) : ''; document.getElementById('ls-begr').value = k && k.begr || '';
+  document.getElementById('ls-goae-box').open = LS_POS.length > 0; lsPosRender(); lsFaktorInfo();
+  var gp = document.getElementById('ls-goae-pick'); gp.innerHTML = ''; var g0 = mk('option', '', '+ Nummer aus der Liste hinzufügen …'); g0.value = ''; gp.appendChild(g0);
   GOAE_VORSCHLAEGE.forEach(function (g) { var o = mk('option', '', 'Nr. ' + g.nr + ' · ' + g.pkt + ' Punkte · ' + g.text); o.value = g.nr; gp.appendChild(o); });
   document.getElementById('ls-goae-hint').textContent = '';
   var ks = document.getElementById('ls-kat'); ks.innerHTML = ''; var o0 = mk('option', '', 'Keine Kategorie'); o0.value = ''; ks.appendChild(o0);
@@ -3890,9 +3933,14 @@ function saveLeist() {
   if (price <= 0) { alert('Bitte einen Preis größer als 0 eingeben.'); return; }
   if (settings.katalog.some(function (k, j) { return j !== lsIdx && k.name.trim().toLowerCase() === name.toLowerCase(); })) { alert('Eine Leistung mit dieser Bezeichnung gibt es schon.'); return; }
   var k = { name: name, price: price, rate: rate, kat: document.getElementById('ls-kat').value || (function () { var g = katGuessLeist(name), c = ensureLKats().filter(function (x) { return x.name === g; })[0]; return c ? c.id : undefined; })(), dauer: parseInt(document.getElementById('ls-dauer').value, 10) || undefined, id: lsIdx >= 0 ? settings.katalog[lsIdx].id : 0, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
-  var gnr = document.getElementById('ls-goae').value.trim(), gpk = numIn(document.getElementById('ls-pkt').value);
-  if (gnr && !(gpk > 0)) { alert('Bitte zur GOÄ-Nummer auch die Punktzahl eingeben.'); return; }
-  if (gnr) { k.goae = gnr; k.pkt = gpk; k.analog = document.getElementById('ls-analog').checked; k.goaeText = document.getElementById('ls-goaetext').value.trim(); k.begr = document.getElementById('ls-begr').value.trim(); }
+  var gpos = LS_POS.filter(function (p) { return String(p.nr || '').trim() || +p.pkt > 0; });
+  if (gpos.some(function (p) { return !String(p.nr || '').trim() || !(+p.pkt > 0); })) { alert('Bitte bei jeder GOÄ-Position Nummer und Punktzahl eingeben.'); return; }
+  var ausl = r2(numIn(document.getElementById('ls-ausl').value));
+  if (gpos.length) {
+    var gc = goaeCalc(gpos, ausl, price, rate); if (!gc || gc.f <= 0) { alert('Das Präparat kostet mehr als der Preis netto. Bitte Preis oder Präparatkosten prüfen.'); return; }
+    k.goaePos = gpos.map(function (p) { return { nr: String(p.nr).trim(), pkt: +p.pkt, text: String(p.text || '').trim(), analog: !!p.analog }; });
+    k.auslageText = document.getElementById('ls-ausl-text').value.trim(); k.auslageNet = ausl > 0 ? ausl : 0; k.begr = document.getElementById('ls-begr').value.trim();
+  }
   if (lsIdx >= 0) settings.katalog[lsIdx] = k; else settings.katalog.push(k);
   lsEnsureIds(); persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
@@ -4012,7 +4060,7 @@ function fillInvForm(inv) {
     if (it.rabatt && it.perPos && last && last.type === 'pos') { last.rabArt = it.art === 'eur' ? 'eur' : 'pct'; last.rab = c(it.art === 'eur' ? it.eur : it.pct); last.rabText = strip(it.text) || 'Rabatt'; return; }
     if (it.rabatt) { invRows.push({ type: 'rabatt', art: it.art === 'eur' ? 'eur' : 'pct', text: strip(it.text), pct: c(it.art === 'eur' ? it.eur : it.pct), rate: String(it.rate) }); return; }
     var dd0 = it.datum || inv.leistung || inv.date;
-    invRows.push({ type: 'pos', text: it.text, qty: c(it.qty), price: c(it.price), rate: String(it.rate), datum: dd0 && dd0 !== inv.date ? dd0 : '', note: it.note || '', rab: '', rabText: 'Rabatt' });
+    invRows.push({ type: 'pos', text: it.text, qty: c(it.qty), price: c(it.price), rate: String(it.rate), datum: dd0 && dd0 !== inv.date ? dd0 : '', note: it.note || '', rab: '', rabText: 'Rabatt', goae: it.goae ? Object.assign({}, it.goae) : undefined, auslage: !!it.auslage });
   });
   g('inv-show-hint').checked = inv.showHint !== false; g('inv-show-qr').checked = inv.showQr !== false;
   renderInvRows(); ivFoldSync();
@@ -4189,7 +4237,7 @@ async function saveInvoice() {
   if (!adresse) { alert('Bitte die Anschrift des Patienten eingeben.'); return; }
   var datum = document.getElementById('inv-datum').value, leist = document.getElementById('inv-leistung').value;
   if (!datum || !leist) { alert('Bitte Rechnungsdatum und Leistungsdatum angeben.'); return; }
-  var items = [], bad = false;
+  var items = [], bad = false, goaeErr = '';
   invRows.forEach(function (r, i) {
     if (r.type === 'rabatt') {
       var pc = numIn(r.pct);
@@ -4201,14 +4249,16 @@ async function saveInvoice() {
       var q = numIn(r.qty), pr = numIn(r.price);
       if (!r.text.trim() || q <= 0 || pr <= 0) { bad = true; return; }
       var it0 = { text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || datum, note: String(r.note || '').trim() };
-      var gg = goaeFromKatalog(it0.text, pr, it0.rate); if (gg) it0.goae = gg;
-      items.push(it0);
+      if (r.goae) { it0.goae = Object.assign({}, r.goae, { faktor: goaeFaktor(pr, it0.rate, r.goae.pkt), gebuehr: r2(pr / (1 + it0.rate / 100)) }); items.push(it0); }
+      else if (r.auslage) { it0.auslage = true; items.push(it0); }
+      else { var ex = goaeExpand(it0); if (ex === 'err') { goaeErr = it0.text; bad = true; return; } if (ex) ex.forEach(function (x) { items.push(x); }); else items.push(it0); }
       var pcr = numIn(r.rab), pge = r.rabArt === 'eur';
       if (pcr > 0 && (pge || pcr <= 100)) { var pa = posRab(i); items.push(pge ? { rabatt: true, perPos: true, art: 'eur', eur: pcr, pct: 0, text: String(r.rabText || 'Rabatt').trim() + ' -' + nf(pa) + ' €', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }
         : { rabatt: true, perPos: true, pct: pcr, text: String(r.rabText || 'Rabatt').trim() + ' -' + String(pcr).replace('.', ',') + '%', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }); } else if (pcr > 100 && !pge) bad = true;
     }
   });
   var pd = items.filter(function (x) { return x.datum; }).map(function (x) { return x.datum; }).sort(); leist = pd.length ? pd[0] : datum;
+  if (goaeErr) { alert('Bei „' + goaeErr + '“ kostet das Präparat mehr als der Preis netto. Bitte Preis oder Präparatkosten unter Leistungen prüfen.'); return; }
   if (bad || !items.length) { alert('Bitte jede Position mit Leistung, Menge und Preis (Rabatt: Bezeichnung und Prozent) ausfüllen.'); return; }
   var hinweis = items.some(function (i) { return i.rate === 0; }) ? (settings.hinweis || '').trim() : '';
   var hvom = items.some(function (i) { return i.goae; }) ? (p.honorarVom || '') : '';
@@ -4539,7 +4589,7 @@ function invoiceDOM(inv) {
     tr.appendChild(mk('td', '', it.rabatt ? '' : fmtD(it.datum || inv.leistung)));
     tr.appendChild(mk('td', 'c', it.rabatt ? '' : String(it.qty).replace('.', ',')));
     var ptd = mk('td', '', it.text); if (it.note) { var pn = mk('div', '', it.note); pn.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px; white-space:pre-wrap;'; ptd.appendChild(pn); }
-    if (it.goae) { var pg = mk('div', '', goaeLine(it.goae)); pg.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px;'; ptd.appendChild(pg); }
+    if (it.goae) { var pg = mk('div', '', goaeLine(it.goae, it.text)); pg.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px;'; ptd.appendChild(pg); }
     tr.appendChild(ptd); tr.appendChild(mk('td', 'c', rate + '%')); tr.appendChild(mk('td', 'r', eurP(amt)));
     tb.appendChild(tr);
   });
@@ -4898,7 +4948,7 @@ function buildInvoicePdf(inv, logo) {
   y += 23;
   inv.items.forEach(function (it) {
     var amt = it.amount != null ? it.amount : r2(it.qty * it.price), rate = it.rate != null ? it.rate : 0;
-    var ls = pdfWrap(it.text, false, 9.5, 212), ns = (it.note ? pdfWrap(it.note, false, 8.5, 212) : []).concat(it.goae ? pdfWrap(goaeLine(it.goae), false, 8.5, 212) : []), h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
+    var ls = pdfWrap(it.text, false, 9.5, 212), ns = (it.note ? pdfWrap(it.note, false, 8.5, 212) : []).concat(it.goae ? pdfWrap(goaeLine(it.goae, it.text), false, 8.5, 212) : []), h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
     if (y + h > 770) np();
     row(y, h);
     if (!it.rabatt) { txt(66, y + 16, fmtD(it.datum || inv.leistung), 9.5); txtC((cx[1] + cx[2]) / 2, y + 16, String(it.qty).replace('.', ','), 9.5); }

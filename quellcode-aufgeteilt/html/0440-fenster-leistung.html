@@ -9,14 +9,14 @@
     </div>
     <div class="grid-2"><div class="form-group"><label>Gruppe (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div><div class="form-group"><label>Dauer in Minuten</label><input type="text" id="ls-dauer" class="form-control" inputmode="numeric" placeholder="z.B. 30"></div></div>
     <details class="settings-section" id="ls-goae-box"><summary>GOÄ (optional)</summary><div class="settings-content">
-      <div class="form-group"><label>Vorschlag übernehmen (optional)</label><select id="ls-goae-pick" class="form-control" onchange="lsGoaePick(this.value)"></select><div id="ls-goae-hint" style="font-size:12px; color:#64748b; margin-top:4px;"></div></div>
+      <div class="form-group"><label>GOÄ-Positionen dieser Behandlung</label><div id="ls-goae-list"></div>
+        <div style="display:flex; gap:6px; margin-top:6px;"><select id="ls-goae-pick" class="form-control" style="min-width:0;" onchange="lsGoaePick(this.value)"></select><button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="lsGoaeAdd('')">+ Eigene</button></div>
+        <div id="ls-goae-hint" style="font-size:12px; color:#64748b; margin-top:4px;"></div></div>
       <div class="grid-2">
-        <div class="form-group"><label>GOÄ-Nummer</label><input type="text" id="ls-goae" class="form-control" autocomplete="off" oninput="lsFaktorInfo()"></div>
-        <div class="form-group"><label>Punktzahl</label><input type="text" id="ls-pkt" class="form-control" inputmode="decimal" oninput="lsFaktorInfo()"></div>
+        <div class="form-group"><label>Präparat (Auslage § 10 GOÄ)</label><input type="text" id="ls-ausl-text" class="form-control" autocomplete="off" placeholder="Bezeichnung"></div>
+        <div class="form-group"><label>Präparatkosten netto in Euro</label><input type="text" id="ls-ausl" class="form-control" inputmode="decimal" oninput="lsFaktorInfo()"></div>
       </div>
-      <label class="tm-chk" style="font-weight:400; margin-bottom:8px;"><input type="checkbox" id="ls-analog"> Analog berechnet (§ 6 Abs. 2 GOÄ, „entsprechend“)</label>
-      <div class="form-group"><label>Bezeichnung laut GOÄ (optional)</label><input type="text" id="ls-goaetext" class="form-control" autocomplete="off"></div>
-      <div class="form-group"><label>Begründung des Faktors (optional)</label><input type="text" id="ls-begr" class="form-control" autocomplete="off"></div>
+      <div class="form-group"><label>Begründung des Faktors (optional)</label><input type="text" id="ls-begr" class="form-control" autocomplete="off" placeholder="z. B. Zeitaufwand für Beratung, Behandlung und Betreuung"></div>
       <div id="ls-faktor" style="font-size:12.5px; margin-top:4px;"></div>
     </div></details>
     <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
