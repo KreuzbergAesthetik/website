@@ -24,11 +24,11 @@ try {
     const out={};
     out.tabs=document.getElementById('inv-kind').textContent==='Rechnungen & KVTest-Rechnungen';
     out.billingRows=document.querySelectorAll('#inv-table tr').length===2;
-    out.kvLabel=!!document.querySelector('#inv-table .inv-kv-label');
+    out.kvLabel=!!document.querySelector('#inv-table tr.t-kv button.pn') && document.querySelector('#inv-table tr.t-kv button.pn').textContent==='KV';
     out.separateStorage=invoices.length===1 && entw.length===2 && invKind(kv)==='kv';
     out.noTestInMain=![...document.querySelectorAll('#inv-table button.pn')].some(e=>e.textContent==='Test-Rechnung');
     out.noKvDebt=invOpenInfo().list.length===1;
-    invF='kv';renderInvoices();out.kvFilter=document.querySelectorAll('#inv-table tr').length===1 && !!document.querySelector('.inv-kv-label');
+    invF='kv';renderInvoices();out.kvFilter=document.querySelectorAll('#inv-table tr').length===1 && !!document.querySelector('#inv-table tr.t-kv button.pn');
     invTab='test';renderInvoices();out.onlyTests=document.querySelectorAll('#entw-list .entw-row').length===1;
     viewInvoice(test.id);editInvoice();document.getElementById('inv-vortext').value='Bearbeiteter Test';await saveInvoice();closeModal('modal-invview');
     out.editTest=entw.find(e=>e.id===test.id).vortext==='Bearbeiteter Test';
