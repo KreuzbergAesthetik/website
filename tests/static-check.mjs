@@ -71,11 +71,20 @@ assert.ok(html.includes('fCommitStagedFiles(prefix, mapping, journal.backupPrefi
 assert.ok(html.includes('await restorePersistCore();'), 'Restore schreibt Kerndaten nicht kontrolliert');
 assert.ok(!html.includes("await fClear(); var list = d.dateien || []"), 'Restore darf vorhandene Dateien nicht vorab löschen');
 
-// 9) Sync und automatischer Formularimport dürfen nicht still verschwinden.
+// 9) Entwicklungszweig: Serverzugriffe gesperrt, Geräteabgleich und Postfach nur manuell.
 const sync = read('sync.js');
-for (const marker of ["/wp-json/ka/v1/abgleich", 'autoInbox', 'abrufen', 'inboxSig()', 'AES-GCM']) {
-  assert.ok(sync.includes(marker), `Sync-Invariante fehlt: ${marker}`);
+for (const marker of ['var EP = null;', 'async function abrufen()', 'async function run(manual)', 'AES-GCM']) {
+  assert.ok(sync.includes(marker), `Invariante des manuellen Abgleichs fehlt: ${marker}`);
 }
+assert.match(sync, /async function run\(manual\)\s*\{\s*if \(!manual\) return/, 'Automatischer Geräteabgleich nicht gesperrt');
+for (const marker of ['run(false)', 'abrufen(true)', 'setTimeout(calPush', 'await calPush();']) {
+  assert.ok(!sync.includes(marker), `Verbotener automatischer Abgleich: ${marker}`);
+}
+assert.ok(!/refreshUi\(\);\s*await run/.test(sync), 'Wiederherstellung darf keinen Upload auslösen');
+assert.ok(!html.includes('setTimeout(function () { EXT.refresh();'), 'Privatkalender darf nicht automatisch starten');
+assert.ok(!html.includes("if (document.visibilityState === 'visible') EXT.refresh()"), 'Privatkalender darf nicht periodisch synchronisieren');
+assert.ok(html.includes('Postfach jetzt abrufen') && html.includes('Geräte jetzt abgleichen'), 'Manuelle Aktionen müssen getrennt sichtbar sein');
+assert.ok(html.includes('ENTWICKLUNGSVERSION'), 'Deutlicher Hinweis auf Entwicklungsfassung fehlt');
 
 // 10) Lokale Praxisdaten müssen verpflichtend verschlüsselt werden.
 for (const marker of ['function alPrepare()', 'async function alActivateEncryption(', "document.documentElement.classList.add('locked')", 'mindestens 8 Zeichen', 'verpflichtend und kann nicht deaktiviert werden']) {
