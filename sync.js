@@ -157,6 +157,7 @@ var KS = (function () {
 
   /* ---------- Ablauf ---------- */
   async function run(manual) {
+    if (!manual) return; // Entwicklungsmodus: keine automatischen Netzwerkabfragen
     var c = cfg(); if (!c || S.busy) return; if (!navigator.onLine) { S.err = 'Offline'; ui(); return; }
     S.busy = true; S.err = ''; S.msg = ''; ui();
     try {
@@ -180,16 +181,14 @@ var KS = (function () {
       else S.err = err(e);
     } finally {
       S.busy = false; S.msg = ''; ui();
-      var sig = inboxSig();
-      if (!sig) S.autoInbox = '';
-      else if (!S.err && !modalOpen() && S.autoInbox !== sig) { S.autoInbox = sig; setTimeout(function () { abrufen(true); }, 0); }
+      // Postfach bleibt unabhängig: kein automatischer Import nach Geräteabgleich.
     }
   }
   function touch() {
-    if (settings.calOn && !S.applying) { clearTimeout(S.calT); S.calT = setTimeout(calPush, 15000); }
+    // Kalenderexport nur nach ausdrücklichem Aufruf.
     if (S.applying) return; var c = cfg(); if (!c) return;
     var b = base(); if (!b.dirty) { b.dirty = true; setBase(b); }
-    clearTimeout(S.timer); S.timer = setTimeout(function () { run(false); }, 6000); ui();
+    ui(); // Änderungen nur lokal markieren, nicht automatisch übertragen
   }
 
   /* ---------- Einrichten ---------- */
@@ -320,7 +319,7 @@ var KS = (function () {
       for (var k = 0; k < ids.length; k++) if (ok && ok[k]) await api('ibdel', { id: ids[k] }).catch(function () {});
       if (bad.length) {
         if (auto) S.err = bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden. Bitte manuell abrufen.';
-        else if (await kaConfirm(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden (anderer Schlüssel oder beschädigt). Aus dem Postfach löschen?')) for (var m = 0; m < bad.length; m++) await api('ibdel', { id: bad[m] }).catch(function () {});
+        else alert(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden. Sie bleiben zur sicheren Prüfung im Postfach.');
       }
       st = await api('status'); S.inbox = st.inbox || [];
     } catch (e) { if (auto) S.err = 'Postfach: ' + err(e); else alert('Abrufen nicht möglich: ' + err(e)); }
@@ -354,10 +353,7 @@ var KS = (function () {
     if (S.started) return; S.started = true;
     var hf = function (name) { var f = window[name]; if (typeof f !== 'function') return; window[name] = function () { var r = f.apply(this, arguments); if (r && r.then) return r.then(function (v) { if (v) touch(); return v; }); return r; }; };
     hf('fPut'); hf('fDel');
-    setTimeout(function () { run(false); ui(); }, 1500); setTimeout(calPush, 5000); ui();
-    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') run(false); });
-    window.addEventListener('online', function () { run(false); });
-    S.poll = setInterval(function () { if (document.visibilityState === 'visible') run(false); }, 180000);
+    ui(); // Keine automatischen Abfragen bei Start, Sichtbarkeit, Online-Status oder Intervall.
   }
   async function extFetch(url) { var j = await api('calget', { u: url }); return j.ics; }
   async function txtset(obj, felder) { var c = cfg(); if (!c) throw new Error('Der Geräte-Abgleich ist nicht eingerichtet.'); var f = { k: JSON.stringify(obj || {}), _c: c }; if (felder) f.f = JSON.stringify(felder); await api('txtset', f); }
