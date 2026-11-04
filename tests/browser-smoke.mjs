@@ -164,7 +164,10 @@ try {
 
     // Sync-Schicht ist geladen, ohne einen echten Serverzugriff auszulösen.
     out.syncApi = !!window.KS && typeof KS.run === 'function' && typeof KS.abrufen === 'function' && typeof KS.touch === 'function';
-    out.autoInboxState = !!window.KS && Object.prototype.hasOwnProperty.call(KS.state, 'autoInbox');
+    // Im manuellen Entwicklungsmodus wird der Postfachstatus erst nach Klick bekannt.
+    out.manualInboxState = !!window.KS && Object.prototype.hasOwnProperty.call(KS.state, 'inboxChecked')
+      && KS.state.inboxChecked === false;
+    out.manualPublishApi = !!window.KS && typeof KS.publishForms === 'function';
 
     return out;
   });
