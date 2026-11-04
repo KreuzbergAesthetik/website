@@ -9,7 +9,7 @@ node werkzeuge/code-aufteilen.mjs --pruefen  # prüfen, ob die Kopie aktuell ist
 ```
 
 Die Teile sind verlustfrei: In der Reihenfolge aus `teile.json` aneinandergehängt ergeben sie exakt `index.html`
-(SHA-256 `fd9ff288e068ce4c…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
+(SHA-256 `54763b2b992963c8…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
 
 - `css/`: Gestaltung, nach Themen (9 Teile)
 - `js/`: Programmlogik, nach Funktionsbereichen (34 Teile)
@@ -103,28 +103,28 @@ Bereits vorher eigenständige Dateien (nicht kopiert): `dialoge.js` (Hinweise, R
 | `js/0800-dateispeicher.js` | Dateispeicher  | 3559 | 60 |
 | `js/0810-rechnungen.js` | Rechnungen | 3619 | 54 |
 | `js/0820-leistungskategorien.js` | Leistungskategorien  | 3673 | 148 |
-| `js/0830-goae.js` | GOÄ | 3821 | 670 |
-| `js/0840-alle-tabellen.js` | Alle Tabellen | 4491 | 239 |
-| `js/0850-pdf-erzeugung.js` | PDF-Erzeugung  | 4730 | 48 |
-| `js/0860-qr-code-erzeugung.js` | QR-Code-Erzeugung  | 4778 | 664 |
-| `js/0870-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 5442 | 497 |
-| `js/0880-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 5939 | 262 |
-| `js/0890-statistik.js` | Statistik | 6201 | 74 |
-| `js/0900-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 6275 | 113 |
-| `js/0910-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 6388 | 257 |
-| `js/0920-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 6645 | 294 |
-| `js/0930-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 6939 | 136 |
-| `js/0940-medien.js` | Medien | 7075 | 361 |
-| `js/0950-webformulare.js` | Webformulare | 7436 | 278 |
-| `js/0960-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 7714 | 198 |
-| `js/0970-produktlager.js` | Produktlager | 7912 | 549 |
-| `js/0980-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 8461 | 242 |
-| `js/0990-sicherung.js` | Sicherung  | 8703 | 219 |
-| `js/1000-sicherung-als-zip.js` | Sicherung als ZIP | 8922 | 318 |
-| `js/1010-geraete-abgleich.js` | Geräte-Abgleich | 9240 | 69 |
-| `js/1020-eingangskorb.js` | Eingangskorb | 9309 | 97 |
-| `html/1030-oberflaeche-rahmen.html` | oberflaeche-rahmen | 9406 | 1 |
-| `js/1040-app-start.js` | app-start | 9407 | 0 |
-| `html/1050-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 9407 | 7 |
-| `js/1060-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 9414 | 12 |
-| `html/1070-dokument-ende.html` | dokument-ende | 9426 | 2 |
+| `js/0830-goae.js` | GOÄ | 3821 | 694 |
+| `js/0840-alle-tabellen.js` | Alle Tabellen | 4515 | 239 |
+| `js/0850-pdf-erzeugung.js` | PDF-Erzeugung  | 4754 | 48 |
+| `js/0860-qr-code-erzeugung.js` | QR-Code-Erzeugung  | 4802 | 664 |
+| `js/0870-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 5466 | 497 |
+| `js/0880-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 5963 | 262 |
+| `js/0890-statistik.js` | Statistik | 6225 | 74 |
+| `js/0900-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 6299 | 113 |
+| `js/0910-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 6412 | 257 |
+| `js/0920-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 6669 | 294 |
+| `js/0930-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 6963 | 136 |
+| `js/0940-medien.js` | Medien | 7099 | 361 |
+| `js/0950-webformulare.js` | Webformulare | 7460 | 278 |
+| `js/0960-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 7738 | 198 |
+| `js/0970-produktlager.js` | Produktlager | 7936 | 549 |
+| `js/0980-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 8485 | 242 |
+| `js/0990-sicherung.js` | Sicherung  | 8727 | 219 |
+| `js/1000-sicherung-als-zip.js` | Sicherung als ZIP | 8946 | 318 |
+| `js/1010-geraete-abgleich.js` | Geräte-Abgleich | 9264 | 69 |
+| `js/1020-eingangskorb.js` | Eingangskorb | 9333 | 97 |
+| `html/1030-oberflaeche-rahmen.html` | oberflaeche-rahmen | 9430 | 1 |
+| `js/1040-app-start.js` | app-start | 9431 | 0 |
+| `html/1050-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 9431 | 7 |
+| `js/1060-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 9438 | 12 |
+| `html/1070-dokument-ende.html` | dokument-ende | 9450 | 2 |

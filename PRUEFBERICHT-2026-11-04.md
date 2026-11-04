@@ -57,6 +57,8 @@ Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den e
 
 - GOÄ erweitert: mehrere Positionen je Leistung, Präparat als Auslage nach § 10 GOÄ, gemeinsamer zurückgerechneter Faktor, Auswahlliste belegter Nummern mit Hinweisen (Version `2026-11-04-i`).
 
+- GOÄ: Faktor mit 4 Nachkommastellen, Festpreis cent-genau (Restcent über eigenen Faktor der letzten Position); Vermerk „Leistungen auf Verlangen (§ 1 Abs. 2 Satz 2 GOÄ)“ auf Rechnungen mit GOÄ-Positionen (Version `2026-11-04-k`).
+
 ## Kein Handlungsbedarf
 
 - `Origin`-Prüfung des Servers: nur Filter, die Sicherheit hängt am Zugangs-Token.

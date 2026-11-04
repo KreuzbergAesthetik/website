@@ -69,8 +69,11 @@ try {
     out.total = inv.total;
     viewInvoice(inv.id);
     const txt = document.getElementById('inv-view').innerText;
-    out.ansicht = /GOÄ Nr\. 267/.test(txt) && /80 Punkte/.test(txt) && /Faktor 7,29/.test(txt) && /Gebühr 33,99 €/.test(txt) && /Auslage nach § 10 GOÄ: Präparat Probe/.test(txt) && /Behandlung: Probeleistung GOÄ/.test(txt);
-    out.hinweisText = /Auslagen \(Präparate\) nach § 10 GOÄ/.test(txt) && /Honorarvereinbarung nach § 2 GOÄ vom 28\.10\.2026/.test(txt);
+    const g0 = inv.items[0].goae, fx = String(g0.faktor).replace('.', ','), gb = nf(g0.gebuehr);
+    out.ansicht = /GOÄ Nr\. 267/.test(txt) && /80 Punkte/.test(txt) && txt.includes('Faktor ' + fx) && txt.includes('Gebühr ' + gb + ' €') && /Auslage nach § 10 GOÄ: Präparat Probe/.test(txt) && /Behandlung: Probeleistung GOÄ/.test(txt);
+    out.goaeSumme = r2(inv.items.filter(i => (i.goae && i.goae.nr !== '252') || i.auslage).reduce((a, i) => a + i.amount, 0));
+    out.gebuehrExakt = inv.items.filter(i => i.goae).every(i => r2(i.goae.pkt * GOAE_PW * i.goae.faktor) === i.goae.gebuehr);
+    out.hinweisText = /Auslagen \(Präparate\) nach § 10 GOÄ/.test(txt) && /Honorarvereinbarung nach § 2 GOÄ vom 28\.10\.2026/.test(txt) && /Leistungen auf Verlangen \(§ 1 Abs\. 2 Satz 2 GOÄ\)/.test(txt);
     try { out.pdf = !!(await Promise.resolve(buildInvoicePdf(inv, null))); } catch (e) { out.pdf = 'Fehler ' + e.message; }
 
     // Unversendete Rechnung bearbeiten und speichern: GOÄ-Angaben bleiben erhalten
@@ -102,16 +105,18 @@ try {
     return out;
   });
 
-  // 169 € brutto / 1,19 = 142,02 € netto − 40 € Präparat = 102,02 €; 240 Punkte × 5,82873 Cent = 13,99 € → Faktor 7,29
-  assert.equal(r.faktor, 7.29, 'Faktor falsch: ' + JSON.stringify(r));
-  // je Position 80 × 0,0582873 × 7,29 = 33,99 € netto = 40,45 € brutto; Präparat 47,60 € brutto; dazu 11,90 € alte Leistung
-  assert.equal(r.total, 180.85, 'Summe falsch: ' + JSON.stringify(r));
+  // 169 € brutto / 1,19 = 142,02 € netto − 40 € Präparat = 102,02 €; 240 Punkte × 5,82873 Cent = 13,99 € → Faktor rund 7,29 (4 Stellen)
+  assert.ok(r.faktor > 7.28 && r.faktor < 7.31 && Math.round(r.faktor * 10000) / 10000 === r.faktor, 'Faktor falsch: ' + JSON.stringify(r));
+  // Festpreis exakt: 169,00 € für die GOÄ-Leistung samt Präparat, dazu 11,90 € alte Leistung; jede Gebühr = Punkte × Punktwert × Faktor
+  assert.equal(r.goaeSumme, 169, 'Festpreis nicht exakt: ' + JSON.stringify(r));
+  assert.equal(r.total, 180.9, 'Summe falsch: ' + JSON.stringify(r));
+  assert.equal(r.gebuehrExakt, true, 'Gebühr passt nicht zum Faktor: ' + JSON.stringify(r));
   for (const k of ['vorschlaege', 'hinweis', 'konflikt267', 'katalog', 'konflikt3', 'akteFeld', 'ansicht', 'hinweisText', 'pdf', 'bearbeitenErhaelt', 'warnung', 'teuerAbbruch', 'ohneGoae'])
     assert.equal(r[k], true, 'GOÄ: ' + k + ' ' + JSON.stringify(r));
-  assert.equal(r.positionen, '1:40.45 | 5:40.45 | 267:40.45 | Auslage:47.6 | 252:11.9');
+  assert.match(r.positionen, /^1:[\d.]+ \| 5:[\d.]+ \| 267:[\d.]+ \| Auslage:47\.6 \| 252:11\.9$/);
   assert.equal(r.honorar, '28.10.2026');
-  assert.match(r.faktorText, /Faktor 7,29 für alle Positionen/);
-  assert.match(r.faktorText, /statt 169,00 €/);
+  assert.match(r.faktorText, /^Faktor 7,29\d*:/);
+  assert.match(r.faktorText, /Rechnung brutto 169,00 €\./);
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
   console.log('GOÄ OK', r.faktorText);
 } finally {
