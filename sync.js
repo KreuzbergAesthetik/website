@@ -332,6 +332,11 @@ var KS = (function () {
         } catch (x) { bad.push(id); }
       }
       var ok = entries.length ? await formularImport(entries) : [];
+      // Erst nach dem abgeschlossenen verschlüsselten lokalen Schreibvorgang löschen.
+      if (ok.some(function (v) { return !!v; })) {
+        if (typeof kaIdle !== 'function') throw new Error('Speicherbestätigung nicht verfügbar. Postfacheingänge bleiben erhalten.');
+        await kaIdle();
+      }
       var imported = 0;
       for (var k = 0; k < ids.length; k++) if (ok && ok[k]) {
         // Nur durch den Import als erfolgreich bestätigte Eingänge quittieren.
