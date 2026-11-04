@@ -88,14 +88,3 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 @media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen, div:hover > .ra-pen { opacity:1; } }
 /* Plus/Pfeil der Zeitstrahl-Einträge: mit der Maus erst beim Überfahren sichtbar (Touch: bleibt sichtbar) */
 @media (hover:hover) and (pointer:fine) { .tl-plus { opacity:0; transition:opacity .15s; } .tl-item:hover .tl-plus, .tl-plus:focus-visible, .tl-plus[aria-expanded=true] { opacity:1; } }
-/* Zeilen-Buttons erst bei Hover (Maus) oder nach Tipp auf die Zeile zeigen; Platz und Anordnung bleiben gleich */
-#tab-patienten .pt-acts, #tab-zahlungen tbody .btn.btn-sm { opacity:0; pointer-events:none; transition:opacity .15s; }
-#tab-patienten .pt-wrap, #tab-zahlungen tbody td:has(> .btn.btn-sm) { position:relative; }
-#tab-patienten .pt-wrap::after, #tab-zahlungen tbody td:has(> .btn.btn-sm)::after { content:'\22EF'; position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:22px; line-height:1; pointer-events:none; transition:opacity .15s; }
-tr.ra-open .pt-acts, tr.ra-open .btn.btn-sm, tr:focus-within .pt-acts, tr:focus-within .btn.btn-sm { opacity:1 !important; pointer-events:auto !important; }
-tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::after { opacity:0; }
-@media (hover:hover) and (pointer:fine) {
-  #tab-patienten tr:hover .pt-acts, #tab-zahlungen tbody tr:hover .btn.btn-sm { opacity:1; pointer-events:auto; }
-  #tab-patienten tr:hover .pt-wrap::after, #tab-zahlungen tbody tr:hover td::after { opacity:0; }
-}
-

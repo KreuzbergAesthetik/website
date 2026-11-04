@@ -364,11 +364,23 @@ function saveRab() {
 }
 async function deleteRab() { if (rbIdx < 0 || !await kaConfirm('Rabatt "' + settings.rabatte[rbIdx].name + '" löschen? Bestehende Rechnungen bleiben unverändert.')) return; settings.rabatte.splice(rbIdx, 1); persist(); closeModal('modal-rab'); renderRabatte(); renderInvRab(); }
 function renderInvRab() {
-  var box = document.getElementById('inv-rab'); if (!box) return; box.innerHTML = '';
-  ensureRabatte().forEach(function (r) {
-    var b = mk('button', 'inv-rb', '+ ' + r.name + ' -' + String(r.pct).replace('.', ',') + ' %'); b.type = 'button'; b.title = 'Rabatt auf alle Positionen darüber';
-    b.onclick = function () { var x = newRow('rabatt'); x.text = r.name; x.pct = String(r.pct).replace('.', ','); invRows.push(x); renderInvRows(); }; box.appendChild(b);
+  var box = document.getElementById('inv-rab'); if (!box) return;
+  box.innerHTML = '';
+  var sel = mk('select', 'form-control inv-rab-select');
+  sel.setAttribute('aria-label', 'Rabatt auswählen');
+  var ph = document.createElement('option'); ph.value = ''; ph.textContent = '+ Rabatt'; sel.appendChild(ph);
+  ensureRabatte().forEach(function (r, index) {
+    var op = document.createElement('option'); op.value = String(index);
+    op.textContent = r.name + ' −' + String(r.pct).replace('.', ',') + ' %';
+    sel.appendChild(op);
   });
+  sel.onchange = function () {
+    if (sel.value === '') return;
+    var r = ensureRabatte()[Number(sel.value)];
+    if (r) { var x = newRow('rabatt'); x.text = r.name; x.pct = String(r.pct).replace('.', ','); invRows.push(x); renderInvRows(); }
+    sel.value = '';
+  };
+  box.appendChild(sel);
 }
 function addErstRabatt() { var r = newRow('rabatt'); r.text = 'Rabatt Erstbehandlung'; r.pct = '20'; invRows.push(r); renderInvRows(); }
 function addInvRow(type) { invRows.push(newRow(type)); renderInvRows(); }
@@ -672,23 +684,59 @@ function renderInvoices() {
     if (invF === 'offen' && k !== 'offen' && k !== 'ueberfaellig') return false; if (invF && invF !== 'offen' && k !== invF) return false;
     return !q || ((i.kind === 'kv' ? 'KV Kostenvoranschlag ' : '') + i.nr + ' ' + i.name + ' ' + eur(i.total) + ' ' + fmtD(i.date) + ' ' + String(i.total).replace('.', ',')).toLowerCase().indexOf(q) >= 0;
   });
-  if (!shown.length && billingList.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 4; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
+  if (!shown.length && billingList.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
   shown.sort(invCmp).forEach(function (i) {
     var row = tb.insertRow(); row.className = i.kind === 'kv' ? 't-kv' : i.storniert ? '' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
-    var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
-    var b = mk('button', 'pn', i.kind === 'kv' ? 'KV' : i.nr); if (i.kind === 'kv') { b.classList.add('inv-kv-label'); b.title = 'Kostenvoranschlag öffnen'; } b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
-    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm);
-    c2.appendChild(nmEl(invNm(i))); c3.textContent = eur(i.total); c0.className = 'nw';
-    /* Betrag statt Status-Spalte: rot = offen, dunkelrot = überfällig, orange = Teilzahlung, grün = bezahlt, grau = storniert */
-    var st = invState(i), late = !st.full && invLate(i), amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
-    if (i.kind === 'kv') { amt.className = 'inv-a a-kv'; amt.title = 'Kostenvoranschlag, keine offene Forderung'; } else amt.title = i.storniert ? 'Storniert' : st.full ? 'Bezahlt' : late ? 'Überfällig' : st.txt; c3.textContent = ''; c3.className = 'nw'; c3.appendChild(amt);
+    var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell();
+    var fd = fmtD(i.date), st = invState(i), late = !st.full && invLate(i);
+    var b = mk('button', 'pn', i.kind === 'kv' ? 'KV' : i.nr);
+    b.type = 'button'; b.title = 'Rechnung öffnen'; b.onclick = function () { viewInvoice(i.id); };
+    c0.appendChild(b);
+    var meta = mk('div', 'inv-number-meta');
+    var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); meta.appendChild(dsm);
     if (i.kind !== 'kv' && invSent(i)) {
       var si = mk('span', 'inv-send-indicator is-sent');
-      si.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
-      si.title = 'Als versendet markiert' + (typeof i.sentAt === 'number' ? ' am ' + new Date(i.sentAt).toLocaleDateString('de-DE') : '');
-      si.setAttribute('aria-label', si.title);
-      c3.appendChild(si);
+      si.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
+      si.title = 'Als versendet markiert' + (typeof i.sentAt === 'number' ? ' am ' + new Date(i.sentAt).toLocaleString('de-DE') : ' (kein Versanddatum gespeichert)');
+      si.setAttribute('aria-label', si.title); meta.appendChild(si);
     }
+    c0.appendChild(meta);
+    var patient = i.pid ? patients.filter(function (p) { return p.id === i.pid; })[0] : null;
+    var nameBtn = mk('button', 'inv-cell-action'); nameBtn.innerHTML = nmHtml(invNm(i)); nameBtn.type = 'button';
+    nameBtn.title = patient ? 'Patientenakte öffnen' : 'Keine zugeordnete Patientenakte';
+    nameBtn.disabled = !patient;
+    nameBtn.onclick = function () { if (patient) viewAkte(patient); };
+    c1.appendChild(nameBtn);
+    var amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
+    if (i.kind === 'kv') amt.className = 'inv-a a-kv';
+    var payBtn = mk('button', 'inv-cell-action inv-pay-action');
+    payBtn.type = 'button'; payBtn.appendChild(amt);
+    var pays = i.payments || [];
+    var paidDate = pays.length ? pays[pays.length - 1].date : (i.paid ? i.date : null);
+    var payDate = mk('small', 'pc-ds inv-payment-meta');
+    if (i.storniert || i.kind === 'kv') {
+      payDate.textContent = i.storniert ? 'Storniert' : 'Kostenvoranschlag';
+    } else if (st.full) {
+      payDate.textContent = paidDate ? fmtD(paidDate) : 'Bezahlt';
+      var tick = mk('span', 'inv-pay-tick', '✓'); tick.setAttribute('aria-label', 'Bezahlt'); payDate.appendChild(tick);
+    } else {
+      payDate.textContent = st.txt === 'Teilzahlung' ? 'Teilzahlung' : 'Offen';
+      var cross = mk('span', 'inv-pay-cross', '×'); cross.setAttribute('aria-label', 'Nicht vollständig bezahlt'); payDate.appendChild(cross);
+    }
+    payBtn.appendChild(payDate);
+    payBtn.title = i.kind === 'kv' || i.storniert ? 'Dokument öffnen' : st.full ? 'Zahlung bearbeiten' : 'Zahlung erfassen';
+    payBtn.onclick = function () {
+      if (i.kind === 'kv' || i.storniert) { viewInvoice(i.id); return; }
+      viewInvId = i.id;
+      if (st.full) {
+        var pays = i.payments || [];
+        if (pays.length) openPayEdit(i.id, pays[pays.length - 1]);
+        else if (i.paid) openPayEdit(i.id, null);
+        else viewInvoice(i.id);
+      } else openPay();
+    };
+    c2.appendChild(payBtn);
+    c0.className = 'nw'; c2.className = 'nw';
   });
 }
 /* Rechnungsversand: kleine Kennzeichnung neben der Rechnungsnummer */

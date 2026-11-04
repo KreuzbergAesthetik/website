@@ -1,5 +1,5 @@
 /* Gemeinsame Bausteine der Webformulare: Unterschrift, PDF, Versand */
-var PRAXIS_F = { name: 'Kreuzberg Ästhetik', arzt: 'Manuel Fella', mail: 'info@kreuzberg-aesthetik.de', strasse: 'Neuenburger Str. 24', ort: '10969 Berlin' };
+var PRAXIS_F = { impressum: '', datenschutz: '', name: 'Kreuzberg Ästhetik', arzt: 'Manuel Fella', mail: 'info@kreuzberg-aesthetik.de', strasse: 'Neuenburger Str. 24', ort: '10969 Berlin' };
 /* Adresse des Empfangsskripts auf dem Webspace der Praxis (siehe formular-empfang-wordpress.txt und LIESMICH.txt). */
 var ENDPOINT = 'https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/formular';
 
@@ -210,3 +210,18 @@ function datenschutzBlock() {
     clearTimeout(t); t = setTimeout(disarm, 4000);
   });
 })();
+
+/* Rechtliche Links am Seitenende (Impressum, Datenschutzerklärung). Die Adressen stehen oben in PRAXIS_F (impressum, datenschutz).
+   Solange keine eingetragen ist, erscheint keine Fußzeile. Die Fußzeile liegt außerhalb des Formulars und bleibt auch nach dem Absenden sichtbar. */
+function legalFooter() {
+  var old = document.getElementById('legal'); if (old) old.remove();
+  var links = [['Impressum', PRAXIS_F.impressum], ['Datenschutzerklärung', PRAXIS_F.datenschutz]].filter(function (l) { return /^https:\/\//.test(l[1] || ''); });
+  if (!links.length) return;
+  var f = document.createElement('footer'); f.id = 'legal'; f.className = 'legal';
+  links.forEach(function (l, i) {
+    if (i) f.appendChild(document.createTextNode(' · '));
+    var a = document.createElement('a'); a.href = l[1]; a.textContent = l[0]; a.target = '_blank'; a.rel = 'noopener noreferrer'; f.appendChild(a);
+  });
+  document.body.appendChild(f);
+}
+legalFooter();
