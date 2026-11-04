@@ -94,3 +94,6 @@ h2 { font-size: 13px; letter-spacing: .08em; color: #64748b; border-bottom: none
 .codepill b { font-size: 22px; letter-spacing: 4px; } .codepill span { font-size: 12.5px; color: #64748b; }
 #g-geschlecht, #g-einw { display: flex; gap: 6px 22px; flex-wrap: wrap; }
 .grid3 + .grid3 { margin-top: 10px; }
+/* Zurücksetzen: unauffällig, rot erst bei der Rückfrage */
+#reset { font-size: 14px; font-weight: 500; padding: 8px 10px; border-color: transparent; background: none; color: #64748b; }
+#reset.armed { color: #b91c1c; border-color: #fca5a5; background: #fff5f5; }
