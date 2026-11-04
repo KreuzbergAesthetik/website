@@ -1459,9 +1459,10 @@ function kaStart() {
   <!-- TAB: GERÄTE-ABGLEICH -->
   <div id="tab-abgleich" class="tab-content">
     <div class="card" id="sync-box">
-      <div class="card-header"><span class="card-title">Geräte-Abgleich und Postfach</span></div>
+      <div class="card-header"><span class="card-title">Manueller Geräteabgleich und Postfach</span></div>
+      <div class="hm-warn" role="status" style="margin-bottom:14px;">ENTWICKLUNGSVERSION: Serververbindungen sind gesperrt. Keine produktiven Patientendaten oder Zugangsdaten verwenden. Der produktive Abgleich auf main bleibt unverändert.</div>
       <div class="sy-off">
-        <div style="font-size:14px; color:#334155; margin-bottom:12px;">Die App speichert ihre Daten auf Deinem Server und gleicht sie zwischen Tablet, Handy und Computer ab. Alles wird <b>auf dem Gerät verschlüsselt</b>, bevor es hochgeladen wird. Der Server sieht nur unlesbare Daten. Webformulare landen ebenfalls verschlüsselt im Postfach und werden mit einem Tipp übernommen, ohne PDF-Speichern und Import.</div>
+        <div style="font-size:14px; color:#334155; margin-bottom:12px;">Die Praxisdaten bleiben zunächst lokal. Nur bei ausdrücklicher Freigabe sollen sie verschlüsselt zwischen zwei Geräten abgeglichen werden. Neue Webformulare werden unabhängig davon manuell aus dem Postfach abgerufen. In dieser Entwicklungsfassung ist der Serverzugriff vorsorglich gesperrt.</div>
         <div class="form-group"><label>Abgleich-Passwort (mindestens 12 Zeichen)</label><input type="password" id="sy-pw" class="form-control" autocomplete="new-password"></div>
         <div class="form-group"><label>Einrichtungscode (nur falls im Server-Skript ein Code eingetragen wurde)</label><input type="text" id="sy-code" class="form-control" autocomplete="off"></div>
         <div class="hm-warn" style="margin-bottom:12px;">Wichtig: Schreibe das Passwort auf und bewahre es sicher auf. Ohne dieses Passwort sind die Daten auf dem Server nicht mehr lesbar, auch für mich nicht.</div>
@@ -1471,9 +1472,19 @@ function kaStart() {
       <div class="sy-on" style="display:none">
         <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
         <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:14px;"></div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
+        <div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:12px;">
+          <div style="font-weight:700;margin-bottom:5px;">Postfach</div>
+          <div style="font-size:13px;color:#64748b;margin-bottom:9px;">Nur neue Formulare abrufen und sicher übernehmen. Kein Geräteabgleich.</div>
+          <button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach jetzt abrufen</button>
+        </div>
+        <div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:12px;">
+          <div style="font-weight:700;margin-bottom:5px;">Geräteabgleich</div>
+          <div style="font-size:13px;color:#64748b;margin-bottom:9px;">Nur nach Deiner Freigabe Änderungen zwischen Computer und Zweitgerät austauschen. Kein Postfachimport.</div>
+          <button type="button" class="btn btn-save" onclick="KS.run(true)">Geräte jetzt abgleichen</button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
         <div id="sy-baks"></div>
-        <div style="font-size:13px; color:#64748b;">Der Abgleich läuft automatisch beim Öffnen der App, beim Zurückkehren zur App und etwa 6 Sekunden nach jeder Änderung. Offline arbeitest Du normal weiter, der Abgleich holt sich nach, was fehlt. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
+        <div style="font-size:13px; color:#64748b;">Der Geräteabgleich erfolgt ausschließlich nach Klick auf „Geräte jetzt abgleichen“. Das Postfach wird separat abgerufen. Änderungen bleiben bis dahin lokal. Wenn beide Geräte dieselben Daten offline bearbeiten, ist vor der produktiven Freigabe eine sichere Konfliktbehandlung erforderlich.</div>
       </div>
     </div>
     <div class="card" id="ext-box" style="margin-top:16px;">
@@ -1498,7 +1509,7 @@ function kaStart() {
         <div class="form-group"><label>Adresse zum Abonnieren (geheim halten)</label><div style="display:flex; gap:6px;"><input type="text" class="form-control kb-url" readonly style="min-width:0; font-size:12px;"><button type="button" class="btn btn-secondary btn-sm" onclick="calCopy()">Kopieren</button></div></div>
         <div class="kb-state" style="font-size:13px; margin-bottom:10px;"></div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-secondary" onclick="KS.calPush()">Jetzt aktualisieren</button><button type="button" class="btn btn-cancel" onclick="calOffAsk()">Ausschalten</button></div>
-        <div style="font-size:13px; color:#64748b; margin-top:12px;">Einrichten in Google Kalender (am Computer): Weitere Kalender, Per URL, Adresse einfügen. Google lädt abonnierte Kalender nur alle paar Stunden neu, die Anzeige hinkt also etwas nach. Wer die Adresse kennt, sieht die belegten Zeiten. Beim Ausschalten wird sie ungültig.</div>
+        <div style="font-size:13px; color:#64748b; margin-top:12px;">Einrichten in Google Kalender (am Computer): Weitere Kalender, Per URL, Adresse einfügen. Google lädt abonnierte Kalender nur alle paar Stunden neu, die Anzeige hinkt also etwas nach. Wer die Adresse kennt, sieht die belegten Zeiten. Beim Ausschalten wird sie ungültig. Die Veröffentlichung neuer Belegungszeiten erfolgt nur nach Klick auf „Jetzt aktualisieren“.</div>
       </div>
       <div class="kb-state-off" style="font-size:13px; color:#b91c1c; margin-top:8px;"></div>
     </div>
@@ -2389,7 +2400,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-04-k';
+var KA_V = '2026-11-04-dev1';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -9507,7 +9518,7 @@ document.addEventListener('click', function (ev) {
   row.classList.toggle('ra-open');
 });
 try { srchInit(); } catch (x) {}
-try { EXT.reload(); EXT.ui(); setTimeout(function () { EXT.refresh(); }, 4000); setInterval(function () { if (document.visibilityState === 'visible') EXT.refresh(); }, 900000); } catch (x) {}
+try { EXT.reload(); EXT.ui(); } catch (x) {} // Privaten Kalender nur manuell abrufen.
 try { KS.init(); } catch (x) {}
 
 </script>
