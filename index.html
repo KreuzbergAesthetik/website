@@ -2343,7 +2343,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-04-e';
+var KA_V = '2026-11-04-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3642,6 +3642,7 @@ function invTotal() { var t = 0; for (var i = 0; i < invRows.length; i++) t += r
 function paidSum(inv) { return (inv.payments || []).reduce(function (a, p) { return a + p.amount; }, 0); }
 function invState(inv) {
   var n = (inv.payments || []).length, sum = paidSum(inv);
+  if (inv.stornoFor) return { txt: 'Stornorechnung', cls: 'badge-gray', full: true };
   if (inv.storniert) return { txt: 'Storniert', cls: 'badge-gray', full: true };
   if ((inv.paid && !n) || sum >= inv.total - 0.005) return { txt: 'Bezahlt', cls: 'badge-green', full: true };
   if (sum > 0) return { txt: 'Teilzahlung', cls: 'badge-amber', full: false };
@@ -3889,8 +3890,51 @@ function invEditUi(on) {
   var zw = document.getElementById('iv-zahlwrap'); if (zw) zw.style.display = dr ? 'none' : '';
 }
 /* Bestehende Rechnung ändern: Nummer und Zahlungen bleiben erhalten */
+/* Fortlaufende Rechnungsnummer JJJJ-NNNNN */
+function invNextNr(datum) {
+  var yr = String(datum).slice(0, 4), seq = 0;
+  invoices.forEach(function (i) { var m = /^(?:RE-)?(\d{4})-(\d+)$/.exec(i.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); });
+  return yr + '-' + String(seq + 1).padStart(5, '0');
+}
+/* Ausgestellte Rechnungen sind unveränderlich, sobald sie versendet, bezahlt oder storniert sind (GoBD). Korrektur nur über Storno und neue Rechnung. */
+function invLocked(inv) {
+  if (!inv || invIsDraft(inv)) return '';
+  if (inv.stornoFor) return 'eine Stornorechnung';
+  if (inv.storniert) return 'storniert';
+  if (inv.sentAt) return 'versendet';
+  if ((inv.payments || []).length || inv.paid) return 'bezahlt';
+  return '';
+}
+function invIsLastNr(inv) { var m = /^(?:RE-)?(\d{4})-(\d+)$/.exec(inv.nr || ''); return !!m && invNextNr(m[1] + '-01-01') === m[1] + '-' + String(parseInt(m[2], 10) + 1).padStart(5, '0'); }
+/* Storno: eigene Stornorechnung mit neuer Nummer und negativen Beträgen, Original wird als storniert markiert */
+function stornoInvoice(inv) {
+  if (!inv || invIsDraft(inv) || inv.storniert || inv.stornoFor) return null;
+  var today = iso(new Date()), s = JSON.parse(JSON.stringify(inv));
+  s.id = newId(); s.nr = invNextNr(today); s.date = today; s.payments = []; s.paid = false; s.sentAt = null; s.storniert = false; s.stornoRef = '';
+  s.items = (s.items || []).map(function (it) { return Object.assign({}, it, { price: -(+it.price || 0), amount: -(+it.amount || 0) }); });
+  s.total = r2(-inv.total); s.stornoFor = inv.nr; s.showQr = false; s.zahlung = '';
+  s.vortext = 'Stornorechnung zu Rechnung ' + inv.nr + ' vom ' + fmtD(inv.date) + '. Die Rechnung ist damit aufgehoben.';
+  invoices.push(s); inv.storniert = true; inv.stornoRef = s.nr;
+  var p = patients.filter(function (x) { return x.id === inv.pid; })[0];
+  if (p) p.log = (p.log || []).concat([{ ts: Date.now(), type: 'notiz', text: 'Rechnung ' + inv.nr + ' storniert (Stornorechnung ' + s.nr + ')' }]);
+  persist(); return s;
+}
+async function stornoAsk(inv, korr, vorab) {
+  var paid = paidSum(inv);
+  var msg = (vorab ? vorab + '\n\n' : '') + 'Rechnung ' + inv.nr + ' stornieren?\n\nEs entsteht eine Stornorechnung mit eigener Nummer, die Rechnung bleibt als storniert erhalten.'
+    + (paid > 0 ? '\n\nBereits erfasste Zahlungen (' + eur(paid) + ') bleiben bei dieser Rechnung. Eine Erstattung oder Verrechnung bitte gesondert vermerken.' : '')
+    + (korr ? '\n\nDanach öffnet sich eine neue Rechnung mit denselben Angaben zum Korrigieren.' : '');
+  if (!await kaConfirm(msg, { ok: korr ? 'Stornieren und korrigieren' : 'Stornieren', danger: false })) return null;
+  var s = stornoInvoice(inv); if (!s) return null;
+  renderInvoices();
+  if (korr) { var p = patients.filter(function (x) { return x.id === inv.pid; })[0]; if (p) { closeModal('modal-invview'); invMode = 'rechnung'; openInvoice(p); fillInvForm(inv); document.getElementById('inv-datum').value = iso(new Date()); return s; } }
+  viewInvoice(s.id); return s;
+}
 function editInvoice() {
   var inv = invCur(); if (!inv) return;
+  var lk = invLocked(inv);
+  if (lk === 'storniert' || lk === 'eine Stornorechnung') { alert('Diese Rechnung ist ' + lk + ' und kann nicht mehr geändert werden.'); return; }
+  if (lk) { stornoAsk(inv, true, 'Rechnung ' + inv.nr + ' ist ' + lk + ' und darf nicht mehr geändert werden. Eine Korrektur geht über Storno und neue Rechnung.'); return; }
   var p = patients.filter(function (x) { return x.id === inv.pid; })[0]; if (!p) { alert('Der Patient zu dieser Rechnung wurde nicht gefunden.'); return; }
   closeModal('modal-invview'); invMode = inv.kind || 'rechnung'; invKeepMode = true; openInvoice(p); invEdit = inv; invEditUi(true); fillInvForm(inv);
 }
@@ -4132,9 +4176,7 @@ async function saveInvoice() {
     ['tab-zahlungen', 'tab-statistik'].forEach(function (t) { var el = document.getElementById(t); if (el && el.classList.contains('active')) (t === 'tab-zahlungen' ? renderZahlungen : renderStat)(); });
     viewInvoice(ie.id); return;
   }
-  var yr = datum.slice(0, 4), seq = 0;
-  invoices.forEach(function (i) { var m = /^(?:RE-)?(\d{4})-(\d+)$/.exec(i.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); });
-  var nr = yr + '-' + String(seq + 1).padStart(5, '0');
+  var nr = invNextNr(datum);
   var total = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
   var inv = { id: newId(), nr: nr, date: datum, leistung: leist, pid: p.id,
     name: (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname, adresse: adresse,
@@ -4196,7 +4238,7 @@ function openBox() {
   b.appendChild(t); return b;
 }
 var invSort = { k: 'nr', dir: -1 }, invF = '';
-function invKind(i) { if (i.kind === 'kv') return 'kv'; return i.storniert ? 'storno' : invState(i).full ? 'bezahlt' : (invLate(i) ? 'ueberfaellig' : 'offen'); }
+function invKind(i) { if (i.kind === 'kv') return 'kv'; return i.storniert || i.stornoFor ? 'storno' : invState(i).full ? 'bezahlt' : (invLate(i) ? 'ueberfaellig' : 'offen'); }
 function invSortBy(k) { if (invSort.k === k) invSort.dir = -invSort.dir; else { invSort.k = k; invSort.dir = k === 'name' || k === 'status' ? 1 : -1; } renderInvoices(); }
 function invCmp(a, b) {
   var k = invSort.k, d;
@@ -4418,7 +4460,7 @@ function invoiceDOM(inv) {
   if (rc.anrede) left.appendChild(mk('b', '', rc.anrede));
   rc.lines.forEach(function (t) { left.appendChild(mk('div', '', t)); });
   var right = mk('div'); right.style.cssText = 'width:230px; font-size:12px; color:#333;';
-  right.appendChild(mk('b', '', dk0 ? DRAFT[inv.kind].kopf : 'RECHNUNG'));
+  right.appendChild(mk('b', '', dk0 ? DRAFT[inv.kind].kopf : inv.stornoFor ? 'STORNORECHNUNG' : 'RECHNUNG'));
   (dk0 ? [['Datum:', fmtD(inv.date)]] : [['Rechnungsnummer:', inv.nr], ['Rechnungsdatum:', fmtD(inv.date)], ['Zahlungsstatus:', invStatusText(inv)]]).forEach(function (m) {
     var r = mk('div'); r.style.cssText = 'display:flex; justify-content:space-between; gap:8px;'; r.appendChild(mk('span', '', m[0])); r.appendChild(mk('span', '', m[1])); right.appendChild(r);
   });
@@ -4484,13 +4526,20 @@ function viewInvoice(id) {
   var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv)); if (!invIsDraft(inv)) box.appendChild(invPayBlock(inv));
   document.getElementById('inv-pay-btn').style.display = invIsDraft(inv) || invState(inv).full ? 'none' : 'inline-block';
   document.getElementById('inv-kv-btn').style.display = inv.kind === 'kv' ? '' : 'none';
-  document.getElementById('inv-copykv-btn').style.display = invIsDraft(inv) ? 'none' : '';
+  document.getElementById('inv-copykv-btn').style.display = invIsDraft(inv) || inv.stornoFor ? 'none' : '';
   var statusBtn = document.getElementById('inv-send-status-btn'); if (statusBtn) { statusBtn.style.display = inv.kind === 'kv' ? 'none' : 'inline-flex'; statusBtn.title = invSent(inv) ? 'Als nicht versendet markieren' : 'Als versendet markieren'; statusBtn.setAttribute('aria-label', statusBtn.title); statusBtn.style.color = invSent(inv) ? '#15803d' : '#64748b'; }
   var sb = document.getElementById('inv-send-btn'), sl = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden'; sb.title = sl; sb.setAttribute('aria-label', sl);
   openModal('modal-invview');
 }
 async function deleteInvoice() {
   var inv = invCur(); if (!inv) return;
+  if (!invIsDraft(inv)) {
+    var lk = invLocked(inv);
+    if (lk === 'storniert' || lk === 'eine Stornorechnung') { alert('Diese Rechnung ist ' + lk + ' und muss aufbewahrt werden. Löschen ist nicht möglich.'); return; }
+    if (lk || !invIsLastNr(inv)) {
+      await stornoAsk(inv, false, 'Rechnung ' + inv.nr + ' ist ' + (lk || 'nicht die letzte vergebene Nummer') + ' und kann deshalb nicht gelöscht werden (lückenlose Nummern, Aufbewahrungspflicht).'); return;
+    }
+  }
   if (invIsDraft(inv)) {
     if (!await kaConfirm(DRAFT[inv.kind].name + ' für ' + inv.name + ' (' + eur(inv.total) + ') wirklich löschen?')) return;
     entw = entw.filter(function (i) { return i !== inv; }); persist(); closeModal('modal-invview'); invTab = inv.kind === 'test' ? 'test' : 'rechnung'; renderInvoices(); return;
@@ -4734,6 +4783,8 @@ function invCalc(inv) {
   return { net: r2(inv.total - vat), vr: vr };
 }
 function invStatusText(inv) {
+  if (inv.stornoFor) return 'Stornorechnung zu Rechnung ' + inv.stornoFor;
+  if (inv.storniert) return 'Storniert' + (inv.stornoRef ? ' (Stornorechnung ' + inv.stornoRef + ')' : '');
   var st = invState(inv), pays = inv.payments || [];
   return st.full ? 'Bezahlt' + (pays.length ? ' am ' + fmtD(pays[pays.length - 1].date) : '') : (st.txt === 'Teilzahlung' ? 'Teilzahlung, offen ' + eurP(inv.total - paidSum(inv)) : 'Offen');
 }
@@ -4767,7 +4818,7 @@ function buildInvoicePdf(inv, logo) {
   var rc = splitRecipient(inv), ry = 152;
   if (rc.anrede) { txt(L, ry, rc.anrede, 9.5, true); ry += 12; }
   rc.lines.forEach(function (t, i) { pdfWrap(t, false, 9.5, 280).forEach(function (w) { txt(L, ry, w, 9.5); ry += 12; }); });
-  txt(379, 148, invIsDraft(inv) ? DRAFT[inv.kind].kopf : 'RECHNUNG', 9.5, true);
+  txt(379, 148, invIsDraft(inv) ? DRAFT[inv.kind].kopf : inv.stornoFor ? 'STORNORECHNUNG' : 'RECHNUNG', 9.5, true);
   (invIsDraft(inv) ? [['Datum:', fmtD(inv.date)]] : [['Rechnungsnummer:', inv.nr], ['Rechnungsdatum:', fmtD(inv.date)], ['Zahlungsstatus:', invStatusText(inv)]]).forEach(function (m, i) {
     txt(379, 160 + i * 12, m[0], 8.5, false, 0.25); txtR(R, 160 + i * 12, m[1], 8.5, false, 0.25);
   });
@@ -5187,10 +5238,26 @@ function toggleStamm() {
   if (nn !== old) events.forEach(function (e) { if (String(e.patientId) === String(curP.id) || e.patient === old) { e.patientId = curP.id; e.patient = nn; } });
   persist(); renderPatients(); renderCal(); viewAkte(curP);
 }
+/* Aufbewahrungspflicht: Akten mit medizinischer Dokumentation 10 Jahre nach der letzten Behandlung (§ 630f Abs. 3 BGB) */
+function patAufbewahrung(p) {
+  var was = [], last = 0, now = Date.now(), tsOfD = function (x) { return x.ts || tsOf(x) || 0; };
+  if ((p.doku || []).length) { was.push('Dokumentation'); p.doku.forEach(function (d) { last = Math.max(last, tsOfD(d)); }); }
+  if ((p.dokumente || []).length) { was.push('Dokumente'); p.dokumente.forEach(function (d) { last = Math.max(last, tsOfD(d)); }); }
+  if ((p.bilder || []).length) { was.push('Bilder'); p.bilder.forEach(function (d) { last = Math.max(last, tsOfD(d)); }); }
+  if ((p.medikation || []).length || String(p.allergien || '').trim() || String(p.diagnosen || '').trim()) { was.push('Anamnese'); last = Math.max(last, p.erstellt || 0); }
+  var ev = events.filter(function (e) { if (!eventBelongs(e, p) || e.phase === 'Abgesagt') return false; var t = new Date(e.date + 'T' + (e.time || '00:00') + ':00').getTime(); return t && t <= now; });
+  if (ev.length) { was.push('Behandlungstermine'); ev.forEach(function (e) { last = Math.max(last, new Date(e.date + 'T12:00:00').getTime()); }); }
+  if (!was.length) return { was: was, bis: 0 };
+  if (!last) last = now;
+  var d = new Date(last); d.setFullYear(d.getFullYear() + 10);
+  return { was: was, bis: d.getTime() };
+}
 async function deletePatient() {
   var p = curP;
   if (invoices.some(function (i) { return i.pid === p.id; })) { alert('Zu diesem Patienten gibt es Rechnungen. Diese müssen aufbewahrt werden, deshalb kann er nicht gelöscht werden.'); return; }
   if (lager.verbrauch.some(function (v) { return v.pid === p.id; })) { alert('Zu diesem Patienten gibt es Produktbuchungen aus dem Lager. Deshalb kann er nicht gelöscht werden.'); return; }
+  var aufb = patAufbewahrung(p);
+  if (aufb.bis && aufb.bis > Date.now()) { alert('Diese Akte enthält medizinische Dokumentation (' + aufb.was.join(', ') + '). Sie muss bis ' + new Date(aufb.bis).toLocaleDateString('de-DE') + ' aufbewahrt werden (10 Jahre nach der letzten Behandlung, § 630f BGB) und kann bis dahin nicht gelöscht werden.'); return; }
   var name = nameKey(p), n = events.filter(function (e) { return eventBelongs(e, p); }).length;
   if (!await kaConfirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
   (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });

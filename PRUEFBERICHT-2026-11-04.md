@@ -50,6 +50,9 @@ Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den e
 - WhatsApp als Versandweg entfernt (Patientendaten nicht über Meta). Das allgemeine Teilen-Menü des Geräts für Rechnungs-PDFs bleibt.
 - Kalender-Freigabe für Google/Apple: nur noch „Belegt“, die Option mit Patientenkürzeln ist entfernt. Eine bereits veröffentlichte Datei wird beim nächsten App-Start ersetzt.
 
+- Rechnungen: versendete, bezahlte und stornierte Rechnungen sind gesperrt; Korrektur über Stornorechnung mit eigener Nummer und neue Rechnung; Löschen nur für die letzte, unversendete, unbezahlte Nummer (Version `2026-11-04-f`, Test `tests/rechnung-sperre.mjs`).
+- Löschschutz: Akten mit medizinischer Dokumentation 10 Jahre nach der letzten Behandlung nicht löschbar.
+
 ## Kein Handlungsbedarf
 
 - `Origin`-Prüfung des Servers: nur Filter, die Sicherheit hängt am Zugangs-Token.

@@ -123,6 +123,8 @@ function invCalc(inv) {
   return { net: r2(inv.total - vat), vr: vr };
 }
 function invStatusText(inv) {
+  if (inv.stornoFor) return 'Stornorechnung zu Rechnung ' + inv.stornoFor;
+  if (inv.storniert) return 'Storniert' + (inv.stornoRef ? ' (Stornorechnung ' + inv.stornoRef + ')' : '');
   var st = invState(inv), pays = inv.payments || [];
   return st.full ? 'Bezahlt' + (pays.length ? ' am ' + fmtD(pays[pays.length - 1].date) : '') : (st.txt === 'Teilzahlung' ? 'Teilzahlung, offen ' + eurP(inv.total - paidSum(inv)) : 'Offen');
 }
@@ -156,7 +158,7 @@ function buildInvoicePdf(inv, logo) {
   var rc = splitRecipient(inv), ry = 152;
   if (rc.anrede) { txt(L, ry, rc.anrede, 9.5, true); ry += 12; }
   rc.lines.forEach(function (t, i) { pdfWrap(t, false, 9.5, 280).forEach(function (w) { txt(L, ry, w, 9.5); ry += 12; }); });
-  txt(379, 148, invIsDraft(inv) ? DRAFT[inv.kind].kopf : 'RECHNUNG', 9.5, true);
+  txt(379, 148, invIsDraft(inv) ? DRAFT[inv.kind].kopf : inv.stornoFor ? 'STORNORECHNUNG' : 'RECHNUNG', 9.5, true);
   (invIsDraft(inv) ? [['Datum:', fmtD(inv.date)]] : [['Rechnungsnummer:', inv.nr], ['Rechnungsdatum:', fmtD(inv.date)], ['Zahlungsstatus:', invStatusText(inv)]]).forEach(function (m, i) {
     txt(379, 160 + i * 12, m[0], 8.5, false, 0.25); txtR(R, 160 + i * 12, m[1], 8.5, false, 0.25);
   });
@@ -576,10 +578,26 @@ function toggleStamm() {
   if (nn !== old) events.forEach(function (e) { if (String(e.patientId) === String(curP.id) || e.patient === old) { e.patientId = curP.id; e.patient = nn; } });
   persist(); renderPatients(); renderCal(); viewAkte(curP);
 }
+/* Aufbewahrungspflicht: Akten mit medizinischer Dokumentation 10 Jahre nach der letzten Behandlung (§ 630f Abs. 3 BGB) */
+function patAufbewahrung(p) {
+  var was = [], last = 0, now = Date.now(), tsOfD = function (x) { return x.ts || tsOf(x) || 0; };
+  if ((p.doku || []).length) { was.push('Dokumentation'); p.doku.forEach(function (d) { last = Math.max(last, tsOfD(d)); }); }
+  if ((p.dokumente || []).length) { was.push('Dokumente'); p.dokumente.forEach(function (d) { last = Math.max(last, tsOfD(d)); }); }
+  if ((p.bilder || []).length) { was.push('Bilder'); p.bilder.forEach(function (d) { last = Math.max(last, tsOfD(d)); }); }
+  if ((p.medikation || []).length || String(p.allergien || '').trim() || String(p.diagnosen || '').trim()) { was.push('Anamnese'); last = Math.max(last, p.erstellt || 0); }
+  var ev = events.filter(function (e) { if (!eventBelongs(e, p) || e.phase === 'Abgesagt') return false; var t = new Date(e.date + 'T' + (e.time || '00:00') + ':00').getTime(); return t && t <= now; });
+  if (ev.length) { was.push('Behandlungstermine'); ev.forEach(function (e) { last = Math.max(last, new Date(e.date + 'T12:00:00').getTime()); }); }
+  if (!was.length) return { was: was, bis: 0 };
+  if (!last) last = now;
+  var d = new Date(last); d.setFullYear(d.getFullYear() + 10);
+  return { was: was, bis: d.getTime() };
+}
 async function deletePatient() {
   var p = curP;
   if (invoices.some(function (i) { return i.pid === p.id; })) { alert('Zu diesem Patienten gibt es Rechnungen. Diese müssen aufbewahrt werden, deshalb kann er nicht gelöscht werden.'); return; }
   if (lager.verbrauch.some(function (v) { return v.pid === p.id; })) { alert('Zu diesem Patienten gibt es Produktbuchungen aus dem Lager. Deshalb kann er nicht gelöscht werden.'); return; }
+  var aufb = patAufbewahrung(p);
+  if (aufb.bis && aufb.bis > Date.now()) { alert('Diese Akte enthält medizinische Dokumentation (' + aufb.was.join(', ') + '). Sie muss bis ' + new Date(aufb.bis).toLocaleDateString('de-DE') + ' aufbewahrt werden (10 Jahre nach der letzten Behandlung, § 630f BGB) und kann bis dahin nicht gelöscht werden.'); return; }
   var name = nameKey(p), n = events.filter(function (e) { return eventBelongs(e, p); }).length;
   if (!await kaConfirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
   (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });
