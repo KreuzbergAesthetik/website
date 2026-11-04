@@ -97,3 +97,11 @@ h2 { font-size: 13px; letter-spacing: .08em; color: #64748b; border-bottom: none
 /* Zurücksetzen: unauffällig, rot erst bei der Rückfrage */
 #reset { font-size: 14px; font-weight: 500; padding: 8px 10px; border-color: transparent; background: none; color: #64748b; }
 #reset.armed { color: #b91c1c; border-color: #fca5a5; background: #fff5f5; }
+/* App-Look wie in der Praxis-App: blaugrauer Hintergrund, weiße Karten mit Schatten, helle Kopfzeile, grüner Absende-Knopf */
+body { background: #e6ebf3; }
+.top { border-bottom: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(15,23,42,.28); position: relative; }
+.card, .ro, .codepill { border: none; border-radius: 14px; box-shadow: 0 2px 6px rgba(15,23,42,.1); }
+.q { border: none; border-left: 5px solid #94a3b8; border-radius: 14px; box-shadow: 0 2px 6px rgba(15,23,42,.1); }
+.btn.primary, .btn.ok { background: #16a34a; border-color: #16a34a; color: #fff; }
+.btn.primary:hover, .btn.ok:hover { background: #278a3a; border-color: #278a3a; }
+.actions { background: linear-gradient(to top, #e6ebf3 70%, rgba(230,235,243,0)); }
