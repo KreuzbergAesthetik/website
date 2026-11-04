@@ -1,0 +1,16 @@
+  <!-- TAB: TODOS -->
+  <div id="tab-todos" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">To-Dos</span><button type="button" class="btn btn-sm" onclick="openTodo(null)">+ To-Do</button></div>
+      <div class="cal-bar">
+        <div class="seg" id="td-prio" role="group" aria-label="Dringlichkeit">
+          <button type="button" data-v="" onclick="setTdPrio('')">Alle</button><button type="button" data-v="hoch" onclick="setTdPrio('hoch')">Hoch</button><button type="button" data-v="mittel" onclick="setTdPrio('mittel')">Mittel</button><button type="button" data-v="niedrig" onclick="setTdPrio('niedrig')">Niedrig</button>
+        </div>
+        <div class="seg" id="td-stat" role="group" aria-label="Status">
+          <button type="button" data-v="offen" onclick="setTdStat('offen')">Offen</button><button type="button" data-v="erledigt" onclick="setTdStat('erledigt')">Erledigt</button><button type="button" data-v="alle" onclick="setTdStat('alle')">Alle</button>
+        </div>
+      </div>
+      <div id="td-list" style="margin-top:6px;"></div>
+    </div>
+  </div>
+

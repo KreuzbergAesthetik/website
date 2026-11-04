@@ -1,0 +1,66 @@
+/* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
+#tab-patienten .pt { border-collapse:separate; border-spacing:0 5px; }
+#tab-patienten .pt tbody td { background:#f6f8fb; border-top:1px solid #dbe2ea; border-bottom:1px solid #dbe2ea; padding-top:5px; padding-bottom:5px; vertical-align:top; }
+#tab-patienten .pt tbody td:first-child { border-left:1px solid #dbe2ea; border-radius:10px 0 0 10px; }
+#tab-patienten .pt tbody td.pc-er { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; }
+@media (max-width:520px) { #tab-patienten .pt tbody td:nth-child(2) { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; } }
+.pn-nm { font-weight:600; color:#0f172a; }
+.pn-row { display:flex; align-items:center; gap:2px; min-width:0; } .pn-nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto; } .pn-row .pt-marks { flex:none; } .pt-dob { font-size:12.5px; color:#64748b; margin-top:1px; }
+.pt-marks { display:inline-flex; align-items:center; white-space:nowrap; margin-left:6px; }
+@media (max-width:520px) { .pt-marks { display:flex; margin:0 0 0 4px; } }
+.pt td .fl, .pt td .warn { height:18px; box-sizing:border-box; margin:4px 4px 0 0; vertical-align:middle; } .pt td .fl { line-height:18px; padding:0 7px; font-size:10.5px; }
+.pt td .fl-ico { padding:0 5px; } .pt td .warn { width:18px; margin-left:0; font-size:10.5px; }
+@media (max-width:520px) { #tab-rechnungen .pc-d { display:none; } #tab-rechnungen .pc-ds { display:block; }
+  #tab-rechnungen .hm-l { display:none; } #tab-rechnungen .hm-s { display:inline; } #tab-rechnungen .pt { min-width:0; font-size:12.5px; } #tab-rechnungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-rechnungen .pt th, #tab-rechnungen .pt td { padding-left:4px; padding-right:4px; } #tab-rechnungen .pt .pn { font-size:12.5px; } .pt td.nw { white-space:nowrap; }
+  #tab-patienten .hm-l { display:none; } #tab-patienten .hm-s { display:inline; } #tab-patienten .pt { min-width:0; } #tab-patienten .pt .pl a { overflow-wrap:anywhere; } .pt .pc-er { display:none; } .pt th[style*="width"] { width:auto !important; } .pt th, .pt td { padding-left:8px; padding-right:8px; } }
+.badge-gray { background:#e2e8f0; color:#475569; }
+.pt thead th:not([onclick]) { cursor:pointer; user-select:none; }
+.pt th[data-sd="1"]::after { content:' \25B2'; font-size:9px; } .pt th[data-sd="-1"]::after { content:' \25BC'; font-size:9px; }
+.open-box { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; background:#fff; border:1px solid #e2e8f0; border-left:4px solid #ea580c; border-radius:10px; padding:8px 12px; margin:0 0 12px; } .open-box.late { border-left-color:#dc2626; }
+.open-box b { font-size:20px; color:#0f172a; } .open-box.late b { color:#991b1b; } .open-box .ob-t { font-size:13px; color:#64748b; flex:1; min-width:150px; }
+.pt tr.t-open td { background:none; } .pt tr.t-late td { background:#fff1e0; } #inv-table td:first-child { padding-right:10px; } #inv-table td:nth-child(3) { padding-left:4px; padding-right:22px; text-align:left; } #inv-table td:nth-child(4) { width:1%; white-space:nowrap; text-align:right; padding-left:4px; }
+.pt tr.t-open td:first-child, .pt tr.t-late td:first-child, .pt tr.t-paid td:first-child { padding-left:20px !important; } .pt tr.t-paid td:first-child { box-shadow:inset 4px 0 0 #16a34a; } .pt tr.t-open td:first-child { box-shadow:inset 4px 0 0 #ea580c; } .pt tr.t-late td:first-child { box-shadow:inset 4px 0 0 #dc2626; }
+.badge-red { background:#fee2e2; color:#991b1b; font-weight:700; }
+.ak-h-open { color:#9a3412; border-bottom-color:#fed7aa; }
+.hm-openp { background:#fffaf5 !important; border-left:4px solid #ea580c; } .hm-late { background:#fef2f2 !important; border-left:4px solid #dc2626; }
+.za-seg { display:flex; flex-wrap:wrap; gap:6px; } .za-b { display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 12px; border-radius:10px; border:1px solid #cbd5e1; background:#fff; color:#334155; font-size:13.5px; cursor:pointer; font-family:inherit; } .za-b b { color:#0f172a; font-weight:700; } .za-b i { width:9px; height:9px; border-radius:50%; flex:none; } .za-b.on { background:#0f172a; border-color:#0f172a; color:#cbd5e1; } .za-b.on b { color:#fff; }
+.za-row { flex:1 1 100%; display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; background:#f8fafc; border:1px solid #eef2f6; border-radius:10px; padding:8px 12px; }
+.za-t { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; } .za { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:#334155; } .za i, .zart i { width:9px; height:9px; border-radius:50%; flex:none; } .za b { color:#0f172a; }
+.zart { display:inline-flex; align-items:center; gap:7px; }
+.row-actions .btn { white-space:nowrap; } .pc-ds { display:none; color:#94a3b8; font-size:11px; margin-top:1px; }
+@media (max-width:520px) { #tab-zahlungen .hm-l { display:none; } #tab-zahlungen .hm-s { display:inline; } #tab-zahlungen .pt { min-width:0 !important; font-size:12.5px !important; } #tab-zahlungen .pt th { letter-spacing:0; font-size:10.5px; } #tab-zahlungen .pt th, #tab-zahlungen .pt td { padding:8px 4px; } #tab-zahlungen .pt .pn { white-space:nowrap; font-size:12.5px; } #tab-zahlungen .zart { font-size:0; } #tab-zahlungen .zart i { margin:0; } #tab-zahlungen .pt td:nth-child(5) { white-space:nowrap; } #zl-open .hm-main > span { display:block; } #tab-rechnungen .card-header { flex-wrap:wrap; } }
+#st-kpi { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; } @media (min-width:600px) { #st-kpi { grid-template-columns:repeat(3,1fr); } }
+.inv-rb { border:1px dashed #cbd5e1; background:#fff; color:#334155; border-radius:16px; padding:4px 12px; font-size:13px; cursor:pointer; font-family:inherit; } .inv-rb:hover { background:#f1f5f9; }
+@media (max-width:520px) {
+  #tab-leistungen .pt { min-width:0 !important; }
+  #tab-leistungen .pt th:nth-child(1), #tab-leistungen .pt td:nth-child(1), #tab-leistungen .pt th:nth-child(5), #tab-leistungen .pt td:nth-child(5), #tab-leistungen .pt th:nth-child(6), #tab-leistungen .pt td:nth-child(6), #tab-leistungen .pt th:nth-child(7), #tab-leistungen .pt td:nth-child(7) { display:none; }
+  #tab-leistungen .pt th:nth-child(3) { width:44px !important; font-size:0; } #tab-leistungen .pt th:nth-child(3)::after { content:'Gr.'; font-size:10.5px; }
+  #tab-leistungen .pt th:nth-child(4) { width:auto !important; } #tab-leistungen .ls-gn { display:none; } #tab-leistungen .pt td:nth-child(3) { text-align:center; } #tab-leistungen .pt td:nth-child(3) span:first-child { margin-right:0 !important; }
+  #tab-leistungen .pt td:nth-child(4) { white-space:nowrap; text-align:right; } #tab-leistungen .pt th:nth-child(4) { text-align:right; }
+  #tab-leistungen .pt th, #tab-leistungen .pt td { padding-left:6px; padding-right:6px; }
+}
+#applock { display:none; position:fixed; inset:0; z-index:99999; background:#f1f5f9; align-items:center; justify-content:center; padding:20px; }
+html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
+.al-box { background:#fff; border:1px solid #dbe2ea; border-radius:14px; padding:26px 22px; width:100%; max-width:340px; text-align:center; }
+.al-box img { width:72px; height:72px; margin-bottom:8px; } .al-box h2 { font-size:17px; margin-bottom:14px; } .al-box input { text-align:center; }
+.al-msg { color:#b91c1c; font-size:13px; min-height:18px; margin-top:8px; }
+@media (max-width:760px) { header .nav-btn { padding-left:1px; padding-right:1px; font-size:12.5px; } header .nav-btn.nav-more { padding-left:10px; padding-right:10px; } .nav-more-label { display:none; } }
+
+/* Kalender im Querformat: eine Werkzeugzeile, breite Karte, Raster mit eigener Bildlaufleiste und fester Tageszeile */
+@media (min-width:700px) {
+  main:has(#tab-kalender.active) { max-width:min(1500px,100%); }
+  .cal-top { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+  .cal-top .card-header { display:contents; }
+  .cal-top .card-title { order:0; } .cal-top .seg-hd { order:1; flex:0 0 250px; } .cal-top .cal-bar { order:2; flex:1; margin:0; justify-content:center !important; } .cal-top .cal-plus { order:3; }
+  #cal-body { max-height:max(240px, calc(100vh - var(--hdh,112px) - 140px)); overflow-y:auto; }
+  #cal-body .tg-row:first-child { position:sticky; top:0; z-index:6; background:#fff; }
+}
+
+/* Patientenakte: Kacheln füllen die Zeilen vollständig aus */
+@media (min-width:641px) {
+  .a-tiles { display:flex; flex-wrap:wrap; gap:10px; }
+  .a-tile { flex:1 1 calc(50% - 5px); min-width:0; min-height:0; }
+  .a-tiles[data-n="5"] .a-tile, .a-tiles[data-n="6"] .a-tile, .a-tiles[data-n="7"] .a-tile, .a-tiles[data-n="8"] .a-tile { flex-basis:calc(33.333% - 7px); }
+  .a-tile.ed { flex-basis:100%; }
+}
+

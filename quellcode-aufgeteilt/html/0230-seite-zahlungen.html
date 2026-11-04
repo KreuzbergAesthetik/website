@@ -1,0 +1,22 @@
+  <!-- TAB: ZAHLUNGEN -->
+  <div id="tab-zahlungen" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Zahlungen</span>
+        <button type="button" class="btn btn-sm" onclick="zlAdd()">+ Zahlung</button>
+      </div>
+      <div class="cal-bar" style="margin-bottom:8px;">
+        <div class="row-actions">
+          <input type="month" id="zl-month" class="form-control" style="width:auto;" onchange="zMonth = this.value; renderZahlungen()" aria-label="Monat">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="zMonth = ''; renderZahlungen()">Alle</button>
+        </div>
+        <div id="zl-arts" class="za-seg"></div>
+      </div>
+      <div id="zl-sum" style="display:none;"></div>
+      <div class="ak-h" id="zl-open-h">Offene Posten</div>
+      <div id="zl-open"></div>
+      <div class="ak-h">Einnahmen</div>
+      <div class="scroll"><table class="pt" style="min-width:460px; font-size:14px;"><thead><tr><th>Datum</th><th>Patient</th><th>Rechnung</th><th>Art</th><th>Betrag</th></tr></thead><tbody id="zl-in"></tbody></table></div>
+    </div>
+  </div>
+

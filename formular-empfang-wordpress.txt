@@ -20,7 +20,7 @@ if (!function_exists('ka_cfg')) {
     function ka_cfg() {
         return array(
             'EMPFAENGER'  => 'info@kreuzberg-aesthetik.de',          // Hierhin gehen die Benachrichtigungen
-            'ERLAUBT'     => array('https://fellamanuel-arch.github.io'), // Seiten, die senden dürfen
+            'ERLAUBT'     => array('https://kreuzbergaesthetik.github.io', 'https://fellamanuel-arch.github.io'), // Seiten, die senden dürfen
             'EINRICHTUNG' => '',          // Optional: eigenes Wort, das beim ersten Einrichten der App einmal eingegeben werden muss
             'MAX_PAKET'   => 12 * 1024 * 1024,   // größtes Formular (verschlüsselt)
             'MAX_OBJEKT'  => 40 * 1024 * 1024,   // größte Datei im Abgleich
@@ -149,8 +149,16 @@ if (!function_exists('ka_cfg')) {
 
         if ($a === 'init') {
             if (is_dir($vdir)) return ka_ok(array('neu' => false));
-            if ($c['EINRICHTUNG'] !== '' && !hash_equals($c['EINRICHTUNG'], (string) $req->get_param('e'))) return $bad(403, 'Der Einrichtungscode stimmt nicht.');
-            if (count((array) glob($vroot . '/*', GLOB_ONLYDIR)) >= 5) return $bad(403, 'Es gibt hier schon genug Bereiche.');
+            /* Neue Bereiche nur, wenn noch keiner existiert, der Einrichtungscode stimmt oder ein bestehender Bereich
+               sich ausweist (Passwortwechsel). Sonst könnte ein Fremder einen Bereich anlegen und darüber das Postfach
+               lesen oder den Formular-Schlüssel austauschen. */
+            $areas = (array) glob($vroot . '/*', GLOB_ONLYDIR);
+            $alt = strtolower((string) $req->get_param('alt'));
+            $byOld = preg_match('/^[0-9a-f]{64}$/', $alt) && is_dir($vroot . '/' . hash('sha256', $alt));
+            $byCode = $c['EINRICHTUNG'] !== '' && hash_equals($c['EINRICHTUNG'], (string) $req->get_param('e'));
+            if ($c['EINRICHTUNG'] !== '' && !$byCode && !$byOld) return $bad(403, 'Der Einrichtungscode stimmt nicht.');
+            if ($c['EINRICHTUNG'] === '' && count($areas) > 0 && !$byOld) return $bad(403, 'Auf dem Server ist schon ein Abgleich eingerichtet. Bitte „Mit vorhandenem verbinden“ wählen. Für einen neuen Bereich im Server-Skript bei EINRICHTUNG einen Code eintragen.');
+            if (count($areas) >= 5) return $bad(403, 'Es gibt hier schon genug Bereiche.');
             if (!@mkdir($vdir, 0750)) return ka_fail(500, 'Speichern nicht möglich.');
             file_put_contents($vdir . '/rev', '0');
             return ka_ok(array('neu' => true));

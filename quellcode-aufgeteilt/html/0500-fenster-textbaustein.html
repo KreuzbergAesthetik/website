@@ -1,0 +1,14 @@
+<!-- MODAL: TEXTBAUSTEIN -->
+<div id="modal-tb" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Textbaustein</strong><button type="button" class="close-btn" onclick="closeModal('modal-tb')">&times;</button></div>
+    <div class="form-group"><label>Name</label><input type="text" id="tb-name" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Text</label><textarea id="tb-text" class="form-control" rows="6"></textarea></div>
+    <div class="foot-bar">
+      <button type="button" id="tb-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteTxt()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tb')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveTxt()">Speichern</button>
+    </div>
+  </div>
+</div>
+

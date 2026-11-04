@@ -1,0 +1,17 @@
+<!-- MODAL: RECHNUNGEN IMPORTIEREN -->
+<div id="modal-rimp" class="modal-overlay">
+  <div class="modal-box" style="max-width:760px;">
+    <div class="modal-header"><strong>Rechnungen importieren</strong><button type="button" class="close-btn" onclick="closeModal('modal-rimp')">&times;</button></div>
+    <div id="ri-info" style="font-size:14px; color:#475569; margin-bottom:10px;"></div>
+    <div class="scroll"><table class="pt" style="min-width:620px; font-size:13.5px;"><thead><tr><th style="width:34px;"></th><th>Nr.</th><th>Datum</th><th>Patient</th><th>Betrag</th><th>Status</th><th>Hinweis</th></tr></thead><tbody id="ri-table"></tbody></table></div>
+    <div class="grid-2" style="margin-top:12px;">
+      <div class="form-group"><label>Bezahlte Rechnungen als Zahlung verbuchen per</label><select id="ri-art" class="form-control"><option>Überweisung</option><option>Karte</option><option>Bar</option><option>PayPal</option></select></div>
+      <div class="form-group"><label>Zahlungsdatum</label><select id="ri-paydate" class="form-control"><option value="rechnung">Rechnungsdatum</option></select></div>
+    </div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-rimp')">Abbrechen</button>
+      <button type="button" id="ri-go" class="btn btn-save" onclick="rechnungenSave()">Importieren</button>
+    </div>
+  </div>
+</div>
+

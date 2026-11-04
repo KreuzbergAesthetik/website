@@ -1,0 +1,37 @@
+<!-- MODAL: NACHRICHTENVORLAGE -->
+<div id="modal-pk" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Paket</strong><button type="button" class="close-btn" onclick="closeModal('modal-pk')">&times;</button></div>
+    <div class="form-group"><label>Name des Pakets</label><input type="text" id="pk-name" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Online-Formulare (Links in der Nachricht)</label><div id="pk-forms"></div></div>
+    <div class="form-group"><label>Vorlagen für die Akte (vor Ort unterschreiben)</label><div id="pk-tpls"></div></div>
+    <div class="form-group"><label>Betreff</label><input type="text" id="pk-betreff" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Nachricht</label><textarea id="pk-text" class="form-control" rows="8"></textarea></div>
+    <div class="foot-bar">
+      <button type="button" id="pk-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deletePaket()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-pk')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="savePaket()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-nv" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Nachrichtenvorlage</strong><button type="button" class="close-btn" onclick="closeModal('modal-nv')">&times;</button></div>
+    <div class="form-group"><label>Name der Vorlage</label><input type="text" id="nv-name" class="form-control" autocomplete="off"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Gruppe</label><select id="nv-gruppe" class="form-control"></select></div>
+      <div class="form-group"><label>Kanal</label><select id="nv-kanal" class="form-control"><option>E-Mail</option><option>SMS</option><option>E-Mail · SMS</option></select></div>
+    </div>
+    <div class="form-group"><label>Betreff</label><input type="text" id="nv-betreff" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Nachricht</label><textarea id="nv-text" class="form-control" rows="8"></textarea></div>
+    <div class="form-group"><label>Platzhalter einfügen (antippen)</label><div id="nv-phs" class="nv-phs"></div></div>
+    <div class="form-group"><label>Anhänge (Vorlagen aus Praxis → Vorlagen)</label><div id="nv-att"></div></div>
+    <div class="foot-bar">
+      <button type="button" id="nv-del" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" style="display:none;" onclick="deleteNachr()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-nv')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveNachr()">Speichern</button>
+    </div>
+  </div>
+</div>
+

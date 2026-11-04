@@ -87,7 +87,7 @@ var KF = (function () {
   }
   /* Elemente mit data-fk ausblenden und die Sternchen nach Pflicht setzen */
   function apply() {
-    if (conf().name) document.title = conf().name + ' ' + (PRAXIS_F && PRAXIS_F.name || '');
+    if (conf().name) document.title = conf().name + ' ' + (typeof PRAXIS_F !== 'undefined' && PRAXIS_F.name || '');
     [].forEach.call(document.querySelectorAll('[data-fk]'), function (el) {
       var k = el.getAttribute('data-fk'), h = hidden(k); el.style.display = h ? 'none' : ''; grids(el);
       if (h) return;

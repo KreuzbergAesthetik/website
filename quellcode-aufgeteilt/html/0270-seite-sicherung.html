@@ -1,0 +1,14 @@
+  <!-- TAB: SICHERUNG -->
+  <div id="tab-sicherung" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Sicherung</span></div>
+      <div id="sk-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
+      <div style="font-size:13px; color:#64748b; margin-bottom:16px;">Die Sicherung ist eine ZIP-Datei mit allen Daten, Fotos und Dokumenten. Sie wird immer mit einem eigenen Passwort verschlüsselt. Sie ist unabhängig vom Geräte-Abgleich: Wird dort versehentlich etwas gelöscht, bleibt sie erhalten.</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-save" onclick="hdRun(exportData, 'Sichern')">Sichern</button>
+        <button type="button" class="btn btn-secondary" onclick="hdRun(function () { document.getElementById('imp-file').click(); }, 'Laden')">Laden</button>
+      </div>
+      <div style="font-size:13px; color:#64748b; margin-top:16px;"><b>Sichern</b> speichert den aktuellen Stand. <b>Laden</b> liest eine Sicherung wieder ein, bei mehreren Teilen bitte alle Teile gemeinsam wählen. Einzelne Formulare, Rechnungen oder Patienten liest der Knopf <b>Import</b> unter der Patientenliste ein.</div>
+    </div>
+  </div>
+

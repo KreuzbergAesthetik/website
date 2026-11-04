@@ -1,0 +1,14 @@
+<!-- MODAL: WEBFORMULAR-TEXTE -->
+<div id="modal-ftxt" class="modal-overlay">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header"><strong id="ft-title">Texte</strong><button type="button" class="close-btn" onclick="closeModal('modal-ftxt')">&times;</button></div>
+    <div style="font-size:13px; color:#64748b; margin-bottom:8px;">Ändere die Texte so, wie sie im Formular stehen sollen. Ein Text gilt überall, wo er vorkommt. Zeilenumbrüche werden nicht übernommen.</div>
+    <input type="search" id="ft-q" class="form-control" placeholder="Suchen..." oninput="ftFilter()" style="margin-bottom:10px;">
+    <div id="ft-list" style="max-height:52vh; overflow-y:auto; padding-right:2px;"></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-ftxt')">Abbrechen</button>
+      <button type="button" class="btn btn-save" id="ft-save" onclick="ftSave()">Speichern</button>
+    </div>
+  </div>
+</div>
+

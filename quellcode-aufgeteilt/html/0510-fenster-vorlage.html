@@ -1,0 +1,33 @@
+<!-- MODAL: VORLAGE -->
+<div id="modal-tpl" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Vorlage bearbeiten</strong><button type="button" class="close-btn" onclick="closeModal('modal-tpl')">&times;</button></div>
+    <div class="form-group"><label>Bezeichnung</label><input type="text" id="tp-name" class="form-control" autocomplete="off"></div>
+    <div class="form-group"><label>Kategorie</label><select id="tp-kat" class="form-control"></select></div>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-neu"> Bei jedem neuen Patienten vorschlagen</label>
+    <div id="tp-leist" style="font-size:12px; color:#64748b; margin:8px 0;"></div>
+    <div class="ak-h">Unterschriftsfeld</div>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-sig" onchange="updateSigPrev()"> Unterschrift am Tablet erforderlich</label>
+    <div id="tp-sigcfg" style="display:none; margin-top:8px;">
+      <div style="font-size:12px; color:#64748b; margin-bottom:6px;">Lege fest, wo die Unterschrift auf dem Formular steht. Mit dem Testlauf siehst Du das Ergebnis.</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Seite (0 = letzte Seite)</label><input type="number" id="tp-pg" class="form-control" min="0" max="99" value="0"></div>
+        <div class="form-group"><label>Breite <span id="tp-wv"></span></label><input type="range" id="tp-w" min="15" max="60" value="30" oninput="updateSigPrev()"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Von links <span id="tp-xv"></span></label><input type="range" id="tp-x" min="0" max="85" value="55" oninput="updateSigPrev()"></div>
+        <div class="form-group"><label>Von oben <span id="tp-yv"></span></label><input type="range" id="tp-y" min="0" max="95" value="86" oninput="updateSigPrev()"></div>
+      </div>
+      <div id="tp-prev" style="position:relative; width:150px; aspect-ratio:1/1.414; background:#fff; border:1px solid #94a3b8; margin:6px 0;"><div id="tp-box" style="position:absolute; border:2px solid #16a34a; background:#16a34a33;"></div></div>
+      <button type="button" class="btn btn-secondary" onclick="testSig()">Testlauf mit Probe-Unterschrift</button>
+    </div>
+    <div style="margin-top:10px;"><button type="button" class="btn btn-secondary" id="tp-view" onclick="viewTpl()">Vorlage ansehen</button></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-del btn-ico" title="Löschen" aria-label="Löschen" onclick="deleteTpl()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-tpl')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveTpl()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PRAXISDATEN -->

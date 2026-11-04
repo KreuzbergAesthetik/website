@@ -243,7 +243,7 @@ var KS = (function () {
     try {
       var st = await api('status'), core = st.objs.some(function (o) { return o.n === 'core'; });
       if (!core) throw new Error('Auf dem Server liegt noch kein Stand. Bitte zuerst abgleichen.');
-      var r = await api('init', { e: code || '', _c: nc });
+      var r = await api('init', { e: code || '', alt: c.tok, _c: nc });   /* alt: weist den bisherigen Bereich aus, damit der Server den neuen erlaubt */
       if (!r.neu) throw new Error('Mit diesem Passwort gibt es schon einen Bereich. Bitte ein anderes wählen.');
       made = true; await ensurePub({ tok: nc.tok, ek: nc.ek, priv: c.priv });
       var names = st.objs.map(function (o) { return o.n; }).sort(function (a, b) { return (a === 'core') - (b === 'core'); }), rev = 0;

@@ -1,0 +1,15 @@
+  <!-- TAB: NACHRICHTENVORLAGEN -->
+  <div id="tab-nachrichten" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Nachrichtenvorlagen</span><div style="display:flex; gap:6px;"><button type="button" class="btn btn-sm btn-secondary" onclick="nvMenu(event)" title="Mehr" aria-label="Mehr">&#8943;</button><button type="button" class="btn btn-sm" onclick="openNachr(-1)">+ Vorlage</button></div></div>
+      <div id="nv-list"></div>
+      <div class="nv-sec"><span>Pakete für neue Patienten</span><button type="button" class="btn btn-sm btn-secondary" onclick="openPaket(-1)">+ Paket</button></div>
+      <div id="pk-list"></div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Ein Paket verschickt in einer Nachricht die Links zu den gewählten Online-Formularen. Die gewählten Vorlagen (z. B. Datenschutz) werden dabei in die Akte gelegt und vor Ort unterschrieben. Im Text steht {Links} für die Liste der Formular-Links, dazu gehen alle Platzhalter der Nachrichtenvorlagen.</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Platzhalter</span></div>
+      <div id="ph-list"></div>
+    </div>
+  </div>
+

@@ -1,0 +1,19 @@
+<!-- MODAL: PRODUKTBUCHUNG BEARBEITEN -->
+<div id="modal-vbe" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Produktbuchung bearbeiten</strong><button type="button" class="close-btn" onclick="closeModal('modal-vbe')">&times;</button></div>
+    <div id="vbe-info" style="font-size:13px; color:#475569; margin-bottom:8px;"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Datum</label><input type="date" id="vbe-datum" class="form-control"></div>
+      <div class="form-group"><label>Uhrzeit</label><input type="time" id="vbe-zeit" class="form-control"></div>
+    </div>
+    <div class="form-group"><label>Charge</label><select id="vbe-ch" class="form-control"></select></div>
+    <div class="form-group"><label>Menge</label><input type="text" id="vbe-menge" class="form-control" inputmode="decimal"></div>
+    <div class="form-group" id="vbe-tgrp"><label>Zum Termin</label><select id="vbe-termin" class="form-control"></select></div>
+    <div class="foot-bar">
+      <button type="button" class="btn btn-cancel" onclick="closeModal('modal-vbe')">Abbrechen</button>
+      <button type="button" class="btn btn-save" onclick="saveVbEdit()">Speichern</button>
+    </div>
+  </div>
+</div>
+

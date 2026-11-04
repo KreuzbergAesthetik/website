@@ -1,0 +1,15 @@
+/* Patientenakte im Querformat: Name und Stammdaten als feste Sidebar links, Hinweise und Zeitleiste rechts */
+.a-sidecol { display:contents; }
+@media (orientation:landscape) and (min-width:700px) {
+  .akte-page.active { display:grid; grid-template-columns:310px minmax(0,1fr); column-gap:14px; align-items:start; max-width:1400px; }
+  .a-sidecol { display:flex; flex-direction:column; gap:10px; grid-column:1; grid-row:span 3; position:sticky; top:calc(var(--hdh,112px) + 10px); max-height:calc(100vh - var(--hdh,112px) - 24px); overflow-y:auto; }
+  .a-sidecol .a-top { position:sticky; top:0; z-index:5; margin:0; } .a-sidecol .a-title { font-size:19px; }
+  .akte-page .a-tabs, .akte-page .a-pane { grid-column:2; }
+  .a-sidecol .a-flagcard { margin:0; }
+  .akte-page .a-side { margin:0; }
+  .akte-page > .btn { display:none; }
+  .a-side .a-tiles { display:flex; flex-direction:column; gap:8px; }
+  .a-side .a-tile, .a-side .a-tile.a-half { flex:none; width:auto; }
+  .a-side .a-tile.a-warn { order:-1; }
+  .a-side .grid-2 { grid-template-columns:1fr; }
+}
