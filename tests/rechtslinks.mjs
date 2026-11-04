@@ -15,6 +15,10 @@ try {
     await p.goto(origin + '/' + f, { waitUntil: 'networkidle' });
     const r = await p.evaluate(() => {
       const out = {};
+      const echt = { i: PRAXIS_F.impressum, d: PRAXIS_F.datenschutz };
+      const l0 = [...document.querySelectorAll('#legal a')].map(x => x.textContent + '=' + x.getAttribute('href'));
+      out.standard = JSON.stringify(l0) === JSON.stringify(echt.d ? ['Impressum=' + echt.i, 'Datenschutzerklärung=' + echt.d] : ['Impressum=' + echt.i]);
+      PRAXIS_F.impressum = ''; PRAXIS_F.datenschutz = ''; legalFooter();
       out.ohneAdressen = !document.getElementById('legal');
       PRAXIS_F.impressum = 'http://example.invalid/impressum'; PRAXIS_F.datenschutz = '';
       legalFooter(); out.unsichererLinkIgnoriert = !document.getElementById('legal');
@@ -28,6 +32,7 @@ try {
       if (typeof showDone === 'function' && document.getElementById('formbox')) { showDone('Test'); out.nachAbsenden = !!document.getElementById('legal'); }
       return out;
     });
+    assert.equal(r.standard, true, f + ': eingetragene Adressen erscheinen nicht (erwartet: ' + JSON.stringify(r) + ')');
     assert.equal(r.ohneAdressen, true, f + ': Fußzeile ohne Adressen sichtbar');
     assert.equal(r.unsichererLinkIgnoriert, true, f + ': http-Adresse nicht ignoriert');
     assert.equal(r.links, 'Impressum=https://example.invalid/impressum | Datenschutzerklärung=https://example.invalid/datenschutz', f);

@@ -1,5 +1,5 @@
 /* Gemeinsame Bausteine der Webformulare: Unterschrift, PDF, Versand */
-var PRAXIS_F = { impressum: '', datenschutz: '', name: 'Kreuzberg Ästhetik', arzt: 'Manuel Fella', mail: 'info@kreuzberg-aesthetik.de', strasse: 'Neuenburger Str. 24', ort: '10969 Berlin' };
+var PRAXIS_F = { impressum: 'https://www.kreuzberg-aesthetik.de/impressum', datenschutz: '', name: 'Kreuzberg Ästhetik', arzt: 'Manuel Fella', mail: 'info@kreuzberg-aesthetik.de', strasse: 'Neuenburger Str. 24', ort: '10969 Berlin' };
 /* Adresse des Empfangsskripts auf dem Webspace der Praxis (siehe formular-empfang-wordpress.txt und LIESMICH.txt). */
 var ENDPOINT = 'https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/formular';
 
