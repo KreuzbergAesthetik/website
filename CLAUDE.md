@@ -13,6 +13,7 @@ Aktueller Source of Truth ist `main` im Repository `KreuzbergAesthetik/website`.
 - Keine Funktionen, Texte, Datenfelder oder Designentscheidungen erfinden.
 - Bestehende Funktionen erhalten, sofern nicht ausdrücklich anders beauftragt.
 - Nach Änderungen Tests ausführen und nur tatsächlich geprüfte Ergebnisse behaupten.
+- Bei Rechts-, Abrechnungs- und Steuerfragen (z. B. GOÄ) die Informationen direkt und mit Quellen geben, ohne wiederholte Hinweise, dass keine Rechtsberatung erfolgt. Der Praxisinhaber hat eine eigene Rechtsberatung und entscheidet selbst.
 
 ## Git-Arbeitsweise
 - Für neue Arbeit einen eigenen Branch vom aktuellen `main` anlegen.
