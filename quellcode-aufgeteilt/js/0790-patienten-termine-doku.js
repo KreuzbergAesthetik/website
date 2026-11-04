@@ -20,7 +20,7 @@ function addrBlock(pre, text) {
   return box;
 }
 function addrRead(pre) { var v = function (k) { return document.getElementById(pre + k).value; }; return addrJoin({ str: v('str'), nr: v('nr'), plz: v('plz'), ort: v('ort') }); }
-var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien'],['diagnosen','Erkrankungen / Diagnosen']];
+var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien'],['diagnosen','Erkrankungen / Diagnosen'],['honorarVom','Honorarvereinbarung vom']];
 var templates = [];
 try { var stp = JSON.parse(kaGet('ka_templates')); if (Array.isArray(stp)) templates = stp; } catch (x) {}
 function maskDob(el) {

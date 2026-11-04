@@ -1840,10 +1840,20 @@ function kaStart() {
     <div class="modal-header"><strong id="ls-title">Neue Leistung</strong><button type="button" class="close-btn" onclick="closeModal('modal-leist')">&times;</button></div>
     <div class="form-group"><label>Bezeichnung *</label><input type="text" id="ls-name" class="form-control" autocomplete="off"></div>
     <div class="grid-2">
-      <div class="form-group"><label>Preis brutto in Euro *</label><input type="text" id="ls-price" class="form-control" inputmode="decimal"></div>
-      <div class="form-group"><label>MwSt</label><select id="ls-rate" class="form-control"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
+      <div class="form-group"><label>Preis brutto in Euro *</label><input type="text" id="ls-price" class="form-control" inputmode="decimal" oninput="lsFaktorInfo()"></div>
+      <div class="form-group"><label>MwSt</label><select id="ls-rate" class="form-control" onchange="lsFaktorInfo()"><option value="19">19 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
     </div>
     <div class="grid-2"><div class="form-group"><label>Gruppe (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div><div class="form-group"><label>Dauer in Minuten</label><input type="text" id="ls-dauer" class="form-control" inputmode="numeric" placeholder="z.B. 30"></div></div>
+    <details class="settings-section" id="ls-goae-box"><summary>GOÄ (optional)</summary><div class="settings-content">
+      <div class="grid-2">
+        <div class="form-group"><label>GOÄ-Nummer</label><input type="text" id="ls-goae" class="form-control" autocomplete="off" oninput="lsFaktorInfo()"></div>
+        <div class="form-group"><label>Punktzahl</label><input type="text" id="ls-pkt" class="form-control" inputmode="decimal" oninput="lsFaktorInfo()"></div>
+      </div>
+      <label class="tm-chk" style="font-weight:400; margin-bottom:8px;"><input type="checkbox" id="ls-analog"> Analog berechnet (§ 6 Abs. 2 GOÄ, „entsprechend“)</label>
+      <div class="form-group"><label>Bezeichnung laut GOÄ (optional)</label><input type="text" id="ls-goaetext" class="form-control" autocomplete="off"></div>
+      <div class="form-group"><label>Begründung des Faktors (optional)</label><input type="text" id="ls-begr" class="form-control" autocomplete="off"></div>
+      <div id="ls-faktor" style="font-size:12.5px; margin-top:4px;"></div>
+    </div></details>
     <div class="form-group"><label>Zugehörige Aufklärungen und Vorlagen</label><div id="ls-vorl"></div></div>
     <a href="#" id="ls-cp" style="display:none; font-size:13px; font-weight:600; color:#1e3a8a; text-decoration:none;" onclick="event.preventDefault(); var i = lsIdx; closeModal('modal-leist'); lsCopy(i);">Diese Leistung kopieren</a>
     <div class="foot-bar">
@@ -2343,7 +2353,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-04-f';
+var KA_V = '2026-11-04-g';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3483,7 +3493,7 @@ function addrBlock(pre, text) {
   return box;
 }
 function addrRead(pre) { var v = function (k) { return document.getElementById(pre + k).value; }; return addrJoin({ str: v('str'), nr: v('nr'), plz: v('plz'), ort: v('ort') }); }
-var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien'],['diagnosen','Erkrankungen / Diagnosen']];
+var HEAD_FIELDS = [['anrede','Anrede'],['titel','Titel'],['vorname','Vorname'],['nachname','Nachname'],['dob','Geburtsdatum'],['phone','Telefon'],['email','E-Mail'],['adresse','Anschrift'],['allergien','Allergien'],['diagnosen','Erkrankungen / Diagnosen'],['honorarVom','Honorarvereinbarung vom']];
 var templates = [];
 try { var stp = JSON.parse(kaGet('ka_templates')); if (Array.isArray(stp)) templates = stp; } catch (x) {}
 function maskDob(el) {
@@ -3807,12 +3817,40 @@ function lsExport() {
   var rows = [['ID', 'Leistung', 'Gruppe', 'Preis brutto', 'MwSt', 'Dauer (min)'].map(q).join(';')].concat((settings.katalog || []).map(function (k) { var c = lkatOf(k); return [k.id, k.name, c ? c.name : '', String(k.price).replace('.', ','), k.rate, k.dauer || ''].map(q).join(';'); }));
   var blob = new Blob(['\uFEFF' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Leistungen.csv'; document.body.appendChild(a); a.click(); a.remove();
 }
+/* ===== GOÄ: Festpreis bleibt, der Steigerungsfaktor wird daraus zurückgerechnet (Punktwert 5,82873 Cent) ===== */
+var GOAE_PW = 0.0582873;
+function goaeFaktor(bruttoEinzel, rate, pkt) { var net = (+bruttoEinzel || 0) / (1 + (+rate || 0) / 100); return pkt > 0 ? Math.round(net / (pkt * GOAE_PW) * 100) / 100 : 0; }
+function goaeFx(f) { return String(f).replace('.', ','); }
+function goaeLine(g) {
+  if (!g || !g.nr) return '';
+  return 'GOÄ ' + (g.analog ? 'A ' + g.nr + ' (entsprechend Nr. ' + g.nr + ')' : 'Nr. ' + g.nr) + (g.text ? ', ' + g.text : '') + ' · Faktor ' + goaeFx(g.faktor) + (g.begr ? ' · Begründung: ' + g.begr : '');
+}
+function goaeFromKatalog(name, bruttoEinzel, rate) {
+  var k = (settings.katalog || []).filter(function (x) { return x.name.trim().toLowerCase() === String(name || '').trim().toLowerCase(); })[0];
+  if (!k || !k.goae || !(k.pkt > 0)) return null;
+  return { nr: k.goae, analog: !!k.analog, text: k.goaeText || '', pkt: k.pkt, begr: k.begr || '', faktor: goaeFaktor(Math.abs(bruttoEinzel), rate, k.pkt) };
+}
+function goaeNote(inv) {
+  if (!(inv.items || []).some(function (i) { return i.goae; })) return '';
+  return 'Abrechnung nach der Gebührenordnung für Ärzte (GOÄ), Punktwert 5,82873 Cent.' + (inv.honorarVom ? ' Steigerungsfaktor gemäß Honorarvereinbarung nach § 2 GOÄ vom ' + inv.honorarVom + '.' : '');
+}
+function lsFaktorInfo() {
+  var el = document.getElementById('ls-faktor'); if (!el) return;
+  var pkt = numIn(document.getElementById('ls-pkt').value), pr = numIn(document.getElementById('ls-price').value), rt = parseInt(document.getElementById('ls-rate').value, 10);
+  if (!(pkt > 0) || !(pr > 0)) { el.textContent = 'Mit Punktzahl und Preis wird der Steigerungsfaktor berechnet.'; el.style.color = '#64748b'; return; }
+  var f = goaeFaktor(pr, rt, pkt);
+  el.textContent = 'Steigerungsfaktor ' + goaeFx(f) + ' (Preis ' + nf(pr) + ' € brutto, ' + rt + ' % MwSt, ' + pkt + ' Punkte × 5,82873 Cent)' + (f > 3.5 ? ' · über dem Höchstsatz 3,5: nur mit Honorarvereinbarung' : f > 2.3 ? ' · über dem Schwellenwert 2,3' : '');
+  el.style.color = f > 3.5 ? '#b45309' : '#166534';
+}
 function openLeist(i) {
   lsIdx = i; var k = i >= 0 ? settings.katalog[i] : null;
   document.getElementById('ls-title').textContent = k ? 'Leistung bearbeiten' : 'Neue Leistung';
   document.getElementById('ls-name').value = k ? k.name : '';
   document.getElementById('ls-price').value = k ? nf(k.price) : '';
   document.getElementById('ls-rate').value = k ? String(k.rate) : '19';
+  document.getElementById('ls-goae').value = k && k.goae || ''; document.getElementById('ls-pkt').value = k && k.pkt ? String(k.pkt).replace('.', ',') : ''; document.getElementById('ls-analog').checked = !!(k && k.analog);
+  document.getElementById('ls-goaetext').value = k && k.goaeText || ''; document.getElementById('ls-begr').value = k && k.begr || '';
+  document.getElementById('ls-goae-box').open = !!(k && k.goae); lsFaktorInfo();
   var ks = document.getElementById('ls-kat'); ks.innerHTML = ''; var o0 = mk('option', '', 'Keine Kategorie'); o0.value = ''; ks.appendChild(o0);
   ensureLKats().forEach(function (c) { var o = mk('option', '', c.name); o.value = c.id; ks.appendChild(o); });
   ks.value = k ? (k.kat || '') : ''; document.getElementById('ls-dauer').value = k && k.dauer ? k.dauer : '';
@@ -3832,6 +3870,9 @@ function saveLeist() {
   if (price <= 0) { alert('Bitte einen Preis größer als 0 eingeben.'); return; }
   if (settings.katalog.some(function (k, j) { return j !== lsIdx && k.name.trim().toLowerCase() === name.toLowerCase(); })) { alert('Eine Leistung mit dieser Bezeichnung gibt es schon.'); return; }
   var k = { name: name, price: price, rate: rate, kat: document.getElementById('ls-kat').value || (function () { var g = katGuessLeist(name), c = ensureLKats().filter(function (x) { return x.name === g; })[0]; return c ? c.id : undefined; })(), dauer: parseInt(document.getElementById('ls-dauer').value, 10) || undefined, id: lsIdx >= 0 ? settings.katalog[lsIdx].id : 0, vorlagen: [].slice.call(document.querySelectorAll('#ls-vorl input:checked')).map(function (c) { return c.value; }) };
+  var gnr = document.getElementById('ls-goae').value.trim(), gpk = numIn(document.getElementById('ls-pkt').value);
+  if (gnr && !(gpk > 0)) { alert('Bitte zur GOÄ-Nummer auch die Punktzahl eingeben.'); return; }
+  if (gnr) { k.goae = gnr; k.pkt = gpk; k.analog = document.getElementById('ls-analog').checked; k.goaeText = document.getElementById('ls-goaetext').value.trim(); k.begr = document.getElementById('ls-begr').value.trim(); }
   if (lsIdx >= 0) settings.katalog[lsIdx] = k; else settings.katalog.push(k);
   lsEnsureIds(); persist(); refreshLeistungen(); renderLeist(); closeModal('modal-leist');
 }
@@ -4139,7 +4180,9 @@ async function saveInvoice() {
     } else {
       var q = numIn(r.qty), pr = numIn(r.price);
       if (!r.text.trim() || q <= 0 || pr <= 0) { bad = true; return; }
-      items.push({ text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || datum, note: String(r.note || '').trim() });
+      var it0 = { text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || datum, note: String(r.note || '').trim() };
+      var gg = goaeFromKatalog(it0.text, pr, it0.rate); if (gg) it0.goae = gg;
+      items.push(it0);
       var pcr = numIn(r.rab), pge = r.rabArt === 'eur';
       if (pcr > 0 && (pge || pcr <= 100)) { var pa = posRab(i); items.push(pge ? { rabatt: true, perPos: true, art: 'eur', eur: pcr, pct: 0, text: String(r.rabText || 'Rabatt').trim() + ' -' + nf(pa) + ' €', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }
         : { rabatt: true, perPos: true, pct: pcr, text: String(r.rabText || 'Rabatt').trim() + ' -' + String(pcr).replace('.', ',') + '%', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }); } else if (pcr > 100 && !pge) bad = true;
@@ -4148,6 +4191,8 @@ async function saveInvoice() {
   var pd = items.filter(function (x) { return x.datum; }).map(function (x) { return x.datum; }).sort(); leist = pd.length ? pd[0] : datum;
   if (bad || !items.length) { alert('Bitte jede Position mit Leistung, Menge und Preis (Rabatt: Bezeichnung und Prozent) ausfüllen.'); return; }
   var hinweis = items.some(function (i) { return i.rate === 0; }) ? (settings.hinweis || '').trim() : '';
+  var hvom = items.some(function (i) { return i.goae; }) ? (p.honorarVom || '') : '';
+  if (items.some(function (i) { return i.goae && i.goae.faktor > 2.3; }) && !hvom && !await kaConfirm('Der Steigerungsfaktor liegt über 2,3, aber in der Akte ist keine Honorarvereinbarung eingetragen. Trotzdem erstellen?')) return;
   if (!settings.steuernr && !settings.ustid && !await kaConfirm('In den Praxisdaten fehlt die Steuernummer oder USt-IdNr. Die Rechnung wäre unvollständig. Trotzdem erstellen?')) return;
   if (items.some(function (i) { return i.rate === 0; }) && !hinweis && !await kaConfirm('Eine Position hat 0 % Umsatzsteuer, aber im Menü Praxis unter Praxisdaten ist kein Hinweis für 0 % hinterlegt. Trotzdem erstellen?')) return;
   var payAmount = 0, payDate = '';
@@ -4160,7 +4205,7 @@ async function saveInvoice() {
   if (invMode !== 'rechnung' && !invEdit) {
     var dtot = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
     var d0 = { id: newId(), kind: invMode, nr: '', date: datum, leistung: leist, pid: p.id, name: (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname, adresse: adresse, items: items,
-      doku: document.getElementById('inv-doku').value.trim(), eid: parseInt(document.getElementById('inv-termin').value, 10) || null, hinweis: hinweis, zahlung: '', vortext: document.getElementById('inv-vortext').value.trim(), total: dtot, payments: [], created: Date.now() };
+      doku: document.getElementById('inv-doku').value.trim(), eid: parseInt(document.getElementById('inv-termin').value, 10) || null, hinweis: hinweis, honorarVom: hvom, zahlung: '', vortext: document.getElementById('inv-vortext').value.trim(), total: dtot, payments: [], created: Date.now() };
     entw.push(d0); p.adresse = adresse; persist(); closeModal('modal-inv'); invTab = d0.kind === 'test' ? 'test' : 'rechnung'; renderInvoices(); viewInvoice(d0.id); return;
   }
   if (invEdit) {
@@ -4168,7 +4213,7 @@ async function saveInvoice() {
     if (paidSum(ie) > totE + 0.005 && !await kaConfirm('Die bereits erfassten Zahlungen (' + eur(paidSum(ie)) + ') sind höher als die neue Summe (' + eur(totE) + '). Trotzdem speichern?')) return;
     var changed = JSON.stringify(ie.items) !== JSON.stringify(items) || ie.date !== datum || ie.adresse !== adresse || ie.vortext !== document.getElementById('inv-vortext').value.trim();
     ie.date = datum; ie.leistung = leist; ie.pid = p.id; ie.name = (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname; ie.adresse = adresse; ie.items = items;
-    ie.doku = document.getElementById('inv-doku').value.trim(); ie.eid = parseInt(document.getElementById('inv-termin').value, 10) || null; ie.hinweis = hinweis; ie.zahlung = document.getElementById('inv-zahlung').value.trim();
+    ie.doku = document.getElementById('inv-doku').value.trim(); ie.eid = parseInt(document.getElementById('inv-termin').value, 10) || null; ie.hinweis = hinweis; ie.honorarVom = hvom; ie.zahlung = document.getElementById('inv-zahlung').value.trim();
     ie.vortext = document.getElementById('inv-vortext').value.trim(); ie.total = totE; ie.showHint = document.getElementById('inv-show-hint').checked; ie.showQr = document.getElementById('inv-show-qr').checked;
     if (changed) ie.sentAt = null;
     p.adresse = adresse; invEdit = null; persist(); closeModal('modal-inv'); renderInvoices();
@@ -4180,7 +4225,7 @@ async function saveInvoice() {
   var total = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
   var inv = { id: newId(), nr: nr, date: datum, leistung: leist, pid: p.id,
     name: (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname, adresse: adresse,
-    items: items, doku: document.getElementById('inv-doku').value.trim(), eid: parseInt(document.getElementById('inv-termin').value, 10) || null, hinweis: hinweis, zahlung: document.getElementById('inv-zahlung').value.trim(),
+    items: items, doku: document.getElementById('inv-doku').value.trim(), eid: parseInt(document.getElementById('inv-termin').value, 10) || null, hinweis: hinweis, honorarVom: hvom, zahlung: document.getElementById('inv-zahlung').value.trim(),
     vortext: document.getElementById('inv-vortext').value.trim(), showHint: document.getElementById('inv-show-hint').checked, showQr: document.getElementById('inv-show-qr').checked,
     total: total, payments: [], created: Date.now() };
   if (invPayArt) inv.payments.push({ nr: nextPayNr(payDate), art: invPayArt, amount: payAmount, date: payDate });
@@ -4474,6 +4519,7 @@ function invoiceDOM(inv) {
     tr.appendChild(mk('td', '', it.rabatt ? '' : fmtD(it.datum || inv.leistung)));
     tr.appendChild(mk('td', 'c', it.rabatt ? '' : String(it.qty).replace('.', ',')));
     var ptd = mk('td', '', it.text); if (it.note) { var pn = mk('div', '', it.note); pn.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px; white-space:pre-wrap;'; ptd.appendChild(pn); }
+    if (it.goae) { var pg = mk('div', '', goaeLine(it.goae)); pg.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px;'; ptd.appendChild(pg); }
     tr.appendChild(ptd); tr.appendChild(mk('td', 'c', rate + '%')); tr.appendChild(mk('td', 'r', eurP(amt)));
     tb.appendChild(tr);
   });
@@ -4488,6 +4534,7 @@ function invoiceDOM(inv) {
   smb.lastChild.querySelectorAll('td').forEach(function (td) { td.style.borderBottom = '2px solid #111'; });
   addSum('Gesamt', inv.total, true);
   sm.appendChild(smb); w.appendChild(sm);
+  var gn = goaeNote(inv); if (gn) { var gnd = mk('div', '', gn); gnd.style.cssText = 'font-size:12px; color:#333; margin-top:10px;'; w.appendChild(gnd); }
   if (pays.length) {
     var zt = mk('div', '', 'ZAHLUNGEN'); zt.style.cssText = 'font-size:12px; font-weight:700; margin-top:16px;'; w.appendChild(zt);
     var zb = mk('div'); zb.style.cssText = 'border:1px dashed #333; padding:8px 10px; margin-top:6px; font-size:13px;';
@@ -4831,7 +4878,7 @@ function buildInvoicePdf(inv, logo) {
   y += 23;
   inv.items.forEach(function (it) {
     var amt = it.amount != null ? it.amount : r2(it.qty * it.price), rate = it.rate != null ? it.rate : 0;
-    var ls = pdfWrap(it.text, false, 9.5, 212), ns = it.note ? pdfWrap(it.note, false, 8.5, 212) : [], h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
+    var ls = pdfWrap(it.text, false, 9.5, 212), ns = (it.note ? pdfWrap(it.note, false, 8.5, 212) : []).concat(it.goae ? pdfWrap(goaeLine(it.goae), false, 8.5, 212) : []), h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
     if (y + h > 770) np();
     row(y, h);
     if (!it.rabatt) { txt(66, y + 16, fmtD(it.datum || inv.leistung), 9.5); txtC((cx[1] + cx[2]) / 2, y + 16, String(it.qty).replace('.', ','), 9.5); }
@@ -4860,6 +4907,7 @@ function buildInvoicePdf(inv, logo) {
     y += bh + 6;
   }
   function para(text, size, bold) { pdfWrap(text, bold, size, 483).forEach(function (t) { need(14); txt(L, y, t, size, bold); y += 13; }); }
+  if (goaeNote(inv)) { y += 8; need(20); para(goaeNote(inv), 9); }
   if (inv.hinweis) { y += 8; need(20); para(inv.hinweis, 9.5); }
   if (inv.doku) { y += 10; need(36); txt(L, y, 'Behandlungsdokumentation', 9.5, true); y += 13; para(inv.doku, 9.5); }
   if (!st.full) {
@@ -5030,7 +5078,7 @@ function logMailSent(p, betreff, text) {
 function logAdd(type, text) { curP.log = (curP.log || []).concat([{ ts: Date.now(), type: type, text: text }]); }
 
 /* Unveränderliche Änderungshistorie der Patientenakte. Die normalen Daten bleiben editierbar; jede relevante Änderung erhält zusätzlich einen append-only Audit-Eintrag. */
-var AUD_LABEL = { anrede:'Anrede', titel:'Titel', vorname:'Vorname', nachname:'Nachname', dob:'Geburtsdatum', phone:'Telefon', email:'E-Mail', adresse:'Anschrift', allergien:'Allergien', diagnosen:'Erkrankungen / Diagnosen', notizen:'Notiz' };
+var AUD_LABEL = { anrede:'Anrede', titel:'Titel', vorname:'Vorname', nachname:'Nachname', dob:'Geburtsdatum', phone:'Telefon', email:'E-Mail', adresse:'Anschrift', allergien:'Allergien', diagnosen:'Erkrankungen / Diagnosen', honorarVom:'Honorarvereinbarung vom', notizen:'Notiz' };
 function auditNorm(v) {
   if (v == null) return '';
   if (typeof v === 'string') return v.trim();
@@ -5163,7 +5211,7 @@ function renderHead() {
         ['', 'Frau', 'Herr', 'Divers'].forEach(function (o) { var op = mk('option', '', o || 'Keine Angabe'); op.value = o; inp.appendChild(op); });
       } else if (k[0] === 'diagnosen') { inp = mk('textarea', 'form-control'); inp.rows = 2; g.style.gridColumn = '1 / -1'; } else inp = mk('input', 'form-control');
       inp.id = 'se-' + k[0]; inp.value = p[k[0]] || '';
-      if (k[0] === 'dob') { inp.placeholder = 'TT.MM.JJJJ'; inp.inputMode = 'numeric'; inp.maxLength = 10; inp.oninput = function () { maskDob(inp); }; }
+      if (k[0] === 'dob' || k[0] === 'honorarVom') { inp.placeholder = 'TT.MM.JJJJ'; inp.inputMode = 'numeric'; inp.maxLength = 10; inp.oninput = function () { maskDob(inp); }; }
       g.appendChild(inp); grid.appendChild(g);
     });
     box.appendChild(grid);
@@ -5180,6 +5228,7 @@ function renderHead() {
   kt.appendChild(mk('div', p.dob ? '' : 'a-none', p.dob ? p.dob + (age !== '' ? ' (' + age + ' Jahre)' : '') : 'Geburtsdatum fehlt'));
   if (p.phone) { var l1 = mk('div', 'tl-ln'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); kt.appendChild(l1); }
   if (p.email) { var l2 = mk('div', 'tl-ln'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); kt.appendChild(l2); }
+  if (p.honorarVom) kt.appendChild(mk('div', '', 'Honorarvereinbarung vom ' + p.honorarVom));
   tiles.appendChild(kt);
   tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));
   tiles.appendChild(tileBox('med', 'Medikation', 'a-wide', function (t, ed) {
@@ -5227,6 +5276,7 @@ function toggleStamm() {
   var g = function (k) { return document.getElementById('se-' + k).value.trim(); };
   if (!g('vorname') || !g('nachname')) { alert('Vorname und Nachname dürfen nicht leer sein.'); return; }
   if (!validDob(g('dob'))) { alert(DOB_MSG); return; }
+  if (g('honorarVom') && !/^\d{2}\.\d{2}\.\d{4}$/.test(g('honorarVom'))) { alert('Bitte das Datum der Honorarvereinbarung als TT.MM.JJJJ eingeben.'); return; }
   var old = nameKey(curP), before = {};
   HEAD_FIELDS.forEach(function (k) { before[k[0]] = curP[k[0]] || ''; });
   if (patients.some(function (x) { return x !== curP && nameKey(x).toLowerCase() === (g('vorname') + ' ' + g('nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon.'); return; }

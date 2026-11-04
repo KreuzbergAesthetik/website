@@ -9,6 +9,6 @@
   "scripts": {
     "test:static": "node tests/static-check.mjs",
     "code:aufteilen": "node werkzeuge/code-aufteilen.mjs",
-    "test:browser": "node tests/browser-smoke.mjs && node tests/layout-smoke.mjs && node tests/formular-zuordnung.mjs && node tests/xss-formulare.mjs && node tests/eingang-verschluesselt.mjs && node tests/csp.mjs && node tests/rechnung-sperre.mjs"
+    "test:browser": "node tests/browser-smoke.mjs && node tests/layout-smoke.mjs && node tests/formular-zuordnung.mjs && node tests/xss-formulare.mjs && node tests/eingang-verschluesselt.mjs && node tests/csp.mjs && node tests/rechnung-sperre.mjs && node tests/goae.mjs"
   }
 }

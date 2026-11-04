@@ -171,7 +171,7 @@ function buildInvoicePdf(inv, logo) {
   y += 23;
   inv.items.forEach(function (it) {
     var amt = it.amount != null ? it.amount : r2(it.qty * it.price), rate = it.rate != null ? it.rate : 0;
-    var ls = pdfWrap(it.text, false, 9.5, 212), ns = it.note ? pdfWrap(it.note, false, 8.5, 212) : [], h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
+    var ls = pdfWrap(it.text, false, 9.5, 212), ns = (it.note ? pdfWrap(it.note, false, 8.5, 212) : []).concat(it.goae ? pdfWrap(goaeLine(it.goae), false, 8.5, 212) : []), h = Math.max(25, ls.length * 12 + ns.length * 11 + 12);
     if (y + h > 770) np();
     row(y, h);
     if (!it.rabatt) { txt(66, y + 16, fmtD(it.datum || inv.leistung), 9.5); txtC((cx[1] + cx[2]) / 2, y + 16, String(it.qty).replace('.', ','), 9.5); }
@@ -200,6 +200,7 @@ function buildInvoicePdf(inv, logo) {
     y += bh + 6;
   }
   function para(text, size, bold) { pdfWrap(text, bold, size, 483).forEach(function (t) { need(14); txt(L, y, t, size, bold); y += 13; }); }
+  if (goaeNote(inv)) { y += 8; need(20); para(goaeNote(inv), 9); }
   if (inv.hinweis) { y += 8; need(20); para(inv.hinweis, 9.5); }
   if (inv.doku) { y += 10; need(36); txt(L, y, 'Behandlungsdokumentation', 9.5, true); y += 13; para(inv.doku, 9.5); }
   if (!st.full) {
@@ -370,7 +371,7 @@ function logMailSent(p, betreff, text) {
 function logAdd(type, text) { curP.log = (curP.log || []).concat([{ ts: Date.now(), type: type, text: text }]); }
 
 /* Unveränderliche Änderungshistorie der Patientenakte. Die normalen Daten bleiben editierbar; jede relevante Änderung erhält zusätzlich einen append-only Audit-Eintrag. */
-var AUD_LABEL = { anrede:'Anrede', titel:'Titel', vorname:'Vorname', nachname:'Nachname', dob:'Geburtsdatum', phone:'Telefon', email:'E-Mail', adresse:'Anschrift', allergien:'Allergien', diagnosen:'Erkrankungen / Diagnosen', notizen:'Notiz' };
+var AUD_LABEL = { anrede:'Anrede', titel:'Titel', vorname:'Vorname', nachname:'Nachname', dob:'Geburtsdatum', phone:'Telefon', email:'E-Mail', adresse:'Anschrift', allergien:'Allergien', diagnosen:'Erkrankungen / Diagnosen', honorarVom:'Honorarvereinbarung vom', notizen:'Notiz' };
 function auditNorm(v) {
   if (v == null) return '';
   if (typeof v === 'string') return v.trim();
@@ -503,7 +504,7 @@ function renderHead() {
         ['', 'Frau', 'Herr', 'Divers'].forEach(function (o) { var op = mk('option', '', o || 'Keine Angabe'); op.value = o; inp.appendChild(op); });
       } else if (k[0] === 'diagnosen') { inp = mk('textarea', 'form-control'); inp.rows = 2; g.style.gridColumn = '1 / -1'; } else inp = mk('input', 'form-control');
       inp.id = 'se-' + k[0]; inp.value = p[k[0]] || '';
-      if (k[0] === 'dob') { inp.placeholder = 'TT.MM.JJJJ'; inp.inputMode = 'numeric'; inp.maxLength = 10; inp.oninput = function () { maskDob(inp); }; }
+      if (k[0] === 'dob' || k[0] === 'honorarVom') { inp.placeholder = 'TT.MM.JJJJ'; inp.inputMode = 'numeric'; inp.maxLength = 10; inp.oninput = function () { maskDob(inp); }; }
       g.appendChild(inp); grid.appendChild(g);
     });
     box.appendChild(grid);
@@ -520,6 +521,7 @@ function renderHead() {
   kt.appendChild(mk('div', p.dob ? '' : 'a-none', p.dob ? p.dob + (age !== '' ? ' (' + age + ' Jahre)' : '') : 'Geburtsdatum fehlt'));
   if (p.phone) { var l1 = mk('div', 'tl-ln'); l1.innerHTML = ICON_PHONE; var a1 = mk('a', '', p.phone); a1.href = 'tel:' + p.phone.replace(/\s/g, ''); l1.appendChild(a1); kt.appendChild(l1); }
   if (p.email) { var l2 = mk('div', 'tl-ln'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); kt.appendChild(l2); }
+  if (p.honorarVom) kt.appendChild(mk('div', '', 'Honorarvereinbarung vom ' + p.honorarVom));
   tiles.appendChild(kt);
   tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));
   tiles.appendChild(tileBox('med', 'Medikation', 'a-wide', function (t, ed) {
@@ -567,6 +569,7 @@ function toggleStamm() {
   var g = function (k) { return document.getElementById('se-' + k).value.trim(); };
   if (!g('vorname') || !g('nachname')) { alert('Vorname und Nachname dürfen nicht leer sein.'); return; }
   if (!validDob(g('dob'))) { alert(DOB_MSG); return; }
+  if (g('honorarVom') && !/^\d{2}\.\d{2}\.\d{4}$/.test(g('honorarVom'))) { alert('Bitte das Datum der Honorarvereinbarung als TT.MM.JJJJ eingeben.'); return; }
   var old = nameKey(curP), before = {};
   HEAD_FIELDS.forEach(function (k) { before[k[0]] = curP[k[0]] || ''; });
   if (patients.some(function (x) { return x !== curP && nameKey(x).toLowerCase() === (g('vorname') + ' ' + g('nachname')).toLowerCase(); })) { alert('Einen Patienten mit diesem Namen gibt es schon.'); return; }
