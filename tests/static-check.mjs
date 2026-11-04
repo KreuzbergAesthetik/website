@@ -86,6 +86,24 @@ assert.ok(!html.includes("if (document.visibilityState === 'visible') EXT.refres
 assert.ok(html.includes('Postfach jetzt abrufen') && html.includes('Geräte jetzt abgleichen'), 'Manuelle Aktionen müssen getrennt sichtbar sein');
 assert.ok(html.includes('ENTWICKLUNGSVERSION'), 'Deutlicher Hinweis auf Entwicklungsfassung fehlt');
 
+// 9a) Kein versteckter Upload beim Bearbeiten der Webformulare.
+assert.ok(sync.includes('function txtset() { settings.formPublishPending = true;'), 'Formulare müssen lokal vorgemerkt werden');
+assert.ok(sync.includes('async function publishForms()'), 'Manuelle Formularveröffentlichung fehlt');
+assert.ok(sync.includes("await api('txtset', { k: JSON.stringify(settings.formTexte || {})"), 'Explizite Formularveröffentlichung muss die aktuellen lokalen Einstellungen senden');
+assert.ok(html.includes('onclick="syncPublishForms()"'), 'Separater Veröffentlichungsbutton fehlt');
+assert.ok(html.includes('Lokal gespeichert. Die Formular'), 'Editor darf Speicherung nicht als Veröffentlichung darstellen');
+assert.ok(!html.includes('Gespeichert und veröffentlicht.'), 'Editor darf bei lokaler Speicherung keine Veröffentlichung behaupten');
+
+// 9b) Postfach muss ohne vorangehenden Geräteabgleich abrufbar sein und
+// darf Einträge erst nach nachgewiesener Speicherung löschen.
+assert.ok(sync.includes('inboxChecked: false'), 'Unbekannten Postfachstand nicht als leer anzeigen');
+assert.ok(sync.includes("btn.style.display = c ? '' : 'none'"), 'Postfachbutton darf nicht von vorheriger Abfrage abhängen');
+assert.ok(sync.includes('if (typeof kaIdle !=='), 'Postfach-Löschschutz vor Speicherung fehlt');
+assert.ok(sync.includes('await kaIdle();'), 'Persistenzbestätigung vor Postfach-Löschung fehlt');
+assert.ok(html.includes('if (!pdfGespeichert) {'), 'Bei fehlgeschlagenem PDF-Import muss Eingang erhalten bleiben');
+assert.ok(sync.includes("function calUrl() { return EP && settings.calToken"), 'Kalenderadresse muss ohne Testserver sicher bleiben');
+
+
 // 10) Lokale Praxisdaten müssen verpflichtend verschlüsselt werden.
 for (const marker of ['function alPrepare()', 'async function alActivateEncryption(', "document.documentElement.classList.add('locked')", 'mindestens 8 Zeichen', 'verpflichtend und kann nicht deaktiviert werden']) {
   assert.ok(html.includes(marker), `Verschlüsselungs-Invariante fehlt: ${marker}`);
