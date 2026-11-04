@@ -8,7 +8,7 @@ var KS = (function () {
   // Erst eine separate Testinstanz mit synthetischen Daten konfigurieren.
   var EP = null; // Nur in einer gesonderten TEST-Umgebung konfigurieren. Keine Produktions-URL!
   var STORES = ['events', 'patients', 'templates', 'invoices', 'settings', 'lager', 'ausgaben', 'todos', 'entw'];
-  var S = { busy: false, applying: false, timer: null, poll: null, inbox: [], err: '', msg: '', obj: [], rev: 0, started: false, autoInbox: '' };
+  var S = { busy: false, applying: false, inbox: [], inboxChecked: false, inboxLast: 0, inboxNote: '', err: '', msg: '', obj: [], rev: 0, started: false };
   var enc = new TextEncoder(), dec = new TextDecoder();
 
   /* ---------- kleine Helfer ---------- */
@@ -166,7 +166,8 @@ var KS = (function () {
     try {
       var st = await api('status'), b = base(), hasCore = st.objs.some(function (o) { return o.n === 'core'; });
       if (b.dirty && b.h && stateHash() === b.h) { b.dirty = false; setBase(b); }   // nur angefasst, nichts geändert
-      S.inbox = st.inbox || []; S.obj = st.objs; S.rev = st.rev;
+      // Der Geräteabgleich verarbeitet keine Postfacheingänge.
+      S.obj = st.objs; S.rev = st.rev;
       if (!hasCore) await push(c, st, b);
       else if (st.rev > b.rev && !b.dirty) { if (modalOpen() && !manual) S.msg = 'Neuer Stand vom Server wartet.'; else await pull(c, st); }
       else if (st.rev > b.rev && b.dirty) {
@@ -284,7 +285,7 @@ var KS = (function () {
     });
     L.push('END:VCALENDAR'); return L.join('\r\n') + '\r\n';
   }
-  function calUrl() { return settings.calToken ? EP.replace(/abgleich$/, 'kalender') + '?c=' + settings.calToken : ''; }
+  function calUrl() { return EP && settings.calToken ? EP.replace(/abgleich$/, 'kalender') + '?c=' + settings.calToken : ''; }
   async function calPush() {
     if (!settings.calOn || !settings.calToken) return; var c = cfg(); if (!c) { S.calErr = 'Erst den Geräte-Abgleich einrichten.'; ui(); return; }
     try { await api('calput', { c: settings.calToken }, enc.encode(calBuild())); S.calErr = ''; S.calLast = Date.now(); }
@@ -307,34 +308,48 @@ var KS = (function () {
     var raw = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, priv, wrapped), ak = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
     return JSON.parse(dec.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, ak, ct)));
   }
+  /* Eigenständiger Postfachabruf ausschließlich nach Nutzeraktion. */
   async function abrufen() {
-    var c = cfg(); if (!c) { alert('Der Abgleich ist noch nicht eingerichtet (Praxis, Abgleich).'); return; }
-    if (S.busy) return; S.busy = true; S.err = ''; ui();
+    var c = cfg();
+    if (!c) { alert('Der Postfach-Schlüssel ist noch nicht eingerichtet (Praxis, Abgleich).'); return; }
+    if (S.busy) return;
+    S.busy = true; S.err = ''; S.msg = 'Postfach abrufen …'; S.inboxNote = ''; ui();
     try {
-      await ensurePub(c).catch(function () {});
-      var st = await api('status'); S.inbox = st.inbox || [];
-      if (!S.inbox.length) { alert('Das Postfach ist leer.'); return; }
+      // EP bleibt im isolierten Entwicklungszweig deaktiviert.
+      if (!EP) throw new Error('Testmodus: keine Serververbindung eingerichtet.');
+      await ensurePub(c);
+      var st = await api('status');
+      S.inbox = Array.isArray(st.inbox) ? st.inbox : [];
+      S.inboxChecked = true; S.inboxLast = Date.now();
+      if (!S.inbox.length) { S.inboxNote = 'Keine neuen Eingänge'; alert('Das Postfach ist leer.'); return; }
       var entries = [], ids = [], bad = [];
       for (var i = 0; i < S.inbox.length; i++) {
         var id = S.inbox[i].id;
         try {
           var o = await openPaket(c, await api('ibget', { id: id }).then(function (j) { return unb64(j.d); }));
-          entries.push({ d: o.daten, pdf: o.pdf ? new File([unb64(o.pdf)], o.pdfName || 'Formular.pdf', { type: 'application/pdf' }) : null }); ids.push(id);
+          entries.push({ d: o.daten, pdf: o.pdf ? new File([unb64(o.pdf)], o.pdfName || 'Formular.pdf', { type: 'application/pdf' }) : null });
+          ids.push(id);
         } catch (x) { bad.push(id); }
       }
       var ok = entries.length ? await formularImport(entries) : [];
-      for (var k = 0; k < ids.length; k++) if (ok && ok[k]) await api('ibdel', { id: ids[k] }).catch(function () {});
-      if (bad.length) alert(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden. Sie bleiben zur sicheren Prüfung im Postfach.');
-      st = await api('status'); S.inbox = st.inbox || [];
+      var imported = 0;
+      for (var k = 0; k < ids.length; k++) if (ok && ok[k]) {
+        // Nur durch den Import als erfolgreich bestätigte Eingänge quittieren.
+        await api('ibdel', { id: ids[k] });
+        imported++;
+      }
+      S.inboxNote = imported + ' übernommen' + (bad.length ? ', ' + bad.length + ' nicht entschlüsselbar' : '');
+      if (bad.length) alert(bad.length + ' Eingang/Eingänge konnten nicht entschlüsselt werden. Sie bleiben im Postfach.');
+      st = await api('status'); S.inbox = Array.isArray(st.inbox) ? st.inbox : [];
     } catch (e) { S.err = 'Postfach: ' + err(e); alert('Abrufen nicht möglich: ' + err(e)); }
-    finally { S.busy = false; ui(); }
+    finally { S.busy = false; S.msg = ''; ui(); }
   }
 
   /* ---------- Anzeige ---------- */
   function ago(ts) { if (!ts) return 'noch nie'; var m = Math.round((Date.now() - ts) / 60000); return m < 1 ? 'gerade eben' : m < 60 ? 'vor ' + m + ' Min.' : m < 1440 ? 'vor ' + Math.round(m / 60) + ' Std.' : new Date(ts).toLocaleDateString('de-DE'); }
   function ui() {
     var c = cfg(), b = c ? base() : null, n = S.inbox.length;
-    var btn = document.getElementById('pt-abrufen'); if (btn) { btn.style.display = c ? '' : 'none'; btn.textContent = n ? 'Postfach abrufen (' + n + ')' : 'Postfach abrufen'; btn.classList.toggle('has-new', n > 0); }
+    var btn = document.getElementById('pt-abrufen'); if (btn) { btn.style.display = c ? '' : 'none'; btn.disabled = S.busy; btn.textContent = n ? 'Postfach abrufen (' + n + ')' : 'Postfach abrufen'; btn.classList.toggle('has-new', n > 0); }
     var bar = document.getElementById('ks-bar'); if (bar) { bar.style.display = c && n ? 'flex' : 'none'; var t = document.getElementById('ks-bar-t'); if (t) t.textContent = n === 1 ? '1 neues Formular im Postfach' : n + ' neue Formulare im Postfach'; }
     var kb = document.getElementById('kal-box');
     if (kb) {
