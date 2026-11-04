@@ -1,16 +1,40 @@
 /* ===== Eingangskorb: Fotos aus dem Teilen-Menü des Handys (Service Worker legt sie vorübergehend ab) ===== */
 var EG = { urls: [], keys: [], open: false };
+/* Nach dem Entsperren werden die Fotos im Zwischenspeicher sofort mit dem App-Schlüssel verschlüsselt (an Ort und Stelle,
+   nicht im Dateispeicher, damit der Geräte-Abgleich sie nicht überträgt). Unverschlüsselt liegen sie nur zwischen Teilen und Entsperren. */
+async function egSeal() {
+  if (!window.caches || !KA.key) return;
+  try {
+    var c = await caches.open('ka-eingang'), ks = await c.keys();
+    for (var i = 0; i < ks.length; i++) {
+      var r = await c.match(ks[i]); if (!r || r.headers.get('X-Enc') === '1') continue;
+      var img = new Uint8Array(await r.arrayBuffer()), meta = new TextEncoder().encode(JSON.stringify({ name: decodeURIComponent(r.headers.get('X-Name') || 'Foto.jpg'), type: r.headers.get('Content-Type') || 'image/jpeg' }));
+      var raw = new Uint8Array(4 + meta.length + img.length); new DataView(raw.buffer).setUint32(0, meta.length); raw.set(meta, 4); raw.set(img, 4 + meta.length);
+      var enc = await kaEncBytes(raw); raw.fill(0); img.fill(0);
+      await c.put(ks[i], new Response(enc, { headers: { 'Content-Type': 'application/octet-stream', 'X-Enc': '1' } }));
+    }
+  } catch (e) {}
+}
 async function egList() {
   try {
     if (!window.caches) return [];
     var c = await caches.open('ka-eingang'), ks = await c.keys(), out = [];
-    for (var i = 0; i < ks.length; i++) { var r = await c.match(ks[i]); if (r) out.push({ key: ks[i].url, name: decodeURIComponent(r.headers.get('X-Name') || 'Foto.jpg'), blob: await r.blob() }); }
+    for (var i = 0; i < ks.length; i++) {
+      var r = await c.match(ks[i]); if (!r) continue;
+      if (r.headers.get('X-Enc') === '1') {
+        try {
+          var raw = await kaDecBytes(new Uint8Array(await r.arrayBuffer())), n = new DataView(raw.buffer, raw.byteOffset).getUint32(0), m = JSON.parse(new TextDecoder().decode(raw.subarray(4, 4 + n)));
+          out.push({ key: ks[i].url, name: m.name || 'Foto.jpg', blob: new Blob([raw.subarray(4 + n)], { type: m.type || 'image/jpeg' }) });
+        } catch (x) {}
+      } else out.push({ key: ks[i].url, name: decodeURIComponent(r.headers.get('X-Name') || 'Foto.jpg'), blob: await r.blob() });
+    }
     return out;
   } catch (e) { return []; }
 }
 async function egClear(keys) { try { var c = await caches.open('ka-eingang'); for (var i = 0; i < keys.length; i++) await c.delete(keys[i]); } catch (e) {} }
 async function egCheck() {
   if (EG.open) return;
+  await egSeal();
   var items = await egList(); if (!items.length) return;
   EG.open = true; ensurePatients();
   var ov = document.createElement('div'), box = document.createElement('div'), sel = null;

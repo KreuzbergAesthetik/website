@@ -2,6 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
+<!-- Sicherheitsrichtlinie: Verbindungen und Bilder nur zur eigenen Seite und zum Praxis-Server (verhindert Datenabfluss an fremde Server) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' data: blob: https://www.kreuzberg-aesthetik.de https://kreuzberg-aesthetik.de; worker-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Anamnese Kreuzberg Ästhetik</title>
@@ -139,7 +141,7 @@ $('codebox').innerHTML = CODE
   ? '<span class="codepill"><b>' + CODE + '</b><span>Dein persönlicher Code</span></span>'
   : '<div class="msg err" style="display:block;margin:0">Bitte öffne diesen Bogen über den persönlichen Link, den Du von der Praxis bekommen hast.</div>';
 if (!CODE) { $('go').disabled = true; }
-$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } setTimeout(function () { ui.forEach(function (u) { u.items.forEach(function (t) { t.clear(); }); if (u.gate) u.gate.clear(); u.refresh(); }); sammel.clear(); applySammel(); }, 0); });
+$('f').addEventListener('reset', function (ev) { setTimeout(function () { ui.forEach(function (u) { u.items.forEach(function (t) { t.clear(); }); if (u.gate) u.gate.clear(); u.refresh(); }); sammel.clear(); applySammel(); }, 0); });
 
 function val(id) { return $(id).value.trim(); }
 function collect() {

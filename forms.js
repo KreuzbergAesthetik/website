@@ -198,3 +198,15 @@ function datenschutzBlock() {
 ['input', 'change'].forEach(function (t) { document.addEventListener(t, function (ev) { var n = ev.target; if (n.classList) n.classList.remove('invalid'); var g = n.closest && n.closest('.invalid'); if (g) g.classList.remove('invalid'); }); });
 
 ['input', 'change'].forEach(function (t) { document.addEventListener(t, function () { var m = document.getElementById('errmsg'); if (m) m.style.display = 'none'; }); });
+
+/* Zurücksetzen nur nach zweitem Tipp (statt Browser-Rückfrage), damit niemand versehentlich alles löscht */
+(function () {
+  var btn = document.getElementById('reset'); if (!btn) return;
+  var armed = 0, label = btn.textContent, t = null;
+  function disarm() { armed = 0; btn.textContent = label; btn.classList.remove('armed'); }
+  btn.addEventListener('click', function (ev) {
+    if (armed && Date.now() - armed < 4000) { clearTimeout(t); disarm(); return; }
+    ev.preventDefault(); armed = Date.now(); btn.textContent = 'Wirklich alles löschen?'; btn.classList.add('armed');
+    clearTimeout(t); t = setTimeout(disarm, 4000);
+  });
+})();

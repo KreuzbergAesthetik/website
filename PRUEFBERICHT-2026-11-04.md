@@ -25,21 +25,29 @@ Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den e
 - Geldbeträge werden auf Cent gerundet, Umsatzsteuer aus Brutto herausgerechnet.
 - Statische Analyse (ESLint) über alle Skripte: keine echten undefinierten Namen in der App, nur unkritische Doppel-Deklarationen.
 
-## Offen (nicht geändert, Entscheidung nötig)
+## Nachträglich erledigt (Version `2026-11-04-c`)
 
-| Schwere | Befund | Empfehlung |
-|---|---|---|
-| Mittel | Keine Content-Security-Policy. Wegen vieler Inline-Skripte und `onclick` nur mit größerem Umbau möglich. | Später schrittweise. Der XSS-Test sichert den heutigen Stand ab. |
-| Mittel | Fotos aus dem Teilen-Menü liegen bis zur Zuordnung unverschlüsselt im Browser-Cache (bekannt). | Zügig zuordnen; bei Bedarf beim Entsperren verschlüsselt übernehmen. |
-| Mittel | Patientenformulare: „Zurücksetzen“ steht gleichwertig neben „Absenden“ und fragt mit dem Browser-Fenster `confirm()`. Risiko, dass Patienten alles löschen. | Zurücksetzen kleiner oder entfernen. |
-| Mittel | Anrede uneinheitlich: Formulare und Hinweise duzen, die Aufklärungs- und Nachsorgetexte in `docs.js` siezen (68 Stellen). | Einheitlich festlegen. Texte sind rechtlich/medizinisch freizugeben, deshalb nicht geändert. |
-| Klein | Design gewachsen: 126 Farbwerte, 25 Schriftgrößen, 12 Eckenradien, 316 Inline-Stile. Zwei Akzent-Blau (`#2563eb`, `#1e3a8a`), mehrere Grüntöne. | Farb- und Größenpalette festlegen und schrittweise vereinheitlichen. |
-| Klein | Formulare wirken anders als die App: Hintergrund `#f1f5f9` statt `#e6ebf3`, Hauptknopf dunkelblau statt grün. | Entscheiden, ob Patientenseiten dem App-Design folgen sollen. |
-| Klein | Unterschrift-Fenster: Grauer Knopf „Löschen“ leert nur das Feld. | Beschriftung „Neu“ oder „Leeren“. |
-| Klein | Symbol `form` doppelt definiert (das zweite gilt). | Aufräumen ohne sichtbare Wirkung. |
-| Klein | Server prüft `Origin` nur, wenn mitgeschickt. Das ist ein Filter, kein Schutz. | Sicherheit hängt richtigerweise am Zugangs-Token. |
-| Klein | Abgleich-Passwort wird mit festem Salt abgeleitet (nötig für mehrere Geräte). Mit Zugriff auf den Server wären Rateversuche offline möglich. | Langes Abgleich-Passwort (mind. 12 Zeichen ist Pflicht). |
-| Hinweis | Offener PR #265 erhöht ebenfalls die Version. | Beim Mergen Version neu setzen. |
+| Befund | Umsetzung |
+|---|---|
+| Keine Content-Security-Policy | CSP in App und allen Formularseiten. Verbindungen und Bilder nur zur eigenen Seite und zum Praxis-Server, kein `eval`, keine Plugins. Damit kann selbst eingeschleuster Code keine Daten an fremde Server schicken. `'unsafe-inline'` bleibt vorerst nötig (Inline-Skripte, `onclick`). Test `tests/csp.mjs` mit Gegenprobe. Hinweis: Eine `sendmail.php` auf einer anderen Domain als kreuzberg-aesthetik.de würde blockiert. |
+| Fotos aus dem Teilen-Menü unverschlüsselt bis zur Zuordnung | Direkt nach dem Entsperren werden sie im Zwischenspeicher mit dem App-Schlüssel verschlüsselt (inklusive Dateiname), nicht im Dateispeicher, damit der Abgleich sie nicht überträgt. Unverschlüsselt nur noch zwischen Teilen und Entsperren, weil der Service Worker ohne Entsperren keinen Schlüssel hat. Test `tests/eingang-verschluesselt.mjs`. |
+| „Zurücksetzen“ in Patientenformularen | Unauffälliger Knopf, Rückfrage per zweitem Tipp („Wirklich alles löschen?“, 4 s) statt Browser-Fenster `confirm()`. |
+| Unterschrift: „Löschen“ leert nur das Feld | In App und Formularen jetzt „Leeren“. |
+| Symbol `form` doppelt | Wirkungsloser erster Eintrag entfernt. |
+
+## Offen (Entscheidung oder fachliche Freigabe nötig)
+
+| Befund | Warum offen |
+|---|---|
+| Anrede: Formulare duzen, Aufklärungs- und Nachsorgetexte in `docs.js` siezen (68 Stellen). | Richtung (Du oder Sie) festlegen. Die Texte sind rechtlich/medizinisch freizugeben; eine Umformulierung ändert freigabepflichtige Inhalte. |
+| Design gewachsen: 126 Farbwerte, 25 Schriftgrößen, zwei Akzent-Blau, mehrere Grüntöne. | Vereinheitlichen verändert das Aussehen der App. Dafür eine Palette festlegen (Vorschlag mit Vorschau möglich). |
+| Formularseiten sehen anders aus als die App (Hintergrund, Hauptknopf dunkelblau statt grün). | Entscheiden, ob Patientenseiten dem App-Design folgen. |
+
+## Kein Handlungsbedarf
+
+- `Origin`-Prüfung des Servers: nur Filter, die Sicherheit hängt am Zugangs-Token.
+- Fester Salt beim Abgleich-Passwort: nötig, damit alle Geräte denselben Schlüssel ableiten. Eine Änderung würde alle Geräte trennen. Schutz über die Passwortlänge (mind. 12 Zeichen).
+- PR #265: beim Mergen Version neu setzen.
 
 ## Aufgeteilte Kopie
 

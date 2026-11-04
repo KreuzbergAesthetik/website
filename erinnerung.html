@@ -2,6 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
+<!-- Sicherheitsrichtlinie: Verbindungen und Bilder nur zur eigenen Seite und zum Praxis-Server (verhindert Datenabfluss an fremde Server) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' data: blob: https://www.kreuzberg-aesthetik.de https://kreuzberg-aesthetik.de; worker-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Terminerinnerung Kreuzberg Ästhetik</title>
@@ -45,7 +47,7 @@
     <h2>Unterschrift</h2>
     <div class="card">
       <canvas id="sig" class="sigbox"></canvas>
-      <div class="sigbar"><span>Bitte mit dem Finger oder der Maus unterschreiben <span class="req" style="color:#dc2626">*</span></span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Löschen</button></div>
+      <div class="sigbar"><span>Bitte mit dem Finger oder der Maus unterschreiben <span class="req" style="color:#dc2626">*</span></span><button type="button" class="btn" id="sig-clear" style="padding:6px 14px;font-size:14px">Leeren</button></div>
     </div>
 
     <div class="hp"><label>Website <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
@@ -62,7 +64,7 @@
 $('datenschutz').appendChild(datenschutzBlock());
 var sig = makeSig($('sig'));
 $('sig-clear').onclick = function () { sig.clear(); };
-$('f').addEventListener('reset', function (ev) { if (!confirm('Alle Eingaben löschen?')) { ev.preventDefault(); return; } sig.clear(); });
+$('f').addEventListener('reset', function (ev) { sig.clear(); });
 
 var EX = null;
 KF.ready(function () { KF.apply(); EX = KF.extras($('extras')); });

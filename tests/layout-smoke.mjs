@@ -6,7 +6,8 @@ const context = await browser.newContext({viewport:{width:1280,height:900},servi
 const page = await context.newPage();
 const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
 try {
-  await page.goto(process.env.APP_URL || 'http://127.0.0.1:4173/index.html');
+  await page.goto(process.env.APP_URL || 'http://127.0.0.1:4173/index.html', { waitUntil: 'networkidle', timeout: 30000 });
+  await page.waitForSelector('#al-pw2', { state: 'visible', timeout: 10000 });
   await page.fill('#al-pw','LayoutTestPasswort-123!');
   await page.fill('#al-pw2','LayoutTestPasswort-123!');
   await page.click('#al-submit');
