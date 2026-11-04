@@ -12,4 +12,5 @@
 #tab-settings .foot-bar{border-top:1px solid #d6deea;padding-top:15px}
 @media(max-width:430px){#modal-inv .inv-address-row{grid-template-columns:1fr}#modal-inv .inv-address-row>.form-group:last-child{max-width:190px}#inv-kind button{font-size:12px;padding:8px 4px}}
 
-.inv-send-indicator { display:flex; align-items:center; justify-content:center; width:max-content; margin:5px auto 0; color:#64748b; } .inv-send-indicator.is-sent { color:#64748b; }
+.inv-send-indicator { display:flex; align-items:center; justify-content:center; width:max-content; margin:5px auto 0; color:#64748b; }
+.inv-cell-action { display:block; border:0; background:none; color:inherit; font:inherit; text-align:left; padding:8px 3px; width:100%; cursor:pointer; } .inv-cell-action:disabled { opacity:.65; cursor:default; } .inv-pay-action { text-align:right; } .inv-pay-action .pc-ds { display:block; font-size:11px; margin-top:3px; } .inv-send-indicator.is-sent { color:#64748b; }

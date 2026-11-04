@@ -59,6 +59,9 @@ Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den e
 
 - GOÄ: Faktor mit 4 Nachkommastellen, Festpreis cent-genau (Restcent über eigenen Faktor der letzten Position); Vermerk „Leistungen auf Verlangen (§ 1 Abs. 2 Satz 2 GOÄ)“ auf Rechnungen mit GOÄ-Positionen (Version `2026-11-04-k`).
 
+- Impressum/Datenschutz: Fußzeile auf den Patientenseiten angelegt, Adressen in `forms.js` (`PRAXIS_F.impressum`, `PRAXIS_F.datenschutz`) noch einzutragen (Version `2026-11-04-q`).
+- Rechnungsfenster am Handy: Summenzeile ragte um 8 px über den Rand (Rabatt-Auswahl neben „Gesamt“), behoben. Der Test `layout-smoke` prüfte die KV-Markierung noch in der alten Darstellung der Rechnungsliste und war auf `main` rot; an die dreispaltige Liste angepasst.
+
 ## Kein Handlungsbedarf
 
 - `Origin`-Prüfung des Servers: nur Filter, die Sicherheit hängt am Zugangs-Token.
