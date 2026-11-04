@@ -7821,11 +7821,15 @@ async function formularImport(entries) {
     if (Array.isArray(d.extra) && d.extra.length) p.log.push({ ts: Date.now(), type: 'notiz', text: 'Zusatzangaben (' + ({ anmeldung: 'Anmeldung', anamnese: 'Anamnese', erinnerung: 'Terminerinnerung' }[d.typ] || d.typ) + '):\n' + d.extra.map(function (x) { return x.label + ': ' + (x.wert || '-'); }).join('\n') });
     formMark(p, d.typ, 'got');
     if (pdf) {
-      var id = newId();
-      if (await fPut(id, pdf.name, pdf)) {
-        var pdfRec = { id: id, ts: Date.now(), name: pdf.name, kat: d.typ === 'aufklaerung' ? 'Aufklärung' : 'Aufnahme und Anamnese', form: d.typ };
-        p.dokumente.push(pdfRec); auditFilesAdded(p, [pdfRec], 'Dokumente');
+      var id = newId(), pdfGespeichert = false;
+      try { pdfGespeichert = !!(await fPut(id, pdf.name, pdf)); } catch (e) {}
+      if (!pdfGespeichert) {
+        // Kein erfolgreicher Import: den verschlüsselten Postfacheingang NICHT löschen.
+        out.push('PDF konnte nicht gespeichert werden; Eingang bleibt im Postfach: ' + nameKey(p));
+        continue;
       }
+      var pdfRec = { id: id, ts: Date.now(), name: pdf.name, kat: d.typ === 'aufklaerung' ? 'Aufklärung' : 'Aufnahme und Anamnese', form: d.typ };
+      p.dokumente.push(pdfRec); auditFilesAdded(p, [pdfRec], 'Dokumente');
     }
     okIdx[i] = true;
     out.push(({ anamnese: 'Anamnese', erinnerung: 'Terminerinnerung', aufklaerung: 'Aufklärung' }[d.typ] || 'Anmeldung') + ': ' + nameKey(p) + (created ? ' (neu angelegt)' : '') + (pdf ? ', PDF angehängt' : ', ohne PDF'));
