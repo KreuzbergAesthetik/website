@@ -46,6 +46,10 @@ Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den e
 - Anrede: Du oder Sie je nach Dokument, bewusst so (Entscheidung Praxisinhaber, 04.11.2026).
 - Formularseiten folgen dem App-Design: blaugrauer Hintergrund, weiße Karten mit Schatten, grüner Absende-Knopf (Version `2026-11-04-d`).
 
+- Texte: Datenschutztext der Formulare, Aufklärungen und Nachsorge-Hinweise vom Praxisinhaber gegengelesen und freigegeben (04.11.2026). Der Zusatz „(Entwurf)“ ist entfernt; bereits angelegte Vorlagen mit unverändertem Namen werden einmalig umbenannt.
+- WhatsApp als Versandweg entfernt (Patientendaten nicht über Meta). Das allgemeine Teilen-Menü des Geräts für Rechnungs-PDFs bleibt.
+- Kalender-Freigabe für Google/Apple: nur noch „Belegt“, die Option mit Patientenkürzeln ist entfernt. Eine bereits veröffentlichte Datei wird beim nächsten App-Start ersetzt.
+
 ## Kein Handlungsbedarf
 
 - `Origin`-Prüfung des Servers: nur Filter, die Sicherheit hängt am Zugangs-Token.

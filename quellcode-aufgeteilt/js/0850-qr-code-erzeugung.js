@@ -275,7 +275,7 @@ async function savePdf() {
   } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); }
 }
 
-/* Rechnung als PDF über das Teilen-Menü des Geräts senden (Mail, WhatsApp usw.) und als versendet vermerken */
+/* Rechnung als PDF über das Teilen-Menü des Geräts senden und als versendet vermerken */
 async function sendInvoice() {
   var inv = invCur(); if (!inv) return;
   var p = patients.filter(function (x) { return x.id === inv.pid; })[0] || curP, name = invFile(inv), dr = DRAFT[inv.kind], what = dr ? dr.name : 'Rechnung ' + inv.nr;

@@ -277,12 +277,12 @@ function renderPick() {
 var AM_GROUPS = [
   { t: 'Dokumentieren', ic: 'book', items: [['doku', 'book', 'Dokumentation'], ['notiz', 'pen', 'Notiz'], ['produkt', 'box', 'Produkt']] },
   { t: 'Termin und Abrechnung', ic: 'cal', items: [['termin', 'cal', 'Termin'], ['rechnung', 'euro', 'Rechnung']] },
-  { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamwa', 'wa', 'Anamnese WhatsApp'], ['anamlink', 'link', 'Anamnese-Link']] },
+  { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamlink', 'link', 'Anamnese-Link']] },
   { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] },
   { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
 /* Symbolleiste: Termin, Rechnung und Rezept (häufigste Aktionen) starten direkt, die anderen öffnen ihre Kategorie */
-var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4' }, { t: 'WhatsApp schreiben', ic: 'wa', act: 'wa', c: 'd5', hm: 1 }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6' }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1 }];
+var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4' }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6' }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1 }];
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
   AM_DOCK.forEach(function (d) {
@@ -348,11 +348,10 @@ function aAct(x) {
   else if (x === 'bild') { zuNext = null; document.getElementById('a-img-in').click(); }
   else if (x === 'dokument') { dokPick = true; renderPick(); }
   else if (x === 'mail') openMail();
-  else if (x === 'wa') waOpen(curP, '');
   else if (x === 'produkt') openVb(null);
   else if (x === 'rechnung') openInvoice(curP);
   else if (x === 'rezept') openRx(null);
-  else if (x === 'anammail' || x === 'anamwa') sendForm(curP, ['anamnese'], x === 'anamwa' ? 'wa' : 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, curP));
+  else if (x === 'anammail') sendForm(curP, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, curP));
   else if (x === 'anamlink') {
     var url = webfUrl('anamnese.html') + '?c=' + pCode(curP);
     copyText(url, function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, async function () { await kaPrompt('Link zum Kopieren:', url, { readonly: true, ok: 'Schließen', single: true }); });

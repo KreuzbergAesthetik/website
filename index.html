@@ -1468,10 +1468,9 @@ function kaStart() {
     </div>
     <div class="card" id="kal-box" style="margin-top:16px;">
       <div class="card-header"><span class="card-title">Kalender für Google, Apple und Co.</span></div>
-      <div style="font-size:14px; color:#334155; margin-bottom:12px;">Ein Kalender zum Abonnieren, in dem nur die <b>belegte Zeit</b> steht, ohne Patientennamen, ohne Behandlung, ohne Daten. Auf Wunsch stehen die Kürzel der Patienten darin, zum Beispiel „KD“.</div>
+      <div style="font-size:14px; color:#334155; margin-bottom:12px;">Ein Kalender zum Abonnieren, in dem nur die <b>belegte Zeit</b> steht, ohne Patientennamen, ohne Behandlung, ohne Daten.</div>
       <div class="kb-off"><button type="button" class="btn btn-save" onclick="KS.calOn()">Kalender einschalten</button></div>
       <div class="kb-on" style="display:none">
-        <div class="form-group"><label>Was soll im Kalender stehen?</label><select class="form-control kb-mode" onchange="calMode(this.value)"><option value="belegt">Nur „Belegt“</option><option value="kuerzel">Kürzel der Patienten</option></select></div>
         <div class="form-group"><label>Adresse zum Abonnieren (geheim halten)</label><div style="display:flex; gap:6px;"><input type="text" class="form-control kb-url" readonly style="min-width:0; font-size:12px;"><button type="button" class="btn btn-secondary btn-sm" onclick="calCopy()">Kopieren</button></div></div>
         <div class="kb-state" style="font-size:13px; margin-bottom:10px;"></div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-secondary" onclick="KS.calPush()">Jetzt aktualisieren</button><button type="button" class="btn btn-cancel" onclick="calOffAsk()">Ausschalten</button></div>
@@ -2344,7 +2343,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-04-d';
+var KA_V = '2026-11-04-e';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -2591,11 +2590,11 @@ function flagPills(p, noTodo) {
 }
 function flagItems(p) {
   var f = flagsMap().get(p), out = [];
-  if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
+  if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
   if (f.rem) {
     var re = f.rem, rtx = fillPlatzhalter('{AnredeInformell},\n\nich erinnere Dich an Deinen Termin am ' + fmtD(re.date) + ' um ' + re.time + ' Uhr bei Kreuzberg Ästhetik.\n\nSolltest Du den Termin nicht wahrnehmen können, gib mir bitte rechtzeitig Bescheid.\n\nManuel - Kreuzberg Ästhetik', p);
     var rmark = function () { bestAdd(p, 'termin:' + re.id, 'sent'); p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'Terminerinnerung gesendet für ' + fmtTermin(re) }]); persist(); if (curP === p) { renderVerlauf(); renderHead(); } };
-    out.push({ cls: 'fl-orange', label: 'Terminerinnerung: ' + fmtTermin(re), menu: [['Per E-Mail senden', function () { rmark(); tvMail(p, '', ['Terminerinnerung', rtx]); }], ['Per WhatsApp senden', function () { rmark(); waOpen(p, rtx); }], ['Schon erinnert (vor Ort oder telefonisch)', rmark]] });
+    out.push({ cls: 'fl-orange', label: 'Terminerinnerung: ' + fmtTermin(re), menu: [['Per E-Mail senden', function () { rmark(); tvMail(p, '', ['Terminerinnerung', rtx]); }], ['Schon erinnert (vor Ort oder telefonisch)', rmark]] });
   }
   else if (f.next && f.next.date <= iso(new Date(Date.now() + (settings.remDays == null ? 2 : +settings.remDays) * 86400000)) && bestLast(p, 'termin:' + f.next.id, 'sent')) {
     var ue = f.next;
@@ -2809,9 +2808,9 @@ function renderPatients() {
     ib('cal', 'Termin anlegen', function () { curP = p; var n = new Date(); openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true); document.getElementById('t-patient').value = nameKey(p); }, 'Termin');
     ib('book', 'Dokumentation hinzufügen', function () { viewAkte(p); openDkPick(null); }, 'Doku');
     var fst = formStatus(p);
-    ib('mail', 'Senden: E-Mail, WhatsApp, Formulare' + (fst.t ? ' · ' + fst.t : ''), function (ev) {
+    ib('mail', 'Senden: E-Mail, Formulare' + (fst.t ? ' · ' + fst.t : ''), function (ev) {
       curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
-      tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['WhatsApp schreiben', function () { waOpen(p, ''); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }], ['Anamnese per WhatsApp senden', function () { sendForm(p, ['anamnese'], 'wa', 'Anamnesebogen', tx); }]].concat(formMenuItems(p)));
+      tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }]].concat(formMenuItems(p)));
     }, 'Senden');
     acts.lastChild.classList.add('st-' + fst.s);
     ib('euro', 'Rechnung', function (ev) {
@@ -4887,7 +4886,7 @@ async function savePdf() {
   } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); }
 }
 
-/* Rechnung als PDF über das Teilen-Menü des Geräts senden (Mail, WhatsApp usw.) und als versendet vermerken */
+/* Rechnung als PDF über das Teilen-Menü des Geräts senden und als versendet vermerken */
 async function sendInvoice() {
   var inv = invCur(); if (!inv) return;
   var p = patients.filter(function (x) { return x.id === inv.pid; })[0] || curP, name = invFile(inv), dr = DRAFT[inv.kind], what = dr ? dr.name : 'Rechnung ' + inv.nr;
@@ -6335,7 +6334,7 @@ var TB_STD = [
   { name: 'BTX Schema kurz', text: 'SF ___ / Stirn ___ / ZF ___ / KF ___' },
   { name: 'Microneedling Anti-Aging', text: 'Microneedling (Anti-Aging-Protokoll) mit PNBlast (Exosomen und Polynukleotide), Areal: ___.' },
   { name: 'Mesotherapie PN NCTF', text: '___ ml PN (Polynukleotide), Areal: ___, zusammen mit ___ ml NCTF.' },
-  /* Nachsorge: nach den Verhaltensregeln der Praxis (After-care-instructions), Texte in docs.js, Entwurf zur Prüfung */
+  /* Nachsorge: nach den Verhaltensregeln der Praxis (After-care-instructions), Texte in docs.js, vom Praxisinhaber gegengelesen und freigegeben (04.11.2026) */
   { name: 'Nachsorge Neuromodulator', text: KA_PARTS['Nachsorge Neuromodulator'] },
   { name: 'Nachsorge Filler', text: KA_PARTS['Nachsorge Filler'] },
   { name: 'Nachsorge Filler Lippen', text: KA_PARTS['Nachsorge Filler Lippen'] },
@@ -6520,10 +6519,6 @@ function bestAdd(p, k, art) { (p.best = p.best || []).push({ k: k, art: art, ts:
 function bestLast(p, k, art) { return (p.best || []).reduce(function (m, e) { return e.k === k && e.art === art && e.ts > m ? e.ts : m; }, 0); }
 function formSt(p, k) { return { sent: bestLast(p, k, 'sent'), got: bestLast(p, k, 'got') }; }
 function formMark(p, k, art) { bestAdd(p, k, art); }
-function waOpen(p, txt) {
-  var ph = String(p.phone || '').replace(/[^\d+]/g, '').replace(/^\+/, '').replace(/^00/, '').replace(/^0/, '49');
-  window.open('https://wa.me/' + (ph.length > 6 ? ph : '') + '?text=' + encodeURIComponent(txt), '_blank');
-}
 function pakete() {
   settings.pakete = settings.pakete || [];
   if (!settings.paketeInit) {
@@ -6536,14 +6531,14 @@ function pakete() {
 function pkForm(k) { return PK_FORMS.filter(function (x) { return x[0] === k; })[0]; }
 function tplById(id) { return templates.filter(function (t) { return t.id === id; })[0]; }
 function pkLinks(p, keys) { return keys.map(function (k) { var f = pkForm(k); return f ? f[1] + ': ' + fillPlatzhalter('{' + f[2] + '}', p) : ''; }).filter(Boolean).join('\n'); }
-/* Formular-Links per E-Mail oder WhatsApp senden und als gesendet merken */
+/* Formular-Links per E-Mail senden und als gesendet merken (WhatsApp entfernt: Patientendaten nicht über Meta) */
 function sendForm(p, keys, how, subject, txt) {
   keys.forEach(function (k) { formMark(p, k, 'sent'); });
   persist(); renderUnterlagen();
-  if (how === 'wa') waOpen(p, txt); else tvMail(p, '', [subject, txt]);
+  tvMail(p, '', [subject, txt]);
 }
 function sendMenu(ev, p, keys, subject, txt, extra) {
-  tlMenu(ev, [['Per E-Mail', function () { sendForm(p, keys, 'mail', subject, txt); }], ['Per WhatsApp', function () { sendForm(p, keys, 'wa', subject, txt); }]].concat(extra || []));
+  tlMenu(ev, [['Per E-Mail', function () { sendForm(p, keys, 'mail', subject, txt); }]].concat(extra || []));
 }
 var ANAM_TXT = '{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Anamnesebogen aus:\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik';
 function pkSend(p, pk, how) {
@@ -6563,7 +6558,7 @@ function formMenuItems(p) {
   var out = [];
   PK_FORMS.forEach(function (f) {
     var st = formSt(p, f[0]), tag = f[0] === 'anamnese' ? (anamInfo(p).state === 'ok' ? ' ✓' : '') : st.got ? ' ✓' : st.sent ? ' …' : '';
-    ['mail', 'wa'].forEach(function (how) { out.push([f[1] + (how === 'wa' ? ' per WhatsApp' : ' per E-Mail') + (how === 'mail' ? tag : ''), function () { sendForm(p, [f[0]], how, f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p)); }]); });
+    ['mail'].forEach(function (how) { out.push([f[1] + ' per E-Mail' + tag, function () { sendForm(p, [f[0]], how, f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p)); }]); });
   });
   return out;
 }
@@ -6587,7 +6582,7 @@ function renderUnterlagen() {
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); box.appendChild(r); return r;
   };
-  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/whatsapp/i.test(txt) ? 'wa' : /hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
   var unReset = function (keys) {
     var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
@@ -6602,7 +6597,7 @@ function renderUnterlagen() {
     c.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket'));
     var ts = (pk.forms || []).map(function (k) { return formSt(p, k).sent || 0; }), last = Math.max.apply(null, ts.concat([0]));
     var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;';
-    rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); })); rr.appendChild(bt('Per WhatsApp', false, function () { pkSend(p, pk, 'wa'); }));
+    rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); }));
     rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); if (last) rr.appendChild(unReset(pk.forms || [])); c.appendChild(rr); box.appendChild(c);
   });
   /* Online-Formulare */
@@ -6712,7 +6707,17 @@ async function vlPdf(titel, blocks, sig) {
   var bytes = await doc.save(); return new Blob([bytes], { type: 'application/pdf' });
 }
 var vlBusy = false;
+/* Aufklärungen sind freigegeben (04.11.2026): den alten Namenszusatz „(Entwurf)“ einmalig entfernen, nur wenn der Name noch unverändert ist */
+function vlEntwurfWeg() {
+  var n = 0;
+  templates.forEach(function (t) {
+    var d = t.web && KA_DOCS.filter(function (x) { return x.id === t.web; })[0];
+    if (d && t.name === d.name + ' (Entwurf)') { t.name = d.name; n++; }
+  });
+  if (n) { persist(); renderTemplates(); }
+}
 async function vlStandard() {
+  try { vlEntwurfWeg(); } catch (x) {}
   if (vlBusy || (settings.vlVer || 0) >= VL_VER) return; vlBusy = true;
   try {
     var made = 0, have = {}; templates.forEach(function (t) { have[String(t.name).toLowerCase()] = t; });
@@ -6729,7 +6734,7 @@ async function vlStandard() {
       if (d.match) { var re = new RegExp(d.match, 'i'); (settings.katalog || []).forEach(function (k) { if (re.test(k.name) && (k.vorlagen = k.vorlagen || []).indexOf(t.id) < 0) k.vorlagen.push(t.id); }); }
     }
     settings.vlVer = VL_VER; persist(); renderTemplates();
-    if (made) alert(made + ' Vorlagen wurden angelegt (Nachsorge und Aufklärungen). Sie sind bei passenden Leistungen verknüpft (unter Leistungen änderbar). Die Aufklärungen sind Entwürfe: bitte ärztlich und rechtlich prüfen.');
+    if (made) alert(made + ' Vorlagen wurden angelegt (Nachsorge und Aufklärungen). Sie sind bei passenden Leistungen verknüpft (unter Leistungen änderbar).');
   } catch (x) {} finally { vlBusy = false; }
 }
 function renderTemplates() {
@@ -7159,12 +7164,12 @@ function renderPick() {
 var AM_GROUPS = [
   { t: 'Dokumentieren', ic: 'book', items: [['doku', 'book', 'Dokumentation'], ['notiz', 'pen', 'Notiz'], ['produkt', 'box', 'Produkt']] },
   { t: 'Termin und Abrechnung', ic: 'cal', items: [['termin', 'cal', 'Termin'], ['rechnung', 'euro', 'Rechnung']] },
-  { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamwa', 'wa', 'Anamnese WhatsApp'], ['anamlink', 'link', 'Anamnese-Link']] },
+  { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamlink', 'link', 'Anamnese-Link']] },
   { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] },
   { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
 /* Symbolleiste: Termin, Rechnung und Rezept (häufigste Aktionen) starten direkt, die anderen öffnen ihre Kategorie */
-var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4' }, { t: 'WhatsApp schreiben', ic: 'wa', act: 'wa', c: 'd5', hm: 1 }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6' }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1 }];
+var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4' }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6' }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1 }];
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
   AM_DOCK.forEach(function (d) {
@@ -7230,11 +7235,10 @@ function aAct(x) {
   else if (x === 'bild') { zuNext = null; document.getElementById('a-img-in').click(); }
   else if (x === 'dokument') { dokPick = true; renderPick(); }
   else if (x === 'mail') openMail();
-  else if (x === 'wa') waOpen(curP, '');
   else if (x === 'produkt') openVb(null);
   else if (x === 'rechnung') openInvoice(curP);
   else if (x === 'rezept') openRx(null);
-  else if (x === 'anammail' || x === 'anamwa') sendForm(curP, ['anamnese'], x === 'anamwa' ? 'wa' : 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, curP));
+  else if (x === 'anammail') sendForm(curP, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, curP));
   else if (x === 'anamlink') {
     var url = webfUrl('anamnese.html') + '?c=' + pCode(curP);
     copyText(url, function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, async function () { await kaPrompt('Link zum Kopieren:', url, { readonly: true, ok: 'Schließen', single: true }); });
@@ -9055,7 +9059,6 @@ function renderSicherung() {
   el.textContent = 'Letzte Sicherung: ' + (days === 0 ? 'heute' : days === 1 ? 'gestern' : 'vor ' + days + ' Tagen') + ' um ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' Uhr';
   el.style.color = days >= 2 ? '#92400e' : '#15803d';
 }
-function calMode(v) { settings.calMode = v === 'kuerzel' ? 'kuerzel' : 'belegt'; persist(); KS.calPush(); }
 function calCopy() { var u = KS.calUrl(); copyText(u, function () { alert('Adresse kopiert.'); }, async function () { await kaPrompt('Adresse zum Kopieren:', u, { readonly: true, ok: 'Schließen', single: true }); }); }
 async function calOffAsk() { if (await kaConfirm('Kalender ausschalten? Die Adresse wird ungültig, und der Kalender in Google verschwindet nach der nächsten Aktualisierung.')) KS.calOff(); }
 function extSave() {

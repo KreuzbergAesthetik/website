@@ -7,7 +7,6 @@ function renderSicherung() {
   el.textContent = 'Letzte Sicherung: ' + (days === 0 ? 'heute' : days === 1 ? 'gestern' : 'vor ' + days + ' Tagen') + ' um ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' Uhr';
   el.style.color = days >= 2 ? '#92400e' : '#15803d';
 }
-function calMode(v) { settings.calMode = v === 'kuerzel' ? 'kuerzel' : 'belegt'; persist(); KS.calPush(); }
 function calCopy() { var u = KS.calUrl(); copyText(u, function () { alert('Adresse kopiert.'); }, async function () { await kaPrompt('Adresse zum Kopieren:', u, { readonly: true, ok: 'Schließen', single: true }); }); }
 async function calOffAsk() { if (await kaConfirm('Kalender ausschalten? Die Adresse wird ungültig, und der Kalender in Google verschwindet nach der nächsten Aktualisierung.')) KS.calOff(); }
 function extSave() {
