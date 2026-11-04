@@ -4,7 +4,9 @@
  * Der Server (siehe formular-empfang-wordpress.txt) sieht nur unlesbare Daten.
  */
 var KS = (function () {
-  var EP = 'https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/abgleich';
+  // Entwicklungszweig: produktiven WordPress-Endpunkt bewusst nicht verwenden.
+  // Erst eine separate Testinstanz mit synthetischen Daten konfigurieren.
+  var EP = null;
   var STORES = ['events', 'patients', 'templates', 'invoices', 'settings', 'lager', 'ausgaben', 'todos', 'entw'];
   var S = { busy: false, applying: false, timer: null, poll: null, inbox: [], err: '', msg: '', obj: [], rev: 0, started: false, autoInbox: '' };
   var enc = new TextEncoder(), dec = new TextDecoder();
@@ -54,6 +56,7 @@ var KS = (function () {
 
   /* ---------- Server ---------- */
   async function api(a, fields, file) {
+    if (!EP) throw new Error('Testmodus: Serverzugriffe gesperrt. Zuerst isolierten Testserver einrichten.');
     var c = fields && fields._c || cfg(); if (!c) throw new Error('Der Abgleich ist nicht eingerichtet.');
     var fd = new FormData(); fd.append('a', a); fd.append('t', c.tok);
     Object.keys(fields || {}).forEach(function (k) { if (k !== '_c') fd.append(k, fields[k]); });
