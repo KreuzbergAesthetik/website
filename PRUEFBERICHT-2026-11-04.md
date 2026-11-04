@@ -1,6 +1,6 @@
 # Prüfbericht Praxis-App, 04.11.2026
 
-Geprüft: Sicherheit, Fehler, Layout, Branding und Design. Stand `main` nach PR #264, Version danach `2026-11-04-a`.
+Geprüft: Sicherheit, Fehler, Layout, Branding und Design. Stand `main` nach PR #264, Version danach `2026-11-04-b`.
 Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den echten Server getestet.
 
 ## Behoben

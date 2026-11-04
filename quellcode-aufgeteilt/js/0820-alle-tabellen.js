@@ -152,6 +152,7 @@ function viewInvoice(id) {
   document.getElementById('inv-pay-btn').style.display = invIsDraft(inv) || invState(inv).full ? 'none' : 'inline-block';
   document.getElementById('inv-kv-btn').style.display = inv.kind === 'kv' ? '' : 'none';
   document.getElementById('inv-copykv-btn').style.display = invIsDraft(inv) ? 'none' : '';
+  var statusBtn = document.getElementById('inv-send-status-btn'); if (statusBtn) { statusBtn.style.display = inv.kind === 'kv' ? 'none' : 'inline-flex'; statusBtn.title = invSent(inv) ? 'Als nicht versendet markieren' : 'Als versendet markieren'; statusBtn.setAttribute('aria-label', statusBtn.title); statusBtn.style.color = invSent(inv) ? '#15803d' : '#64748b'; }
   var sb = document.getElementById('inv-send-btn'), sl = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden'; sb.title = sl; sb.setAttribute('aria-label', sl);
   openModal('modal-invview');
 }
