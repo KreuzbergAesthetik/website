@@ -99,7 +99,7 @@ function invoiceDOM(inv) {
     tr.appendChild(mk('td', '', it.rabatt ? '' : fmtD(it.datum || inv.leistung)));
     tr.appendChild(mk('td', 'c', it.rabatt ? '' : String(it.qty).replace('.', ',')));
     var ptd = mk('td', '', it.text); if (it.note) { var pn = mk('div', '', it.note); pn.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px; white-space:pre-wrap;'; ptd.appendChild(pn); }
-    if (it.goae) { var pg = mk('div', '', goaeLine(it.goae)); pg.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px;'; ptd.appendChild(pg); }
+    if (it.goae) { var pg = mk('div', '', goaeLine(it.goae, it.text)); pg.style.cssText = 'font-size:11.5px; color:#444; margin-top:2px;'; ptd.appendChild(pg); }
     tr.appendChild(ptd); tr.appendChild(mk('td', 'c', rate + '%')); tr.appendChild(mk('td', 'r', eurP(amt)));
     tb.appendChild(tr);
   });

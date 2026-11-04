@@ -55,6 +55,8 @@ Alle Tests mit erfundenen Daten. Nicht auf echten Geräten und nicht gegen den e
 
 - GOÄ: Leistungen mit optionaler GOÄ-Nummer, Punktzahl, Analog-Kennzeichen; Festpreis bleibt, Faktor wird zurückgerechnet; Rechnung zeigt Nummer, Faktor und Hinweis auf die Honorarvereinbarung (Datum aus der Akte). Nummern/Punktzahlen trägt der Praxisinhaber ein (Version `2026-11-04-g`, Test `tests/goae.mjs`). Ob Rechnungen und Honorarvereinbarung den Anforderungen von § 2 und § 12 GOÄ genügen, ist fachlich prüfen zu lassen.
 
+- GOÄ erweitert: mehrere Positionen je Leistung, Präparat als Auslage nach § 10 GOÄ, gemeinsamer zurückgerechneter Faktor, Auswahlliste belegter Nummern mit Hinweisen (Version `2026-11-04-i`).
+
 ## Kein Handlungsbedarf
 
 - `Origin`-Prüfung des Servers: nur Filter, die Sicherheit hängt am Zugangs-Token.
