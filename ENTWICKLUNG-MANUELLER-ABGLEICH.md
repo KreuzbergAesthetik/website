@@ -38,6 +38,19 @@ Manueller, getrennt steuerbarer Postfachabruf und Geräteabgleich, lokale Datenh
 - Manuelle Bedienung ist im Abgleich-Tab ausdrücklich als **ENTWICKLUNGSVERSION** gekennzeichnet.
 - Regressionstest und GitHub Actions für den Entwicklungszweig aktiviert.
 
+## Ergänzungen im Entwicklungsstand dev2
+- Der Postfachbutton bleibt auch dann sichtbar, wenn die Anzahl neuer Eingänge noch unbekannt ist. Bis zum Abruf heißt der Status ausdrücklich „Postfach noch nicht geprüft“.
+- Der Geräteabgleich verändert nicht den Postfach-Zähler und löst keinen Import aus.
+- Die Webformular-Editoren speichern jetzt **nur lokal**. Eine eigene Aktion „Formulare jetzt veröffentlichen“ überträgt ausschließlich Formulartexte und -felder, und nur nach ausdrücklichem Klick.
+- Das Formular „Gespeichert und veröffentlicht“ wird nicht mehr beim lokalen Speichern angezeigt.
+- Bei fehlgeschlagenem PDF-Speichern meldet der Import keinen Erfolg zurück. Der verschlüsselte Eintrag bleibt auf dem Server.
+- Vor dem Quittieren eines erfolgreich importierten Postfacheingangs wird `kaIdle()` abgewartet, damit die asynchron verschlüsselte lokale Speicherung abgeschlossen ist.
+- Eine fehlende Serverkonfiguration verursacht im Kalenderbereich keine Ausnahme mehr beim Aufbau der Kalenderadresse.
+- Zusätzliche statische Assertions in `tests/static-check.mjs` sichern manuelle Aktionen und das Importverhalten ab.
+- App-Version und PWA-Cache: `2026-11-04-dev2`. Keine Bereitstellung der Entwicklungsversion auf GitHub Pages.
+
+**Prüfstand:** JavaScript von `sync.js` und allen Inline-Skripten in `index.html` syntaktisch geprüft. Das ist kein Browser-, Geräte- oder Integrationstest. Keine reale Verbindung zu einem Backend hergestellt.
+
 ## Noch nicht abgeschlossen
 1. Isolierten Test-Backend-Endpunkt mit synthetischen Daten einrichten. **Keinesfalls** den produktiven WordPress-Endpunkt in diese Version eintragen.
 2. Echte Trennung der Postfach-Schlüssel und der Gerätesynchronisierung: Der aktuelle Postfachabruf benötigt noch die gemeinsame `ka_sync`-Konfiguration.
