@@ -35,6 +35,7 @@ function invTotal() { var t = 0; for (var i = 0; i < invRows.length; i++) t += r
 function paidSum(inv) { return (inv.payments || []).reduce(function (a, p) { return a + p.amount; }, 0); }
 function invState(inv) {
   var n = (inv.payments || []).length, sum = paidSum(inv);
+  if (inv.stornoFor) return { txt: 'Stornorechnung', cls: 'badge-gray', full: true };
   if (inv.storniert) return { txt: 'Storniert', cls: 'badge-gray', full: true };
   if ((inv.paid && !n) || sum >= inv.total - 0.005) return { txt: 'Bezahlt', cls: 'badge-green', full: true };
   if (sum > 0) return { txt: 'Teilzahlung', cls: 'badge-amber', full: false };

@@ -229,8 +229,51 @@ function invEditUi(on) {
   var zw = document.getElementById('iv-zahlwrap'); if (zw) zw.style.display = dr ? 'none' : '';
 }
 /* Bestehende Rechnung ändern: Nummer und Zahlungen bleiben erhalten */
+/* Fortlaufende Rechnungsnummer JJJJ-NNNNN */
+function invNextNr(datum) {
+  var yr = String(datum).slice(0, 4), seq = 0;
+  invoices.forEach(function (i) { var m = /^(?:RE-)?(\d{4})-(\d+)$/.exec(i.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); });
+  return yr + '-' + String(seq + 1).padStart(5, '0');
+}
+/* Ausgestellte Rechnungen sind unveränderlich, sobald sie versendet, bezahlt oder storniert sind (GoBD). Korrektur nur über Storno und neue Rechnung. */
+function invLocked(inv) {
+  if (!inv || invIsDraft(inv)) return '';
+  if (inv.stornoFor) return 'eine Stornorechnung';
+  if (inv.storniert) return 'storniert';
+  if (inv.sentAt) return 'versendet';
+  if ((inv.payments || []).length || inv.paid) return 'bezahlt';
+  return '';
+}
+function invIsLastNr(inv) { var m = /^(?:RE-)?(\d{4})-(\d+)$/.exec(inv.nr || ''); return !!m && invNextNr(m[1] + '-01-01') === m[1] + '-' + String(parseInt(m[2], 10) + 1).padStart(5, '0'); }
+/* Storno: eigene Stornorechnung mit neuer Nummer und negativen Beträgen, Original wird als storniert markiert */
+function stornoInvoice(inv) {
+  if (!inv || invIsDraft(inv) || inv.storniert || inv.stornoFor) return null;
+  var today = iso(new Date()), s = JSON.parse(JSON.stringify(inv));
+  s.id = newId(); s.nr = invNextNr(today); s.date = today; s.payments = []; s.paid = false; s.sentAt = null; s.storniert = false; s.stornoRef = '';
+  s.items = (s.items || []).map(function (it) { return Object.assign({}, it, { price: -(+it.price || 0), amount: -(+it.amount || 0) }); });
+  s.total = r2(-inv.total); s.stornoFor = inv.nr; s.showQr = false; s.zahlung = '';
+  s.vortext = 'Stornorechnung zu Rechnung ' + inv.nr + ' vom ' + fmtD(inv.date) + '. Die Rechnung ist damit aufgehoben.';
+  invoices.push(s); inv.storniert = true; inv.stornoRef = s.nr;
+  var p = patients.filter(function (x) { return x.id === inv.pid; })[0];
+  if (p) p.log = (p.log || []).concat([{ ts: Date.now(), type: 'notiz', text: 'Rechnung ' + inv.nr + ' storniert (Stornorechnung ' + s.nr + ')' }]);
+  persist(); return s;
+}
+async function stornoAsk(inv, korr, vorab) {
+  var paid = paidSum(inv);
+  var msg = (vorab ? vorab + '\n\n' : '') + 'Rechnung ' + inv.nr + ' stornieren?\n\nEs entsteht eine Stornorechnung mit eigener Nummer, die Rechnung bleibt als storniert erhalten.'
+    + (paid > 0 ? '\n\nBereits erfasste Zahlungen (' + eur(paid) + ') bleiben bei dieser Rechnung. Eine Erstattung oder Verrechnung bitte gesondert vermerken.' : '')
+    + (korr ? '\n\nDanach öffnet sich eine neue Rechnung mit denselben Angaben zum Korrigieren.' : '');
+  if (!await kaConfirm(msg, { ok: korr ? 'Stornieren und korrigieren' : 'Stornieren', danger: false })) return null;
+  var s = stornoInvoice(inv); if (!s) return null;
+  renderInvoices();
+  if (korr) { var p = patients.filter(function (x) { return x.id === inv.pid; })[0]; if (p) { closeModal('modal-invview'); invMode = 'rechnung'; openInvoice(p); fillInvForm(inv); document.getElementById('inv-datum').value = iso(new Date()); return s; } }
+  viewInvoice(s.id); return s;
+}
 function editInvoice() {
   var inv = invCur(); if (!inv) return;
+  var lk = invLocked(inv);
+  if (lk === 'storniert' || lk === 'eine Stornorechnung') { alert('Diese Rechnung ist ' + lk + ' und kann nicht mehr geändert werden.'); return; }
+  if (lk) { stornoAsk(inv, true, 'Rechnung ' + inv.nr + ' ist ' + lk + ' und darf nicht mehr geändert werden. Eine Korrektur geht über Storno und neue Rechnung.'); return; }
   var p = patients.filter(function (x) { return x.id === inv.pid; })[0]; if (!p) { alert('Der Patient zu dieser Rechnung wurde nicht gefunden.'); return; }
   closeModal('modal-invview'); invMode = inv.kind || 'rechnung'; invKeepMode = true; openInvoice(p); invEdit = inv; invEditUi(true); fillInvForm(inv);
 }
@@ -472,9 +515,7 @@ async function saveInvoice() {
     ['tab-zahlungen', 'tab-statistik'].forEach(function (t) { var el = document.getElementById(t); if (el && el.classList.contains('active')) (t === 'tab-zahlungen' ? renderZahlungen : renderStat)(); });
     viewInvoice(ie.id); return;
   }
-  var yr = datum.slice(0, 4), seq = 0;
-  invoices.forEach(function (i) { var m = /^(?:RE-)?(\d{4})-(\d+)$/.exec(i.nr); if (m && m[1] === yr) seq = Math.max(seq, parseInt(m[2], 10)); });
-  var nr = yr + '-' + String(seq + 1).padStart(5, '0');
+  var nr = invNextNr(datum);
   var total = r2(items.reduce(function (a, i) { return a + i.amount; }, 0));
   var inv = { id: newId(), nr: nr, date: datum, leistung: leist, pid: p.id,
     name: (p.anrede ? p.anrede + ' ' : '') + p.vorname + ' ' + p.nachname, adresse: adresse,
@@ -536,7 +577,7 @@ function openBox() {
   b.appendChild(t); return b;
 }
 var invSort = { k: 'nr', dir: -1 }, invF = '';
-function invKind(i) { if (i.kind === 'kv') return 'kv'; return i.storniert ? 'storno' : invState(i).full ? 'bezahlt' : (invLate(i) ? 'ueberfaellig' : 'offen'); }
+function invKind(i) { if (i.kind === 'kv') return 'kv'; return i.storniert || i.stornoFor ? 'storno' : invState(i).full ? 'bezahlt' : (invLate(i) ? 'ueberfaellig' : 'offen'); }
 function invSortBy(k) { if (invSort.k === k) invSort.dir = -invSort.dir; else { invSort.k = k; invSort.dir = k === 'name' || k === 'status' ? 1 : -1; } renderInvoices(); }
 function invCmp(a, b) {
   var k = invSort.k, d;

@@ -85,7 +85,7 @@ function invoiceDOM(inv) {
   if (rc.anrede) left.appendChild(mk('b', '', rc.anrede));
   rc.lines.forEach(function (t) { left.appendChild(mk('div', '', t)); });
   var right = mk('div'); right.style.cssText = 'width:230px; font-size:12px; color:#333;';
-  right.appendChild(mk('b', '', dk0 ? DRAFT[inv.kind].kopf : 'RECHNUNG'));
+  right.appendChild(mk('b', '', dk0 ? DRAFT[inv.kind].kopf : inv.stornoFor ? 'STORNORECHNUNG' : 'RECHNUNG'));
   (dk0 ? [['Datum:', fmtD(inv.date)]] : [['Rechnungsnummer:', inv.nr], ['Rechnungsdatum:', fmtD(inv.date)], ['Zahlungsstatus:', invStatusText(inv)]]).forEach(function (m) {
     var r = mk('div'); r.style.cssText = 'display:flex; justify-content:space-between; gap:8px;'; r.appendChild(mk('span', '', m[0])); r.appendChild(mk('span', '', m[1])); right.appendChild(r);
   });
@@ -151,13 +151,20 @@ function viewInvoice(id) {
   var box = document.getElementById('inv-view'); box.innerHTML = ''; box.appendChild(invoiceDOM(inv)); if (!invIsDraft(inv)) box.appendChild(invPayBlock(inv));
   document.getElementById('inv-pay-btn').style.display = invIsDraft(inv) || invState(inv).full ? 'none' : 'inline-block';
   document.getElementById('inv-kv-btn').style.display = inv.kind === 'kv' ? '' : 'none';
-  document.getElementById('inv-copykv-btn').style.display = invIsDraft(inv) ? 'none' : '';
+  document.getElementById('inv-copykv-btn').style.display = invIsDraft(inv) || inv.stornoFor ? 'none' : '';
   var statusBtn = document.getElementById('inv-send-status-btn'); if (statusBtn) { statusBtn.style.display = inv.kind === 'kv' ? 'none' : 'inline-flex'; statusBtn.title = invSent(inv) ? 'Als nicht versendet markieren' : 'Als versendet markieren'; statusBtn.setAttribute('aria-label', statusBtn.title); statusBtn.style.color = invSent(inv) ? '#15803d' : '#64748b'; }
   var sb = document.getElementById('inv-send-btn'), sl = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden'; sb.title = sl; sb.setAttribute('aria-label', sl);
   openModal('modal-invview');
 }
 async function deleteInvoice() {
   var inv = invCur(); if (!inv) return;
+  if (!invIsDraft(inv)) {
+    var lk = invLocked(inv);
+    if (lk === 'storniert' || lk === 'eine Stornorechnung') { alert('Diese Rechnung ist ' + lk + ' und muss aufbewahrt werden. Löschen ist nicht möglich.'); return; }
+    if (lk || !invIsLastNr(inv)) {
+      await stornoAsk(inv, false, 'Rechnung ' + inv.nr + ' ist ' + (lk || 'nicht die letzte vergebene Nummer') + ' und kann deshalb nicht gelöscht werden (lückenlose Nummern, Aufbewahrungspflicht).'); return;
+    }
+  }
   if (invIsDraft(inv)) {
     if (!await kaConfirm(DRAFT[inv.kind].name + ' für ' + inv.name + ' (' + eur(inv.total) + ') wirklich löschen?')) return;
     entw = entw.filter(function (i) { return i !== inv; }); persist(); closeModal('modal-invview'); invTab = inv.kind === 'test' ? 'test' : 'rechnung'; renderInvoices(); return;
