@@ -61,7 +61,7 @@ var KS = (function () {
     // Nur ausdrücklich konfigurierte lokale Testinstanzen dürfen angesprochen werden.
     var testUrl;
     try { testUrl = new URL(EP, location.href); } catch (e) { throw new Error('Ungültige Testserver-Adresse.'); }
-    var localTest = /^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/.test(testUrl.hostname);
+    var localTest = ['localhost', '127.0.0.1', '[::1]'].includes(testUrl.hostname);
     if (!localTest || !/^https?:$/.test(testUrl.protocol)) {
       throw new Error('Entwicklungsversion: Nur ein lokaler Testserver ist erlaubt. Produktive Server sind gesperrt.');
     }
