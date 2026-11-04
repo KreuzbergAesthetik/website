@@ -156,7 +156,7 @@ async function sealPaket(jwk, obj) {
   return out;
 }
 async function deliver(typ, label, who, data, pdfBytes, hp) {
-  var fname = label + '_' + slug(who) + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
+  var fname = label + '_' + slug(who) + '_' + (function (d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); })(new Date()) + '.pdf';
   var fd = new FormData(), key = await praxisKey();
   fd.append('typ', typ); fd.append('website', hp || '');
   if (key) {
