@@ -2,7 +2,7 @@ name: Praxis-App CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, entwicklung/manueller-abgleich]
   pull_request:
     branches: [main]
 
