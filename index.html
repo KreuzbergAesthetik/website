@@ -852,6 +852,7 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 #tab-settings .foot-bar{border-top:1px solid #d6deea;padding-top:15px}
 @media(max-width:430px){#modal-inv .inv-address-row{grid-template-columns:1fr}#modal-inv .inv-address-row>.form-group:last-child{max-width:190px}#inv-kind button{font-size:12px;padding:8px 4px}}
 
+.inv-send-indicator { display:inline-flex; align-items:center; justify-content:center; margin-left:5px; font-size:13px; font-weight:700; vertical-align:middle; } .inv-send-indicator.is-sent { color:#15803d; } .inv-send-indicator.is-unsent { color:#94a3b8; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1243,7 +1244,8 @@ function kaStart() {
       <div id="inv-main">
       <div id="inv-open"></div>
       <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
-      <div id="inv-seg" class="za-seg" style="margin-bottom:10px;"></div>
+      <div id="inv-seg" class="za-seg" style="margin-bottom:6px;"></div>
+      <div id="inv-send-seg" class="za-seg" style="margin-bottom:10px;" aria-label="Rechnungen nach Versandstatus filtern"></div>
       <div class="scroll">
         <table class="pt" style="min-width:560px; font-size:14px;">
           <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort pc-d" onclick="invSortBy('date')">Datum <span class="sarr" data-ik="date"></span></th><th class="sort" onclick="invSortBy('name')">Rechnung <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
@@ -2039,6 +2041,7 @@ function kaStart() {
       <button type="button" class="iv-b" id="inv-copykv-btn" style="display:none" title="Als KV kopieren" aria-label="Als KV kopieren" onclick="invoiceToKv()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span>Als KV kopieren</span></button>
       <button type="button" class="iv-b iv-rec" id="inv-kv-btn" style="display:none" title="In Rechnung umwandeln" aria-label="In Rechnung umwandeln" onclick="kvToInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 14h5M13 11l3 3-3 3"/></svg><span>Rechnung</span></button>
       <button type="button" class="iv-b iv-pdf" title="Als PDF speichern" aria-label="Als PDF speichern" onclick="savePdf()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>PDF</span></button>
+      <button type="button" class="iv-b" id="inv-send-status-btn" title="Versandstatus ändern" aria-label="Versandstatus ändern" onclick="toggleInvoiceSent()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg><span>Status</span></button>
       <button type="button" class="iv-b iv-send" id="inv-send-btn" title="Rechnung senden" aria-label="Rechnung senden" onclick="sendInvoice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg><span id="inv-send-cap">Senden</span></button>
     </div>
     <div id="inv-view"></div>
@@ -4271,6 +4274,15 @@ function renderEntw() {
     r.appendChild(mk('span', 'entw-n', e.name)); r.appendChild(mk('span', 'entw-d', fmtD(e.date))); r.appendChild(mk('b', 'entw-t', eur(e.total))); box.appendChild(r);
   });
 }
+var invSendF = '';
+function invSent(i) { return i.kind !== 'kv' && !!i.sentAt; }
+async function toggleInvoiceSent() {
+  var i = invCur(); if (!i || i.kind === 'kv') return;
+  var wasSent = invSent(i);
+  if (!await kaConfirm(wasSent ? 'Rechnung wieder als nicht versendet markieren?' : 'Rechnung als versendet markieren? Bitte nur bestätigen, wenn sie tatsächlich abgeschickt wurde.')) return;
+  i.sentAt = wasSent ? null : Date.now();
+  persist(); viewInvoice(i.id); renderInvoices();
+}
 function renderInvoices() {
   renderEntw();
   var tb = document.getElementById('inv-table'); if (!tb) return;
@@ -4288,9 +4300,19 @@ function renderInvoices() {
     var bt = mk('button', 'za-b' + (invF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(cnt[f[0]])));
     bt.onclick = function () { invF = (invF === f[0]) ? '' : f[0]; renderInvoices(); }; sg.appendChild(bt);
   });
+  var ss = document.getElementById('inv-send-seg'); if (ss) {
+    ss.innerHTML = '';
+    var sc = { alle: 0, ja: 0, nein: 0 };
+    inR.forEach(function(i) { if (i.kind === 'kv') return; sc.alle++; if (invSent(i)) sc.ja++; else sc.nein++; });
+    [['', 'Alle'], ['ja', 'Versendet'], ['nein', 'Nicht versendet']].forEach(function(f) {
+      var bt = mk('button', 'za-b' + (invSendF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(sc[f[0] || 'alle'])));
+      bt.onclick = function() { invSendF = f[0]; renderInvoices(); }; ss.appendChild(bt);
+    });
+  }
   var q = (document.getElementById('inv-q').value || '').trim().toLowerCase();
   var shown = inR.filter(function (i) {
     var k = invKind(i);
+    if (invSendF && (i.kind === 'kv' || (invSendF === 'ja') !== invSent(i))) return false;
     if (invF === 'offen' && k !== 'offen' && k !== 'ueberfaellig') return false; if (invF && invF !== 'offen' && k !== invF) return false;
     return !q || ((i.kind === 'kv' ? 'KV Kostenvoranschlag ' : '') + i.nr + ' ' + i.name + ' ' + eur(i.total) + ' ' + fmtD(i.date) + ' ' + String(i.total).replace('.', ',')).toLowerCase().indexOf(q) >= 0;
   });
@@ -4299,12 +4321,15 @@ function renderInvoices() {
     var row = tb.insertRow(); row.className = i.kind === 'kv' ? 't-kv' : i.storniert ? '' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell();
     var b = mk('button', 'pn', i.kind === 'kv' ? 'KV' : i.nr); if (i.kind === 'kv') { b.classList.add('inv-kv-label'); b.title = 'Kostenvoranschlag öffnen'; } b.type = 'button'; b.onclick = function () { viewInvoice(i.id); }; c0.appendChild(b);
-    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm); c2.appendChild(nmEl(invNm(i))); c3.textContent = eur(i.total); c0.className = 'nw';
+    var fd = fmtD(i.date); c1.textContent = fd; c1.className = 'pc-d'; var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); c0.appendChild(dsm);
+    if (i.kind !== 'kv') { var si = mk('span', 'inv-send-indicator ' + (invSent(i) ? 'is-sent' : 'is-unsent')); si.textContent = invSent(i) ? '✓' : '○'; si.title = invSent(i) ? 'Als versendet markiert' + (typeof i.sentAt === 'number' ? ' am ' + new Date(i.sentAt).toLocaleDateString('de-DE') : '') : 'Noch nicht als versendet markiert'; si.setAttribute('aria-label', si.title); c0.appendChild(si); }
+    c2.appendChild(nmEl(invNm(i))); c3.textContent = eur(i.total); c0.className = 'nw';
     /* Betrag statt Status-Spalte: rot = offen, dunkelrot = überfällig, orange = Teilzahlung, grün = bezahlt, grau = storniert */
     var st = invState(i), late = !st.full && invLate(i), amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
     if (i.kind === 'kv') { amt.className = 'inv-a a-kv'; amt.title = 'Kostenvoranschlag, keine offene Forderung'; } else amt.title = i.storniert ? 'Storniert' : st.full ? 'Bezahlt' : late ? 'Überfällig' : st.txt; c3.textContent = ''; c3.className = 'nw'; c3.appendChild(amt);
   });
 }
+/* Rechnungsversand: kleine Kennzeichnung neben der Rechnungsnummer */
 /* ===== Alle Tabellen: Klick auf die Spaltenüberschrift sortiert (Zahlen, Beträge, Daten, Monate, Text) ===== */
 var TS_MON = ['jan', 'feb', 'mär', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dez'], tsState = new WeakMap(), tsTimers = new WeakMap();
 function tsKey(txt) {
@@ -4459,6 +4484,7 @@ function viewInvoice(id) {
   document.getElementById('inv-pay-btn').style.display = invIsDraft(inv) || invState(inv).full ? 'none' : 'inline-block';
   document.getElementById('inv-kv-btn').style.display = inv.kind === 'kv' ? '' : 'none';
   document.getElementById('inv-copykv-btn').style.display = invIsDraft(inv) ? 'none' : '';
+  var statusBtn = document.getElementById('inv-send-status-btn'); if (statusBtn) { statusBtn.style.display = inv.kind === 'kv' ? 'none' : 'inline-flex'; statusBtn.title = invSent(inv) ? 'Als nicht versendet markieren' : 'Als versendet markieren'; statusBtn.setAttribute('aria-label', statusBtn.title); statusBtn.style.color = invSent(inv) ? '#15803d' : '#64748b'; }
   var sb = document.getElementById('inv-send-btn'), sl = invIsDraft(inv) ? DRAFT[inv.kind].name + ' senden' : 'Rechnung senden'; sb.title = sl; sb.setAttribute('aria-label', sl);
   openModal('modal-invview');
 }
