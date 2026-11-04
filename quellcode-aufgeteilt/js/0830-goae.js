@@ -1,5 +1,21 @@
 /* ===== GOÄ: Festpreis bleibt, der Steigerungsfaktor wird daraus zurückgerechnet (Punktwert 5,82873 Cent) ===== */
 var GOAE_PW = 0.0582873;
+/* Auswahl belegter GOÄ-Nummern (Gebührenverzeichnis; BÄK GOÄ-Ratgeber „Faltenunterspritzung“, DÄ 2022;119(13):A 584). Nur Vorschläge, die Zuordnung trifft der Arzt. */
+var GOAE_VORSCHLAEGE = [
+  { nr: '1', pkt: 80, text: 'Beratung', hint: 'Neben Leistungen der Abschnitte C bis O im Behandlungsfall nur einmal berechnungsfähig.' },
+  { nr: '3', pkt: 150, text: 'Eingehende Beratung, mindestens 10 Minuten', hint: 'Nur als einzige Leistung oder zusammen mit einer Untersuchung nach Nr. 5, 6, 7, 8, 800 oder 801.' },
+  { nr: '5', pkt: 80, text: 'Symptombezogene Untersuchung', hint: 'Laut BÄK neben der Faltenunterspritzung berechnungsfähig, wenn erbracht.' },
+  { nr: '7', pkt: 160, text: 'Vollständige Untersuchung des gesamten Hautorgans', hint: 'Umfasst Haut, Hautanhangsgebilde und sichtbare Schleimhäute.' },
+  { nr: '252', pkt: 40, text: 'Injektion, subkutan, submukös, intrakutan oder intramuskulär', hint: '' },
+  { nr: '267', pkt: 80, text: 'Medikamentöse Infiltrationsbehandlung im Bereich einer Körperregion, je Sitzung', hint: 'Laut BÄK für Botulinumtoxin oder Hyaluronsäure, wenn eine Seite bzw. eine Region behandelt wird (z. B. eine Wange). Nur eine der Nrn. 267/268 je Sitzung.' },
+  { nr: '268', pkt: 130, text: 'Medikamentöse Infiltrationsbehandlung im Bereich mehrerer Körperregionen (auch eine Körperregion beidseitig), je Sitzung', hint: 'Laut BÄK, wenn über die Mittellinie oder beidseitig behandelt wird (ganze Stirn, ganzes Kinn, beide Wangen). Nicht neben Nr. 267.' }
+];
+function lsGoaePick(v) {
+  var g = GOAE_VORSCHLAEGE.filter(function (x) { return x.nr === v; })[0], h = document.getElementById('ls-goae-hint'); if (!g) { if (h) h.textContent = ''; return; }
+  document.getElementById('ls-goae').value = g.nr; document.getElementById('ls-pkt').value = String(g.pkt); document.getElementById('ls-analog').checked = false; document.getElementById('ls-goaetext').value = g.text;
+  if (h) h.textContent = g.hint ? 'Hinweis: ' + g.hint : '';
+  lsFaktorInfo();
+}
 function goaeFaktor(bruttoEinzel, rate, pkt) { var net = (+bruttoEinzel || 0) / (1 + (+rate || 0) / 100); return pkt > 0 ? Math.round(net / (pkt * GOAE_PW) * 100) / 100 : 0; }
 function goaeFx(f) { return String(f).replace('.', ','); }
 function goaeLine(g) {
@@ -32,6 +48,9 @@ function openLeist(i) {
   document.getElementById('ls-goae').value = k && k.goae || ''; document.getElementById('ls-pkt').value = k && k.pkt ? String(k.pkt).replace('.', ',') : ''; document.getElementById('ls-analog').checked = !!(k && k.analog);
   document.getElementById('ls-goaetext').value = k && k.goaeText || ''; document.getElementById('ls-begr').value = k && k.begr || '';
   document.getElementById('ls-goae-box').open = !!(k && k.goae); lsFaktorInfo();
+  var gp = document.getElementById('ls-goae-pick'); gp.innerHTML = ''; var g0 = mk('option', '', 'Nummer aus der Liste wählen …'); g0.value = ''; gp.appendChild(g0);
+  GOAE_VORSCHLAEGE.forEach(function (g) { var o = mk('option', '', 'Nr. ' + g.nr + ' · ' + g.pkt + ' Punkte · ' + g.text); o.value = g.nr; gp.appendChild(o); });
+  document.getElementById('ls-goae-hint').textContent = '';
   var ks = document.getElementById('ls-kat'); ks.innerHTML = ''; var o0 = mk('option', '', 'Keine Kategorie'); o0.value = ''; ks.appendChild(o0);
   ensureLKats().forEach(function (c) { var o = mk('option', '', c.name); o.value = c.id; ks.appendChild(o); });
   ks.value = k ? (k.kat || '') : ''; document.getElementById('ls-dauer').value = k && k.dauer ? k.dauer : '';

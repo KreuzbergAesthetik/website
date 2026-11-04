@@ -40,6 +40,12 @@ try {
     const k = settings.katalog.find(x => x.name === 'Probeleistung GOÄ');
     out.katalog = !!k && k.goae === '1234' && k.pkt === 500 && k.analog === true;
 
+    // Vorschlagsliste: Auswahl füllt Nummer, Punktzahl und Bezeichnung
+    const k2i = settings.katalog.findIndex(x => x.name === 'Probeleistung GOÄ'); openLeist(k2i);
+    out.vorschlaege = document.getElementById('ls-goae-pick').options.length === GOAE_VORSCHLAEGE.length + 1;
+    lsGoaePick('268');
+    out.vorschlagFuellt = document.getElementById('ls-goae').value === '268' && document.getElementById('ls-pkt').value === '130' && !document.getElementById('ls-analog').checked && /beidseitig/.test(document.getElementById('ls-goae-hint').textContent);
+    closeModal('modal-leist');
     // Akte: Honorarvereinbarung eintragen (über die Stammdaten-Maske)
     const p = { id: 'g1', nr: 1, anrede: 'Frau', vorname: 'Gina', nachname: 'Beispiel', dob: '01.02.1990', adresse: 'Teststraße 1\n10999 Berlin', medikation: [], log: [], doku: [], dokumente: [], bilder: [], erstellt: Date.now() };
     patients.push(p); viewAkte(p); toggleStamm();
@@ -76,7 +82,7 @@ try {
 
   // 121,38 € brutto / 1,19 = 102,00 € netto; 500 × 0,0582873 = 29,14365 €; 102 / 29,14365 = 3,4999… → 3,5
   assert.equal(r.faktor, 3.5, 'Faktor falsch zurückgerechnet: ' + JSON.stringify(r));
-  for (const k of ['katalog', 'akteFeld', 'ansichtNr', 'ansichtHinweis', 'pdf', 'warnung', 'ohneGoae']) assert.equal(r[k], true, 'GOÄ: ' + k + ' ' + JSON.stringify(r));
+  for (const k of ['katalog', 'vorschlaege', 'vorschlagFuellt', 'akteFeld', 'ansichtNr', 'ansichtHinweis', 'pdf', 'warnung', 'ohneGoae']) assert.equal(r[k], true, 'GOÄ: ' + k + ' ' + JSON.stringify(r));
   assert.equal(r.honorar, '28.10.2026');
   assert.match(r.faktorText, /Steigerungsfaktor 3,5/);
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
