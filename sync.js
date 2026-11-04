@@ -226,7 +226,7 @@ var KS = (function () {
     setBase({ rev: 0, dirty: !empty, last: 0 });
     await run(true);
   }
-  function disconnect() { try { kaSet('ka_sync', 'null'); kaSet('ka_sync_base', 'null'); } catch (x) {} S.inbox = []; S.obj = []; ui(); }
+  function disconnect() { try { kaSet('ka_sync', 'null'); kaSet('ka_sync_base', 'null'); } catch (x) {} S.inbox = []; S.inboxChecked = false; S.inboxLast = 0; S.inboxNote = ''; S.obj = []; ui(); }
 
   /* ---------- Passwort ändern: neuer Bereich mit neuem Schlüssel, alles umverschlüsselt, alter Bereich wird gelöscht ---------- */
   async function dropArea(c) {
@@ -363,9 +363,11 @@ var KS = (function () {
     box.querySelector('.sy-on').style.display = c ? '' : 'none';
     if (c) {
       var st = box.querySelector('.sy-state');
-      st.textContent = S.busy ? (S.msg || 'Gleiche ab …') : S.err ? S.err : b.dirty ? 'Änderungen warten auf den Abgleich' : 'Alles abgeglichen (' + ago(b.last) + ')';
+      st.textContent = S.busy ? (S.msg || 'Verbindung läuft …') : S.err ? S.err : b.dirty ? 'Lokale Änderungen warten auf manuellen Geräteabgleich' : b.last ? 'Letzter Geräteabgleich: ' + ago(b.last) : 'Noch kein Geräteabgleich durchgeführt';
       st.className = 'sy-state' + (S.err ? ' bad' : b.dirty || S.busy ? ' wait' : ' good');
-      box.querySelector('.sy-inbox').textContent = n ? n + ' Formular(e) im Postfach' : 'Postfach leer';
+      box.querySelector('.sy-inbox').textContent = !S.inboxChecked ? 'Postfach noch nicht geprüft' : n ? n + ' Formular(e) im Postfach (Prüfung ' + ago(S.inboxLast) + ')' : 'Postfach zuletzt geprüft: ' + ago(S.inboxLast) + ' · ' + (S.inboxNote || 'Keine neuen Eingänge');
+      var fp = box.querySelector('.sy-form-pending'); if (fp) fp.style.display = settings.formPublishPending ? '' : 'none';
+      var pb = box.querySelector('.sy-publish'); if (pb) pb.disabled = S.busy || !settings.formPublishPending;
     }
   }
   function init() {
@@ -375,6 +377,18 @@ var KS = (function () {
     ui(); // Keine automatischen Abfragen bei Start, Sichtbarkeit, Online-Status oder Intervall.
   }
   async function extFetch(url) { var j = await api('calget', { u: url }); return j.ics; }
-  async function txtset(obj, felder) { var c = cfg(); if (!c) throw new Error('Der Geräte-Abgleich ist nicht eingerichtet.'); var f = { k: JSON.stringify(obj || {}), _c: c }; if (felder) f.f = JSON.stringify(felder); await api('txtset', f); }
-  return { extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  /* Formular-Editor: Änderungen lokal vormerken, keinesfalls beim Speichern senden. */
+  function txtset() { settings.formPublishPending = true; persist(); ui(); }
+  /* Getrennter manueller Vorgang zur Veröffentlichung öffentlicher Formulartexte. */
+  async function publishForms() {
+    if (S.busy) throw new Error('Ein anderer Vorgang läuft noch.');
+    var c = cfg(); if (!c) throw new Error('Der Serverzugang ist noch nicht eingerichtet.');
+    S.busy = true; S.msg = 'Veröffentliche Formulare …'; S.err = ''; ui();
+    try {
+      await api('txtset', { k: JSON.stringify(settings.formTexte || {}), f: JSON.stringify(settings.formFelder || {}) });
+      settings.formPublishPending = false; persist(); return true;
+    } catch (e) { S.err = 'Formularveröffentlichung: ' + err(e); throw e; }
+    finally { S.busy = false; S.msg = ''; ui(); }
+  }
+  return { extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, publishForms: publishForms, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();
