@@ -1482,6 +1482,12 @@ function kaStart() {
           <div style="font-size:13px;color:#64748b;margin-bottom:9px;">Nur nach Deiner Freigabe Änderungen zwischen Computer und Zweitgerät austauschen. Kein Postfachimport.</div>
           <button type="button" class="btn btn-save" onclick="KS.run(true)">Geräte jetzt abgleichen</button>
         </div>
+        <div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:12px;">
+          <div style="font-weight:700;margin-bottom:5px;">Webformulare veröffentlichen</div>
+          <div class="sy-form-pending" style="display:none;font-size:13px;color:#92400e;margin-bottom:9px;">Lokal gespeicherte Formularänderungen warten auf die manuelle Veröffentlichung.</div>
+          <div style="font-size:13px;color:#64748b;margin-bottom:9px;">Dieser Vorgang veröffentlicht nur Texte und Formularfelder, keine Patientenakten und keine Postfacheingänge.</div>
+          <button type="button" class="btn btn-secondary sy-publish" onclick="syncPublishForms()">Formulare jetzt veröffentlichen</button>
+        </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
         <div id="sy-baks"></div>
         <div style="font-size:13px; color:#64748b;">Der Geräteabgleich erfolgt ausschließlich nach Klick auf „Geräte jetzt abgleichen“. Das Postfach wird separat abgerufen. Änderungen bleiben bis dahin lokal. Wenn beide Geräte dieselben Daten offline bearbeiten, ist vor der produktiven Freigabe eine sichere Konfliktbehandlung erforderlich.</div>
@@ -7565,7 +7571,7 @@ async function fRename(w) {
   v = v.trim(); if (v === FNAME_DEF[id]) v = '';
   settings.formFelder = settings.formFelder || {}; var c = settings.formFelder[id] = settings.formFelder[id] || {}; if (v) c.name = v; else delete c.name;
   persist(); fNamen(); renderWebf();
-  if (typeof KS !== 'undefined') KS.txtset(settings.formTexte || {}, settings.formFelder).catch(function () { alert('Der Name ist gespeichert, aber noch nicht auf dem Server veröffentlicht. Er gilt dort nach dem nächsten Speichern im Editor.'); });
+  if (typeof KS !== 'undefined') KS.txtset(settings.formTexte || {}, settings.formFelder);
 }
 var WEBF = [['Patientenanmeldung', 'anmeldung.html'], ['Anamnesebogen', 'anamnese.html'], ['Terminerinnerung', 'erinnerung.html']].concat(KA_DOCS.filter(function (d) { return d.typ === 'info'; }).map(function (d) { return [d.name, 'info.html?d=' + d.id]; }));
 function webfUrl(f) { try { return new URL(f, location.href).href; } catch (x) { return f; } }
@@ -7683,8 +7689,8 @@ async function ffSave() {
   });
   var nm0 = ((settings.formFelder || {})[ffCur] || {}).name; settings.formFelder = settings.formFelder || {}; settings.formFelder[ffCur] = { hide: hide, req: req, extra: extra }; if (nm0) settings.formFelder[ffCur].name = nm0;
   persist(); closeModal('modal-ffeld');
-  try { await KS.txtset(settings.formTexte || {}, settings.formFelder); alert('Gespeichert und veröffentlicht. Das Formular zeigt die neuen Felder beim nächsten Öffnen.'); }
-  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
+  KS.txtset(settings.formTexte || {}, settings.formFelder);
+  alert('Lokal gespeichert. Die Formularänderungen werden erst über „Formulare jetzt veröffentlichen“ übertragen.');
 }
 /* Eigene Texte der Webformulare: Originaltext -> eigener Text, gespeichert in settings.formTexte und auf dem Server veröffentlicht */
 /* Visueller Editor: das echte Formular im Rahmen, Änderungen per Antippen */
@@ -7702,8 +7708,8 @@ async function fvSave() {
   settings.formTexte = res.texte;
   if (FV.form) { settings.formFelder = settings.formFelder || {}; var nm1 = (settings.formFelder[FV.form] || {}).name; settings.formFelder[FV.form] = res.felder; if (nm1) res.felder.name = nm1; else delete res.felder.name; }
   persist(); closeModal('modal-fvis');
-  try { await KS.txtset(settings.formTexte || {}, settings.formFelder || {}); alert('Gespeichert und veröffentlicht. Das Formular zeigt die Änderungen beim nächsten Öffnen.'); }
-  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
+  KS.txtset(settings.formTexte || {}, settings.formFelder || {});
+  alert('Lokal gespeichert. Die Formularänderungen werden erst über „Formulare jetzt veröffentlichen“ übertragen.');
 }
 var ftCur = null, ftKeys = [];
 function ftNorm(t) { return String(t == null ? '' : t).replace(/\s+/g, ' ').trim(); }
@@ -7749,8 +7755,8 @@ async function ftSave() {
   var map = settings.formTexte = settings.formTexte || {};
   [].forEach.call(document.querySelectorAll('#ft-list .ft-row'), function (r) { var k = r.dataset.k, v = ftNorm(r.querySelector('textarea').value); if (!v || v === k) delete map[k]; else map[k] = v; });
   persist(); closeModal('modal-ftxt');
-  try { await KS.txtset(map, settings.formFelder || {}); alert('Gespeichert und veröffentlicht. Die Formulare zeigen die neuen Texte beim nächsten Öffnen.'); }
-  catch (x) { alert('Gespeichert, aber noch nicht veröffentlicht: ' + (x && x.message ? x.message : x) + '\n\nSpeichere die Texte noch einmal, sobald die Verbindung steht. Für die Veröffentlichung muss der Geräte-Abgleich eingerichtet und das Server-Snippet aktuell sein.'); }
+  KS.txtset(map, settings.formFelder || {});
+  alert('Lokal gespeichert. Die Formulartexte werden erst über „Formulare jetzt veröffentlichen“ übertragen.');
 }
 /* Ausgefüllte Formulare (.json und .pdf) in die Akten übernehmen */
 function fIsDob(a, b) { return String(a || '').trim() === String(b || '').trim(); }
@@ -9406,6 +9412,10 @@ function syncPw() {
       d.remove(); alert(sauber ? 'Das Passwort ist geändert. Auf anderen Geräten bitte „Trennen“ tippen und mit dem neuen Passwort verbinden.' : 'Das Passwort ist geändert. Der alte Bereich auf dem Server konnte nicht gelöscht werden, er ist aber mit dem alten Passwort verschlüsselt. Auf anderen Geräten bitte „Trennen“ tippen und mit dem neuen Passwort verbinden.');
     } catch (e) { ok.disabled = no.disabled = false; m.style.color = '#b91c1c'; m.textContent = e && e.message ? e.message : 'Das hat nicht geklappt.'; }
   };
+}
+async function syncPublishForms() {
+  try { await KS.publishForms(); alert('Formulartexte und Felder wurden veröffentlicht.'); }
+  catch (e) { alert('Veröffentlichung nicht möglich: ' + (e && e.message ? e.message : e)); }
 }
 async function syncOff() { if (await kaConfirm('Abgleich auf diesem Gerät beenden? Die Daten auf diesem Gerät bleiben erhalten, auf dem Server ändert sich nichts.')) KS.disconnect(); }
 async function syncBackups() {
