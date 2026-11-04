@@ -34,10 +34,9 @@
     </div>
     <div class="card" id="kal-box" style="margin-top:16px;">
       <div class="card-header"><span class="card-title">Kalender für Google, Apple und Co.</span></div>
-      <div style="font-size:14px; color:#334155; margin-bottom:12px;">Ein Kalender zum Abonnieren, in dem nur die <b>belegte Zeit</b> steht, ohne Patientennamen, ohne Behandlung, ohne Daten. Auf Wunsch stehen die Kürzel der Patienten darin, zum Beispiel „KD“.</div>
+      <div style="font-size:14px; color:#334155; margin-bottom:12px;">Ein Kalender zum Abonnieren, in dem nur die <b>belegte Zeit</b> steht, ohne Patientennamen, ohne Behandlung, ohne Daten.</div>
       <div class="kb-off"><button type="button" class="btn btn-save" onclick="KS.calOn()">Kalender einschalten</button></div>
       <div class="kb-on" style="display:none">
-        <div class="form-group"><label>Was soll im Kalender stehen?</label><select class="form-control kb-mode" onchange="calMode(this.value)"><option value="belegt">Nur „Belegt“</option><option value="kuerzel">Kürzel der Patienten</option></select></div>
         <div class="form-group"><label>Adresse zum Abonnieren (geheim halten)</label><div style="display:flex; gap:6px;"><input type="text" class="form-control kb-url" readonly style="min-width:0; font-size:12px;"><button type="button" class="btn btn-secondary btn-sm" onclick="calCopy()">Kopieren</button></div></div>
         <div class="kb-state" style="font-size:13px; margin-bottom:10px;"></div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-secondary" onclick="KS.calPush()">Jetzt aktualisieren</button><button type="button" class="btn btn-cancel" onclick="calOffAsk()">Ausschalten</button></div>

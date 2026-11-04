@@ -267,16 +267,15 @@ var KS = (function () {
     var b = base(); b.dirty = true; setBase(b); refreshUi(); await run(true);
   }
 
-  /* ---------- Kalender ohne Namen (für Google, Apple usw.) ---------- */
+  /* ---------- Kalender ohne Namen (für Google, Apple usw.): immer nur „Belegt“, keine Kürzel ---------- */
   function icsZ(t) { return new Date(t).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
   function calBuild() {
-    var kz = settings.calMode === 'kuerzel', now = Date.now(), from = now - 7 * 86400000, salt = settings.calToken || '';
+    var now = Date.now(), from = now - 7 * 86400000, salt = settings.calToken || '';
     var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Kreuzberg Aesthetik//Praxis//DE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Praxis (belegt)', 'X-PUBLISHED-TTL:PT1H', 'REFRESH-INTERVAL;VALUE=DURATION:PT1H'];
     events.forEach(function (e) {
       if (e.phase === 'Abgesagt') return;
       var t = new Date(e.date + 'T' + e.time + ':00').getTime(); if (!t || t < from) return;
       var sum = 'Belegt';
-      if (kz) { var p = patients.filter(function (x) { return nameKey(x) === e.patient; })[0]; if (p) { var v = noTitel(p.vorname), n = noTitel(p.nachname); sum = ((v.charAt(0) || '') + (n.charAt(0) || '')).toUpperCase() || 'Belegt'; } }
       L.push('BEGIN:VEVENT', 'UID:' + h53(salt + '|' + e.patient + '|' + e.date + e.time) + '@praxis', 'DTSTAMP:' + icsZ(now), 'DTSTART:' + icsZ(t), 'DTEND:' + icsZ(t + (+e.dur || 60) * 60000), 'SUMMARY:' + sum, 'TRANSP:OPAQUE', 'END:VEVENT');
     });
     L.push('END:VCALENDAR'); return L.join('\r\n') + '\r\n';
@@ -338,7 +337,7 @@ var KS = (function () {
     if (kb) {
       var on = !!settings.calOn;
       kb.querySelector('.kb-off').style.display = on ? 'none' : ''; kb.querySelector('.kb-on').style.display = on ? '' : 'none';
-      kb.querySelector('.kb-url').value = calUrl(); kb.querySelector('.kb-mode').value = settings.calMode === 'kuerzel' ? 'kuerzel' : 'belegt';
+      kb.querySelector('.kb-url').value = calUrl();
       var ke = kb.querySelector('.kb-state'); ke.textContent = S.calErr ? S.calErr : on ? (S.calLast ? 'Zuletzt aktualisiert: ' + ago(S.calLast) : 'Wird aktualisiert …') : ''; ke.style.color = S.calErr ? '#b91c1c' : '#64748b';
     }
     var box = document.getElementById('sync-box'); if (!box) return;

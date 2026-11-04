@@ -134,7 +134,7 @@ var TB_STD = [
   { name: 'BTX Schema kurz', text: 'SF ___ / Stirn ___ / ZF ___ / KF ___' },
   { name: 'Microneedling Anti-Aging', text: 'Microneedling (Anti-Aging-Protokoll) mit PNBlast (Exosomen und Polynukleotide), Areal: ___.' },
   { name: 'Mesotherapie PN NCTF', text: '___ ml PN (Polynukleotide), Areal: ___, zusammen mit ___ ml NCTF.' },
-  /* Nachsorge: nach den Verhaltensregeln der Praxis (After-care-instructions), Texte in docs.js, Entwurf zur Prüfung */
+  /* Nachsorge: nach den Verhaltensregeln der Praxis (After-care-instructions), Texte in docs.js, vom Praxisinhaber gegengelesen und freigegeben (04.11.2026) */
   { name: 'Nachsorge Neuromodulator', text: KA_PARTS['Nachsorge Neuromodulator'] },
   { name: 'Nachsorge Filler', text: KA_PARTS['Nachsorge Filler'] },
   { name: 'Nachsorge Filler Lippen', text: KA_PARTS['Nachsorge Filler Lippen'] },

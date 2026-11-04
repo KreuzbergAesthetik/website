@@ -62,10 +62,6 @@ function bestAdd(p, k, art) { (p.best = p.best || []).push({ k: k, art: art, ts:
 function bestLast(p, k, art) { return (p.best || []).reduce(function (m, e) { return e.k === k && e.art === art && e.ts > m ? e.ts : m; }, 0); }
 function formSt(p, k) { return { sent: bestLast(p, k, 'sent'), got: bestLast(p, k, 'got') }; }
 function formMark(p, k, art) { bestAdd(p, k, art); }
-function waOpen(p, txt) {
-  var ph = String(p.phone || '').replace(/[^\d+]/g, '').replace(/^\+/, '').replace(/^00/, '').replace(/^0/, '49');
-  window.open('https://wa.me/' + (ph.length > 6 ? ph : '') + '?text=' + encodeURIComponent(txt), '_blank');
-}
 function pakete() {
   settings.pakete = settings.pakete || [];
   if (!settings.paketeInit) {
@@ -78,14 +74,14 @@ function pakete() {
 function pkForm(k) { return PK_FORMS.filter(function (x) { return x[0] === k; })[0]; }
 function tplById(id) { return templates.filter(function (t) { return t.id === id; })[0]; }
 function pkLinks(p, keys) { return keys.map(function (k) { var f = pkForm(k); return f ? f[1] + ': ' + fillPlatzhalter('{' + f[2] + '}', p) : ''; }).filter(Boolean).join('\n'); }
-/* Formular-Links per E-Mail oder WhatsApp senden und als gesendet merken */
+/* Formular-Links per E-Mail senden und als gesendet merken (WhatsApp entfernt: Patientendaten nicht über Meta) */
 function sendForm(p, keys, how, subject, txt) {
   keys.forEach(function (k) { formMark(p, k, 'sent'); });
   persist(); renderUnterlagen();
-  if (how === 'wa') waOpen(p, txt); else tvMail(p, '', [subject, txt]);
+  tvMail(p, '', [subject, txt]);
 }
 function sendMenu(ev, p, keys, subject, txt, extra) {
-  tlMenu(ev, [['Per E-Mail', function () { sendForm(p, keys, 'mail', subject, txt); }], ['Per WhatsApp', function () { sendForm(p, keys, 'wa', subject, txt); }]].concat(extra || []));
+  tlMenu(ev, [['Per E-Mail', function () { sendForm(p, keys, 'mail', subject, txt); }]].concat(extra || []));
 }
 var ANAM_TXT = '{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Anamnesebogen aus:\n{LinkAnamnese}\n\nManuel - Kreuzberg Ästhetik';
 function pkSend(p, pk, how) {
@@ -105,7 +101,7 @@ function formMenuItems(p) {
   var out = [];
   PK_FORMS.forEach(function (f) {
     var st = formSt(p, f[0]), tag = f[0] === 'anamnese' ? (anamInfo(p).state === 'ok' ? ' ✓' : '') : st.got ? ' ✓' : st.sent ? ' …' : '';
-    ['mail', 'wa'].forEach(function (how) { out.push([f[1] + (how === 'wa' ? ' per WhatsApp' : ' per E-Mail') + (how === 'mail' ? tag : ''), function () { sendForm(p, [f[0]], how, f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p)); }]); });
+    ['mail'].forEach(function (how) { out.push([f[1] + ' per E-Mail' + tag, function () { sendForm(p, [f[0]], how, f[3], fillPlatzhalter('{AnredeInformell},\n\nbitte fülle vor Deinem Termin den Bogen aus:\n{' + f[2] + '}\n\nManuel - Kreuzberg Ästhetik', p)); }]); });
   });
   return out;
 }
@@ -129,7 +125,7 @@ function renderUnterlagen() {
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); box.appendChild(r); return r;
   };
-  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/whatsapp/i.test(txt) ? 'wa' : /hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
   var unReset = function (keys) {
     var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
@@ -144,7 +140,7 @@ function renderUnterlagen() {
     c.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket'));
     var ts = (pk.forms || []).map(function (k) { return formSt(p, k).sent || 0; }), last = Math.max.apply(null, ts.concat([0]));
     var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;';
-    rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); })); rr.appendChild(bt('Per WhatsApp', false, function () { pkSend(p, pk, 'wa'); }));
+    rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); }));
     rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); if (last) rr.appendChild(unReset(pk.forms || [])); c.appendChild(rr); box.appendChild(c);
   });
   /* Online-Formulare */
@@ -254,7 +250,17 @@ async function vlPdf(titel, blocks, sig) {
   var bytes = await doc.save(); return new Blob([bytes], { type: 'application/pdf' });
 }
 var vlBusy = false;
+/* Aufklärungen sind freigegeben (04.11.2026): den alten Namenszusatz „(Entwurf)“ einmalig entfernen, nur wenn der Name noch unverändert ist */
+function vlEntwurfWeg() {
+  var n = 0;
+  templates.forEach(function (t) {
+    var d = t.web && KA_DOCS.filter(function (x) { return x.id === t.web; })[0];
+    if (d && t.name === d.name + ' (Entwurf)') { t.name = d.name; n++; }
+  });
+  if (n) { persist(); renderTemplates(); }
+}
 async function vlStandard() {
+  try { vlEntwurfWeg(); } catch (x) {}
   if (vlBusy || (settings.vlVer || 0) >= VL_VER) return; vlBusy = true;
   try {
     var made = 0, have = {}; templates.forEach(function (t) { have[String(t.name).toLowerCase()] = t; });
@@ -271,7 +277,7 @@ async function vlStandard() {
       if (d.match) { var re = new RegExp(d.match, 'i'); (settings.katalog || []).forEach(function (k) { if (re.test(k.name) && (k.vorlagen = k.vorlagen || []).indexOf(t.id) < 0) k.vorlagen.push(t.id); }); }
     }
     settings.vlVer = VL_VER; persist(); renderTemplates();
-    if (made) alert(made + ' Vorlagen wurden angelegt (Nachsorge und Aufklärungen). Sie sind bei passenden Leistungen verknüpft (unter Leistungen änderbar). Die Aufklärungen sind Entwürfe: bitte ärztlich und rechtlich prüfen.');
+    if (made) alert(made + ' Vorlagen wurden angelegt (Nachsorge und Aufklärungen). Sie sind bei passenden Leistungen verknüpft (unter Leistungen änderbar).');
   } catch (x) {} finally { vlBusy = false; }
 }
 function renderTemplates() {
