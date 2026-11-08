@@ -30,7 +30,7 @@ Browser-Speicher gilt pro Adresse. Eine neue Adresse startet leer:
 - Passkey: ist an den Hostnamen gebunden (`location.hostname`). Unter der neuen Adresse neu einrichten, das Passwort bleibt der Weg zurück.
 - Geräte-Abgleich: pro Gerät neu verbinden, danach gleicht er wieder ab. Alternativ nach dem Laden der Sicherung auf einem Gerät die anderen Geräte über den Abgleich befüllen.
 - Installierte App (Startbildschirm): neu installieren, die alte bleibt an der alten Adresse.
-- Bereits verschickte Formular-Links (zum Beispiel `…github.io/anmeldung.html`) funktionieren nur, solange GitHub Pages erreichbar ist. Offene Frage: Sind Links in Umlauf, die Patienten noch nutzen?
+- Bereits verschickte Formular-Links (zum Beispiel `…github.io/anmeldung.html`) funktionieren nur, solange GitHub Pages erreichbar ist. Sie sind noch in Umlauf, siehe „Risiken“ Punkt 2.
 
 Die alte Adresse bleibt unverändert, bis die neue geprüft ist. Auf dem Tablet **vor** dem Umzug sichern.
 
@@ -64,14 +64,17 @@ Das `frame-ancestors` verhindert, dass die App in fremde Seiten eingebettet wird
 
 ## Veröffentlichung künftig
 
-- **Ohne GitHub (sofort möglich):** Ein Skript erzeugt einen Ordner mit genau der Dateiliste oben (und prüft die Versionsgleichheit). Du lädst ihn per SFTP oder im IONOS-Dateimanager hoch. Das baue ich bei Bedarf in `werkzeuge/`.
+- **Ohne GitHub (sofort möglich):** `npm run webspace:paket` (oder `node werkzeuge/webspace-paket.mjs`) erzeugt einen Ordner mit genau der Dateiliste oben (und prüft die Versionsgleichheit). Du lädst ihn per SFTP oder im IONOS-Dateimanager hoch, `sw.js` zuletzt. Das Paket enthält auch die `.htaccess`, `pruefsummen.txt` (SHA-256 je Datei) und `PAKET-VERSION.txt`. Das Skript bricht ab, wenn `V` und `KA_V` verschieden sind oder eine eingebundene Datei fehlt.
 - **Mit GitHub (nach Freischaltung):** Dieselbe GitHub-Actions-Weiterleitung per SFTP wie beim WordPress-Theme. Das Skript liefert die Dateiliste. Zugangsdaten gehören als GitHub-Secrets in das Repository, nie in den Code.
 - GitHub bleibt dann nur noch Ablage und Test, nicht mehr Voraussetzung für den Betrieb.
 
 ## Risiken und offene Entscheidungen
 
 1. **Subdomain oder Unterordner?** Empfohlen: Subdomain.
-2. **Formular-Links in Umlauf?** Dann sollte GitHub Pages bis zur Umstellung der Links erreichbar bleiben. Ohne Zugang geht das nicht. Alternativ neue Links an Patienten schicken oder die Links in der Seite „Praxis“ neu erzeugen.
+2. **Formular-Links sind in Umlauf (bestätigt).** Neue Links erzeugt die App aus der Adresse, unter der sie geöffnet ist. Nach dem Umzug zeigen sie automatisch auf die Subdomain. Die Codes (`?c=…`) gehören zum Server und bleiben gültig, der Server akzeptiert beide Adressen (`ERLAUBT`). Für die alten Links gilt:
+   - Bis zur Freischaltung bleibt Pages unverändert erreichbar, soweit GitHub die Seiten ausliefert. Dann nichts abschalten.
+   - Nach der Freischaltung ersetze ich auf GitHub Pages `anmeldung.html`, `anamnese.html`, `erinnerung.html`, `aufklaerung.html` und `info.html` durch kleine Weiterleitungsseiten, die die Parameter (`?c=`, `?d=`) behalten und auf die Subdomain springen. So laufen alte Links weiter ans Ziel. Die Weiterleitung ist ein eigener, kleiner Schritt und kommt erst nach dem Umzug.
+   - Die Adresse der Subdomain muss vorher feststehen, damit die Weiterleitung stimmt.
 3. **Sicherung vor dem Umzug** auf jedem Gerät, mit Passwort, auf einem Datenträger außerhalb des Browsers.
 4. **Server-Snippet neu einfügen** (WPCode), sonst blockiert der Server Absendungen von der neuen Adresse.
 5. **Auftragsverarbeitung:** Der Webspace liefert nur Programmdateien aus, keine Patientendaten. Formular-Postfach und Sync-Server liegen ohnehin schon bei IONOS. Der Vertrag zur Auftragsverarbeitung mit IONOS sollte vorliegen.
