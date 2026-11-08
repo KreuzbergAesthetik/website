@@ -52,4 +52,9 @@ Prüfpunkt: Ein Testformular mit erfundenen Daten von der neuen Adresse kommt im
 
 ## Schritt 5: Alte Links
 
-Alte Formular-Links (`…github.io/…`) laufen weiter, solange GitHub Pages ausliefert. Nach Freischaltung des GitHub-Kontos ersetzt Claude die Patientenseiten dort durch Weiterleitungen auf die Subdomain (Parameter `?c=` und `?d=` bleiben erhalten).
+Alte Formular-Links (`…github.io/…`) laufen weiter, solange GitHub Pages ausliefert. Erst **nach** dem Umzug und der Prüfung der neuen Adresse:
+
+1. `npm run webspace:weiterleitungen -- https://app.kreuzberg-aesthetik.de` erzeugt im Ordner `weiterleitungen/` sechs kleine Seiten (`anmeldung`, `anamnese`, `erinnerung`, `aufklaerung`, `info`, `postfachtest`). Sie springen auf dieselbe Seite der neuen Adresse und behalten `?c=…`, `?d=…` und `#…`.
+2. Diese Dateien ersetzen auf GitHub Pages die gleichnamigen Seiten. Sie gehören nicht nach `main` und nicht in das Webspace-Paket.
+3. `index.html` und `sw.js` bleiben auf Pages unverändert, damit die dort installierte App ihre Daten für die Sicherung weiter öffnen kann.
+4. Prüfen: Einen alten Link mit erfundenem Code öffnen, er muss auf der neuen Adresse landen.
