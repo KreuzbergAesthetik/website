@@ -26,6 +26,29 @@ async function nvDefaults() {
   neu.forEach(function (n) { settings.nachrichten.push({ id: newId(), name: n.name, betreff: n.betreff, text: n.text }); });
   persist(); renderNachr();
 }
+/* Einmalige Übernahme der Nachrichtenvorlagen aus den drei Screenshots vom 05.11.2026.
+   Vorhandene Vorlagen werden nie überschrieben. Einmal gelöschte Vorlagen bleiben gelöscht. */
+var NV_SCREENSHOTS_20261105 = [
+  { name: 'Rechnung (E-Mail)', gruppe: 'Rechnung und Befund', kanal: 'E-Mail', betreff: 'Deine Rechnung',
+    text: '{AnredeInformell},\n\nanbei findest Du Deine Rechnung von {DatumWochentag}.\n\nLiebe Grüße,\nManuel von Kreuzberg Ästhetik\n\n________________________________\n\nDear {Vorname},\n\nattached you’ll find your invoice from {Datum}\n\nBest regards,\nManuel from Kreuzberg Ästhetik' },
+  { name: 'Terminbestätigung (E-Mail)', gruppe: 'Termin', kanal: 'E-Mail', betreff: 'Terminbestätigung',
+    text: '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wird hiermit bestätigt.\n\nOrt: Neuenburger Straße 24, 10969 Berlin,\n3. Stock bei Fella\n\nIch freue mich auf Dich.\nManuel von Kreuzberg Ästhetik' },
+  { name: 'Terminerinnerung (E-Mail)', gruppe: 'Termin', kanal: 'E-Mail', betreff: 'Terminerinnerung',
+    text: '{AnredeInformell},\n\nich möchte Dich an Deinen Termin am {TerminDatum}, um {Uhrzeit} erinnern.\n\nOrt: Neuenburger Straße 24, 10969 Berlin, 3. Stock\n\nIch freue mich auf Dich,\nManuel von Kreuzberg Ästhetik' }
+];
+function nvScreenshotImportOnce() {
+  settings.nachrichten = settings.nachrichten || [];
+  if ((settings.nvScreenshotImportV || 0) >= 1) return;
+  var have = {};
+  settings.nachrichten.forEach(function (n) { have[String(n.name || '').trim().toLowerCase()] = true; });
+  NV_SCREENSHOTS_20261105.forEach(function (n) {
+    if (have[n.name.toLowerCase()]) return;
+    settings.nachrichten.push({ id: newId(), name: n.name, gruppe: n.gruppe, kanal: n.kanal, betreff: n.betreff, text: n.text, anhang: [] });
+    have[n.name.toLowerCase()] = true;
+  });
+  settings.nvScreenshotImportV = 1;
+  persist();
+}
 var NV_GROUPS = ['Termin', 'Formulare', 'Rechnung und Befund', 'Sonstiges'], NV_KANAELE = ['E-Mail', 'SMS', 'E-Mail · SMS'];
 function nvGroupOf(x) {
   if (NV_GROUPS.indexOf(x.gruppe) >= 0) return x.gruppe; var n = String(x.name || '');
@@ -34,7 +57,7 @@ function nvGroupOf(x) {
 function nvKanalOf(x) { return NV_KANAELE.indexOf(x.kanal) >= 0 ? x.kanal : (/sms/i.test(x.name || '') ? 'SMS' : 'E-Mail'); }
 function nvCleanName(x) { return String(x.name || '').replace(/\s*\((E-Mail|SMS)\)\s*$/i, '').replace(/\s+(SMS|Email|E-Mail)$/i, ''); }
 function renderNachr() {
-  settings.nachrichten = settings.nachrichten || []; renderPakete(); renderPlatzhalter();
+  settings.nachrichten = settings.nachrichten || []; nvScreenshotImportOnce(); renderPakete(); renderPlatzhalter();
   var box = document.getElementById('nv-list'); if (!box) return; box.innerHTML = '';
   NV_GROUPS.forEach(function (g) {
     var items = settings.nachrichten.map(function (x, i) { return { x: x, i: i }; }).filter(function (o) { return nvGroupOf(o.x) === g; }); if (!items.length) return;
