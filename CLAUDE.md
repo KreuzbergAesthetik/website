@@ -21,6 +21,17 @@ Aktueller Source of Truth ist `main` im Repository `KreuzbergAesthetik/website`.
 - Es gibt keinen dauerhaft vorgeschriebenen Claude-Branch. Alte Branch-Namen in früherer Dokumentation sind historisch.
 - Offene Pull Requests vor Arbeitsbeginn prüfen, damit keine parallele Arbeit überschrieben wird.
 
+## Betrieb und Kontosicherheit (GitHub)
+Das GitHub-Konto wurde am 08.11.2026 vorübergehend wegen automatischer Missbrauchserkennung gesperrt und nach Rückfrage wieder freigegeben. Damit das nicht wieder passiert und der Praxisbetrieb nie davon abhängt:
+- **Ein KI-Assistent pro Repository.** Aktuell Claude Code. Keine zweiten Assistenten (zum Beispiel Codex) auf demselben Repository. Nicht mehr genutzte Apps und Tokens unter GitHub → Settings → Applications widerrufen.
+- **Ein Branch, ein Pull Request.** Neue Arbeit auf einem eigenen Branch vom aktuellen `main`, Merge erst nach grüner CI. Vor Arbeitsbeginn offene Branches und Pull Requests prüfen, keine parallelen Arbeiten überschreiben.
+- **Wenig Aktivität.** Mehrere zusammengehörige Änderungen in einem Pull Request bündeln statt vieler kleiner. Keine einmaligen Aufräum-Workflows, keine Dauer-Schleifen, keine Zeitplan-Workflows. `node_modules` und Symlinks nie einchecken (`.gitignore`).
+- **Zugriff mit minimalen Rechten.** Token nur für dieses Repository, mit Ablaufdatum. Keine Zugangsdaten in Code, Issues oder Pull Requests.
+- **Konto absichern.** Zwei-Faktor-Anmeldung (Passkey oder Authenticator), Wiederherstellungscodes sicher ablegen, Kontaktadresse aktuell halten.
+- **Sicherung außerhalb von GitHub.** Nach jedem größeren Merge ein Git-Bundle des ganzen Repositories (`git bundle create praxis-app.bundle --all`) und die Upload-Dateien (`npm run webspace:paket`) beim Praxisinhaber ablegen. Optional ein automatisch gespiegeltes zweites Repository bei einem anderen Anbieter.
+- **Auslieferung unabhängig von GitHub.** Ziel ist die Subdomain `app.kreuzberg-aesthetik.de` bei IONOS (siehe `WEBSPACE-UMZUG.md` und `WEBSPACE-ANLEITUNG.md`). Bis dahin liegt die App auf GitHub Pages. Im Umzug nichts an der Hauptdomain oder der WordPress-Seite ändern.
+- **Datenschutz bei der Auslieferung.** Patientenseiten sollen auf einem deutschen oder EU-Hoster liegen (IONOS). Dienste von Drittanbietern für Patientenseiten nur nach Rücksprache.
+
 ## Veröffentlichung und Version
 Die App ist eine PWA. Bei jeder Änderung an ausgeliefertem App-Code oder gecachten Assets muss die App-Version erhöht werden:
 - `V` in `sw.js`

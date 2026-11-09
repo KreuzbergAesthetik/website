@@ -2393,7 +2393,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-05-a';
+var KA_V = '2026-11-08-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -5166,6 +5166,66 @@ async function savePdf() {
   } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); }
 }
 
+/* ===== Briefumschlag B6 (176 x 125 mm, quer): Absender Praxis, Empfänger Patient. Wird bei Bedarf erzeugt und nicht gespeichert. ===== */
+var UMSCHLAG_MM = 72 / 25.4;
+function umschlagSafe(font, t) {
+  var set = {}; try { font.getCharacterSet().forEach(function (c) { set[c] = 1; }); } catch (x) { return String(t == null ? '' : t).replace(/[^\x20-\x7E -ÿ]/g, '?'); }
+  return Array.from(String(t == null ? '' : t)).map(function (ch) {
+    var cp = ch.codePointAt(0); if (set[cp]) return ch;
+    var fix = { '\u0131': 'i', '\u0130': 'I', '\u0142': 'l', '\u0141': 'L', '\u0111': 'd', '\u0110': 'D', '\u00f8': 'o', '\u00d8': 'O', '\u2013': '-', '\u2014': '-' }[ch]; if (fix) return fix;
+    var base = ch.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); if (base && base !== ch && set[base.codePointAt(0)]) return base;
+    return /\s/.test(ch) ? ' ' : '?';
+  }).join('');
+}
+/* Zeilen für Absender und Empfänger; null, wenn die Anschrift des Patienten fehlt */
+function umschlagLines(p) {
+  var tt = PRAXIS.kopf.split(' - ');
+  var absender = [tt[0], tt[1] || '', PRAXIS.strasse, PRAXIS.ort].filter(Boolean);
+  var a = addrParse(p.adresse), l2 = ((a.str || '') + ' ' + (a.nr || '')).trim(), l3 = ((a.plz || '') + ' ' + (a.ort || '')).trim();
+  if (!l2 && !l3) return null;
+  var anrede = p.anrede === 'Frau' || p.anrede === 'Herr' ? p.anrede : '';
+  var name = [p.titel, p.vorname, p.nachname].map(function (x) { return String(x || '').trim(); }).filter(Boolean).join(' ');
+  return { absender: absender, empfaenger: [anrede, name, l2, l3].filter(Boolean), nameIdx: anrede ? 1 : 0 };
+}
+async function umschlagPdf(p) {
+  var ln = umschlagLines(p); if (!ln) return null;
+  var L = await loadPdfLib(), doc = await L.PDFDocument.create();
+  doc.setTitle('Briefumschlag B6'); doc.setCreator('Kreuzberg Ästhetik Praxis-App');
+  var W = 176 * UMSCHLAG_MM, H = 125 * UMSCHLAG_MM, page = doc.addPage([W, H]);
+  var f = await doc.embedFont(L.StandardFonts.Helvetica), fb = await doc.embedFont(L.StandardFonts.HelveticaBold), ink = L.rgb(0.07, 0.09, 0.15), gray = L.rgb(0.3, 0.34, 0.4);
+  /* Absender: oben links, 10 mm vom Rand */
+  var x0 = 10 * UMSCHLAG_MM, y0 = H - 10 * UMSCHLAG_MM - 8;
+  ln.absender.forEach(function (t, i) { page.drawText(umschlagSafe(i === 0 ? fb : f, t), { x: x0, y: y0 - i * 11, size: 8.5, font: i === 0 ? fb : f, color: i === 0 ? ink : gray }); });
+  /* Empfänger: rechte Hälfte, ab 52 mm von oben. Zu lange Zeilen werden erst verkleinert (bis 10 pt), dann nach Wörtern umbrochen */
+  var xr = 86 * UMSCHLAG_MM, maxW = W - xr - 10 * UMSCHLAG_MM, y = H - 52 * UMSCHLAG_MM, LH = 16;
+  ln.empfaenger.forEach(function (t, i) {
+    var ft = i === ln.nameIdx ? fb : f, txt = umschlagSafe(ft, t), size = 12.5, rows = [txt];
+    while (size > 10 && ft.widthOfTextAtSize(txt, size) > maxW) size -= 0.5;
+    if (ft.widthOfTextAtSize(txt, size) > maxW) {
+      rows = []; var cur = '';
+      txt.split(' ').forEach(function (w) { var nx = cur ? cur + ' ' + w : w; if (cur && ft.widthOfTextAtSize(nx, size) > maxW) { rows.push(cur); cur = w; } else cur = nx; });
+      if (cur) rows.push(cur);
+    }
+    rows.forEach(function (r) {
+      var sz = size; while (sz > 7 && ft.widthOfTextAtSize(r, sz) > maxW) sz -= 0.5;
+      page.drawText(r, { x: xr, y: y, size: sz, font: ft, color: ink }); y -= LH;
+    });
+  });
+  return await doc.save();
+}
+function umschlagFile(p) { return 'Umschlag-B6-' + [p.nachname, p.vorname].map(function (x) { return String(x || '').replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, '_'); }).filter(Boolean).join('-') + '.pdf'; }
+async function umschlagSave(p) {
+  p = p || curP; if (!p) return;
+  var data; try { data = await umschlagPdf(p); } catch (x) { alert('Der Briefumschlag konnte nicht erstellt werden. Ist die Datei pdf-lib.min.js vorhanden?'); return; }
+  if (!data) { alert('Bei diesem Patienten fehlt die Anschrift. Bitte zuerst in den Stammdaten eintragen.'); return; }
+  var name = umschlagFile(p), dl = null; try { dl = window.claude && await window.claude.use('downloads'); } catch (x) {}
+  if (dl) { try { await dl.save({ filename: name, data: data }); } catch (x) { if (!x || x.code !== 'declined') alert('Die PDF konnte nicht gespeichert werden.'); } return; }
+  try {
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/pdf' })); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 60000);
+  } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); }
+}
+
 /* Rechnung als PDF über das Teilen-Menü des Geräts senden und als versendet vermerken */
 async function sendInvoice() {
   var inv = invCur(); if (!inv) return;
@@ -7485,7 +7545,7 @@ function renderPick() {
 var AM_GROUPS = [
   { t: 'Dokumentieren', ic: 'book', items: [['doku', 'book', 'Dokumentation'], ['notiz', 'pen', 'Notiz'], ['produkt', 'box', 'Produkt']] },
   { t: 'Termin und Abrechnung', ic: 'cal', items: [['termin', 'cal', 'Termin'], ['rechnung', 'euro', 'Rechnung']] },
-  { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamlink', 'link', 'Anamnese-Link']] },
+  { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamlink', 'link', 'Anamnese-Link'], ['umschlag', 'form', 'Briefumschlag B6 (PDF)']] },
   { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] },
   { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
@@ -7564,6 +7624,7 @@ function aAct(x) {
     var url = webfUrl('anamnese.html') + '?c=' + pCode(curP);
     copyText(url, function () { alert('Link kopiert. Er gilt nur für ' + nameKey(curP) + ' (Code ' + curP.code + ').'); }, async function () { await kaPrompt('Link zum Kopieren:', url, { readonly: true, ok: 'Schließen', single: true }); });
   }
+  else if (x === 'umschlag') umschlagSave(curP);
   else if (x === 'auto') autoZu();
 }
 
