@@ -43,7 +43,7 @@ try {
     const tag = `${w}x${h} ${JSON.stringify(r)}`;
     assert.ok(r.bar.vis && r.bar.w > 100 && r.lupe.vis && r.plus.vis, 'Suchleiste, Lupe oder Plus nicht sichtbar ' + tag);
     assert.equal(r.lupeAlt, 'none', 'alter Lupen-Knopf noch sichtbar ' + tag);
-    assert.ok(r.bar.r <= r.plus.l + 1 && r.plus.r <= r.vw && r.vh - r.bar.b <= 24, 'Leiste sitzt nicht richtig unten ' + tag);
+    assert.ok(r.plus.r <= r.bar.l + 1 && r.bar.r <= r.vw && r.vh - r.bar.b <= 24, 'Leiste sitzt nicht richtig unten ' + tag);
     assert.equal(r.menuAnfang, 'none', 'Menü am Anfang offen ' + tag);
     assert.notEqual(r.menu.an, 'none', 'Menü öffnet nicht ' + tag);
     for (const k of ['kal', 'pat', 'rec']) assert.ok(r.menu[k].vis && r.menu[k].b <= r.menu.plus.t && r.menu[k].l >= 0 && r.menu[k].r <= r.vw && r.menu[k].t >= 0, 'Menüpunkt ' + k + ' nicht sichtbar oder nicht über Plus ' + tag);

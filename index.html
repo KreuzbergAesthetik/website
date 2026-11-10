@@ -924,10 +924,10 @@ body { padding-bottom:84px; }
 .gs-bar.zu .gs-box { background:none; padding:0; justify-content:center; min-width:0; }
 .gs-bar.zu .gs-lupe { margin:0; }
 .gs-bar.zu input { display:none; }
-.fab.fab-plus { --fc:var(--c-mehr); flex:none; display:flex; }
+.fab.fab-plus { --fc:var(--c-mehr); flex:none; display:flex; order:-1; }
 .fab.fab-plus svg { width:24px; height:24px; }
 .fab.fab-plus.on { background:#0f172a; color:#fff; border-color:#0f172a; }
-.gs-menu { display:none; position:absolute; right:0; bottom:calc(100% + 8px); flex-direction:column; align-items:flex-end; gap:8px; }
+.gs-menu { display:none; position:absolute; left:0; bottom:calc(100% + 8px); flex-direction:column; align-items:flex-start; gap:8px; }
 .gs-menu.on { display:flex; }
 .fab-col .gs-menu .fab { width:auto; min-width:156px; height:46px; flex-direction:row; justify-content:flex-start; gap:12px; padding:0 18px 0 14px; }
 .fab-col .gs-menu .fab span { display:inline !important; font-size:14px; font-weight:700; color:#0f172a; line-height:1; }
@@ -2445,7 +2445,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-10-i';
+var KA_V = '2026-11-10-j';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
