@@ -11,6 +11,6 @@
     "code:aufteilen": "node werkzeuge/code-aufteilen.mjs",
     "webspace:paket": "node werkzeuge/webspace-paket.mjs",
     "webspace:weiterleitungen": "node werkzeuge/weiterleitungen.mjs",
-    "test:browser": "node tests/browser-smoke.mjs && node tests/layout-smoke.mjs && node tests/formular-zuordnung.mjs && node tests/xss-formulare.mjs && node tests/eingang-verschluesselt.mjs && node tests/csp.mjs && node tests/rechnung-sperre.mjs && node tests/goae.mjs && node tests/rechtslinks.mjs && node tests/umschlag.mjs && node tests/weiterleitung.mjs && node tests/akte-querformat.mjs && node tests/verlauf-strich.mjs"
+    "test:browser": "node tests/browser-smoke.mjs && node tests/layout-smoke.mjs && node tests/formular-zuordnung.mjs && node tests/xss-formulare.mjs && node tests/eingang-verschluesselt.mjs && node tests/csp.mjs && node tests/rechnung-sperre.mjs && node tests/goae.mjs && node tests/rechtslinks.mjs && node tests/umschlag.mjs && node tests/weiterleitung.mjs && node tests/akte-querformat.mjs && node tests/verlauf-strich.mjs && node tests/untere-leiste.mjs"
   }
 }

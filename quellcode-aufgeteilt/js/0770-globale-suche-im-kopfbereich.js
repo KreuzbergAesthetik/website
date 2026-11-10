@@ -5,8 +5,9 @@ function ptApplyEr() { var t = document.getElementById('tab-patienten'), b = doc
 function ptToggleEr() { settings.ptShowEr = !settings.ptShowEr; persist(); ptApplyEr(); }
 function gsToggle(force) {
   var bar = document.getElementById('gs-bar'), inp = document.getElementById('gs-in'), res = document.getElementById('gs-res'), f = document.getElementById('gs-fab');
-  var open = typeof force === 'boolean' ? force : bar.style.display !== 'flex';
-  bar.style.display = open ? 'flex' : 'none'; f.classList.toggle('on', open);
+  /* Die Suchleiste ist immer sichtbar; auf/zu betrifft nur Eingabe und Trefferliste */
+  var open = typeof force === 'boolean' ? force : res.style.display !== 'block';
+  bar.style.display = 'flex'; f.classList.toggle('on', open);
   if (open) { inp.focus(); gsRun(true); } else { inp.value = ''; res.style.display = 'none'; inp.blur(); }
 }
 function hdAdd(k) {

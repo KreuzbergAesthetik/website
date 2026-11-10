@@ -387,7 +387,7 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item.tl-termin .tl-first { font-weight:400 !important; color:#0f172a; font-size:13.5px !important; line-height:1.35; margin-bottom:2px; }
 .tl-day .tl-item.tl-termin .tl-label { font-weight:700; font-size:12px; }
 /* Verlauf: Der farbige Strich zwischen Uhrzeit und Text läuft über alle Einträge eines Tages ohne Lücke durch; nur die Farbe wechselt.
-   Dafür füllt der Textbereich die volle Zeilenhöhe (bei den umrahmten Terminen und Dokumentationen reicht er über Rand und Abstand bis zum Nachbarn),
+   Dafür füllt der Textbereich die volle Zeilenhöhe (bei den umrahmten Terminen und Dokumentationen reicht er bis zur Außenkante der Umrandung, die Karten grenzen ohne Abstand an die Nachbarn),
    die Trennlinien zwischen Zeilen sparen den Strich aus, und alle Striche liegen in derselben Spalte. */
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) { padding-top:0; padding-bottom:0; border-top:0; grid-template-columns:44px 1fr; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:6px; padding-bottom:6px; }
@@ -395,10 +395,8 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; left:0; right:0; top:0; height:1px; background:linear-gradient(to right, #e2e8f0 0 50px, transparent 50px 53px, #e2e8f0 53px); pointer-events:none; }
 .tl-day .tl-day-h + .tl-item::before { display:none; }
 .tl-day .tl-item.tl-termin + .tl-item::before, .tl-day .tl-item.tl-doku + .tl-item::before { display:none; }
-.tl-day .tl-item.tl-termin, .tl-day .tl-item.tl-doku { padding-top:0; padding-bottom:0; padding-left:5px; }
-.tl-day .tl-item.tl-termin .tl-body, .tl-day .tl-item.tl-doku .tl-body { margin-top:-5.5px; margin-bottom:-5.5px; padding-top:11.5px; padding-bottom:11.5px; }
-.tl-day .tl-day-h + .tl-item.tl-termin .tl-body, .tl-day .tl-day-h + .tl-item.tl-doku .tl-body { margin-top:0; padding-top:6px; }
-.tl-day .tl-item.tl-termin:last-child .tl-body, .tl-day .tl-item.tl-doku:last-child .tl-body { margin-bottom:0; padding-bottom:6px; }
+.tl-day .tl-item.tl-termin, .tl-day .tl-item.tl-doku { padding-top:0; padding-bottom:0; padding-left:5px; margin-top:0; margin-bottom:0; }
+.tl-day .tl-item.tl-termin .tl-body, .tl-day .tl-item.tl-doku .tl-body { margin-top:-1.5px; margin-bottom:-1.5px; padding-top:7.5px; padding-bottom:7.5px; }
 .wf-i { width:22px; height:22px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#94a3b8; font:italic 700 13px Georgia,serif; cursor:pointer; padding:0; line-height:1; } .wf-i.on { background:#e2e8f0; color:#475569; }
 .wf-row { padding:10px 12px; margin-bottom:10px; background:#f1f4f8; border:1px solid #d5dde7; border-radius:12px; } .wf-t { display:block; margin-bottom:4px; }
 .wf-ln { display:flex; align-items:center; gap:6px; } .wf-a { flex:1; min-width:0; font-size:13px; color:#2563eb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-decoration:none; }
@@ -901,6 +899,19 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 
 .inv-send-indicator { display:flex; align-items:center; justify-content:center; width:max-content; margin:5px auto 0; color:#64748b; }
 .inv-cell-action { display:block; border:0; background:none; color:inherit; font:inherit; text-align:left; padding:8px 3px; width:100%; cursor:pointer; } .inv-cell-action:disabled { opacity:.65; cursor:default; } .inv-pay-action { text-align:right; } .inv-pay-action .pc-ds { display:block; font-size:11px; margin-top:3px; } .inv-send-indicator.is-sent { color:#64748b; }
+/* Untere schwebende Leiste: Suche immer offen, daneben Termin, Patient und Rechnung. In der Patientenakte liegen die Akte-Aktionen direkt darüber. */
+body { padding-bottom:84px; }
+.fab-col { left:auto; right:12px; width:min(560px, calc(100% - 24px)); flex-direction:row; align-items:center; gap:8px; pointer-events:none; }
+.fab-col > * { pointer-events:auto; }
+.fab-col .gs-bar, .gs-bar { display:flex; position:static; flex:1 1 0; min-width:0; height:46px; background:#fff; border:1px solid #c3cedf; border-radius:12px; box-shadow:0 3px 10px rgba(15,23,42,.34); padding:3px; }
+.fab-col .gs-bar .gs-box { min-height:0; height:100%; }
+.fab.fab-search { display:none; }
+.fab-col .gs-res { position:absolute; left:0; right:0; top:auto; bottom:calc(100% + 8px); }
+.a-fab { left:auto; right:12px; bottom:calc(74px + env(safe-area-inset-bottom)); transform:none; width:auto; max-width:calc(100% - 24px); z-index:44; }
+.a-fab .a-cats { flex:none; gap:6px; }
+@media (max-width:699px) { .a-fab { left:12px; width:auto; } .a-fab .a-cats { flex:1; justify-content:flex-end; } }
+.akte-page { padding-bottom:150px; }
+@media (orientation:landscape) and (min-width:700px) { .akte-page .a-pane { padding-bottom:132px; } }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2411,7 +2422,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-10-e';
+var KA_V = '2026-11-10-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -2925,8 +2936,9 @@ function ptApplyEr() { var t = document.getElementById('tab-patienten'), b = doc
 function ptToggleEr() { settings.ptShowEr = !settings.ptShowEr; persist(); ptApplyEr(); }
 function gsToggle(force) {
   var bar = document.getElementById('gs-bar'), inp = document.getElementById('gs-in'), res = document.getElementById('gs-res'), f = document.getElementById('gs-fab');
-  var open = typeof force === 'boolean' ? force : bar.style.display !== 'flex';
-  bar.style.display = open ? 'flex' : 'none'; f.classList.toggle('on', open);
+  /* Die Suchleiste ist immer sichtbar; auf/zu betrifft nur Eingabe und Trefferliste */
+  var open = typeof force === 'boolean' ? force : res.style.display !== 'block';
+  bar.style.display = 'flex'; f.classList.toggle('on', open);
   if (open) { inp.focus(); gsRun(true); } else { inp.value = ''; res.style.display = 'none'; inp.blur(); }
 }
 function hdAdd(k) {
