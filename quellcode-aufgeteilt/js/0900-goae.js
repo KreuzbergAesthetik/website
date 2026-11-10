@@ -632,6 +632,7 @@ function renderEntw() {
   });
   var dr = invTab === 'test' ? DRAFT.test : null, main = document.getElementById('inv-main'), box = document.getElementById('entw-list'), srb = document.querySelector('#tab-rechnungen .sr-fab'), srbar = document.querySelector('#tab-rechnungen .sr-bar'); if (srb) srb.style.display = dr ? 'none' : ''; if (dr && srbar) srbar.style.display = 'none';
   main.style.display = dr ? 'none' : ''; box.style.display = dr ? '' : 'none';
+  var qb = document.getElementById('inv-q'); if (qb) qb.style.display = dr ? 'none' : '';
   var nb = document.getElementById('inv-b-new'); nb.title = nb.getAttribute('aria-label').replace(/.*/, 'Neu: ' + (dr ? dr.name : 'Rechnung')); nb.setAttribute('aria-label', nb.title);
   if (!dr) return;
   box.innerHTML = '';

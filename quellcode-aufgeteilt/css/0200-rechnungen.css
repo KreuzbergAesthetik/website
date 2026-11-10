@@ -1,0 +1,12 @@
+/* Rechnungen: Überschrift, Umschalter, Suche und Knöpfe in einer Kopfzeile (breit: eine Zeile; schmal: Umschalter und Suche darunter) */
+#tab-rechnungen > .card > .card-header { flex-wrap:wrap; align-items:center; row-gap:8px; }
+#tab-rechnungen > .card > .card-header .card-title { order:0; }
+#tab-rechnungen #inv-flt { order:1; margin-left:auto; } #tab-rechnungen #inv-b-new { order:2; }
+#tab-rechnungen #inv-kind { order:3; flex:1 0 100%; width:100%; }
+#tab-rechnungen #inv-q { order:4; flex:1 0 100%; margin:0; }
+@media (min-width:700px) {
+  #tab-rechnungen #inv-kind { order:1; flex:0 0 auto; width:auto; }
+  #tab-rechnungen #inv-kind button { flex:0 0 auto; white-space:nowrap; padding:9px 14px; }
+  #tab-rechnungen #inv-q { order:2; flex:1 1 140px; max-width:240px; height:38px; min-width:0; }
+  #tab-rechnungen #inv-flt { order:3; } #tab-rechnungen #inv-b-new { order:4; }
+}
