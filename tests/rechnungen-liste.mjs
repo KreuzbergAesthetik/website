@@ -44,6 +44,8 @@ try {
     const rechts = rows.map(tr => { const c = tr.cells[2]; const l2 = c.querySelector('.inv-l2'), l1 = c.querySelector('.inv-l1'); const rng = document.createRange(); rng.selectNodeContents(l2); const r2 = Math.round(rng.getBoundingClientRect().right); rng.selectNodeContents(l1); return Math.abs(r2 - Math.round(rng.getBoundingClientRect().right)) <= 24 && getComputedStyle(l2).textAlign === 'right'; });
     out.betragRechts = rechts.every(Boolean) && getComputedStyle(th3).textAlign === 'right';
     out.vornameSchwarz = getComputedStyle(t0.cells[1].querySelector('.inv-l2')).color === 'rgb(15, 23, 42)';
+    out.warnDreieck = !!open.cells[2].querySelector('.inv-pay-cross svg path[d^="M12 3.5"]') && !/×/.test(open.cells[2].textContent);
+    out.stornoX = !!ro.cells[2].querySelector('.inv-pay-cross svg path[d^="M6 6"]');
     out.keinLinkBeiAnderen = !rows.find(tr => tr.dataset.nr === a.nr).classList.contains('t-link');
     // Versandfilter durchschalten
     const n0 = document.querySelectorAll('#inv-table tr[data-nr]').length;

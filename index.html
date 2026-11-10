@@ -839,7 +839,7 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 .inv-number-meta .inv-send-indicator{display:inline-flex;width:auto;margin:0;line-height:1;color:#64748b;cursor:help}
 .inv-payment-meta{white-space:nowrap}
 .inv-pay-tick{color:#16a34a;font-weight:800;margin-left:4px;font-size:14px}
-.inv-pay-cross{color:#dc2626;font-weight:800;margin-left:4px;font-size:15px}
+.inv-pay-cross{color:#dc2626;font-weight:800;margin-left:4px;font-size:15px;display:inline-flex;vertical-align:-3px}
 #inv-table .inv-cell-action b{font-weight:700}
 /* Klar getrennte Bereiche im Rechnungsformular */
 #modal-inv .inv-form-card{border:1px solid #d9e2ec;background:#fff;border-radius:15px;padding:16px;margin:14px 0;box-shadow:0 2px 8px rgba(20,40,65,.035)}
@@ -2495,7 +2495,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-10-p';
+var KA_V = '2026-11-10-q';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -4725,12 +4725,13 @@ function renderInvoices() {
     var payDate = mk('small', 'pc-ds inv-payment-meta inv-l2');
     if (i.storniert || i.kind === 'kv') {
       payDate.textContent = i.storniert ? 'Storniert' : 'Kostenvoranschlag';
+      if (i.storniert) { var sx = mk('span', 'inv-pay-cross'); sx.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'; sx.setAttribute('aria-label', 'Storniert'); payDate.appendChild(sx); }
     } else if (st.full) {
       payDate.textContent = paidDate ? fmtD(paidDate).replace(/^(\d{2}\.\d{2}\.)\d{2}(\d{2})$/, '$1$2') : 'Bezahlt';
       var tick = mk('span', 'inv-pay-tick', '✓'); tick.setAttribute('aria-label', 'Bezahlt'); payDate.appendChild(tick);
     } else {
       payDate.textContent = st.txt === 'Teilzahlung' ? 'Teilzahlung' : 'Offen';
-      var cross = mk('span', 'inv-pay-cross', '×'); cross.setAttribute('aria-label', 'Nicht vollständig bezahlt'); payDate.appendChild(cross);
+      var cross = mk('span', 'inv-pay-cross'); cross.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 10v4.2"/><path d="M12 17.2v.1"/></svg>'; cross.setAttribute('aria-label', 'Nicht vollständig bezahlt'); payDate.appendChild(cross);
     }
     payBtn.appendChild(payDate);
     payBtn.title = i.kind === 'kv' || i.storniert ? 'Dokument öffnen' : st.full ? 'Zahlung bearbeiten' : 'Zahlung erfassen';

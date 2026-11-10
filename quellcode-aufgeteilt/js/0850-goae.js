@@ -718,12 +718,13 @@ function renderInvoices() {
     var payDate = mk('small', 'pc-ds inv-payment-meta inv-l2');
     if (i.storniert || i.kind === 'kv') {
       payDate.textContent = i.storniert ? 'Storniert' : 'Kostenvoranschlag';
+      if (i.storniert) { var sx = mk('span', 'inv-pay-cross'); sx.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'; sx.setAttribute('aria-label', 'Storniert'); payDate.appendChild(sx); }
     } else if (st.full) {
       payDate.textContent = paidDate ? fmtD(paidDate).replace(/^(\d{2}\.\d{2}\.)\d{2}(\d{2})$/, '$1$2') : 'Bezahlt';
       var tick = mk('span', 'inv-pay-tick', '✓'); tick.setAttribute('aria-label', 'Bezahlt'); payDate.appendChild(tick);
     } else {
       payDate.textContent = st.txt === 'Teilzahlung' ? 'Teilzahlung' : 'Offen';
-      var cross = mk('span', 'inv-pay-cross', '×'); cross.setAttribute('aria-label', 'Nicht vollständig bezahlt'); payDate.appendChild(cross);
+      var cross = mk('span', 'inv-pay-cross'); cross.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 10v4.2"/><path d="M12 17.2v.1"/></svg>'; cross.setAttribute('aria-label', 'Nicht vollständig bezahlt'); payDate.appendChild(cross);
     }
     payBtn.appendChild(payDate);
     payBtn.title = i.kind === 'kv' || i.storniert ? 'Dokument öffnen' : st.full ? 'Zahlung bearbeiten' : 'Zahlung erfassen';
