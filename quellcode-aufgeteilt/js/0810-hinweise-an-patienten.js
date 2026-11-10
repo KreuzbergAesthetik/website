@@ -286,6 +286,10 @@ function renderPatients() {
     var more = mk('button', 'pt-ib ib-more'); more.type = 'button'; more.title = 'Aktionen'; more.setAttribute('aria-label', 'Aktionen für ' + full); more.setAttribute('aria-haspopup', 'true');
     more.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
     more.onclick = function (ev) { ev.stopPropagation(); ptPop(more, popItems); };
+    /* Mit der Maus: Beim Überfahren der Zeile erscheinen die Aktionen direkt als Knopfreihe */
+    var quick = mk('div', 'pt-quick');
+    popItems.forEach(function (it) { var qb = mk('button', 'pt-ib ib-' + it.k + (it.cls ? ' ' + it.cls : '')); qb.type = 'button'; qb.title = it.lb; qb.setAttribute('aria-label', it.lb); qb.innerHTML = tvSvg(it.k); qb.onclick = function (ev) { ev.stopPropagation(); it.fn(ev); }; quick.appendChild(qb); });
+    acts.appendChild(quick);
     acts.appendChild(more);
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });

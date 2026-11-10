@@ -19,6 +19,7 @@ try {
       const box = id => { const e = document.getElementById(id), b = e.getBoundingClientRect(), cs = getComputedStyle(e); return { l: b.left, r: b.right, t: b.top, b: b.bottom, w: b.width, vis: cs.display !== 'none' && cs.visibility !== 'hidden' && b.width > 0 }; };
       const wait = ms => new Promise(r => setTimeout(r, ms));
       const out = { vw: innerWidth, vh: innerHeight, bar: box('gs-bar'), lupe: box('gs-lupe'), plus: box('gs-plus'), menuAnfang: getComputedStyle(document.getElementById('gs-menu')).display, lupeAlt: getComputedStyle(document.getElementById('gs-fab')).display };
+      out.startZu = out.bar.w < 60; if (out.startZu) { gsCollapse(false); await wait(150); out.bar = box('gs-bar'); out.lupe = box('gs-lupe'); out.plus = box('gs-plus'); }
       // Pop-up-Menü über dem Plus-Knopf
       document.getElementById('gs-plus').click(); await wait(100);
       out.menu = { an: getComputedStyle(document.getElementById('gs-menu')).display, kal: box('gs-kal'), pat: box('gs-pat'), rec: box('gs-rec'), plus: box('gs-plus'), exp: document.getElementById('gs-plus').getAttribute('aria-expanded') };
@@ -37,24 +38,26 @@ try {
       viewAkte(patients[0]); await wait(500);
       const af = document.querySelector('.a-fab').getBoundingClientRect(); out.akteAktionen = { b: af.bottom, t: af.top, w: af.width, h: af.height, r: af.right, vis: af.height > 0 };
       const inp = document.getElementById('gs-in'); inp.value = 'Anna'; gsRun(); await wait(300);
-      const res = document.getElementById('gs-res').getBoundingClientRect(); out.treffer = { b: res.bottom, h: res.height, vis: getComputedStyle(document.getElementById('gs-res')).display !== 'none' };
+      const res = document.getElementById('gs-res').getBoundingClientRect(); out.treffer = { t: res.top, b: res.bottom, h: res.height, vis: getComputedStyle(document.getElementById('gs-res')).display !== 'none' };
       return out;
     });
+    const kopf = w >= 700 && w > h;
     const tag = `${w}x${h} ${JSON.stringify(r)}`;
+    assert.equal(r.startZu, w >= 700 && w < 1000 && w > h, 'Startzustand der Suche ' + tag);
     assert.ok(r.bar.vis && r.bar.w > 100 && r.lupe.vis && r.plus.vis, 'Suchleiste, Lupe oder Plus nicht sichtbar ' + tag);
     assert.equal(r.lupeAlt, 'none', 'alter Lupen-Knopf noch sichtbar ' + tag);
-    assert.ok(r.plus.r <= r.bar.l + 1 && r.bar.r <= r.vw && r.vh - r.bar.b <= 24, 'Leiste sitzt nicht richtig unten ' + tag);
+    assert.ok(r.plus.r <= r.bar.l + 1 && r.bar.r <= r.vw && (kopf ? r.bar.t >= 0 && r.bar.b <= 60 : r.vh - r.bar.b <= 24), (kopf ? 'Leiste sitzt nicht in der Kopfzeile ' : 'Leiste sitzt nicht richtig unten ') + tag);
     assert.equal(r.menuAnfang, 'none', 'Menü am Anfang offen ' + tag);
     assert.notEqual(r.menu.an, 'none', 'Menü öffnet nicht ' + tag);
-    for (const k of ['kal', 'pat', 'rec']) assert.ok(r.menu[k].vis && r.menu[k].b <= r.menu.plus.t && r.menu[k].l >= 0 && r.menu[k].r <= r.vw && r.menu[k].t >= 0, 'Menüpunkt ' + k + ' nicht sichtbar oder nicht über Plus ' + tag);
+    for (const k of ['kal', 'pat', 'rec']) assert.ok(r.menu[k].vis && (kopf ? r.menu[k].t >= r.menu.plus.b : r.menu[k].b <= r.menu.plus.t) && r.menu[k].l >= 0 && r.menu[k].r <= r.vw && r.menu[k].t >= 0, 'Menüpunkt ' + k + ' nicht sichtbar oder nicht über Plus ' + tag);
     assert.equal(r.menu.exp, 'true', 'aria-expanded fehlt ' + tag);
     assert.equal(r.menuZu, 'none', 'Menü schließt nicht beim zweiten Tipp ' + tag);
     assert.equal(r.menuAussen, 'none', 'Menü schließt nicht beim Tippen daneben ' + tag);
     assert.ok(r.zu.bar.w < 60 && r.zu.input === 'none' && r.zu.exp === 'false' && r.zu.gemerkt === '1' && r.zu.plus.vis, 'Einklappen funktioniert nicht ' + tag);
     assert.ok(r.auf.bar.w > 100 && r.auf.input !== 'none' && r.auf.exp === 'true' && r.auf.gemerkt === '0', 'Aufklappen funktioniert nicht ' + tag);
     assert.ok(r.akteAktionen.h > r.akteAktionen.w && r.akteAktionen.r <= r.vw && r.akteAktionen.t >= 40, 'Akte-Aktionen nicht untereinander oder außerhalb ' + tag);
-    assert.ok(r.akteAktionen.vis && r.akteAktionen.b <= r.bar.t + 1, 'Akte-Aktionen überdecken die Leiste ' + tag);
-    assert.ok(r.treffer.vis && r.treffer.h > 20 && r.treffer.b <= r.bar.t, 'Trefferliste nicht über der Leiste ' + tag);
+    assert.ok(r.akteAktionen.vis && (kopf || r.akteAktionen.b <= r.bar.t + 1), 'Akte-Aktionen überdecken die Leiste ' + tag);
+    assert.ok(r.treffer.vis && r.treffer.h > 20 && (kopf ? r.treffer.t >= r.bar.b : r.treffer.b <= r.bar.t), 'Trefferliste nicht über der Leiste ' + tag);
     await context.close();
   }
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');

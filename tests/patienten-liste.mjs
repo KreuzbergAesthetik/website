@@ -27,7 +27,8 @@ try {
     out.keinHinweis = sb.n === 1 && sb.voll && sb.farben[0] === 'rgb(203, 213, 225)';
     out.mehrfarbig = sa.n >= 2 && sa.voll && new Set(sa.farben).size === sa.n && !sa.farben.includes('rgb(203, 213, 225)');
     out.zeileKompakt = rows.every(tr => tr.getBoundingClientRect().height <= 64);
-    out.nurDreiPunkte = rows.every(tr => tr.querySelectorAll('.pt-acts .pt-ib').length === 1 && getComputedStyle(tr.querySelector('.pt-acts')).opacity === '1');
+    out.nurDreiPunkte = rows.every(tr => tr.querySelectorAll('.pt-acts > .pt-ib').length === 1 && getComputedStyle(tr.querySelector('.pt-quick')).display === 'none' && getComputedStyle(tr.querySelector('.pt-acts')).opacity === '1');
+    const mc = getComputedStyle(rows[0].querySelector('.pt-ib.ib-more')); out.punkteOhneKnopf = mc.boxShadow === 'none' && mc.backgroundColor === 'rgba(0, 0, 0, 0)' && mc.borderTopWidth === '0px';
     const btn = rows[0].querySelector('.pt-ib.ib-more'); btn.click(); await wait(200);
     const pop = document.getElementById('pt-pop'), items = [...pop.querySelectorAll('.pt-pop-i')];
     out.popOffen = getComputedStyle(pop).display !== 'none' && items.map(x => x.textContent.trim()).join('|') === 'Termin|Dokumentation|Senden|Rechnung|Rezept|Alle Aktionen';
@@ -42,6 +43,27 @@ try {
   for (const k of Object.keys(r)) assert.equal(r[k], true, 'Patientenliste: ' + k + ' ' + JSON.stringify(r));
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
   console.log('Patientenliste OK (' + Object.keys(r).length + ' Prüfungen)');
+  // Mit der Maus (Desktop): Beim Überfahren der Zeile erscheinen die Aktionen als Knopfreihe, ohne Klick
+  const dctx = await browser.newContext({ viewport: { width: 1280, height: 700 } });
+  await dctx.addInitScript(() => { try { localStorage.clear(); } catch {} });
+  const dp = await dctx.newPage(); dp.on('pageerror', err => pageErrors.push(String(err?.stack || err)));
+  await dp.goto(base, { waitUntil: 'networkidle', timeout: 30000 });
+  await dp.fill('#al-pw', 'CiAppPasswort-123!'); await dp.fill('#al-pw2', 'CiAppPasswort-123!'); await dp.click('#al-submit');
+  await dp.waitForFunction(() => window.KA && KA.booted === true && !document.documentElement.classList.contains('locked'), null, { timeout: 15000 });
+  await dp.evaluate(async () => {
+    patients.length = 0; const mkp = (id, n, v, nn) => ({ id, nr: n, anrede: 'Frau', vorname: v, nachname: nn, dob: '01.02.1990', phone: '030 1234567', email: v.toLowerCase() + '@example.invalid', adresse: 'Teststraße 1\n10999 Berlin', medikation: [], log: [], doku: [], dokumente: [], bilder: [], erstellt: Date.now() });
+    patients.push(mkp('a', 1, 'Rita', 'Muster'), mkp('b', 2, 'Hans', 'Probe')); FLC = null; switchTab('patienten'); renderPatients(); await new Promise(r => setTimeout(r, 400));
+  });
+  const q0 = await dp.evaluate(() => getComputedStyle(document.querySelector('#tab-patienten tbody tr:nth-child(1) .pt-quick')).display);
+  await dp.hover('#tab-patienten tbody tr:nth-child(1)'); await dp.waitForTimeout(250);
+  const q1 = await dp.evaluate(() => { const q = document.querySelector('#tab-patienten tbody tr:nth-child(1) .pt-quick'), b = [...q.querySelectorAll('.pt-ib')]; return { disp: getComputedStyle(q).display, n: b.length, horizontal: b.every((x, i) => i === 0 || Math.abs(x.getBoundingClientRect().top - b[0].getBoundingClientRect().top) < 2), info: getComputedStyle(document.querySelector('#tab-patienten tbody tr:nth-child(1) .pt-info')).opacity }; });
+  assert.equal(q0, 'none', 'Schnellknöpfe ohne Hover sichtbar');
+  assert.ok(q1.disp === 'flex' && q1.n === 6 && q1.horizontal && q1.info === '0', 'Schnellknöpfe beim Überfahren: ' + JSON.stringify(q1));
+  await dp.mouse.move(5, 5); await dp.waitForTimeout(250);
+  assert.equal(await dp.evaluate(() => getComputedStyle(document.querySelector('#tab-patienten tbody tr:nth-child(1) .pt-quick')).display), 'none', 'Schnellknöpfe bleiben nach dem Verlassen der Zeile');
+  await dctx.close();
+  assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser (Desktop)');
+  console.log('Patientenliste Hover OK');
 } finally {
   await browser.close();
 }

@@ -943,6 +943,18 @@ body { padding-bottom:84px; }
 #inv-table td:nth-child(3), #tab-rechnungen .pt thead th:nth-child(3) { text-align:right; }
 #tab-rechnungen .pt thead th:nth-child(3) { padding-right:19px; }
 #inv-table .inv-pay-action, #inv-table .inv-pay-action .inv-l1, #inv-table .inv-pay-action .inv-l2 { text-align:right; }
+/* Querformat und Desktop: Plus-Knopf und Suchleiste sitzen rechts in der Kopfzeile statt unten schwebend */
+@media (min-width:700px) and (orientation:landscape) {
+  header { padding-right:344px; }
+  .fab-col { top:calc((var(--hdh,53px) - 46px) / 2); bottom:auto; right:12px; width:320px; height:46px; z-index:35; }
+  .fab-col .gs-res { top:calc(100% + 8px); bottom:auto; left:auto; right:0; width:min(460px, calc(100vw - 24px)); }
+  .fab-col .gs-menu { top:calc(100% + 8px); bottom:auto; left:auto; right:0; align-items:flex-end; }
+  .a-fab { bottom:calc(16px + env(safe-area-inset-bottom)); }
+  .akte-page .a-pane { padding-bottom:84px !important; }
+  body { padding-bottom:24px; }
+}
+@media (min-width:700px) and (max-width:999px) and (orientation:landscape) { header { padding-right:272px; } .fab-col { width:248px; } }
+@media (min-width:700px) and (orientation:landscape) { body:has(#gs-bar.zu) header { padding-right:124px; } body:has(#gs-bar.zu) .fab-col { width:100px; } }
 /* Rechnungen in Queransicht und am Desktop: alles in einer Zeile, dafür mehr Spalten (Nr., Datum, Name, Versendet, Status, Betrag) */
 .inv-w { display:none; }
 @media (min-width:700px) {
@@ -1001,6 +1013,7 @@ body { padding-bottom:84px; }
 #tab-patienten .pt-acts .pt-ib { width:34px; height:34px; border-radius:10px; color:#64748b; flex-direction:row; }
 #tab-patienten .pt-acts .pt-ib svg { width:20px; height:20px; }
 #tab-patienten .pt-wrap::after { content:none; }
+#tab-patienten .pt-acts > .pt-ib.ib-more { background:none; border:0; box-shadow:none; color:#64748b; } #tab-patienten .pt-acts > .pt-ib.ib-more:hover { background:#e2e8f0; }
 #tab-patienten .pt-wrap { align-items:center; gap:6px; }
 #tab-patienten .scroll > table.pt tbody td { padding-top:6px; padding-bottom:6px; }
 @media (min-width:700px) {
@@ -1016,6 +1029,16 @@ body { padding-bottom:84px; }
 .pt-pop .pt-pop-i.ib-cal { --ic:var(--c-termin); } .pt-pop .pt-pop-i.ib-book { --ic:var(--c-doku); } .pt-pop .pt-pop-i.ib-mail { --ic:var(--c-senden); } .pt-pop .pt-pop-i.ib-euro { --ic:var(--c-rechnung); } .pt-pop .pt-pop-i.ib-pill { --ic:var(--c-rezept); } .pt-pop .pt-pop-i.ib-plus { --ic:var(--c-mehr); }
 .pt-pop .pt-pop-i svg { color:var(--ic,#475569); }
 .pt-pop .pt-pop-i.st-ok::after { content:'✓'; margin-left:auto; color:#16a34a; font-weight:800; }
+/* Schnellknöpfe nur mit Maus (Hover); auf Touch-Geräten bleibt der Drei-Punkte-Knopf */
+#tab-patienten .pt-quick { display:none; }
+@media (hover:hover) and (pointer:fine) {
+  #tab-patienten tbody tr:hover .pt-quick, #tab-patienten tbody tr:focus-within .pt-quick { display:flex; position:absolute; right:44px; top:50%; transform:translateY(-50%); gap:6px; padding:5px 8px; background:#eaeef4; border-radius:12px; z-index:3; }
+  #tab-patienten tbody tr:hover .pt-info, #tab-patienten tbody tr:focus-within .pt-info { opacity:0; }
+  #tab-patienten .pt-quick .pt-ib { width:34px; height:34px; border-radius:10px; flex-direction:row; }
+  #tab-patienten .pt-quick .pt-ib svg { width:20px; height:20px; }
+  #tab-patienten .pt-acts { position:static; }
+  #tab-patienten .pt-wrap { position:relative; }
+}
 /* Patienten: Die Hinweis-Punkte bilden einen durchgehenden Strich zwischen ID und Name; mehrere Hinweise teilen sich den Strich in Farbabschnitte */
 #tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:14px; }
 #tab-patienten .pt-dots { position:absolute; left:0; top:0; bottom:0; width:3px; display:flex; flex-direction:column; gap:0; }
@@ -2562,7 +2585,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-11-a';
+var KA_V = '2026-11-11-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3043,6 +3066,10 @@ function renderPatients() {
     var more = mk('button', 'pt-ib ib-more'); more.type = 'button'; more.title = 'Aktionen'; more.setAttribute('aria-label', 'Aktionen für ' + full); more.setAttribute('aria-haspopup', 'true');
     more.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
     more.onclick = function (ev) { ev.stopPropagation(); ptPop(more, popItems); };
+    /* Mit der Maus: Beim Überfahren der Zeile erscheinen die Aktionen direkt als Knopfreihe */
+    var quick = mk('div', 'pt-quick');
+    popItems.forEach(function (it) { var qb = mk('button', 'pt-ib ib-' + it.k + (it.cls ? ' ' + it.cls : '')); qb.type = 'button'; qb.title = it.lb; qb.setAttribute('aria-label', it.lb); qb.innerHTML = tvSvg(it.k); qb.onclick = function (ev) { ev.stopPropagation(); it.fn(ev); }; quick.appendChild(qb); });
+    acts.appendChild(quick);
     acts.appendChild(more);
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
@@ -3086,13 +3113,14 @@ function gsToggle(force) {
   if (open) { inp.focus(); gsRun(true); } else { inp.value = ''; res.style.display = 'none'; inp.blur(); }
 }
 /* Suchleiste ein- und ausklappen: eingeklappt bleibt nur die Lupe; die Wahl merkt sich das Gerät */
-function gsCollapse(force) {
+function gsCollapse(force, noSave) {
   var bar = document.getElementById('gs-bar'), inp = document.getElementById('gs-in'), lupe = document.getElementById('gs-lupe'), res = document.getElementById('gs-res');
   var zu = typeof force === 'boolean' ? force : !bar.classList.contains('zu');
   bar.classList.toggle('zu', zu); lupe.setAttribute('aria-expanded', zu ? 'false' : 'true'); lupe.title = zu ? 'Suche aufklappen' : 'Suche einklappen';
   gsMenu(false);
   if (zu) { inp.value = ''; res.style.display = 'none'; inp.blur(); } else { inp.focus(); gsRun(true); }
-  try { localStorage.setItem('ka_gs_zu', zu ? '1' : '0'); } catch (x) {}
+  if (!noSave) { try { localStorage.setItem('ka_gs_zu', zu ? '1' : '0'); } catch (x) {} }
+  try { navFit(); } catch (x) {}
 }
 /* Pop-up über dem Plus-Knopf: Termin, Patient, Rechnung */
 function gsMenu(force) {
@@ -3103,7 +3131,11 @@ function gsMenu(force) {
 }
 document.addEventListener('click', function (ev) { if (!ev.target.closest('#gs-menu') && !ev.target.closest('#gs-plus')) gsMenu(false); });
 document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') gsMenu(false); });
-try { if (localStorage.getItem('ka_gs_zu') === '1') gsCollapse(true); } catch (x) {}
+try {
+  var gsPref = localStorage.getItem('ka_gs_zu');
+  if (gsPref === '1') gsCollapse(true);
+  else if (gsPref === null && window.matchMedia('(min-width:700px) and (max-width:999px) and (orientation:landscape)').matches) gsCollapse(true, true);   /* kleines Querformat: Suche startet eingeklappt, damit die Navigation Platz hat */
+} catch (x) {}
 function hdAdd(k) {
   gsMenu(false);
   /* In der Patientenakte sind Termin und Rechnung für diesen Patienten vorausgefüllt */
