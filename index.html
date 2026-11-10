@@ -923,7 +923,6 @@ body { padding-bottom:84px; }
 #inv-table .inv-number-meta.inv-l2 { display:flex; margin-top:1px; }
 #inv-table .inv-cell-action { padding-top:0; padding-bottom:0; }
 #inv-table .inv-cell-action .inv-l1 b { font-weight:800; }
-#inv-table .inv-pay-action .inv-l2 { text-align:left; }
 .inv-send-flt { border:0; background:none; color:#b5bfcc; padding:0 4px; margin-left:4px; cursor:pointer; vertical-align:middle; line-height:1; border-radius:6px; }
 .inv-send-flt .sl { display:none; }
 .inv-send-flt.on { color:#1e3a8a; background:#e8eef9; }
@@ -939,6 +938,15 @@ body { padding-bottom:84px; }
 #inv-table td:first-child { padding-left:16px !important; } #inv-table td:last-child { padding-right:16px !important; }
 #inv-table tr:first-child td:first-child { border-top-left-radius:16px; } #inv-table tr:first-child td:last-child { border-top-right-radius:16px; }
 #inv-table tr:last-child td:first-child { border-bottom-left-radius:16px; } #inv-table tr:last-child td:last-child { border-bottom-right-radius:16px; }
+/* Betragsspalte: Kopf, Betrag und Status enden alle an derselben rechten Linie */
+#inv-table td:nth-child(3), #tab-rechnungen .pt thead th:nth-child(3) { text-align:right; }
+#tab-rechnungen .pt thead th:nth-child(3) { padding-right:19px; }
+#inv-table .inv-pay-action, #inv-table .inv-pay-action .inv-l1, #inv-table .inv-pay-action .inv-l2 { text-align:right; }
+/* Storno und zugehörige Rechnung: gemeinsamer abgerundeter Rahmen */
+#inv-table tr.pair-top td { box-shadow:inset 0 2px 0 #a9b6c8; } #inv-table tr.pair-bot td { box-shadow:inset 0 -2px 0 #a9b6c8; }
+#inv-table tr.pair-top td:first-child { box-shadow:inset 0 2px 0 #a9b6c8, inset 2px 0 0 #a9b6c8; border-top-left-radius:14px; } #inv-table tr.pair-top td:last-child { box-shadow:inset 0 2px 0 #a9b6c8, inset -2px 0 0 #a9b6c8; border-top-right-radius:14px; }
+#inv-table tr.pair-bot td:first-child { box-shadow:inset 0 -2px 0 #a9b6c8, inset 2px 0 0 #a9b6c8; border-bottom-left-radius:14px; } #inv-table tr.pair-bot td:last-child { box-shadow:inset 0 -2px 0 #a9b6c8, inset -2px 0 0 #a9b6c8; border-bottom-right-radius:14px; }
+#inv-table tr.pair-bot { --sep:transparent; }
 #inv-table td { border-bottom:0; background-image:linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; background-origin:border-box; background-clip:border-box; }
 #inv-table td:first-child { box-shadow:none; }
 /* Reihenfolge: Nummer und Datum, dann der Farbstrich, dann Name, dann Betrag */
@@ -2486,7 +2494,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-10-m';
+var KA_V = '2026-11-10-n';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],

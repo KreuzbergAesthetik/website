@@ -38,6 +38,11 @@ try {
     const rs = rows.find(tr => tr.dataset.nr === sb.nr), ro = rows.find(tr => tr.dataset.nr === b.nr);
     out.stornoVerbunden = rs.classList.contains('t-link') && ro.classList.contains('t-link') && ((rs.classList.contains('pair-top') && ro.classList.contains('pair-bot')) || (ro.classList.contains('pair-top') && rs.classList.contains('pair-bot'))) && !!rs.querySelector('.inv-link') && !!ro.querySelector('.inv-link');
     out.grauerStrich = rs.classList.contains('t-storno') && ro.classList.contains('t-storno') && getComputedStyle(rs).getPropertyValue('--bar').trim() === '#94a3b8' && getComputedStyle(ro).getPropertyValue('--bar').trim() === '#94a3b8' && getComputedStyle(rs.cells[0]).paddingLeft === getComputedStyle(rows.find(tr => tr.dataset.nr === a.nr).cells[0]).paddingLeft;
+    const pt = rs.classList.contains('pair-top') ? rs : ro, pb = pt === rs ? ro : rs;
+    out.rahmen = getComputedStyle(pt.cells[0]).boxShadow.includes('169, 182, 200') && getComputedStyle(pb.cells[0]).boxShadow.includes('169, 182, 200') && parseFloat(getComputedStyle(pt.cells[0]).borderTopLeftRadius) >= 10 && parseFloat(getComputedStyle(pb.cells[0]).borderBottomLeftRadius) >= 10 && getComputedStyle(rows.find(tr => tr.dataset.nr === a.nr).cells[0]).boxShadow === 'none';
+    const rr = el => Math.round(el.getBoundingClientRect().right), th3 = document.querySelector('#tab-rechnungen .pt thead th:nth-child(3)');
+    const rechts = rows.map(tr => { const c = tr.cells[2]; const l2 = c.querySelector('.inv-l2'), l1 = c.querySelector('.inv-l1'); const rng = document.createRange(); rng.selectNodeContents(l2); const r2 = Math.round(rng.getBoundingClientRect().right); rng.selectNodeContents(l1); return Math.abs(r2 - Math.round(rng.getBoundingClientRect().right)) <= 24 && getComputedStyle(l2).textAlign === 'right'; });
+    out.betragRechts = rechts.every(Boolean) && getComputedStyle(th3).textAlign === 'right';
     out.keinLinkBeiAnderen = !rows.find(tr => tr.dataset.nr === a.nr).classList.contains('t-link');
     // Versandfilter durchschalten
     const n0 = document.querySelectorAll('#inv-table tr[data-nr]').length;
