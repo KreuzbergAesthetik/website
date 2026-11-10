@@ -23,12 +23,14 @@ try {
     viewAkte(p); await new Promise(r => setTimeout(r, 500));
     const rows = [...document.querySelectorAll('.tl-day')][0].querySelectorAll('.tl-item .tl-body');
     const rects = [...rows].map(b => { const x = b.getBoundingClientRect(); return { l: x.left, t: x.top, b: x.bottom, c: getComputedStyle(b).borderLeftColor }; });
-    return { n: rects.length, rects };
+    const trenner = [...document.querySelectorAll('.tl-day .tl-item.tl-termin + .tl-item, .tl-day .tl-item.tl-doku + .tl-item')].filter(e => getComputedStyle(e, '::before').display !== 'none').length;
+    return { n: rects.length, rects, trenner };
   });
   assert.ok(r.n >= 6, 'Zu wenige Verlaufseinträge: ' + JSON.stringify(r));
   const l0 = r.rects[0].l;
-  r.rects.forEach((x, i) => assert.ok(Math.abs(x.l - l0) <= 1, `Strich ${i} nicht in derselben Spalte: ${JSON.stringify(r.rects)}`));
+  r.rects.forEach((x, i) => assert.ok(Math.abs(x.l - l0) <= 0.25, `Strich ${i} nicht in derselben Spalte: ${JSON.stringify(r.rects)}`));
   for (let i = 0; i + 1 < r.rects.length; i++) assert.ok(Math.abs(r.rects[i].b - r.rects[i + 1].t) <= 0.6, `Lücke im Strich zwischen Eintrag ${i} und ${i + 1}: ${JSON.stringify(r.rects)}`);
+  assert.equal(r.trenner, 0, 'Trennlinie neben umrahmtem Termin/Doku sichtbar: ' + r.trenner);
   assert.ok(new Set(r.rects.map(x => x.c)).size >= 4, 'Farbwechsel fehlt: ' + JSON.stringify(r.rects));
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
   console.log('Verlauf-Strich OK (' + r.n + ' Einträge, durchgehend, ' + new Set(r.rects.map(x => x.c)).size + ' Farben)');
