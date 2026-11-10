@@ -18,6 +18,8 @@
 .list-frame { position:absolute; box-sizing:border-box; border:1px solid #d5dde7; border-radius:16px; box-shadow:0 0 0 7px #fff; pointer-events:none; z-index:1; }
 /* Patienten: eine gemeinsame Karte statt einzelner Zeilenkarten */
 #tab-patienten .scroll > table.pt tbody td, #tab-patienten .scroll > table.pt tbody td:first-child, #tab-patienten .scroll > table.pt tbody td.pc-er, #tab-patienten .scroll > table.pt tbody td:nth-child(2) { border:0; border-radius:0; padding-top:9px; padding-bottom:9px; }
+/* Zahlungen: Die Spalte „Art“ entfällt, die Zahlungsart zeigt der Farbstrich (Farben wie in den Filterknöpfen darüber) */
+#tab-zahlungen .scroll > table.pt th:nth-child(4), #tab-zahlungen .scroll > table.pt td:nth-child(4):not([colspan]) { display:none; }
 /* Farbstrich nach der ersten Spalte: Zahlungsart bei Zahlungen, Gruppe bei Leistungen */
 #tab-zahlungen .scroll > table.pt tbody tr td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(#e2e8f0, #e2e8f0); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
 #tab-zahlungen .scroll > table.pt tbody tr:last-child td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr:last-child td:nth-child(2) { background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)); background-size:3px 100%; background-position:left top; }
