@@ -34,20 +34,3 @@
 #inv-table tr.pair-bot, #inv-table tr.pre-pair { --sep:transparent; }
 #inv-table td { border-bottom:0; background-image:linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; background-origin:border-box; background-clip:border-box; }
 #inv-table td:first-child { box-shadow:none; }
-/* Reihenfolge: Nummer und Datum, dann der Farbstrich, dann Name, dann Betrag */
-#inv-table td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
-#inv-table tr:last-child { --sep:transparent; }
-#inv-table tr.t-paid { --bar:#16a34a; } #inv-table tr.t-open { --bar:#ea580c; } #inv-table tr.t-late { --bar:#dc2626; } #inv-table tr.t-storno { --bar:#94a3b8; } #inv-table tr.t-kv { --bar:#b45309; }
-#inv-table tr.pair-top { --sep:transparent; }
-.inv-link { display:inline-flex; color:#94a3b8; margin-left:2px; cursor:help; }
-.cal-plus svg, .inv-plus svg { width:22px; height:22px; }
-/* Praxis-Menü: jede Gruppe als eigene Karte mit Farbstreifen */
-.nav-menu { background:#eef2f7; padding:8px; }
-.nav-section { --sec:#1e3a8a; background:#fff; border:1px solid #d5dde7; border-left:4px solid var(--sec); border-radius:12px; margin:0 0 8px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(15,23,42,.08); }
-.nav-section:last-child { margin-bottom:0; }
-.nav-section[data-ni="0"] { --sec:#16a34a; } .nav-section[data-ni="1"] { --sec:#1e3a8a; } .nav-section[data-ni="2"] { --sec:#7c3aed; } .nav-section[data-ni="3"] { --sec:#0d9488; } .nav-section[data-ni="4"] { --sec:#ea580c; }
-.nav-section > .nav-group { background:color-mix(in srgb, var(--sec) 9%, #fff); color:var(--sec); font-weight:800; font-size:12.5px; letter-spacing:.07em; }
-.nav-section[open] > .nav-group { border-bottom:1px solid color-mix(in srgb, var(--sec) 25%, #fff); }
-.nav-section .nav-items > button svg { stroke:var(--sec); }
-.nav-section .nav-items > button:disabled svg { stroke:#94a3b8; }
-.nav-section .nav-items > button + button { border-top:1px solid #f1f5f9; border-radius:0; }
