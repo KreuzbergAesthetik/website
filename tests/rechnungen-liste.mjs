@@ -32,7 +32,7 @@ try {
     out.gleicheHoehe = rows.every(tr => { const c0 = tr.cells[0], c1 = tr.cells[1], c2 = tr.cells[2]; const l1 = [c0.querySelector('.inv-l1'), c1.querySelector('.inv-l1'), c2.querySelector('.inv-l1')].map(top), l2 = [c0.querySelector('.inv-l2'), c1.querySelector('.inv-l2'), c2.querySelector('.inv-l2')].map(top); return l1.every(x => Math.abs(x - l1[0]) <= 1) && l2.every(x => Math.abs(x - l2[0]) <= 1) && l2[0] > l1[0]; });
     const t0 = rows.find(tr => /muster/i.test(tr.cells[1].textContent));
     out.namenGetrennt = /Muster/i.test(t0.cells[1].querySelector('.inv-l1').textContent) && /Rita/.test(t0.cells[1].querySelector('.inv-l2').textContent) && !/Rita/.test(t0.cells[1].querySelector('.inv-l1').textContent);
-    const paid = rows.find(tr => tr.dataset.nr === c.nr); out.bezahltDatum = /\d{2}\.\d{2}\.\d{4}/.test(paid.cells[2].querySelector('.inv-l2').textContent);
+    const paid = rows.find(tr => tr.dataset.nr === c.nr); out.bezahltDatum = /^\d{2}\.\d{2}\.\d{2}\s*✓?$/.test(paid.cells[2].querySelector('.inv-l2').textContent.trim());
     const open = rows.find(tr => tr.dataset.nr === a.nr); out.offen = /Offen/i.test(open.cells[2].querySelector('.inv-l2').textContent);
     const sb = invoices.find(i => i.stornoFor === b.nr);
     const rs = rows.find(tr => tr.dataset.nr === sb.nr), ro = rows.find(tr => tr.dataset.nr === b.nr);

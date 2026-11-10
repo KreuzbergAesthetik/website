@@ -719,7 +719,7 @@ function renderInvoices() {
     if (i.storniert || i.kind === 'kv') {
       payDate.textContent = i.storniert ? 'Storniert' : 'Kostenvoranschlag';
     } else if (st.full) {
-      payDate.textContent = paidDate ? fmtD(paidDate) : 'Bezahlt';
+      payDate.textContent = paidDate ? fmtD(paidDate).replace(/^(\d{2}\.\d{2}\.)\d{2}(\d{2})$/, '$1$2') : 'Bezahlt';
       var tick = mk('span', 'inv-pay-tick', '✓'); tick.setAttribute('aria-label', 'Bezahlt'); payDate.appendChild(tick);
     } else {
       payDate.textContent = st.txt === 'Teilzahlung' ? 'Teilzahlung' : 'Offen';
