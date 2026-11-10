@@ -685,39 +685,8 @@ window.addEventListener('resize', function () { invPairFrames(); });
 try { new ResizeObserver(function () { invPairFrames(); }).observe(document.getElementById('inv-table')); } catch (x) {}
 /* Briefsymbol in der Kopfzeile: alle, nur versendete, nur nicht versendete */
 function invSendCycle(ev) { if (ev) ev.stopPropagation(); invSendF = invSendF === '' ? 'ja' : invSendF === 'ja' ? 'nein' : ''; renderInvoices(); }
-function renderInvoices() {
-  renderEntw();
-  var tb = document.getElementById('inv-table'); if (!tb) return;
-  tb.innerHTML = '';
-  [].forEach.call(document.querySelectorAll('[data-ik]'), function (e) { e.innerHTML = e.getAttribute('data-ik') === invSort.k ? (invSort.dir > 0 ? '&#9650;' : '&#9660;') : ''; });
-  var billingList = invoices.concat(entw.filter(function (e) { return e.kind === 'kv'; }));
-  document.getElementById('inv-empty').style.display = billingList.length ? 'none' : 'block';
-  var ob = document.getElementById('inv-open'); if (ob) { ob.innerHTML = ''; var bx = openBox(); if (bx) ob.appendChild(bx); }
-  var fb0 = document.getElementById('inv-flt'); if (fb0) { fb0.classList.toggle('on', invPer.k !== 'alle'); fb0.title = invPer.k === 'alle' ? 'Zeitraum der Anzeige wählen' : 'Zeitraum: ' + invPerText(); }
-  /* Filter und Suche */
-  var inR = billingList.filter(invInRange), cnt = { '': inR.length, offen: 0, ueberfaellig: 0, bezahlt: 0, storno: 0, kv: 0 };
-  inR.forEach(function (i) { var k = invKind(i); cnt[k]++; if (k === 'ueberfaellig') cnt.offen++; });
-  var sg = document.getElementById('inv-seg'); sg.innerHTML = '';
-  [['', 'Alle'], ['offen', 'Offen'], ['ueberfaellig', 'Überfällig'], ['bezahlt', 'Bezahlt'], ['storno', 'Storno'], ['kv', 'KV']].forEach(function (f) {
-    var bt = mk('button', 'za-b' + (invF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(cnt[f[0]])));
-    bt.onclick = function () { invF = (invF === f[0]) ? '' : f[0]; renderInvoices(); }; sg.appendChild(bt);
-  });
-  var eb = document.getElementById('inv-send-flt'); if (eb) {
-    var sc = { ja: 0, nein: 0 };
-    inR.forEach(function (i) { if (i.kind === 'kv') return; if (invSent(i)) sc.ja++; else sc.nein++; });
-    eb.classList.toggle('on', !!invSendF); eb.classList.toggle('nein', invSendF === 'nein');
-    eb.title = invSendF === 'ja' ? 'Nur versendete (' + sc.ja + '). Tippen: nur nicht versendete' : invSendF === 'nein' ? 'Nur nicht versendete (' + sc.nein + '). Tippen: alle anzeigen' : 'Versandstatus filtern. Tippen: nur versendete (' + sc.ja + ')';
-    eb.setAttribute('aria-label', eb.title);
-  }
-  var q = (document.getElementById('inv-q').value || '').trim().toLowerCase();
-  var shown = inR.filter(function (i) {
-    var k = invKind(i);
-    if (invSendF && (i.kind === 'kv' || (invSendF === 'ja') !== invSent(i))) return false;
-    if (invF === 'offen' && k !== 'offen' && k !== 'ueberfaellig') return false; if (invF && invF !== 'offen' && k !== invF) return false;
-    return !q || ((i.kind === 'kv' ? 'KV Kostenvoranschlag ' : '') + i.nr + ' ' + i.name + ' ' + eur(i.total) + ' ' + fmtD(i.date) + ' ' + String(i.total).replace('.', ',')).toLowerCase().indexOf(q) >= 0;
-  });
-  if (!shown.length && billingList.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
-  shown.sort(invCmp).forEach(function (i) {
+/* Eine Rechnungszeile (Rechnungen und offene Posten in Zahlungen); zl = in Zahlungen: mit Zahlungs-Symbol */
+function invRowBuild(tb, i, zl) {
     var row = tb.insertRow(); row.className = i.kind === 'kv' ? 't-kv' : (i.storniert || i.stornoFor) ? 't-storno' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell();
     var fd = fmtD(i.date), st = invState(i), late = !st.full && invLate(i);
@@ -772,9 +741,45 @@ function renderInvoices() {
         else viewInvoice(i.id);
       } else openPay();
     };
-    c2.appendChild(payBtn);
+    if (zl) {
+      var wr = mk('div', 'zl-payrow'), pi = mk('button', 'inv-pay-ico'); pi.type = 'button'; pi.innerHTML = tvSvg('euro'); pi.title = 'Zahlung erfassen'; pi.setAttribute('aria-label', 'Zahlung erfassen');
+      pi.onclick = function (ev) { ev.stopPropagation(); viewInvId = i.id; openPay(); }; wr.appendChild(payBtn); wr.appendChild(pi); c2.appendChild(wr);
+    } else c2.appendChild(payBtn);
     c0.className = 'nw'; c2.className = 'nw';
+}
+function renderInvoices() {
+  renderEntw();
+  var tb = document.getElementById('inv-table'); if (!tb) return;
+  tb.innerHTML = '';
+  [].forEach.call(document.querySelectorAll('[data-ik]'), function (e) { e.innerHTML = e.getAttribute('data-ik') === invSort.k ? (invSort.dir > 0 ? '&#9650;' : '&#9660;') : ''; });
+  var billingList = invoices.concat(entw.filter(function (e) { return e.kind === 'kv'; }));
+  document.getElementById('inv-empty').style.display = billingList.length ? 'none' : 'block';
+  var ob = document.getElementById('inv-open'); if (ob) { ob.innerHTML = ''; var bx = openBox(); if (bx) ob.appendChild(bx); }
+  var fb0 = document.getElementById('inv-flt'); if (fb0) { fb0.classList.toggle('on', invPer.k !== 'alle'); fb0.title = invPer.k === 'alle' ? 'Zeitraum der Anzeige wählen' : 'Zeitraum: ' + invPerText(); }
+  /* Filter und Suche */
+  var inR = billingList.filter(invInRange), cnt = { '': inR.length, offen: 0, ueberfaellig: 0, bezahlt: 0, storno: 0, kv: 0 };
+  inR.forEach(function (i) { var k = invKind(i); cnt[k]++; if (k === 'ueberfaellig') cnt.offen++; });
+  var sg = document.getElementById('inv-seg'); sg.innerHTML = '';
+  [['', 'Alle'], ['offen', 'Offen'], ['ueberfaellig', 'Überfällig'], ['bezahlt', 'Bezahlt'], ['storno', 'Storno'], ['kv', 'KV']].forEach(function (f) {
+    var bt = mk('button', 'za-b' + (invF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(cnt[f[0]])));
+    bt.onclick = function () { invF = (invF === f[0]) ? '' : f[0]; renderInvoices(); }; sg.appendChild(bt);
   });
+  var eb = document.getElementById('inv-send-flt'); if (eb) {
+    var sc = { ja: 0, nein: 0 };
+    inR.forEach(function (i) { if (i.kind === 'kv') return; if (invSent(i)) sc.ja++; else sc.nein++; });
+    eb.classList.toggle('on', !!invSendF); eb.classList.toggle('nein', invSendF === 'nein');
+    eb.title = invSendF === 'ja' ? 'Nur versendete (' + sc.ja + '). Tippen: nur nicht versendete' : invSendF === 'nein' ? 'Nur nicht versendete (' + sc.nein + '). Tippen: alle anzeigen' : 'Versandstatus filtern. Tippen: nur versendete (' + sc.ja + ')';
+    eb.setAttribute('aria-label', eb.title);
+  }
+  var q = (document.getElementById('inv-q').value || '').trim().toLowerCase();
+  var shown = inR.filter(function (i) {
+    var k = invKind(i);
+    if (invSendF && (i.kind === 'kv' || (invSendF === 'ja') !== invSent(i))) return false;
+    if (invF === 'offen' && k !== 'offen' && k !== 'ueberfaellig') return false; if (invF && invF !== 'offen' && k !== invF) return false;
+    return !q || ((i.kind === 'kv' ? 'KV Kostenvoranschlag ' : '') + i.nr + ' ' + i.name + ' ' + eur(i.total) + ' ' + fmtD(i.date) + ' ' + String(i.total).replace('.', ',')).toLowerCase().indexOf(q) >= 0;
+  });
+  if (!shown.length && billingList.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
+  shown.sort(invCmp).forEach(function (i) { invRowBuild(tb, i); });
   /* Stornorechnung und ursprüngliche Rechnung gehören sichtbar zusammen */
   var pairNeeded = false;
   var rowByNr = {}; [].forEach.call(tb.rows, function (r) { if (r.dataset.nr) rowByNr[r.dataset.nr] = r; });
