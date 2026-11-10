@@ -651,6 +651,22 @@ async function toggleInvoiceSent() {
   i.sentAt = wasSent ? null : Date.now();
   persist(); viewInvoice(i.id); renderInvoices();
 }
+/* Rahmen um Storno und Original: liegt als eigene Ebene über der Karte, die Karte selbst bleibt durchgehend */
+function invPairFrames() {
+  var sc = document.querySelector('#tab-rechnungen .scroll'); if (!sc) return;
+  [].forEach.call(sc.querySelectorAll('.inv-pair-frame'), function (e) { e.remove(); });
+  sc.style.position = 'relative';
+  [].forEach.call(document.querySelectorAll('#inv-table tr.pair-top'), function (t) {
+    var z = t.nextElementSibling; if (!z || !z.classList.contains('pair-bot')) return;
+    var sr = sc.getBoundingClientRect(), a = t.getBoundingClientRect(), c = z.getBoundingClientRect(); if (!a.height) return;
+    var d = mk('div', 'inv-pair-frame');
+    d.style.left = (a.left - sr.left + sc.scrollLeft + 4) + 'px'; d.style.width = (a.width - 8) + 'px';
+    d.style.top = (a.top - sr.top + sc.scrollTop - 1) + 'px'; d.style.height = (c.bottom - a.top + 2) + 'px';
+    sc.appendChild(d);
+  });
+}
+window.addEventListener('resize', function () { invPairFrames(); });
+try { new ResizeObserver(function () { invPairFrames(); }).observe(document.getElementById('inv-table')); } catch (x) {}
 /* Briefsymbol in der Kopfzeile: alle, nur versendete, nur nicht versendete */
 function invSendCycle(ev) { if (ev) ev.stopPropagation(); invSendF = invSendF === '' ? 'ja' : invSendF === 'ja' ? 'nein' : ''; renderInvoices(); }
 function renderInvoices() {
@@ -742,6 +758,7 @@ function renderInvoices() {
     c0.className = 'nw'; c2.className = 'nw';
   });
   /* Stornorechnung und ursprüngliche Rechnung gehören sichtbar zusammen */
+  var pairNeeded = false;
   var rowByNr = {}; [].forEach.call(tb.rows, function (r) { if (r.dataset.nr) rowByNr[r.dataset.nr] = r; });
   shown.forEach(function (i) {
     if (!i.stornoFor || !rowByNr[i.nr] || !rowByNr[i.stornoFor]) return;
@@ -750,8 +767,9 @@ function renderInvoices() {
       x[0].classList.add('t-link');
       var m = x[0].querySelector('.inv-number-meta'); if (m) { var l = mk('span', 'inv-link'); l.title = x[1]; l.setAttribute('aria-label', x[1]); l.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>'; m.appendChild(l); }
     });
-    if (sr.nextElementSibling === or) { sr.classList.add('pair-top'); or.classList.add('pair-bot'); }
-    else if (or.nextElementSibling === sr) { or.classList.add('pair-top'); sr.classList.add('pair-bot'); }
+    if (sr.nextElementSibling === or) { sr.classList.add('pair-top'); or.classList.add('pair-bot'); pairNeeded = true; }
+    else if (or.nextElementSibling === sr) { or.classList.add('pair-top'); sr.classList.add('pair-bot'); pairNeeded = true; }
   });
+  invPairFrames();
 }
 /* Rechnungsversand: kleine Kennzeichnung neben der Rechnungsnummer */
