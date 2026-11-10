@@ -42,19 +42,25 @@ try {
     const txt = a.items.map(i => i.s);
     out.text = ['Kreuzberg Ästhetik', 'Manuel Fella', 'Neuenburger Str. 24', '10969 Berlin', 'Frau', 'Erika Mustermann', 'Teststraße 12', '10999 Berlin'].every(t => txt.includes(t));
     const sender = a.items.find(i => i.s === 'Kreuzberg Ästhetik'), emp = a.items.find(i => i.s === 'Erika Mustermann');
-    out.lage = sender.x < 15 && sender.y < 20 && emp.x > 80 && emp.y > 45 && emp.y < 70;
+    out.lage = sender.x > 25 && sender.x < 40 && sender.y < 20 && emp.x > 90 && emp.x < 100 && emp.y > 55 && emp.y < 80;
     out.empfaengerImFeld = a.items.filter(i => ['Frau', 'Erika Mustermann', 'Teststraße 12', '10999 Berlin'].includes(i.s)).every(i => i.x + i.w <= 176 - 9);
     // lange Zeilen und Sonderzeichen: passt in die Seite, kein Abbruch
     const b = await info(p2);
-    out.lang = b.items.filter(i => i.x > 80 && i.s).every(i => i.x + i.w <= 176 - 9) && b.items.some(i => /^Dr\./.test(i.s));
-    out.umbruch = b.items.filter(i => i.x > 80 && i.s).length >= 5 && !b.items.some(i => /\?/.test(i.s)) && b.items.some(i => /Sahin-Ünalçioglu/.test(i.s)) && b.items.some(i => i.s === 'Beispiel-Musterhausen-Langername');
+    out.lang = b.items.filter(i => i.x > 90 && i.s).every(i => i.x + i.w <= 176 - 9) && b.items.some(i => /^Dr\./.test(i.s));
+    out.umbruch = b.items.filter(i => i.x > 90 && i.s).length >= 5 && !b.items.some(i => /\?/.test(i.s)) && b.items.some(i => /Sahin-Ünalçioglu/.test(i.s)) && b.items.some(i => i.s === 'Beispiel-Musterhausen-Langername');
+    // Logo: Bild auf der Seite, links oben im Absenderbereich
+    { const bytes = await umschlagPdf(p1), pdf = await pdfjsLib.getDocument({ data: bytes }).promise, pg = await pdf.getPage(1), ol = await pg.getOperatorList();
+      out.logo = ol.fnArray.some(f => f === pdfjsLib.OPS.paintImageXObject || f === pdfjsLib.OPS.paintInlineImageXObject); }
+    // Ohne Logo-Datei: Umschlag entsteht trotzdem, Text beginnt am linken Rand
+    { const keep = umschlagLogoBytes; umschlagLogoBytes = false; const c = await info(p1); umschlagLogoBytes = keep;
+      const s0 = c.items.find(i => i.s === 'Kreuzberg Ästhetik'); out.ohneLogo = s0.x < 15 && c.items.some(i => i.s === 'Erika Mustermann'); }
     // Dateiname
     out.datei = umschlagFile(p1) === 'Umschlag-B6-Mustermann-Erika.pdf';
     // Menü: Eintrag vorhanden und Aktion löst Download aus
     out.menue = AM_GROUPS.some(g => g.items.some(it => it[0] === 'umschlag' && /B6/.test(it[2])));
     return out;
   });
-  for (const k of ['zeilen', 'ohneAnrede', 'ohneAnschrift', 'format', 'text', 'lage', 'empfaengerImFeld', 'lang', 'umbruch', 'datei', 'menue']) assert.equal(r[k], true, 'Briefumschlag: ' + k + ' ' + JSON.stringify(r));
+  for (const k of ['zeilen', 'logo', 'ohneLogo', 'ohneAnrede', 'ohneAnschrift', 'format', 'text', 'lage', 'empfaengerImFeld', 'lang', 'umbruch', 'datei', 'menue']) assert.equal(r[k], true, 'Briefumschlag: ' + k + ' ' + JSON.stringify(r));
 
   // Download über die Aktion im Aktionsmenü
   const dl = page.waitForEvent('download', { timeout: 15000 });
