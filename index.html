@@ -930,11 +930,17 @@ body { padding-bottom:84px; }
 .inv-send-flt.nein .sl { display:inline; }
 .inv-link { display:inline-flex; color:#7c3aed; margin-left:2px; cursor:help; }
 /* Rechnungsliste im Stil der Patientenakte: Karte mit getönter Fläche, durchgehender Farbstrich links, feine Trennlinien */
-#tab-rechnungen .scroll { background:#f1f4f8; border:1px solid #d5dde7; border-radius:16px; padding:4px 14px 0; overflow-x:auto; overflow-y:hidden; }
-#tab-rechnungen .scroll .pt thead th { border-bottom:1px solid #d5dde7; background:transparent; }
-#inv-table tr:not(.t-late) td { background-color:transparent; }
+#tab-rechnungen .scroll { background:none; border:0; padding:0; overflow-x:auto; }
+#tab-rechnungen .scroll .pt { border-collapse:separate; border-spacing:0; }
+#tab-rechnungen .scroll .pt thead th { border-bottom:1px solid #d5dde7; background:#fff; padding-bottom:8px; }
+/* Kopfzeile weiß mit grauem Strich, die Zeilen darunter in einer grauen, abgerundeten Karte */
+#inv-table::before { content:''; display:table-row; height:10px; }
+#inv-table tr:not(.t-late) td { background-color:#f1f4f8; }
+#inv-table td:first-child { padding-left:16px !important; } #inv-table td:last-child { padding-right:16px !important; }
+#inv-table tr:first-child td:first-child { border-top-left-radius:16px; } #inv-table tr:first-child td:last-child { border-top-right-radius:16px; }
+#inv-table tr:last-child td:first-child { border-bottom-left-radius:16px; } #inv-table tr:last-child td:last-child { border-bottom-right-radius:16px; }
 #inv-table td { border-bottom:0; background-image:linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; background-origin:border-box; background-clip:border-box; }
-#inv-table td:first-child { box-shadow:none; padding-left:4px !important; }
+#inv-table td:first-child { box-shadow:none; }
 /* Reihenfolge: Nummer und Datum, dann der Farbstrich, dann Name, dann Betrag */
 #inv-table td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
 #inv-table tr:last-child { --sep:transparent; }
