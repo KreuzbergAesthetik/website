@@ -758,6 +758,8 @@ function renderInvoices() {
       payDate.textContent = st.txt === 'Teilzahlung' ? 'Teilzahlung' : 'Offen';
       var cross = mk('span', 'inv-pay-cross'); cross.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 10v4.2"/><path d="M12 17.2v.1"/></svg>'; cross.setAttribute('aria-label', 'Nicht vollständig bezahlt'); payDate.appendChild(cross);
     }
+    var ws = mk('span', 'inv-w inv-w-sent', i.kind === 'kv' ? '' : !invSent(i) ? '–' : typeof i.sentAt === 'number' ? fmtD(iso(new Date(i.sentAt))).replace(/^(\d{2}\.\d{2}\.)\d{2}(\d{2})$/, '$1$2') : 'Ja');
+    payBtn.appendChild(ws);
     payBtn.appendChild(payDate);
     payBtn.title = i.kind === 'kv' || i.storniert ? 'Dokument öffnen' : st.full ? 'Zahlung bearbeiten' : 'Zahlung erfassen';
     payBtn.onclick = function () {
