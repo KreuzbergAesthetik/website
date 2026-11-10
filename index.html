@@ -2562,7 +2562,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-11-a';
+var KA_V = '2026-11-11-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -2783,6 +2783,11 @@ function flagsMap() {
     var q = m.byId[p.id]; if (!q.next || t < q.nextT) { q.next = e; q.nextT = t; }
   });
   Object.keys(m.byId).forEach(function (k) { var q = m.byId[k]; if (q.next && q.next.date <= remLim && !bestLast(patients.filter(function (x) { return String(x.id) === k; })[0] || {}, 'termin:' + q.next.id, 'sent')) q.rem = q.next; });
+  /* Wiedervorstellung: ab dem empfohlenen Datum erinnern, solange kein zukünftiger Termin gebucht ist. */
+  Object.keys(m.byId).forEach(function (k) {
+    var q = m.byId[k], p = patients.filter(function (x) { return String(x.id) === k; })[0];
+    if (p && p.wiedervorstellung && p.wiedervorstellung <= tdy && !q.next) q.wieder = p.wiedervorstellung;
+  });
   Object.keys(m.byId).forEach(function (k) { m.byId[k].unb.sort(function (a, b) { return (b.date + b.time).localeCompare(a.date + a.time); }); });
   m.get = function (p) { return (p && m.byId[p.id]) || { todos: [], unb: [] }; };
   FLC = m; FLT = now; return m;
@@ -2799,17 +2804,29 @@ function anamConfirm(p) {
   bestAdd(p, 'anamnese', 'vorOrt'); p.log = p.log || []; p.log.push({ ts: Date.now(), type: 'notiz', text: 'Anamnese vor Ort bestätigt' });
   persist(); renderUnterlagen(); if (curP === p) { renderHead(); renderVerlauf(); }
 }
+function setWiedervorstellung(p, date) {
+  var old = p.wiedervorstellung || '', v = String(date || '').trim();
+  if (old === v) return;
+  if (v) p.wiedervorstellung = v; else delete p.wiedervorstellung;
+  auditOne(p, 'Behandlungsplanung', 'Empfohlene Wiedervorstellung', old ? fmtD(old) : '[nicht festgelegt]', v ? fmtD(v) : '[entfernt]');
+  persist(); if (curP === p) { renderHead(); renderFlags(); } renderPatients();
+}
+function openWiedervorstellungTermin(p) {
+  curP = p; openTermin(p.wiedervorstellung || iso(new Date()), '11:30', true);
+}
 function evFlag(e) { var m = flagsMap(), p = eventPatient(e); return p && m.get(p).todos.length ? '<span class="evfl" title="Offenes To-Do">!</span>' : ''; }
 function flagPills(p, noTodo) {
   var f = flagsMap().get(p), out = [];
   if (f.todos.length && !noTodo) { var a = mk('span', 'fl fl-red', 'To-Do' + (f.todos.length > 1 ? ' ×' + f.todos.length : '')); a.title = f.todos.map(function (t) { return t.text; }).join('\n'); out.push(a); }
   if (f.unb.length) { var b = mk('span', 'fl fl-blue fl-ico'); b.innerHTML = tvSvg('euro'); b.title = 'Rechnung offen: vergangene Termine ohne Rechnung (' + f.unb.length + ')'; b.setAttribute('aria-label', 'Rechnung offen'); out.push(b); }
   if (f.anam) { var c = mk('span', 'fl fl-amb', 'Anamnese'); c.title = anamText(f.anam.info) + ' · Termin ' + fmtTermin(f.anam.e); out.push(c); }
+  if (f.wieder) { var w = mk('span', 'fl fl-orange', 'Wiedervorstellung'); w.title = 'Wiedervorstellung fehlt · empfohlen ' + fmtD(f.wieder); out.push(w); }
   return out;
 }
 function flagItems(p) {
   var f = flagsMap().get(p), out = [];
   if (f.anam) out.push({ cls: 'fl-amb', label: anamText(f.anam.info), menu: [['Per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', fillPlatzhalter(ANAM_TXT, p)); }], ['Vor Ort bestätigt (heute)', function () { anamConfirm(p); }]] });
+  if (f.wieder) out.push({ cls: 'fl-orange', label: 'Wiedervorstellung fehlt · empfohlen ' + fmtD(f.wieder), menu: [['Termin vereinbaren', function () { openWiedervorstellungTermin(p); }], ['Empfehlung entfernen', function () { setWiedervorstellung(p, ''); }]] });
   if (f.rem) {
     var re = f.rem, rtx = fillPlatzhalter('{AnredeInformell},\n\nich erinnere Dich an Deinen Termin am ' + fmtD(re.date) + ' um ' + re.time + ' Uhr bei Kreuzberg Ästhetik.\n\nSolltest Du den Termin nicht wahrnehmen können, gib mir bitte rechtzeitig Bescheid.\n\nManuel - Kreuzberg Ästhetik', p);
     var rmark = function () { bestAdd(p, 'termin:' + re.id, 'sent'); p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: 'Terminerinnerung gesendet für ' + fmtTermin(re) }]); persist(); if (curP === p) { renderVerlauf(); renderHead(); } };
@@ -5772,6 +5789,19 @@ function renderHead() {
   if (p.email) { var l2 = mk('div', 'tl-ln'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); kt.appendChild(l2); }
   if (p.honorarVom) kt.appendChild(mk('div', '', 'Honorarvereinbarung vom ' + p.honorarVom));
   tiles.appendChild(kt);
+  tiles.appendChild(tileBox('wiedervorstellung', 'Wiedervorstellung', '', function (t, ed) {
+    if (!ed) {
+      var v = p.wiedervorstellung || '';
+      var tx = mk('div', 'a-txt', v ? 'Empfohlen am ' + fmtD(v) : 'Keine Wiedervorstellung geplant');
+      if (!v) tx.style.color = '#94a3b8'; t.appendChild(tx); return;
+    }
+    var inp = mk('input', 'form-control'); inp.type = 'date'; inp.id = 'a-wieder-in'; inp.value = p.wiedervorstellung || ''; t.appendChild(inp);
+    var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
+    var rm = mk('button', 'btn btn-cancel', 'Entfernen'); rm.type = 'button'; rm.style.marginRight = 'auto'; rm.onclick = function () { tileEdit = ''; setWiedervorstellung(p, ''); };
+    var cb = mk('button', 'btn btn-cancel', 'Abbrechen'); cb.type = 'button'; cb.onclick = function () { tileEdit = ''; renderHead(); };
+    var sv = mk('button', 'btn btn-save', 'Speichern'); sv.type = 'button'; sv.onclick = function () { var v = inp.value; if (!v) { alert('Bitte ein Datum wählen oder „Entfernen“ verwenden.'); return; } tileEdit = ''; setWiedervorstellung(p, v); };
+    fb.appendChild(rm); fb.appendChild(cb); fb.appendChild(sv); t.appendChild(fb);
+  }));
   tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));
   tiles.appendChild(tileBox('med', 'Medikation', 'a-wide', function (t, ed) {
     var list = p.medikation || [];
