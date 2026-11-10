@@ -130,7 +130,7 @@ function renderLeist() {
     var i = all.indexOf(k), row = tb.insertRow(), c = [0, 1, 2, 3, 4, 5].map(function () { return row.insertCell(); });
     c[0].textContent = k.id; c[0].style.color = '#64748b';
     var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c[1].appendChild(b);
-    c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); var gn = mk('span', 'ls-gn', kc.name); c[2].appendChild(gn); } else c[2].textContent = '-';
+    c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { row.style.setProperty('--bar', kc.color); var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); var gn = mk('span', 'ls-gn', kc.name); c[2].appendChild(gn); } else c[2].textContent = '-';
     c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %'; c[5].textContent = k.dauer ? k.dauer + ' min' : '-';
   });
   if (all.length && !list.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 6; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }

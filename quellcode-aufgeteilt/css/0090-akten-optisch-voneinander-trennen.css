@@ -1,5 +1,5 @@
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
-#tab-patienten .pt { border-collapse:separate; border-spacing:0 5px; }
+#tab-patienten .pt { border-collapse:separate; border-spacing:0; }
 #tab-patienten .pt tbody td { background:#f6f8fb; border-top:1px solid #dbe2ea; border-bottom:1px solid #dbe2ea; padding-top:5px; padding-bottom:5px; vertical-align:top; }
 #tab-patienten .pt tbody td:first-child { border-left:1px solid #dbe2ea; border-radius:10px 0 0 10px; }
 #tab-patienten .pt tbody td.pc-er { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; }

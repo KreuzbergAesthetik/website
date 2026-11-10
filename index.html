@@ -638,7 +638,7 @@ body { overflow-x:clip; }
 .pt-dot { width:8px; height:8px; border-radius:50%; } .pt-dot.d-todo { background:#dc2626; } .pt-dot.d-inv { background:#1e3a8a; } .pt-dot.d-anam { background:#94a3b8; } .pt-dot.d-rem { background:#ea580c; } .pt-dot.d-next { background:#16a34a; } .pt-dot.d-send { background:#eab308; }
 .pt-leg { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#64748b; margin:2px 0 10px; } .pt-leg i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
 /* Akten optisch voneinander trennen: jede Zeile als eigene Karte */
-#tab-patienten .pt { border-collapse:separate; border-spacing:0 5px; }
+#tab-patienten .pt { border-collapse:separate; border-spacing:0; }
 #tab-patienten .pt tbody td { background:#f6f8fb; border-top:1px solid #dbe2ea; border-bottom:1px solid #dbe2ea; padding-top:5px; padding-bottom:5px; vertical-align:top; }
 #tab-patienten .pt tbody td:first-child { border-left:1px solid #dbe2ea; border-radius:10px 0 0 10px; }
 #tab-patienten .pt tbody td.pc-er { border-right:1px solid #dbe2ea; border-radius:0 10px 10px 0; }
@@ -960,16 +960,21 @@ body { padding-bottom:84px; }
 .inv-link { display:inline-flex; color:#94a3b8; margin-left:2px; cursor:help; }
 /* Listen-Design wie Rechnungen und Patientenakte, für die Tabellen der Hauptseiten: Kopfzeile weiß mit grauem Strich, Zeilen in grauer, abgerundeter Karte mit feinem Rand und eingerückten Trennlinien.
    Der Kartenrand liegt als eigene Ebene darüber (listFrames), damit er auch bei ausgeblendeten Spalten stimmt. */
-#tab-zahlungen .scroll > table.pt, #tab-leistungen .scroll > table.pt, #tab-lager .scroll > table.pt, #tab-statistik .scroll > table.pt { border-collapse:separate; border-spacing:0; }
-#tab-zahlungen .scroll > table.pt thead th, #tab-leistungen .scroll > table.pt thead th, #tab-lager .scroll > table.pt thead th, #tab-statistik .scroll > table.pt thead th { background:#fff; border-bottom:1px solid #d5dde7; padding-bottom:8px; }
-#tab-zahlungen .scroll > table.pt tbody::before, #tab-leistungen .scroll > table.pt tbody::before, #tab-lager .scroll > table.pt tbody::before, #tab-statistik .scroll > table.pt tbody::before { content:''; display:table-row; height:10px; }
-#tab-zahlungen .scroll > table.pt tbody td, #tab-leistungen .scroll > table.pt tbody td, #tab-lager .scroll > table.pt tbody td, #tab-statistik .scroll > table.pt tbody td { background-color:#f1f4f8; border-top:0; border-bottom:0; background-image:linear-gradient(#e2e8f0, #e2e8f0); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; }
-#tab-zahlungen .scroll > table.pt tbody tr:hover td, #tab-leistungen .scroll > table.pt tbody tr:hover td, #tab-lager .scroll > table.pt tbody tr:hover td, #tab-statistik .scroll > table.pt tbody tr:hover td { background-color:#eaeef4; }
-#tab-zahlungen .scroll > table.pt tbody tr:last-child td, #tab-leistungen .scroll > table.pt tbody tr:last-child td, #tab-lager .scroll > table.pt tbody tr:last-child td, #tab-statistik .scroll > table.pt tbody tr:last-child td { background-image:none; }
-#tab-zahlungen .scroll > table.pt tbody td:first-child, #tab-leistungen .scroll > table.pt tbody td:first-child, #tab-lager .scroll > table.pt tbody td:first-child, #tab-statistik .scroll > table.pt tbody td:first-child { padding-left:14px; background-size:calc(100% - 14px) 1px; background-position:14px bottom; }
-#tab-zahlungen .scroll > table.pt tbody td:last-child, #tab-leistungen .scroll > table.pt tbody td:last-child, #tab-lager .scroll > table.pt tbody td:last-child, #tab-statistik .scroll > table.pt tbody td:last-child { padding-right:14px; background-size:calc(100% - 14px) 1px; }
+#tab-zahlungen .scroll > table.pt, #tab-leistungen .scroll > table.pt, #tab-lager .scroll > table.pt, #tab-statistik .scroll > table.pt, #tab-patienten .scroll > table.pt { border-collapse:separate; border-spacing:0; }
+#tab-zahlungen .scroll > table.pt thead th, #tab-leistungen .scroll > table.pt thead th, #tab-lager .scroll > table.pt thead th, #tab-statistik .scroll > table.pt thead th, #tab-patienten .scroll > table.pt thead th { background:#fff; border-bottom:1px solid #d5dde7; padding-bottom:8px; }
+#tab-zahlungen .scroll > table.pt tbody::before, #tab-leistungen .scroll > table.pt tbody::before, #tab-lager .scroll > table.pt tbody::before, #tab-statistik .scroll > table.pt tbody::before, #tab-patienten .scroll > table.pt tbody::before { content:''; display:table-row; height:10px; }
+#tab-zahlungen .scroll > table.pt tbody td, #tab-leistungen .scroll > table.pt tbody td, #tab-lager .scroll > table.pt tbody td, #tab-statistik .scroll > table.pt tbody td, #tab-patienten .scroll > table.pt tbody td { background-color:#f1f4f8; border-top:0; border-bottom:0; background-image:linear-gradient(#e2e8f0, #e2e8f0); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; }
+#tab-zahlungen .scroll > table.pt tbody tr:hover td, #tab-leistungen .scroll > table.pt tbody tr:hover td, #tab-lager .scroll > table.pt tbody tr:hover td, #tab-statistik .scroll > table.pt tbody tr:hover td, #tab-patienten .scroll > table.pt tbody tr:hover td { background-color:#eaeef4; }
+#tab-zahlungen .scroll > table.pt tbody tr:last-child td, #tab-leistungen .scroll > table.pt tbody tr:last-child td, #tab-lager .scroll > table.pt tbody tr:last-child td, #tab-statistik .scroll > table.pt tbody tr:last-child td, #tab-patienten .scroll > table.pt tbody tr:last-child td { background-image:none; }
+#tab-zahlungen .scroll > table.pt tbody td:first-child, #tab-leistungen .scroll > table.pt tbody td:first-child, #tab-lager .scroll > table.pt tbody td:first-child, #tab-statistik .scroll > table.pt tbody td:first-child, #tab-patienten .scroll > table.pt tbody td:first-child { padding-left:14px; background-size:calc(100% - 14px) 1px; background-position:14px bottom; }
+#tab-zahlungen .scroll > table.pt tbody td:last-child, #tab-leistungen .scroll > table.pt tbody td:last-child, #tab-lager .scroll > table.pt tbody td:last-child, #tab-statistik .scroll > table.pt tbody td:last-child, #tab-patienten .scroll > table.pt tbody td:last-child { padding-right:14px; background-size:calc(100% - 14px) 1px; }
 @media (max-width:520px) { #tab-leistungen .scroll > table.pt tbody td:nth-child(2) { padding-left:14px; background-size:calc(100% - 14px) 1px; background-position:14px bottom; } #tab-leistungen .scroll > table.pt tbody td:nth-child(4) { padding-right:14px; background-size:calc(100% - 14px) 1px; } #tab-leistungen .scroll > table.pt thead th:nth-child(2) { padding-left:14px; } #tab-leistungen .scroll > table.pt thead th:nth-child(4) { padding-right:14px; } }
 .list-frame { position:absolute; box-sizing:border-box; border:1px solid #d5dde7; border-radius:16px; box-shadow:0 0 0 7px #fff; pointer-events:none; z-index:1; }
+/* Patienten: eine gemeinsame Karte statt einzelner Zeilenkarten */
+#tab-patienten .scroll > table.pt tbody td, #tab-patienten .scroll > table.pt tbody td:first-child, #tab-patienten .scroll > table.pt tbody td.pc-er, #tab-patienten .scroll > table.pt tbody td:nth-child(2) { border:0; border-radius:0; padding-top:9px; padding-bottom:9px; }
+/* Farbstrich nach der ersten Spalte: Zahlungsart bei Zahlungen, Gruppe bei Leistungen */
+#tab-zahlungen .scroll > table.pt tbody tr td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(#e2e8f0, #e2e8f0); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
+#tab-zahlungen .scroll > table.pt tbody tr:last-child td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr:last-child td:nth-child(2) { background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)); background-size:3px 100%; background-position:left top; }
 .cal-plus svg, .inv-plus svg { width:22px; height:22px; }
 /* Praxis-Menü: jede Gruppe als eigene Karte mit Farbstreifen */
 .nav-menu { background:#eef2f7; padding:8px; }
@@ -2509,7 +2514,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-10-t';
+var KA_V = '2026-11-10-u';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -4003,7 +4008,7 @@ function renderLeist() {
     var i = all.indexOf(k), row = tb.insertRow(), c = [0, 1, 2, 3, 4, 5].map(function () { return row.insertCell(); });
     c[0].textContent = k.id; c[0].style.color = '#64748b';
     var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c[1].appendChild(b);
-    c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); var gn = mk('span', 'ls-gn', kc.name); c[2].appendChild(gn); } else c[2].textContent = '-';
+    c[2].style.whiteSpace = 'nowrap'; var kc = lkatOf(k); if (kc) { row.style.setProperty('--bar', kc.color); var dt = mk('span'); dt.style.cssText = 'display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; background:' + kc.color + ';'; c[2].appendChild(dt); var gn = mk('span', 'ls-gn', kc.name); c[2].appendChild(gn); } else c[2].textContent = '-';
     c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %'; c[5].textContent = k.dauer ? k.dauer + ' min' : '-';
   });
   if (all.length && !list.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 6; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
@@ -4674,7 +4679,7 @@ async function toggleInvoiceSent() {
 }
 /* Kartenrand um die Zeilen der Listen-Tabellen (Zahlungen, Leistungen, Lager, Statistik) */
 function listFrames() {
-  [].forEach.call(document.querySelectorAll('#tab-zahlungen .scroll, #tab-leistungen .scroll, #tab-lager .scroll, #tab-statistik .scroll'), function (sc) {
+  [].forEach.call(document.querySelectorAll('#tab-zahlungen .scroll, #tab-leistungen .scroll, #tab-lager .scroll, #tab-statistik .scroll, #tab-patienten .scroll'), function (sc) {
     [].forEach.call(sc.querySelectorAll(':scope > .list-frame'), function (e) { e.remove(); });
     var tb = sc.querySelector(':scope > table.pt > tbody'); if (!tb || !tb.rows.length) return;
     var a = tb.rows[0].getBoundingClientRect(), z = tb.rows[tb.rows.length - 1].getBoundingClientRect(), r = sc.getBoundingClientRect(); if (!a.height || !a.width) return;
@@ -4685,7 +4690,7 @@ function listFrames() {
 var listFramesQ = false;
 function listFramesSoon() { if (listFramesQ) return; listFramesQ = true; requestAnimationFrame(function () { listFramesQ = false; listFrames(); }); }
 window.addEventListener('resize', listFramesSoon);
-try { var lfRO = new ResizeObserver(listFramesSoon); [].forEach.call(document.querySelectorAll('#tab-zahlungen .scroll > table.pt > tbody, #tab-leistungen .scroll > table.pt > tbody, #tab-lager .scroll > table.pt > tbody, #tab-statistik .scroll > table.pt > tbody'), function (t) { lfRO.observe(t); }); } catch (x) {}
+try { var lfRO = new ResizeObserver(listFramesSoon); [].forEach.call(document.querySelectorAll('#tab-zahlungen .scroll > table.pt > tbody, #tab-leistungen .scroll > table.pt > tbody, #tab-lager .scroll > table.pt > tbody, #tab-statistik .scroll > table.pt > tbody, #tab-patienten .scroll > table.pt > tbody'), function (t) { lfRO.observe(t); }); } catch (x) {}
 /* Rahmen um Storno und Original: liegt als eigene Ebene über der Karte, die Karte selbst bleibt durchgehend */
 function invPairFrames() {
   var sc = document.querySelector('#tab-rechnungen .scroll'); if (!sc) return;
@@ -6748,7 +6753,7 @@ function renderZahlungen() {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
     var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 6) + zd.slice(8) + '</span>'; c0.className = 'nw'; c1.appendChild(nmEl(invNm(p.inv))); c4.className = 'nw';
     var b = mk('button', 'pn'); b.type = 'button'; var nrm = /^(.*?-)(\d+)$/.exec(String(p.inv.nr || '')); if (nrm) { b.appendChild(document.createTextNode(nrm[1])); b.appendChild(document.createElement('br')); b.appendChild(document.createTextNode(nrm[2])); } else b.textContent = p.inv.nr; b.style.lineHeight = '1.25'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
-    var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar);
+    row.style.setProperty('--bar', ZA_COL[p.art] || '#94a3b8'); var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar);
     c4.appendChild(mk('span', '', eur(p.amount)));
     row.style.cursor = 'pointer'; row.onclick = function (ev) { if (ev.target.closest('.pn')) return; openPayEdit(p.inv.id, p.ref); };
   });

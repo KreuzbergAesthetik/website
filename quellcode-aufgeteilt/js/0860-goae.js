@@ -653,7 +653,7 @@ async function toggleInvoiceSent() {
 }
 /* Kartenrand um die Zeilen der Listen-Tabellen (Zahlungen, Leistungen, Lager, Statistik) */
 function listFrames() {
-  [].forEach.call(document.querySelectorAll('#tab-zahlungen .scroll, #tab-leistungen .scroll, #tab-lager .scroll, #tab-statistik .scroll'), function (sc) {
+  [].forEach.call(document.querySelectorAll('#tab-zahlungen .scroll, #tab-leistungen .scroll, #tab-lager .scroll, #tab-statistik .scroll, #tab-patienten .scroll'), function (sc) {
     [].forEach.call(sc.querySelectorAll(':scope > .list-frame'), function (e) { e.remove(); });
     var tb = sc.querySelector(':scope > table.pt > tbody'); if (!tb || !tb.rows.length) return;
     var a = tb.rows[0].getBoundingClientRect(), z = tb.rows[tb.rows.length - 1].getBoundingClientRect(), r = sc.getBoundingClientRect(); if (!a.height || !a.width) return;
@@ -664,7 +664,7 @@ function listFrames() {
 var listFramesQ = false;
 function listFramesSoon() { if (listFramesQ) return; listFramesQ = true; requestAnimationFrame(function () { listFramesQ = false; listFrames(); }); }
 window.addEventListener('resize', listFramesSoon);
-try { var lfRO = new ResizeObserver(listFramesSoon); [].forEach.call(document.querySelectorAll('#tab-zahlungen .scroll > table.pt > tbody, #tab-leistungen .scroll > table.pt > tbody, #tab-lager .scroll > table.pt > tbody, #tab-statistik .scroll > table.pt > tbody'), function (t) { lfRO.observe(t); }); } catch (x) {}
+try { var lfRO = new ResizeObserver(listFramesSoon); [].forEach.call(document.querySelectorAll('#tab-zahlungen .scroll > table.pt > tbody, #tab-leistungen .scroll > table.pt > tbody, #tab-lager .scroll > table.pt > tbody, #tab-statistik .scroll > table.pt > tbody, #tab-patienten .scroll > table.pt > tbody'), function (t) { lfRO.observe(t); }); } catch (x) {}
 /* Rahmen um Storno und Original: liegt als eigene Ebene über der Karte, die Karte selbst bleibt durchgehend */
 function invPairFrames() {
   var sc = document.querySelector('#tab-rechnungen .scroll'); if (!sc) return;
