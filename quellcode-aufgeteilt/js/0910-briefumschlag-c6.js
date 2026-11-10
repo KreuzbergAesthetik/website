@@ -343,6 +343,17 @@ function hdH() { var h = document.querySelector('header'); if (h) document.docum
 window.addEventListener('resize', hdH);
 try { new ResizeObserver(hdH).observe(document.querySelector('header')); } catch (x) {}
 hdH();
+/* Rechte Akte-Karte: untere Ecken erst am Ende des Inhalts abrunden (Querformat, Karte scrollt selbst) */
+var akEdgeQ = false;
+function akEdgeUpdate() {
+  akEdgeQ = false;
+  var p = document.querySelector('#modal-akte.active .a-pane'); if (!p) return;
+  p.classList.toggle('ak-more', p.scrollHeight - p.scrollTop - p.clientHeight > 2);
+}
+function akEdgeSoon() { if (akEdgeQ) return; akEdgeQ = true; requestAnimationFrame(akEdgeUpdate); }
+document.addEventListener('scroll', function (e) { if (e.target && e.target.classList && e.target.classList.contains('a-pane')) akEdgeSoon(); }, true);
+window.addEventListener('resize', akEdgeSoon);
+try { new MutationObserver(akEdgeSoon).observe(document.getElementById('modal-akte'), { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] }); } catch (x) {}
 function setAkTab(t) {
   akTab = t; saveLast();
   ['akte', 'anl', 'fin'].forEach(function (k) { var el = document.getElementById('at-' + k), b = document.getElementById('atb-' + k); if (el) el.style.display = k === t ? 'block' : 'none'; if (b) b.className = k === t ? 'on' : ''; });

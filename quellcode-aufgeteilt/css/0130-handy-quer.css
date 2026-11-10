@@ -14,3 +14,20 @@
 
 .inv-send-indicator { display:flex; align-items:center; justify-content:center; width:max-content; margin:5px auto 0; color:#64748b; }
 .inv-cell-action { display:block; border:0; background:none; color:inherit; font:inherit; text-align:left; padding:8px 3px; width:100%; cursor:pointer; } .inv-cell-action:disabled { opacity:.65; cursor:default; } .inv-pay-action { text-align:right; } .inv-pay-action .pc-ds { display:block; font-size:11px; margin-top:3px; } .inv-send-indicator.is-sent { color:#64748b; }
+/* Untere schwebende Leiste: Suche immer offen, daneben Termin, Patient und Rechnung. In der Patientenakte liegen die Akte-Aktionen direkt darüber. */
+body { padding-bottom:84px; }
+.fab-col { left:auto; right:12px; width:min(560px, calc(100% - 24px)); flex-direction:row; align-items:center; gap:8px; pointer-events:none; }
+.fab-col > * { pointer-events:auto; }
+.fab-col .gs-bar, .gs-bar { display:flex; position:static; flex:1 1 0; min-width:0; height:46px; background:#fff; border:1px solid #c3cedf; border-radius:12px; box-shadow:0 3px 10px rgba(15,23,42,.34); padding:3px; }
+.fab-col .gs-bar .gs-box { min-height:0; height:100%; }
+.fab.fab-search { display:none; }
+.fab-col .gs-res { position:absolute; left:0; right:0; top:auto; bottom:calc(100% + 8px); }
+.a-fab { left:auto; right:12px; bottom:calc(74px + env(safe-area-inset-bottom)); transform:none; width:auto; max-width:calc(100% - 24px); z-index:44; }
+.a-fab .a-cats { flex:none; gap:6px; }
+/* Akte-Aktionen untereinander, rechts über der Leiste */
+.a-fab, body.akte-open .a-fab { flex-direction:column; align-items:flex-end; gap:6px; left:auto; right:12px; width:auto; max-width:none; }
+.a-fab .a-cats { flex-direction:column; flex:none; justify-content:flex-start; align-items:flex-end; gap:6px; }
+.a-fab .a-menu { top:auto; bottom:0; right:calc(100% + 10px); }
+@media (max-height:520px) { .a-cat, .plus-btn { width:40px; height:40px; } .a-fab, .a-fab .a-cats { gap:5px; } .a-fab { bottom:calc(70px + env(safe-area-inset-bottom)); } }
+.akte-page { padding-bottom:150px; }
+@media (orientation:landscape) and (min-width:700px) { .akte-page .a-pane { padding-bottom:132px; } }

@@ -1,0 +1,27 @@
+/* Rechnungen: zwei Zeilen je Eintrag (Nr., Nachname, Betrag / Datum, Vorname, bezahlt am oder offen), Briefsymbol als Filter, Storno-Verbindung */
+#inv-table td { vertical-align:top; padding-top:9px; padding-bottom:9px; }
+#inv-table .inv-l1 { display:block; line-height:22px; min-height:22px; font-size:15px; }
+#inv-table .inv-l2 { display:block; line-height:18px; min-height:18px; font-size:12.5px; color:#64748b; margin-top:1px; }
+#inv-table .inv-number-meta.inv-l2 { display:flex; margin-top:1px; }
+#inv-table .inv-cell-action { padding-top:0; padding-bottom:0; }
+#inv-table .inv-cell-action .inv-l1 b { font-weight:800; }
+#inv-table .inv-cell-action:not(.inv-pay-action) .inv-l2 { color:#0f172a; }
+.inv-send-flt { border:0; background:none; color:#b5bfcc; padding:0 4px; margin-left:4px; cursor:pointer; vertical-align:middle; line-height:1; border-radius:6px; }
+.inv-send-flt .sl { display:none; }
+.inv-send-flt.on { color:#1e3a8a; background:#e8eef9; }
+.inv-send-flt.nein .sl { display:inline; }
+.inv-link { display:inline-flex; color:#7c3aed; margin-left:2px; cursor:help; }
+/* Rechnungsliste im Stil der Patientenakte: Karte mit getönter Fläche, durchgehender Farbstrich links, feine Trennlinien */
+#tab-rechnungen .scroll { background:none; border:0; padding:0; overflow-x:auto; }
+#tab-rechnungen .scroll .pt { border-collapse:separate; border-spacing:0; }
+#tab-rechnungen .scroll .pt thead th { border-bottom:1px solid #d5dde7; background:#fff; padding-bottom:8px; }
+/* Kopfzeile weiß mit grauem Strich, die Zeilen darunter in einer grauen, abgerundeten Karte */
+#inv-table::before { content:''; display:table-row; height:10px; }
+#inv-table tr:not(.t-late) td { background-color:#f1f4f8; }
+#inv-table td:first-child { padding-left:16px !important; } #inv-table td:last-child { padding-right:16px !important; }
+#inv-table tr:first-child td:first-child { border-top-left-radius:16px; } #inv-table tr:first-child td:last-child { border-top-right-radius:16px; }
+#inv-table tr:last-child td:first-child { border-bottom-left-radius:16px; } #inv-table tr:last-child td:last-child { border-bottom-right-radius:16px; }
+/* Betragsspalte: Kopf, Betrag und Status enden alle an derselben rechten Linie */
+#inv-table td:nth-child(3), #tab-rechnungen .pt thead th:nth-child(3) { text-align:right; }
+#tab-rechnungen .pt thead th:nth-child(3) { padding-right:19px; }
+#inv-table .inv-pay-action, #inv-table .inv-pay-action .inv-l1, #inv-table .inv-pay-action .inv-l2 { text-align:right; }

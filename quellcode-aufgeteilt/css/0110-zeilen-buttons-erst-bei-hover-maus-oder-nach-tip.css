@@ -21,7 +21,7 @@ tr.ra-open .pt-wrap::after, tr.ra-open td::after, tr:focus-within .pt-wrap::afte
 .inv-number-meta .inv-send-indicator{display:inline-flex;width:auto;margin:0;line-height:1;color:#64748b;cursor:help}
 .inv-payment-meta{white-space:nowrap}
 .inv-pay-tick{color:#16a34a;font-weight:800;margin-left:4px;font-size:14px}
-.inv-pay-cross{color:#dc2626;font-weight:800;margin-left:4px;font-size:15px}
+.inv-pay-cross{color:#dc2626;font-weight:800;margin-left:4px;font-size:15px;display:inline-flex;vertical-align:-3px}
 #inv-table .inv-cell-action b{font-weight:700}
 /* Klar getrennte Bereiche im Rechnungsformular */
 #modal-inv .inv-form-card{border:1px solid #d9e2ec;background:#fff;border-radius:15px;padding:16px;margin:14px 0;box-shadow:0 2px 8px rgba(20,40,65,.035)}

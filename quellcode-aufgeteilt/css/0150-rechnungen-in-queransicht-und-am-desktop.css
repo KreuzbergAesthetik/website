@@ -1,0 +1,28 @@
+/* Rechnungen in Queransicht und am Desktop: alles in einer Zeile, dafür mehr Spalten (Nr., Datum, Name, Versendet, Status, Betrag) */
+.inv-w { display:none; }
+@media (min-width:700px) {
+  #inv-table .inv-l1, #inv-table .inv-l2 { display:inline-block; vertical-align:middle; margin-top:0; }
+  #inv-table td:first-child { white-space:nowrap; }
+  #inv-table td:first-child .pn.inv-l1 { width:118px; }
+  #inv-table .inv-number-meta.inv-l2 { display:inline-flex; width:96px; font-size:14px; }
+  #inv-table .inv-number-meta .pc-ds { display:inline; font-size:14px; color:#64748b; }
+  #tab-rechnungen .inv-wh-date { display:inline-block; margin-left:74px; }
+  #inv-table .inv-cell-action:not(.inv-pay-action) .inv-l2 { font-size:15px; }
+  #inv-table .inv-cell-action:not(.inv-pay-action) .inv-l2:not(:empty)::before { content:', '; }
+  #inv-table .inv-pay-action, #tab-rechnungen .inv-wrow { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+  #tab-rechnungen .inv-w { display:inline-block; }
+  #tab-rechnungen .inv-w-sent { order:1; width:86px; text-align:left; color:#64748b; font-size:14px; }
+  #inv-table .inv-pay-action .inv-l2, #tab-rechnungen .inv-w-st { order:2; width:112px; text-align:left; font-size:14px; }
+  #inv-table .inv-pay-action .inv-l1, #tab-rechnungen .inv-w-amt { order:3; width:112px; text-align:right; }
+  #tab-rechnungen thead .inv-w-sent { color:inherit; font-size:inherit; } #tab-rechnungen thead .inv-w-st { font-size:inherit; }
+  #inv-table td { padding-top:11px; padding-bottom:11px; }
+}
+/* Storno und zugehörige Rechnung: gemeinsamer Rahmen, der wie in der Patientenakte oben auf der Karte liegt */
+.inv-pair-frame { position:absolute; box-sizing:border-box; border:2px solid #a9b6c8; border-radius:14px; pointer-events:none; z-index:2; }
+.inv-card-frame { position:absolute; box-sizing:border-box; border:1px solid #d5dde7; border-radius:16px; pointer-events:none; z-index:1; }
+/* Trennlinien wie in der Akte: eingerückt, nicht bis an den Kartenrand */
+#inv-table td:first-child { background-size:calc(100% - 14px) 1px; background-position:14px bottom; }
+#inv-table td:last-child { background-size:calc(100% - 14px) 1px; background-position:left bottom; }
+#inv-table tr.pair-bot, #inv-table tr.pre-pair { --sep:transparent; }
+#inv-table td { border-bottom:0; background-image:linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; background-origin:border-box; background-clip:border-box; }
+#inv-table td:first-child { box-shadow:none; }
