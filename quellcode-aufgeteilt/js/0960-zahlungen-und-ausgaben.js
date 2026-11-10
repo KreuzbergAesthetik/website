@@ -21,7 +21,7 @@ function statBox(label, val, color) {
   var d = mk('div', 'hm-stat'); d.style.minWidth = '120px'; var l = mk('span', '', label); l.style.cssText = 'font-size:12px; color:#64748b;'; d.appendChild(l);
   var b = mk('b', '', val); if (color) b.style.color = color; d.appendChild(b); return d;
 }
-var ZA_COL = { Karte: '#2563eb', Bar: '#16a34a', 'Überweisung': '#7c3aed', PayPal: '#0ea5e9', Gutschein: '#db2777' };
+var ZA_COL = { Karte: '#3b82f6', Bar: '#22c55e', 'Überweisung': '#8b5cf6', PayPal: '#0ea5e9', Gutschein: '#ec4899' };
 /* Neue Zahlung von der Zahlungen-Seite: erst die Rechnung wählen, dann die übliche Maske */
 function zlAdd() {
   var l = invOpenInfo().list.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });

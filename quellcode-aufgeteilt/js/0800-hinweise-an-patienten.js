@@ -263,27 +263,30 @@ function renderPatients() {
     if (sub) { var dr = mk('div', 'pt-dr'); dr.appendChild(mk('span', 'pt-dob', sub)); c1.appendChild(dr); }
     var inv0 = em.last ? invoices.filter(function (i) { return i.eid === em.last.e.id || (i.pid === p.id && i.date === em.last.e.date); })[0] : null;
     if (em.last && inv0 && !(invState(inv0).full || inv0.sentAt)) { var yd = mk('span', 'pt-dot d-send'); yd.title = 'Rechnung erstellt, noch nicht versendet'; yd.setAttribute('aria-label', yd.title); dots.appendChild(yd); }
-    if (dots.childNodes.length) c1.appendChild(dots);
+    if (!dots.childNodes.length) dots.appendChild(mk('span', 'pt-dot d-none'));
+    c1.appendChild(dots);
     /* Schnellaktionen */
     var acts = mk('div', 'pt-acts');
-    var ib = function (k, t, fn, lb) { var b = mk('button', 'pt-ib ib-' + k); b.type = 'button'; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = tvSvg(k) + '<span class="pt-lb">' + (lb || '') + '</span>'; b.onclick = function (ev) { ev.stopPropagation(); fn(ev); }; acts.appendChild(b); };
+    var popItems = [], ib = function (k, t, fn, lb) { popItems.push({ k: k, t: t, lb: lb || t, fn: fn }); };
     ib('cal', 'Termin anlegen', function () { curP = p; var n = new Date(); openTermin(iso(n), pad(n.getHours()) + ':' + pad(n.getMinutes()), true); document.getElementById('t-patient').value = nameKey(p); }, 'Termin');
-    ib('book', 'Dokumentation hinzufügen', function () { viewAkte(p); openDkPick(null); }, 'Doku');
+    ib('book', 'Dokumentation hinzufügen', function () { viewAkte(p); openDkPick(null); }, 'Dokumentation');
     var fst = formStatus(p);
     ib('mail', 'Senden: E-Mail, Formulare' + (fst.t ? ' · ' + fst.t : ''), function (ev) {
       curP = p; var tx = fillPlatzhalter(ANAM_TXT, p);
       tlMenu(ev, [['E-Mail schreiben', function () { openMail(); }], ['Anamnese per E-Mail senden', function () { sendForm(p, ['anamnese'], 'mail', 'Anamnesebogen', tx); }]].concat(formMenuItems(p)));
     }, 'Senden');
-    acts.lastChild.classList.add('st-' + fst.s);
+    popItems[popItems.length - 1].cls = 'st-' + fst.s;
     ib('euro', 'Rechnung', function (ev) {
       curP = p; var it = [['Rechnung erstellen', function () { openInvoice(p); }], ['Kostenvoranschlag erstellen', function () { openInvoiceKind(p, 'kv'); }]];
       invoices.filter(function (i) { return i.pid === p.id && !i.kind && !(invState(i).full || i.sentAt); }).slice(0, 4).forEach(function (i) { it.push(['Rechnung ' + (i.nr || '') + ' ansehen und senden', function () { curP = p; viewInvoice(i.id); }]); });
       tlMenu(ev, it);
     }, 'Rechnung');
-    acts.lastChild.classList.add('pt-wide-b');
     ib('pill', 'Rezept erstellen', function () { curP = p; openRx(null); }, 'Rezept');
-    acts.lastChild.classList.add('pt-wide-b');
-    ib('plus', 'Alle Aktionen', function (ev) { ptAMenu(ev, p); }, 'Mehr');
+    ib('plus', 'Alle Aktionen', function (ev) { ptAMenu(ev, p); }, 'Alle Aktionen');
+    var more = mk('button', 'pt-ib ib-more'); more.type = 'button'; more.title = 'Aktionen'; more.setAttribute('aria-label', 'Aktionen für ' + full); more.setAttribute('aria-haspopup', 'true');
+    more.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+    more.onclick = function (ev) { ev.stopPropagation(); ptPop(more, popItems); };
+    acts.appendChild(more);
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
     var info = mk('div', 'pt-info'), i1 = mk('div', 'pt-i1'), i2 = mk('div', 'pt-i2'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };

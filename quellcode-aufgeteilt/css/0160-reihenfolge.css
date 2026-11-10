@@ -1,7 +1,7 @@
 /* Reihenfolge: Nummer und Datum, dann der Farbstrich, dann Name, dann Betrag */
 #inv-table td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
 #inv-table tr:last-child { --sep:transparent; }
-#inv-table tr.t-paid { --bar:#16a34a; } #inv-table tr.t-open { --bar:#ea580c; } #inv-table tr.t-late { --bar:#dc2626; } #inv-table tr.t-storno { --bar:#94a3b8; } #inv-table tr.t-kv { --bar:#b45309; }
+#inv-table tr.t-paid { --bar:#22c55e; } #inv-table tr.t-open { --bar:#f97316; } #inv-table tr.t-late { --bar:#ef4444; } #inv-table tr.t-storno { --bar:#94a3b8; } #inv-table tr.t-kv { --bar:#f59e0b; }
 #inv-table tr.pair-top { --sep:transparent; }
 .inv-link { display:inline-flex; color:#94a3b8; margin-left:2px; cursor:help; }
 /* Listen-Design wie Rechnungen und Patientenakte, für die Tabellen der Hauptseiten: Kopfzeile weiß mit grauem Strich, Zeilen in grauer, abgerundeter Karte mit feinem Rand und eingerückten Trennlinien.
@@ -23,21 +23,3 @@
 /* Zahlungen: Nachname und Vorname untereinander wie bei Rechnungen */
 #tab-zahlungen .za-n1 { font-weight:800; } #tab-zahlungen .za-n2 { color:#0f172a; } #tab-zahlungen .za-n1:not(:last-child)::after { content:', '; font-weight:400; }
 @media (max-width:520px) { #tab-zahlungen .za-n1, #tab-zahlungen .za-n2 { display:block; } #tab-zahlungen .za-n1:not(:last-child)::after { content:none; } }
-/* Patienten: Die Hinweis-Punkte bilden einen durchgehenden Strich zwischen ID und Name; mehrere Hinweise teilen sich den Strich in Farbabschnitte */
-#tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:14px; }
-#tab-patienten .pt-dots { position:absolute; left:0; top:0; bottom:0; width:3px; display:flex; flex-direction:column; gap:0; }
-#tab-patienten .pt-dots .pt-dot { flex:1 1 0; width:3px; height:auto; border-radius:0; }
-/* Farbstrich nach der ersten Spalte: Zahlungsart bei Zahlungen, Gruppe bei Leistungen */
-#tab-zahlungen .scroll > table.pt tbody tr td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(#e2e8f0, #e2e8f0); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
-#tab-zahlungen .scroll > table.pt tbody tr:last-child td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr:last-child td:nth-child(2) { background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)); background-size:3px 100%; background-position:left top; }
-.cal-plus svg, .inv-plus svg { width:22px; height:22px; }
-/* Praxis-Menü: jede Gruppe als eigene Karte mit Farbstreifen */
-.nav-menu { background:#eef2f7; padding:8px; }
-.nav-section { --sec:#1e3a8a; background:#fff; border:1px solid #d5dde7; border-left:4px solid var(--sec); border-radius:12px; margin:0 0 8px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(15,23,42,.08); }
-.nav-section:last-child { margin-bottom:0; }
-.nav-section[data-ni="0"] { --sec:#16a34a; } .nav-section[data-ni="1"] { --sec:#1e3a8a; } .nav-section[data-ni="2"] { --sec:#7c3aed; } .nav-section[data-ni="3"] { --sec:#0d9488; } .nav-section[data-ni="4"] { --sec:#ea580c; }
-.nav-section > .nav-group { background:color-mix(in srgb, var(--sec) 9%, #fff); color:var(--sec); font-weight:800; font-size:12.5px; letter-spacing:.07em; }
-.nav-section[open] > .nav-group { border-bottom:1px solid color-mix(in srgb, var(--sec) 25%, #fff); }
-.nav-section .nav-items > button svg { stroke:var(--sec); }
-.nav-section .nav-items > button:disabled svg { stroke:#94a3b8; }
-.nav-section .nav-items > button + button { border-top:1px solid #f1f5f9; border-radius:0; }

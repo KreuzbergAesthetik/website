@@ -41,9 +41,9 @@
 .card { box-shadow:0 2px 6px rgba(15,23,42,.10); } .card:not(.hc):not(.hero) { border-color:var(--line); }
 .card-title { font-size:17px; font-weight:800; color:#0f172a; }
 .tab-content > .card:not(.hc):not(.hero) { border-left:6px solid var(--tc,#94a3b8); }
-#tab-kalender { --tc:#7c3aed; } #tab-patienten { --tc:#1e3a8a; } #tab-rechnungen { --tc:#16a34a; } #tab-todos { --tc:#ea580c; }
-#tab-settings { --tc:#64748b; } #tab-lager { --tc:#0d9488; } #tab-leistungen { --tc:#db2777; } #tab-dokumente { --tc:#64748b; } #tab-nachrichten { --tc:#0ea5e9; }
-#tab-textbausteine { --tc:#8b5cf6; } #tab-webformulare { --tc:#f59e0b; } #tab-zahlungen { --tc:#16a34a; } #tab-statistik { --tc:#2563eb; }
+#tab-kalender { --tc:#8b5cf6; } #tab-patienten { --tc:#3b82f6; } #tab-rechnungen { --tc:#22c55e; } #tab-todos { --tc:#f97316; }
+#tab-settings { --tc:#64748b; } #tab-lager { --tc:#14b8a6; } #tab-leistungen { --tc:#ec4899; } #tab-dokumente { --tc:#64748b; } #tab-nachrichten { --tc:#0ea5e9; }
+#tab-textbausteine { --tc:#8b5cf6; } #tab-webformulare { --tc:#f59e0b; } #tab-zahlungen { --tc:#22c55e; } #tab-statistik { --tc:#3b82f6; }
 /* Tabellen: leicht, nur feine Linien zwischen den Zeilen */
 .pt { font-size:14.5px; }
 .pt th { background:#fff; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#64748b; padding:10px 12px; border:none; border-bottom:2px solid var(--line); }
