@@ -1,8 +1,12 @@
 /* Reihenfolge: Nummer und Datum, dann der Farbstrich, dann Name, dann Betrag */
 #inv-table td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
+#zl-open-t td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
 #inv-table tr:last-child { --sep:transparent; }
+#zl-open-t tr:last-child { --sep:transparent; }
 #inv-table tr.t-paid { --bar:#22c55e; } #inv-table tr.t-open { --bar:#f97316; } #inv-table tr.t-late { --bar:#ef4444; } #inv-table tr.t-storno { --bar:#94a3b8; } #inv-table tr.t-kv { --bar:#f59e0b; }
+#zl-open-t tr.t-paid { --bar:#22c55e; } #zl-open-t tr.t-open { --bar:#f97316; } #zl-open-t tr.t-late { --bar:#ef4444; } #zl-open-t tr.t-storno { --bar:#94a3b8; } #zl-open-t tr.t-kv { --bar:#f59e0b; }
 #inv-table tr.pair-top { --sep:transparent; }
+#zl-open-t tr.pair-top { --sep:transparent; }
 .inv-link { display:inline-flex; color:#94a3b8; margin-left:2px; cursor:help; }
 /* Listen-Design wie Rechnungen und Patientenakte, für die Tabellen der Hauptseiten: Kopfzeile weiß mit grauem Strich, Zeilen in grauer, abgerundeter Karte mit feinem Rand und eingerückten Trennlinien.
    Der Kartenrand liegt als eigene Ebene darüber (listFrames), damit er auch bei ausgeblendeten Spalten stimmt. */

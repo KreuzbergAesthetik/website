@@ -46,7 +46,7 @@ try {
     assert.equal(r.startZu, w >= 700 && w < 1000 && w > h, 'Startzustand der Suche ' + tag);
     assert.ok(r.bar.vis && r.bar.w > 100 && r.lupe.vis && r.plus.vis, 'Suchleiste, Lupe oder Plus nicht sichtbar ' + tag);
     assert.equal(r.lupeAlt, 'none', 'alter Lupen-Knopf noch sichtbar ' + tag);
-    assert.ok(r.plus.r <= r.bar.l + 1 && r.bar.r <= r.vw && (kopf ? r.bar.t >= 0 && r.bar.b <= 60 : r.vh - r.bar.b <= 24), (kopf ? 'Leiste sitzt nicht in der Kopfzeile ' : 'Leiste sitzt nicht richtig unten ') + tag);
+    assert.ok((kopf ? r.bar.r <= r.plus.l + 1 && r.plus.r <= r.vw : r.plus.r <= r.bar.l + 1 && r.bar.r <= r.vw) && (kopf ? r.bar.t >= 0 && r.bar.b <= 60 : r.vh - r.bar.b <= 24), (kopf ? 'Leiste sitzt nicht in der Kopfzeile ' : 'Leiste sitzt nicht richtig unten ') + tag);
     assert.equal(r.menuAnfang, 'none', 'Menü am Anfang offen ' + tag);
     assert.notEqual(r.menu.an, 'none', 'Menü öffnet nicht ' + tag);
     for (const k of ['kal', 'pat', 'rec']) assert.ok(r.menu[k].vis && (kopf ? r.menu[k].t >= r.menu.plus.b : r.menu[k].b <= r.menu.plus.t) && r.menu[k].l >= 0 && r.menu[k].r <= r.vw && r.menu[k].t >= 0, 'Menüpunkt ' + k + ' nicht sichtbar oder nicht über Plus ' + tag);

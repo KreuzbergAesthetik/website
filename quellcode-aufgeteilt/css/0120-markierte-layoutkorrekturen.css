@@ -17,6 +17,7 @@
 .inv-kv-label{color:#73551c!important;font-weight:700;background:#fff7df;border-radius:5px;padding:3px 7px}
 .inv-a.a-kv{color:#73551c!important}
 #inv-table tr.t-kv td{background:#fffcf3}
+#zl-open-t tr.t-kv td{background:#fffcf3}
 .nav-menu{width:min(340px,calc(100vw - 16px))}
 .nav-menu{grid-template-columns:1fr}
 .nav-section{border-bottom:1px solid #e2e8f0;padding:3px 0}

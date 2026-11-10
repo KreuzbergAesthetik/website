@@ -75,16 +75,11 @@ function renderZahlungen() {
     row.style.cursor = 'pointer'; row.onclick = function (ev) { if (ev.target.closest('.pn')) return; openPayEdit(p.inv.id, p.ref); };
   });
   if (!pays.length) { var er = tin.insertRow(), ec = er.insertCell(); ec.colSpan = 5; ec.textContent = 'Keine Zahlungen im Zeitraum'; ec.style.color = '#94a3b8'; }
-  var op = document.getElementById('zl-open'); op.innerHTML = '';
+  var op = document.getElementById('zl-open'), ot = document.getElementById('zl-open-t'); ot.innerHTML = '';
   var oi = invOpenInfo(), open = oi.list.sort(function (a, b) { return a.date.localeCompare(b.date); });
   var oh = document.getElementById('zl-open-h'); oh.textContent = open.length ? 'Offene Posten (' + open.length + ') · ' + eur(oi.sum) : 'Offene Posten'; oh.className = 'ak-h' + (open.length ? ' ak-h-open' : '');
-  open.forEach(function (i) {
-    var b0 = mk('button', 'btn btn-secondary btn-sm', 'Zahlung'); b0.type = 'button'; b0.onclick = function (ev) { ev.stopPropagation(); viewInvId = i.id; openPay(); };
-    var b = mk('span'); b.style.cssText = 'display:inline-flex; flex-direction:column; align-items:flex-end; gap:5px; flex:none;'; var am = mk('b', '', eur(i.total - paidSum(i))); am.style.cssText = 'white-space:nowrap; color:#b45309;'; b.appendChild(am); b.appendChild(b0);
-    var late = invLate(i), d = invDaysOld(i), row = hmRow(fmtD(i.date), nmEl(invNm(i)), i.nr + ' · offen' + (late ? ' · seit ' + d + ' Tagen überfällig' : ''), function () { viewInvoice(i.id); }, b);
-    var tm0 = row.querySelector('.hm-time'); if (tm0) { var zd0 = fmtD(i.date); tm0.innerHTML = '<span class="hm-l">' + zd0 + '</span><span class="hm-s">' + zd0.slice(0, 6) + zd0.slice(8) + '</span>'; }
-    row.classList.add(late ? 'hm-late' : 'hm-openp'); op.appendChild(row);
-  });
+  open.forEach(function (i) { invRowBuild(ot, i, true); });
+  op.querySelector('table').style.display = open.length ? '' : 'none'; [].forEach.call(op.querySelectorAll('.hm-empty'), function (e) { e.remove(); });
   if (!open.length) op.appendChild(mk('div', 'hm-empty', 'Keine offenen Rechnungen. Alles bezahlt.'));
 }
 function openAusgabe(id) {
