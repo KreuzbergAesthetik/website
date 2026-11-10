@@ -3,6 +3,7 @@
 #tab-patienten .pt-acts .pt-ib { width:34px; height:34px; border-radius:10px; color:#64748b; flex-direction:row; }
 #tab-patienten .pt-acts .pt-ib svg { width:20px; height:20px; }
 #tab-patienten .pt-wrap::after { content:none; }
+#tab-patienten .pt-acts > .pt-ib.ib-more { background:none; border:0; box-shadow:none; color:#64748b; } #tab-patienten .pt-acts > .pt-ib.ib-more:hover { background:#e2e8f0; }
 #tab-patienten .pt-wrap { align-items:center; gap:6px; }
 #tab-patienten .scroll > table.pt tbody td { padding-top:6px; padding-bottom:6px; }
 @media (min-width:700px) {
@@ -18,6 +19,16 @@
 .pt-pop .pt-pop-i.ib-cal { --ic:var(--c-termin); } .pt-pop .pt-pop-i.ib-book { --ic:var(--c-doku); } .pt-pop .pt-pop-i.ib-mail { --ic:var(--c-senden); } .pt-pop .pt-pop-i.ib-euro { --ic:var(--c-rechnung); } .pt-pop .pt-pop-i.ib-pill { --ic:var(--c-rezept); } .pt-pop .pt-pop-i.ib-plus { --ic:var(--c-mehr); }
 .pt-pop .pt-pop-i svg { color:var(--ic,#475569); }
 .pt-pop .pt-pop-i.st-ok::after { content:'✓'; margin-left:auto; color:#16a34a; font-weight:800; }
+/* Schnellknöpfe nur mit Maus (Hover); auf Touch-Geräten bleibt der Drei-Punkte-Knopf */
+#tab-patienten .pt-quick { display:none; }
+@media (hover:hover) and (pointer:fine) {
+  #tab-patienten tbody tr:hover .pt-quick, #tab-patienten tbody tr:focus-within .pt-quick { display:flex; position:absolute; right:44px; top:50%; transform:translateY(-50%); gap:6px; padding:5px 8px; background:#eaeef4; border-radius:12px; z-index:3; }
+  #tab-patienten tbody tr:hover .pt-info, #tab-patienten tbody tr:focus-within .pt-info { opacity:0; }
+  #tab-patienten .pt-quick .pt-ib { width:34px; height:34px; border-radius:10px; flex-direction:row; }
+  #tab-patienten .pt-quick .pt-ib svg { width:20px; height:20px; }
+  #tab-patienten .pt-acts { position:static; }
+  #tab-patienten .pt-wrap { position:relative; }
+}
 /* Patienten: Die Hinweis-Punkte bilden einen durchgehenden Strich zwischen ID und Name; mehrere Hinweise teilen sich den Strich in Farbabschnitte */
 #tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:14px; }
 #tab-patienten .pt-dots { position:absolute; left:0; top:0; bottom:0; width:3px; display:flex; flex-direction:column; gap:0; }

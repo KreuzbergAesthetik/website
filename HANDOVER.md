@@ -1,8 +1,41 @@
 # Übergabe an Claude
 
-Stand: 01.11.2026
+Stand: 11.11.2026 (Abschnitt 0 ist aktuell, die Abschnitte 1 bis 9 stammen teils vom 01.11.2026)
 Repository: `KreuzbergAesthetik/website`
 Produktiver Branch: `main`
+
+## 0. Stand 11.11.2026 (aktuellste Übergabe, hat Vorrang vor den älteren Abschnitten)
+
+**Wer, wie arbeiten:** Praxisinhaber Manuel Fella. Auf Deutsch, per Du, **sehr kurz antworten** (er hat ausdrücklich um weniger Text gebeten). Bei Design-Wünschen immer **Screenshots mit erfundenen Daten** schicken (SendUserFile), bei Unsicherheit gern nachfragen, nicht raten. Referenz fürs Design ist die Patientenakte. Rechts-/Abrechnungsfragen direkt mit Quellen beantworten, ohne wiederholte Haftungshinweise (siehe `CLAUDE.md`). Keine echten Patientendaten, nie.
+
+**Git-Stand:**
+- Stand beim Schreiben: `main` = Merge von PR #282 (`f8fb727`), Version `2026-11-11-a`. Danach wurde der Branch `ccr-39a25d4d-a2wha6` (Version `2026-11-11-c`) veröffentlicht; er enthält auch den Wiedervorstellung-Hinweis aus dem PR #283 der parallelen Sitzung (Version `2026-11-11-b`, dort schon eingearbeitet). Vor jeder neuen Arbeit `git fetch` und offene Pull Requests prüfen: Es können parallele Sitzungen existieren.
+- Branch `ccr-39a25d4d-a2wha6` (der vorgegebene Sitzungsbranch), App-Version `2026-11-11-c`, enthielt zuletzt (jetzt veröffentlicht, falls PR gemergt): Suchleiste und Plus-Knopf in der Kopfzeile bei Querformat/Desktop (ab 700 px; zwischen 700 und 999 px startet die Suche eingeklappt), Schnellknöpfe beim Überfahren einer Patientenzeile mit der Maus (horizontal, nur Icons; Klick auf die Drei Punkte öffnet das senkrechte Pop-up mit Beschriftung), Drei-Punkte-Knopf ohne weißen Knopf. Alle Tests waren grün.
+- Nach jedem Merge den Sitzungsbranch neu von `origin/main` aufsetzen (`git checkout -B ccr-39a25d4d-a2wha6 origin/main`), mit `git push --force-with-lease` pushen. Nie auf einen anderen Branch pushen.
+
+**Arbeitsablauf, der sich bewährt hat:**
+1. Änderung in `index.html` (und ggf. `sw.js`/Tests). **`V` in `sw.js` und `KA_V` in `index.html` müssen identisch erhöht werden** (Schema `JJJJ-MM-TT-x`).
+2. `npm run code:aufteilen` (aufgeteilte Kopie neu erzeugen), `npm run test:static`, `npm run test:browser`. Für die Browser-Tests: `ln -s /opt/node-tools/node_modules node_modules` (nie committen, danach löschen) und lokal `python3 -m http.server 4173 --bind 127.0.0.1` im Repo starten, danach beenden.
+3. Screenshots mit Playwright (Handy 390x844 mit `isMobile`, Querformat 915x412, Desktop 1280x700) erzeugen und mit SendUserFile schicken.
+4. Commit mit Co-Authored-By-Zeilen aus dem System-Hinweis, push, PR (Beschreibung wie in PR #280 bis #282), CI abwarten (`get_check_runs`, dauert etwa 90 s; Wartezeit mit `sleep` im Hintergrund), dann `merge_pull_request` mit `expectedHeadSha`.
+5. Änderungen bündeln, nicht viele kleine Pull Requests (GitHub-Konto war am 08.11.2026 vorübergehend gesperrt, siehe 6a).
+
+**Tests (alle mit erfundenen Daten):** `npm run test:browser` führt 17 Skripte aus: browser-smoke, layout-smoke, formular-zuordnung, xss-formulare, eingang-verschluesselt, csp, rechnung-sperre, goae, rechtslinks, umschlag, weiterleitung, akte-querformat, verlauf-strich, untere-leiste, suche, rechnungen-liste, patienten-liste. Neue Funktionen bekommen einen Test mit Gegenprobe.
+
+**Design-Konventionen (seit 10.11.2026, überall einheitlich):**
+- Listen (Rechnungen, Patienten, Zahlungen, Leistungen, Lager, Statistik): weiße Seitenkarte, Kopfzeile weiß mit grauem Strich, darunter die Zeilen in einer **grauen abgerundeten Karte** (`#f1f4f8`, Rand `#d5dde7`, Radius 16), feine eingerückte Trennlinien, **durchgehender Farbstrich** (3 px) zwischen den ersten Spalten, Farbwechsel nur in der Farbe, keine Lücken. Kartenrahmen als eigene Ebene (`listFrames()`, `invPairFrames()`), damit die Karte durchgehend bleibt.
+- Rechnungen: Handy zweizeilig (Nr./Nachname/Betrag, Datum/Vorname/bezahlt am bzw. Offen), ab 700 px einzeilig mit Spalten Datum, Versendet, Status. Storno und Original mit grauem Strich, gemeinsamem Rahmen und Kettensymbol. Offen mit Warndreieck, storniert mit rotem X. Briefsymbol in der Kopfzeile schaltet den Versandfilter (alle, versendet, nicht versendet).
+- Patienten: Hinweise (To-Do, Rechnung offen, Anamnese, Erinnerung, nächster Termin, nicht versendet) als Strich zwischen ID und Name, blassgrau (`#cbd5e1`) wenn kein Hinweis, sonst Farbabschnitte. Farben bewusst **leuchtend** (Rot `#ef4444`, Blau `#3b82f6`, Türkis `#06b6d4`, Orange `#f97316`, Grün `#22c55e`, Gelb `#eab308`), keine gedeckten dunklen Töne.
+- Kein Lila als Hervorhebung bei Storno. Die Akte (`.tl-day`) ist die Vorlage für alles.
+- Untere schwebende Leiste (Handy, Hochformat): Plus-Knopf links (Pop-up Termin/Patient/Rechnung), Suchleiste standardmäßig offen, Lupe klappt sie ein (`gsCollapse`, merkt sich `ka_gs_zu` im localStorage). Akte-Aktionen stehen untereinander rechts darüber, „Mehr“ mit drei Punkten.
+- Suche (`gsRun`): Patienten, Rechnungen, Termine, To-Dos, Lager, Anlagen, Leistungen.
+
+**Noch offen / Entscheidungen beim Praxisinhaber:**
+- **App auf eigenen Webspace:** Entwurf `WEBSPACE-UMZUG.md`, Anleitung `WEBSPACE-ANLEITUNG.md`, Paket `npm run webspace:paket`, Weiterleitungen alter Formular-Links `npm run webspace:weiterleitungen -- https://app.kreuzberg-aesthetik.de`. Stand: Subdomain `app.kreuzberg-aesthetik.de` ist bei IONOS angelegt, aber der Vertrag „WordPress Hosting Grow“ (Nr. 108255312) erlaubt vermutlich keinen eigenen Ordner dafür („Webspace verbinden“ nicht verfügbar). Die Domain `kreuzberg-aesthetik.de` ist Zusatz-Domain, `xberg-aesthetik.de` die Inklusiv-Domain. Plan: kleinen zusätzlichen IONOS-Webhosting-Tarif (etwa 1 bis 6 EUR pro Monat, Rechenzentrum Deutschland, SFTP) buchen und die Subdomain per A-Record darauf zeigen lassen. **Nicht** die Domain umziehen und nicht „Ersetzen/Zurücksetzen“ bei IONOS klicken (würde die Praxis-Website trennen). Danach: Server-Snippet `formular-empfang-wordpress.txt` mit der Subdomain in `ERLAUBT` in WPCode neu einfügen, Sicherung der App-Daten pro Gerät laden (neue Adresse = neuer Browser-Speicher, Passkey neu, Abgleich neu), erst dann Weiterleitungen auf GitHub Pages. Datenschutz: Patientenseiten sollen auf einem deutschen/EU-Hoster liegen, GitHub Pages überträgt IP-Adressen an Microsoft.
+- **GitHub-Absicherung (Praxisinhaber selbst):** Zwei-Faktor ist jetzt aktiv (Authenticator, GitHub Mobile), Passkey als Anmeldung. Noch zu bestätigen: Wiederherstellungscodes sicher ablegen, zweiter Passkey, Praxis-Adresse unter Settings/Emails, Apps von OpenAI/Codex unter Settings/Applications widerrufen. Pro Repository nur ein KI-Assistent (Claude Code). Details in `CLAUDE.md`, Abschnitt „Betrieb und Kontosicherheit“.
+- **Honorarvereinbarung-Generator:** erst bauen, wenn seine Anwältin die Struktur festgelegt hat (zwei Dokumente: strikte § 2-GOÄ-Vereinbarung mit Nr./Steigerungssatz/Betrag/Erstattungshinweis und getrennte Behandlungsbedingungen).
+- Optionale Wünsche: Farbpalette der übrigen Bereiche (Kacheln: Vorlagen, To-Dos, Nachrichtenvorlagen bleiben bewusst Kacheln), Rechnungsliste weitere Spalten, PR #265 (Wiedervorstellung, offen, nicht in `main`, beim Mergen Version neu setzen).
+- Backups liegen beim Praxisinhaber (Git-Bundle, Upload-Paket); nach größeren Merges neu erzeugen (`git bundle create praxis-app.bundle --all`, `npm run webspace:paket`).
 
 ## 1. Source of Truth
 

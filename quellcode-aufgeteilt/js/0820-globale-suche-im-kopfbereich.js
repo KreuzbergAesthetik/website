@@ -12,13 +12,14 @@ function gsToggle(force) {
   if (open) { inp.focus(); gsRun(true); } else { inp.value = ''; res.style.display = 'none'; inp.blur(); }
 }
 /* Suchleiste ein- und ausklappen: eingeklappt bleibt nur die Lupe; die Wahl merkt sich das Gerät */
-function gsCollapse(force) {
+function gsCollapse(force, noSave) {
   var bar = document.getElementById('gs-bar'), inp = document.getElementById('gs-in'), lupe = document.getElementById('gs-lupe'), res = document.getElementById('gs-res');
   var zu = typeof force === 'boolean' ? force : !bar.classList.contains('zu');
   bar.classList.toggle('zu', zu); lupe.setAttribute('aria-expanded', zu ? 'false' : 'true'); lupe.title = zu ? 'Suche aufklappen' : 'Suche einklappen';
   gsMenu(false);
   if (zu) { inp.value = ''; res.style.display = 'none'; inp.blur(); } else { inp.focus(); gsRun(true); }
-  try { localStorage.setItem('ka_gs_zu', zu ? '1' : '0'); } catch (x) {}
+  if (!noSave) { try { localStorage.setItem('ka_gs_zu', zu ? '1' : '0'); } catch (x) {} }
+  try { navFit(); } catch (x) {}
 }
 /* Pop-up über dem Plus-Knopf: Termin, Patient, Rechnung */
 function gsMenu(force) {
@@ -29,7 +30,11 @@ function gsMenu(force) {
 }
 document.addEventListener('click', function (ev) { if (!ev.target.closest('#gs-menu') && !ev.target.closest('#gs-plus')) gsMenu(false); });
 document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') gsMenu(false); });
-try { if (localStorage.getItem('ka_gs_zu') === '1') gsCollapse(true); } catch (x) {}
+try {
+  var gsPref = localStorage.getItem('ka_gs_zu');
+  if (gsPref === '1') gsCollapse(true);
+  else if (gsPref === null && window.matchMedia('(min-width:700px) and (max-width:999px) and (orientation:landscape)').matches) gsCollapse(true, true);   /* kleines Querformat: Suche startet eingeklappt, damit die Navigation Platz hat */
+} catch (x) {}
 function hdAdd(k) {
   gsMenu(false);
   /* In der Patientenakte sind Termin und Rechnung für diesen Patienten vorausgefüllt */

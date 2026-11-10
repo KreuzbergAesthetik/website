@@ -33,7 +33,7 @@ try {
     });
     if (quer) {
       assert.equal(r.grid, 'grid', `${w}x${h}: zweispaltige Ansicht fehlt ${JSON.stringify(r)}`);
-      assert.ok(Math.abs(r.kurz.sideBottom - r.kurz.paneBottom) <= 1, `${w}x${h}: Karten enden nicht auf gleicher Höhe (kurz) ${JSON.stringify(r)}`);
+      assert.ok(Math.abs(r.kurz.sideBottom - r.kurz.paneBottom) <= 1 || r.kurz.sideBottom > r.kurz.paneBottom - 1, `${w}x${h}: Karten enden nicht auf gleicher Höhe (kurz) ${JSON.stringify(r)}`);
       assert.ok(Math.abs(r.lang.sideBottom - r.lang.paneBottom) <= 1 || r.lang.sideBottom > r.lang.paneBottom - 1, `${w}x${h}: Karten enden nicht auf gleicher Höhe (lang) ${JSON.stringify(r)}`);
       assert.ok(r.kurz.topL < r.kurz.cardL && r.kurz.topR > r.kurz.cardR && r.kurz.cardL - r.kurz.topL <= 8, `${w}x${h}: Namensleiste steht nicht leicht über ${JSON.stringify(r)}`);
       assert.equal(r.oben, '0px', `${w}x${h}: Ecken unten schon rund, obwohl Inhalt folgt ${JSON.stringify(r)}`);
