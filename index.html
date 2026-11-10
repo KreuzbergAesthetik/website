@@ -996,6 +996,10 @@ body { padding-bottom:84px; }
 /* Zahlungen: Nachname und Vorname untereinander wie bei Rechnungen */
 #tab-zahlungen .za-n1 { font-weight:800; } #tab-zahlungen .za-n2 { color:#0f172a; } #tab-zahlungen .za-n1:not(:last-child)::after { content:', '; font-weight:400; }
 @media (max-width:520px) { #tab-zahlungen .za-n1, #tab-zahlungen .za-n2 { display:block; } #tab-zahlungen .za-n1:not(:last-child)::after { content:none; } }
+/* Patienten: Die Hinweis-Punkte bilden einen durchgehenden Strich zwischen ID und Name; mehrere Hinweise teilen sich den Strich in Farbabschnitte */
+#tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:14px; }
+#tab-patienten .pt-dots { position:absolute; left:0; top:0; bottom:0; width:3px; display:flex; flex-direction:column; gap:0; }
+#tab-patienten .pt-dots .pt-dot { flex:1 1 0; width:3px; height:auto; border-radius:0; }
 /* Farbstrich nach der ersten Spalte: Zahlungsart bei Zahlungen, Gruppe bei Leistungen */
 #tab-zahlungen .scroll > table.pt tbody tr td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(#e2e8f0, #e2e8f0); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
 #tab-zahlungen .scroll > table.pt tbody tr:last-child td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr:last-child td:nth-child(2) { background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)); background-size:3px 100%; background-position:left top; }
@@ -2538,7 +2542,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-10-x';
+var KA_V = '2026-11-10-y';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
