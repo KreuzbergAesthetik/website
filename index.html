@@ -929,12 +929,18 @@ body { padding-bottom:84px; }
 .inv-send-flt.on { color:#1e3a8a; background:#e8eef9; }
 .inv-send-flt.nein .sl { display:inline; }
 .inv-link { display:inline-flex; color:#7c3aed; margin-left:2px; cursor:help; }
-#inv-table tr.t-link td { background:#f5f1ff; }
-#inv-table tr.pair-top td { box-shadow:inset 0 2px 0 #c4b5fd; } #inv-table tr.pair-bot td { box-shadow:inset 0 -2px 0 #c4b5fd; }
-.pt tr.t-storno td:first-child { padding-left:20px !important; box-shadow:inset 4px 0 0 #94a3b8; }
-#inv-table tr.pair-top td:first-child { box-shadow:inset 4px 0 0 #94a3b8, inset 0 2px 0 #c4b5fd; } #inv-table tr.pair-bot td:first-child { box-shadow:inset 4px 0 0 #94a3b8, inset 0 -2px 0 #c4b5fd; }
-#inv-table tr.pair-top td:last-child { box-shadow:inset 0 2px 0 #c4b5fd, inset -2px 0 0 #c4b5fd; } #inv-table tr.pair-bot td:last-child { box-shadow:inset 0 -2px 0 #c4b5fd, inset -2px 0 0 #c4b5fd; }
-#inv-table tr.pair-top td { border-bottom:0; }
+/* Rechnungsliste im Stil der Patientenakte: Karte mit getönter Fläche, durchgehender Farbstrich links, feine Trennlinien */
+#tab-rechnungen .scroll { background:#f1f4f8; border:1px solid #d5dde7; border-radius:16px; padding:4px 14px 0; overflow-x:auto; overflow-y:hidden; }
+#tab-rechnungen .scroll .pt thead th { border-bottom:1px solid #d5dde7; background:transparent; }
+#inv-table tr:not(.t-late) td { background-color:transparent; }
+#inv-table td { border-bottom:0; background-image:linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; background-origin:border-box; background-clip:border-box; }
+#inv-table td:first-child { box-shadow:none; padding-left:4px !important; }
+/* Reihenfolge: Nummer und Datum, dann der Farbstrich, dann Name, dann Betrag */
+#inv-table td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
+#inv-table tr:last-child { --sep:transparent; }
+#inv-table tr.t-paid { --bar:#16a34a; } #inv-table tr.t-open { --bar:#ea580c; } #inv-table tr.t-late { --bar:#dc2626; } #inv-table tr.t-storno { --bar:#94a3b8; } #inv-table tr.t-kv { --bar:#b45309; }
+#inv-table tr.pair-top { --sep:transparent; }
+.inv-link { display:inline-flex; color:#94a3b8; margin-left:2px; cursor:help; }
 .cal-plus svg, .inv-plus svg { width:22px; height:22px; }
 /* Praxis-Menü: jede Gruppe als eigene Karte mit Farbstreifen */
 .nav-menu { background:#eef2f7; padding:8px; }
@@ -2474,7 +2480,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-10-l';
+var KA_V = '2026-11-10-m';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],

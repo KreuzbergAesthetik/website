@@ -37,7 +37,7 @@ try {
     const sb = invoices.find(i => i.stornoFor === b.nr);
     const rs = rows.find(tr => tr.dataset.nr === sb.nr), ro = rows.find(tr => tr.dataset.nr === b.nr);
     out.stornoVerbunden = rs.classList.contains('t-link') && ro.classList.contains('t-link') && ((rs.classList.contains('pair-top') && ro.classList.contains('pair-bot')) || (ro.classList.contains('pair-top') && rs.classList.contains('pair-bot'))) && !!rs.querySelector('.inv-link') && !!ro.querySelector('.inv-link');
-    out.grauerStrich = rs.classList.contains('t-storno') && ro.classList.contains('t-storno') && getComputedStyle(rs.cells[0]).boxShadow.includes('148, 163, 184') && getComputedStyle(ro.cells[0]).boxShadow.includes('148, 163, 184') && getComputedStyle(rs.cells[0]).paddingLeft === getComputedStyle(rows.find(tr => tr.dataset.nr === a.nr).cells[0]).paddingLeft;
+    out.grauerStrich = rs.classList.contains('t-storno') && ro.classList.contains('t-storno') && getComputedStyle(rs).getPropertyValue('--bar').trim() === '#94a3b8' && getComputedStyle(ro).getPropertyValue('--bar').trim() === '#94a3b8' && getComputedStyle(rs.cells[0]).paddingLeft === getComputedStyle(rows.find(tr => tr.dataset.nr === a.nr).cells[0]).paddingLeft;
     out.keinLinkBeiAnderen = !rows.find(tr => tr.dataset.nr === a.nr).classList.contains('t-link');
     // Versandfilter durchschalten
     const n0 = document.querySelectorAll('#inv-table tr[data-nr]').length;
