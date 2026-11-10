@@ -9,7 +9,7 @@ node werkzeuge/code-aufteilen.mjs --pruefen  # prüfen, ob die Kopie aktuell ist
 ```
 
 Die Teile sind verlustfrei: In der Reihenfolge aus `teile.json` aneinandergehängt ergeben sie exakt `index.html`
-(SHA-256 `e6998f5946d8ba31…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
+(SHA-256 `a87af95a129b1738…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
 
 - `css/`: Gestaltung, nach Themen (10 Teile)
 - `js/`: Programmlogik, nach Funktionsbereichen (35 Teile)
@@ -108,7 +108,7 @@ Bereits vorher eigenständige Dateien (nicht kopiert): `dialoge.js` (Hinweise, R
 | `js/0850-alle-tabellen.js` | Alle Tabellen | 4602 | 239 |
 | `js/0860-pdf-erzeugung.js` | PDF-Erzeugung  | 4841 | 48 |
 | `js/0870-qr-code-erzeugung.js` | QR-Code-Erzeugung  | 4889 | 280 |
-| `js/0880-briefumschlag-b6.js` | Briefumschlag B6  | 5169 | 453 |
+| `js/0880-briefumschlag-c6.js` | Briefumschlag C6  | 5169 | 453 |
 | `js/0890-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 5622 | 497 |
 | `js/0900-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 6119 | 262 |
 | `js/0910-statistik.js` | Statistik | 6381 | 74 |

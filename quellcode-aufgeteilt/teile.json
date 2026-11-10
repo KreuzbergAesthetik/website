@@ -1,6 +1,6 @@
 {
   "quelle": "index.html",
-  "sha256": "e6998f5946d8ba3142cb1d9da227bed76b31dd05dbc0e2e91f5f26602fbdb05e",
+  "sha256": "a87af95a129b1738119d4d0904539f76c76f342b3cf9655ca6993d572c740bda",
   "hinweis": "Teile in dieser Reihenfolge aneinanderhängen = index.html",
   "teile": [
     {
@@ -613,9 +613,9 @@
       "zeilen": 280
     },
     {
-      "datei": "js/0880-briefumschlag-b6.js",
+      "datei": "js/0880-briefumschlag-c6.js",
       "art": "js",
-      "titel": "Briefumschlag B6 ",
+      "titel": "Briefumschlag C6 ",
       "ab_zeile": 5169,
       "zeilen": 453
     },

@@ -66,7 +66,7 @@ Vor Umsetzung prüfen, ob einer dieser Punkte seit dem letzten Dokumentationssta
 ## 6a. Betrieb und Kontosicherheit (Stand 09.11.2026)
 - GitHub-Konto war am 08.11.2026 vorübergehend gesperrt (automatische Missbrauchserkennung), danach freigegeben. Regeln zur Vorbeugung stehen in `CLAUDE.md`, Abschnitt „Betrieb und Kontosicherheit (GitHub)“. Kern: ein KI-Assistent pro Repository, ein Branch je Pull Request, wenig Aktivität, Sicherung außerhalb von GitHub.
 - Geplant: App auf IONOS-Subdomain `app.kreuzberg-aesthetik.de` (Entwurf `WEBSPACE-UMZUG.md`, Anleitung `WEBSPACE-ANLEITUNG.md`, Paket `npm run webspace:paket`, Weiterleitungen alter Links `npm run webspace:weiterleitungen`). Offen: IONOS-Tarif mit Webspace (WordPress Hosting Grow erlaubt wahrscheinlich keinen eigenen Ordner für die Subdomain), danach Server-Snippet mit neuer Adresse in `ERLAUBT` neu einfügen.
-- Briefumschlag B6 (Version `2026-11-08-a`): Aktion in der Patientenakte, Menü Nachrichten.
+- Briefumschlag C6 (162 × 114 mm quer, mit Logo `logo-umschlag.png`, ab Version `2026-11-10-a`; vorher B6): Aktion in der Patientenakte, Menü Nachrichten.
 
 ## 7. Arbeitsweise für Claude
 

@@ -1,4 +1,4 @@
-/* ===== Briefumschlag B6 (176 x 125 mm, quer): Absender Praxis, Empfänger Patient. Wird bei Bedarf erzeugt und nicht gespeichert. ===== */
+/* ===== Briefumschlag C6 (162 x 114 mm, quer): Absender Praxis, Empfänger Patient. Wird bei Bedarf erzeugt und nicht gespeichert. ===== */
 var UMSCHLAG_MM = 72 / 25.4;
 function umschlagSafe(font, t) {
   var set = {}; try { font.getCharacterSet().forEach(function (c) { set[c] = 1; }); } catch (x) { return String(t == null ? '' : t).replace(/[^\x20-\x7E -ÿ]/g, '?'); }
@@ -29,16 +29,16 @@ async function umschlagLogo() {
 async function umschlagPdf(p) {
   var ln = umschlagLines(p); if (!ln) return null;
   var L = await loadPdfLib(), doc = await L.PDFDocument.create();
-  doc.setTitle('Briefumschlag B6'); doc.setCreator('Kreuzberg Ästhetik Praxis-App');
-  var W = 176 * UMSCHLAG_MM, H = 125 * UMSCHLAG_MM, page = doc.addPage([W, H]);
+  doc.setTitle('Briefumschlag C6'); doc.setCreator('Kreuzberg Ästhetik Praxis-App');
+  var W = 162 * UMSCHLAG_MM, H = 114 * UMSCHLAG_MM, page = doc.addPage([W, H]);
   var f = await doc.embedFont(L.StandardFonts.Helvetica), fb = await doc.embedFont(L.StandardFonts.HelveticaBold), ink = L.rgb(0.07, 0.09, 0.15), gray = L.rgb(0.3, 0.34, 0.4);
   /* Absender: oben links, 10 mm vom Rand; links das Logo (16 mm), rechts daneben der Text */
   var x0 = 10 * UMSCHLAG_MM, y0 = H - 11.25 * UMSCHLAG_MM, LOGO = 16 * UMSCHLAG_MM, tx = x0, lb = await umschlagLogo();
   if (lb) { try { var img = await doc.embedPng(lb); page.drawImage(img, { x: x0, y: H - 8 * UMSCHLAG_MM - LOGO, width: LOGO, height: LOGO }); tx = x0 + LOGO + 4 * UMSCHLAG_MM; } catch (x) { tx = x0; y0 = H - 10 * UMSCHLAG_MM - 8; } }
   else y0 = H - 10 * UMSCHLAG_MM - 8;
   ln.absender.forEach(function (t, i) { page.drawText(umschlagSafe(i === 0 ? fb : f, t), { x: tx, y: y0 - i * 11, size: 8.5, font: i === 0 ? fb : f, color: i === 0 ? ink : gray }); });
-  /* Empfänger: rechte Hälfte, ab 94 mm von links und 60 mm von oben. Zu lange Zeilen werden erst verkleinert (bis 10 pt), dann nach Wörtern umbrochen */
-  var xr = 94 * UMSCHLAG_MM, maxW = W - xr - 10 * UMSCHLAG_MM, y = H - 60 * UMSCHLAG_MM, LH = 16;
+  /* Empfänger: rechte Hälfte, ab 92 mm von links und 62 mm von oben. Zu lange Zeilen werden erst verkleinert (bis 10 pt), dann nach Wörtern umbrochen */
+  var xr = 92 * UMSCHLAG_MM, maxW = W - xr - 10 * UMSCHLAG_MM, y = H - 62 * UMSCHLAG_MM, LH = 16;
   ln.empfaenger.forEach(function (t, i) {
     var ft = i === ln.nameIdx ? fb : f, txt = umschlagSafe(ft, t), size = 12.5, rows = [txt];
     while (size > 10 && ft.widthOfTextAtSize(txt, size) > maxW) size -= 0.5;
@@ -54,7 +54,7 @@ async function umschlagPdf(p) {
   });
   return await doc.save();
 }
-function umschlagFile(p) { return 'Umschlag-B6-' + [p.nachname, p.vorname].map(function (x) { return String(x || '').replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, '_'); }).filter(Boolean).join('-') + '.pdf'; }
+function umschlagFile(p) { return 'Umschlag-C6-' + [p.nachname, p.vorname].map(function (x) { return String(x || '').replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, '_'); }).filter(Boolean).join('-') + '.pdf'; }
 async function umschlagSave(p) {
   p = p || curP; if (!p) return;
   var data; try { data = await umschlagPdf(p); } catch (x) { alert('Der Briefumschlag konnte nicht erstellt werden. Ist die Datei pdf-lib.min.js vorhanden?'); return; }
