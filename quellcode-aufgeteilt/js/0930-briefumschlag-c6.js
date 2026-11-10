@@ -312,6 +312,19 @@ function renderHead() {
   if (p.email) { var l2 = mk('div', 'tl-ln'); l2.innerHTML = ICON_MAIL; var a2 = mk('a', '', p.email); a2.href = 'mailto:' + p.email; l2.appendChild(a2); kt.appendChild(l2); }
   if (p.honorarVom) kt.appendChild(mk('div', '', 'Honorarvereinbarung vom ' + p.honorarVom));
   tiles.appendChild(kt);
+  tiles.appendChild(tileBox('wiedervorstellung', 'Wiedervorstellung', '', function (t, ed) {
+    if (!ed) {
+      var v = p.wiedervorstellung || '';
+      var tx = mk('div', 'a-txt', v ? 'Empfohlen am ' + fmtD(v) : 'Keine Wiedervorstellung geplant');
+      if (!v) tx.style.color = '#94a3b8'; t.appendChild(tx); return;
+    }
+    var inp = mk('input', 'form-control'); inp.type = 'date'; inp.id = 'a-wieder-in'; inp.value = p.wiedervorstellung || ''; t.appendChild(inp);
+    var fb = mk('div', 'foot-bar'); fb.style.cssText = 'margin-top:10px; padding-top:10px;';
+    var rm = mk('button', 'btn btn-cancel', 'Entfernen'); rm.type = 'button'; rm.style.marginRight = 'auto'; rm.onclick = function () { tileEdit = ''; setWiedervorstellung(p, ''); };
+    var cb = mk('button', 'btn btn-cancel', 'Abbrechen'); cb.type = 'button'; cb.onclick = function () { tileEdit = ''; renderHead(); };
+    var sv = mk('button', 'btn btn-save', 'Speichern'); sv.type = 'button'; sv.onclick = function () { var v = inp.value; if (!v) { alert('Bitte ein Datum wählen oder „Entfernen“ verwenden.'); return; } tileEdit = ''; setWiedervorstellung(p, v); };
+    fb.appendChild(rm); fb.appendChild(cb); fb.appendChild(sv); t.appendChild(fb);
+  }));
   tiles.appendChild(txtTile('notizen', 'Notiz', '', 'Keine Notiz'));
   tiles.appendChild(tileBox('med', 'Medikation', 'a-wide', function (t, ed) {
     var list = p.medikation || [];
