@@ -5,6 +5,7 @@
 #inv-table .inv-number-meta.inv-l2 { display:flex; margin-top:1px; }
 #inv-table .inv-cell-action { padding-top:0; padding-bottom:0; }
 #inv-table .inv-cell-action .inv-l1 b { font-weight:800; }
+#inv-table .inv-cell-action:not(.inv-pay-action) .inv-l2 { color:#0f172a; }
 .inv-send-flt { border:0; background:none; color:#b5bfcc; padding:0 4px; margin-left:4px; cursor:pointer; vertical-align:middle; line-height:1; border-radius:6px; }
 .inv-send-flt .sl { display:none; }
 .inv-send-flt.on { color:#1e3a8a; background:#e8eef9; }

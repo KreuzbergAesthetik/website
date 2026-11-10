@@ -43,6 +43,7 @@ try {
     const rr = el => Math.round(el.getBoundingClientRect().right), th3 = document.querySelector('#tab-rechnungen .pt thead th:nth-child(3)');
     const rechts = rows.map(tr => { const c = tr.cells[2]; const l2 = c.querySelector('.inv-l2'), l1 = c.querySelector('.inv-l1'); const rng = document.createRange(); rng.selectNodeContents(l2); const r2 = Math.round(rng.getBoundingClientRect().right); rng.selectNodeContents(l1); return Math.abs(r2 - Math.round(rng.getBoundingClientRect().right)) <= 24 && getComputedStyle(l2).textAlign === 'right'; });
     out.betragRechts = rechts.every(Boolean) && getComputedStyle(th3).textAlign === 'right';
+    out.vornameSchwarz = getComputedStyle(t0.cells[1].querySelector('.inv-l2')).color === 'rgb(15, 23, 42)';
     out.keinLinkBeiAnderen = !rows.find(tr => tr.dataset.nr === a.nr).classList.contains('t-link');
     // Versandfilter durchschalten
     const n0 = document.querySelectorAll('#inv-table tr[data-nr]').length;
