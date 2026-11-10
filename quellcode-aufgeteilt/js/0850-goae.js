@@ -651,6 +651,8 @@ async function toggleInvoiceSent() {
   i.sentAt = wasSent ? null : Date.now();
   persist(); viewInvoice(i.id); renderInvoices();
 }
+/* Briefsymbol in der Kopfzeile: alle, nur versendete, nur nicht versendete */
+function invSendCycle(ev) { if (ev) ev.stopPropagation(); invSendF = invSendF === '' ? 'ja' : invSendF === 'ja' ? 'nein' : ''; renderInvoices(); }
 function renderInvoices() {
   renderEntw();
   var tb = document.getElementById('inv-table'); if (!tb) return;
@@ -668,14 +670,12 @@ function renderInvoices() {
     var bt = mk('button', 'za-b' + (invF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(cnt[f[0]])));
     bt.onclick = function () { invF = (invF === f[0]) ? '' : f[0]; renderInvoices(); }; sg.appendChild(bt);
   });
-  var ss = document.getElementById('inv-send-seg'); if (ss) {
-    ss.innerHTML = '';
-    var sc = { alle: 0, ja: 0, nein: 0 };
-    inR.forEach(function(i) { if (i.kind === 'kv') return; sc.alle++; if (invSent(i)) sc.ja++; else sc.nein++; });
-    [['', 'Alle'], ['ja', 'Versendet'], ['nein', 'Nicht versendet']].forEach(function(f) {
-      var bt = mk('button', 'za-b' + (invSendF === f[0] ? ' on' : '')); bt.type = 'button'; bt.appendChild(document.createTextNode(f[1] + ' ')); bt.appendChild(mk('b', '', String(sc[f[0] || 'alle'])));
-      bt.onclick = function() { invSendF = f[0]; renderInvoices(); }; ss.appendChild(bt);
-    });
+  var eb = document.getElementById('inv-send-flt'); if (eb) {
+    var sc = { ja: 0, nein: 0 };
+    inR.forEach(function (i) { if (i.kind === 'kv') return; if (invSent(i)) sc.ja++; else sc.nein++; });
+    eb.classList.toggle('on', !!invSendF); eb.classList.toggle('nein', invSendF === 'nein');
+    eb.title = invSendF === 'ja' ? 'Nur versendete (' + sc.ja + '). Tippen: nur nicht versendete' : invSendF === 'nein' ? 'Nur nicht versendete (' + sc.nein + '). Tippen: alle anzeigen' : 'Versandstatus filtern. Tippen: nur versendete (' + sc.ja + ')';
+    eb.setAttribute('aria-label', eb.title);
   }
   var q = (document.getElementById('inv-q').value || '').trim().toLowerCase();
   var shown = inR.filter(function (i) {
@@ -686,13 +686,13 @@ function renderInvoices() {
   });
   if (!shown.length && billingList.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = 'Keine Rechnung gefunden'; ec.style.color = '#94a3b8'; }
   shown.sort(invCmp).forEach(function (i) {
-    var row = tb.insertRow(); row.className = i.kind === 'kv' ? 't-kv' : i.storniert ? '' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
+    var row = tb.insertRow(); row.className = i.kind === 'kv' ? 't-kv' : (i.storniert || i.stornoFor) ? 't-storno' : !invState(i).full ? (invLate(i) ? 't-late' : 't-open') : 't-paid';
     var c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell();
     var fd = fmtD(i.date), st = invState(i), late = !st.full && invLate(i);
-    var b = mk('button', 'pn', i.kind === 'kv' ? 'KV' : i.nr);
+    row.dataset.nr = i.nr || ''; var b = mk('button', 'pn inv-l1', i.kind === 'kv' ? 'KV' : i.nr);
     b.type = 'button'; b.title = 'Rechnung öffnen'; b.onclick = function () { viewInvoice(i.id); };
     c0.appendChild(b);
-    var meta = mk('div', 'inv-number-meta');
+    var meta = mk('div', 'inv-number-meta inv-l2');
     var dsm = mk('small', 'pc-ds', fd.slice(0, 5)); meta.appendChild(dsm);
     if (i.kind !== 'kv' && invSent(i)) {
       var si = mk('span', 'inv-send-indicator is-sent');
@@ -702,18 +702,20 @@ function renderInvoices() {
     }
     c0.appendChild(meta);
     var patient = i.pid ? patients.filter(function (p) { return p.id === i.pid; })[0] : null;
-    var nameBtn = mk('button', 'inv-cell-action'); nameBtn.innerHTML = nmHtml(invNm(i)); nameBtn.type = 'button';
+    var nameBtn = mk('button', 'inv-cell-action'); nameBtn.type = 'button';
+    var nmS = String(invNm(i) || ''), nmK = nmS.indexOf(', ');
+    nameBtn.innerHTML = '<span class="inv-l1"><b>' + esc(nmK < 0 ? nmS : nmS.slice(0, nmK)) + '</b></span><span class="inv-l2">' + esc(nmK < 0 ? '' : nmS.slice(nmK + 2)) + '</span>';
     nameBtn.title = patient ? 'Patientenakte öffnen' : 'Keine zugeordnete Patientenakte';
     nameBtn.disabled = !patient;
     nameBtn.onclick = function () { if (patient) viewAkte(patient); };
     c1.appendChild(nameBtn);
-    var amt = mk('span', 'inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
-    if (i.kind === 'kv') amt.className = 'inv-a a-kv';
+    var amt = mk('span', 'inv-l1 inv-a ' + (i.storniert ? 'a-st' : st.full ? 'a-ok' : late ? 'a-late' : st.txt === 'Teilzahlung' ? 'a-part' : 'a-open'), eur(i.total));
+    if (i.kind === 'kv') amt.className = 'inv-l1 inv-a a-kv';
     var payBtn = mk('button', 'inv-cell-action inv-pay-action');
     payBtn.type = 'button'; payBtn.appendChild(amt);
     var pays = i.payments || [];
     var paidDate = pays.length ? pays[pays.length - 1].date : (i.paid ? i.date : null);
-    var payDate = mk('small', 'pc-ds inv-payment-meta');
+    var payDate = mk('small', 'pc-ds inv-payment-meta inv-l2');
     if (i.storniert || i.kind === 'kv') {
       payDate.textContent = i.storniert ? 'Storniert' : 'Kostenvoranschlag';
     } else if (st.full) {
@@ -737,6 +739,18 @@ function renderInvoices() {
     };
     c2.appendChild(payBtn);
     c0.className = 'nw'; c2.className = 'nw';
+  });
+  /* Stornorechnung und ursprüngliche Rechnung gehören sichtbar zusammen */
+  var rowByNr = {}; [].forEach.call(tb.rows, function (r) { if (r.dataset.nr) rowByNr[r.dataset.nr] = r; });
+  shown.forEach(function (i) {
+    if (!i.stornoFor || !rowByNr[i.nr] || !rowByNr[i.stornoFor]) return;
+    var sr = rowByNr[i.nr], or = rowByNr[i.stornoFor];
+    [[sr, 'Stornorechnung zu ' + i.stornoFor], [or, 'Storniert durch ' + i.nr]].forEach(function (x) {
+      x[0].classList.add('t-link');
+      var m = x[0].querySelector('.inv-number-meta'); if (m) { var l = mk('span', 'inv-link'); l.title = x[1]; l.setAttribute('aria-label', x[1]); l.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>'; m.appendChild(l); }
+    });
+    if (sr.nextElementSibling === or) { sr.classList.add('pair-top'); or.classList.add('pair-bot'); }
+    else if (or.nextElementSibling === sr) { or.classList.add('pair-top'); sr.classList.add('pair-bot'); }
   });
 }
 /* Rechnungsversand: kleine Kennzeichnung neben der Rechnungsnummer */

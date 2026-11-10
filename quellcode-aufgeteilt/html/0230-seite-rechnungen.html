@@ -4,17 +4,16 @@
       <div class="card-header" style="gap:8px; margin-bottom:8px; align-items:stretch;">
         <div class="seg" id="inv-kind" style="flex:1; min-width:0;"></div>
         <button type="button" class="inv-flt" id="inv-flt" onclick="invPerMenu(event)" title="Zeitraum der Anzeige wählen" aria-label="Zeitraum wählen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
-        <button type="button" class="btn btn-sm inv-plus" id="inv-b-new" onclick="invNew()" title="Neue Rechnung" aria-label="Neue Rechnung">+</button>
+        <button type="button" class="btn btn-sm inv-plus" id="inv-b-new" onclick="invNew()" title="Neue Rechnung" aria-label="Neue Rechnung"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(0 3) scale(.82)"><path d="M4 10h11"/><path d="M4 14h9"/><path d="M18 6.2A7 7 0 0 0 13.4 4.5 7.6 7.6 0 0 0 6 12c0 4.1 3.3 7.5 7.4 7.5 1.9 0 3.6-.7 4.8-1.9"/></g><path d="M19 2.5v6M16 5.5h6"/></svg></button>
       </div>
       <div id="entw-list" style="display:none"></div>
       <div id="inv-main">
       <div id="inv-open"></div>
       <input type="text" id="inv-q" class="form-control" placeholder="Suchen: Name, Nummer, Betrag" autocomplete="off" oninput="renderInvoices()" style="margin-bottom:8px;">
       <div id="inv-seg" class="za-seg" style="margin-bottom:6px;"></div>
-      <div id="inv-send-seg" class="za-seg" style="margin-bottom:10px;" aria-label="Rechnungen nach Versandstatus filtern"></div>
       <div class="scroll">
         <table class="pt" style="min-width:0; width:100%; font-size:14px;">
-          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
+          <thead><tr><th class="sort" onclick="invSortBy('nr')">Nr. <span class="sarr" data-ik="nr"></span><button type="button" id="inv-send-flt" class="inv-send-flt" onclick="invSendCycle(event)" title="Nach Versand filtern" aria-label="Nach Versandstatus filtern"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/><path class="sl" d="M4 20 20 4"/></svg></button></th><th class="sort" onclick="invSortBy('name')">Patient <span class="sarr" data-ik="name"></span></th><th class="sort" onclick="invSortBy('total')">Betrag <span class="sarr" data-ik="total"></span></th></tr></thead>
           <tbody id="inv-table"></tbody>
         </table>
       </div>
