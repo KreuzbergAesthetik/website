@@ -27,7 +27,11 @@
 #inv-table .inv-pay-action, #inv-table .inv-pay-action .inv-l1, #inv-table .inv-pay-action .inv-l2 { text-align:right; }
 /* Storno und zugehörige Rechnung: gemeinsamer Rahmen, der wie in der Patientenakte oben auf der Karte liegt */
 .inv-pair-frame { position:absolute; box-sizing:border-box; border:2px solid #a9b6c8; border-radius:14px; pointer-events:none; z-index:2; }
-#inv-table tr.pair-bot { --sep:transparent; }
+.inv-card-frame { position:absolute; box-sizing:border-box; border:1px solid #d5dde7; border-radius:16px; pointer-events:none; z-index:1; }
+/* Trennlinien wie in der Akte: eingerückt, nicht bis an den Kartenrand */
+#inv-table td:first-child { background-size:calc(100% - 14px) 1px; background-position:14px bottom; }
+#inv-table td:last-child { background-size:calc(100% - 14px) 1px; background-position:left bottom; }
+#inv-table tr.pair-bot, #inv-table tr.pre-pair { --sep:transparent; }
 #inv-table td { border-bottom:0; background-image:linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; background-origin:border-box; background-clip:border-box; }
 #inv-table td:first-child { box-shadow:none; }
 /* Reihenfolge: Nummer und Datum, dann der Farbstrich, dann Name, dann Betrag */

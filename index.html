@@ -945,7 +945,11 @@ body { padding-bottom:84px; }
 #inv-table .inv-pay-action, #inv-table .inv-pay-action .inv-l1, #inv-table .inv-pay-action .inv-l2 { text-align:right; }
 /* Storno und zugehörige Rechnung: gemeinsamer Rahmen, der wie in der Patientenakte oben auf der Karte liegt */
 .inv-pair-frame { position:absolute; box-sizing:border-box; border:2px solid #a9b6c8; border-radius:14px; pointer-events:none; z-index:2; }
-#inv-table tr.pair-bot { --sep:transparent; }
+.inv-card-frame { position:absolute; box-sizing:border-box; border:1px solid #d5dde7; border-radius:16px; pointer-events:none; z-index:1; }
+/* Trennlinien wie in der Akte: eingerückt, nicht bis an den Kartenrand */
+#inv-table td:first-child { background-size:calc(100% - 14px) 1px; background-position:14px bottom; }
+#inv-table td:last-child { background-size:calc(100% - 14px) 1px; background-position:left bottom; }
+#inv-table tr.pair-bot, #inv-table tr.pre-pair { --sep:transparent; }
 #inv-table td { border-bottom:0; background-image:linear-gradient(var(--sep,#e2e8f0), var(--sep,#e2e8f0)); background-size:100% 1px; background-position:left bottom; background-repeat:no-repeat; background-origin:border-box; background-clip:border-box; }
 #inv-table td:first-child { box-shadow:none; }
 /* Reihenfolge: Nummer und Datum, dann der Farbstrich, dann Name, dann Betrag */
@@ -2493,7 +2497,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-10-r';
+var KA_V = '2026-11-10-s';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -4659,13 +4663,15 @@ async function toggleInvoiceSent() {
 /* Rahmen um Storno und Original: liegt als eigene Ebene über der Karte, die Karte selbst bleibt durchgehend */
 function invPairFrames() {
   var sc = document.querySelector('#tab-rechnungen .scroll'); if (!sc) return;
-  [].forEach.call(sc.querySelectorAll('.inv-pair-frame'), function (e) { e.remove(); });
+  [].forEach.call(sc.querySelectorAll('.inv-pair-frame, .inv-card-frame'), function (e) { e.remove(); });
   sc.style.position = 'relative';
+  var tb0 = document.getElementById('inv-table'), r0 = tb0 && tb0.querySelector('tr[data-nr]'), r1 = r0 && tb0.querySelector('tr[data-nr]:last-child');
+  if (r0 && r1) { var sr0 = sc.getBoundingClientRect(), a0 = r0.getBoundingClientRect(), z0 = r1.getBoundingClientRect(); if (a0.height) { var cf = mk('div', 'inv-card-frame'); cf.style.left = (a0.left - sr0.left + sc.scrollLeft) + 'px'; cf.style.width = a0.width + 'px'; cf.style.top = (a0.top - sr0.top + sc.scrollTop) + 'px'; cf.style.height = (z0.bottom - a0.top) + 'px'; sc.appendChild(cf); } }
   [].forEach.call(document.querySelectorAll('#inv-table tr.pair-top'), function (t) {
     var z = t.nextElementSibling; if (!z || !z.classList.contains('pair-bot')) return;
     var sr = sc.getBoundingClientRect(), a = t.getBoundingClientRect(), c = z.getBoundingClientRect(); if (!a.height) return;
     var d = mk('div', 'inv-pair-frame');
-    d.style.left = (a.left - sr.left + sc.scrollLeft + 4) + 'px'; d.style.width = (a.width - 8) + 'px';
+    d.style.left = (a.left - sr.left + sc.scrollLeft + 6) + 'px'; d.style.width = (a.width - 12) + 'px';
     d.style.top = (a.top - sr.top + sc.scrollTop - 1) + 'px'; d.style.height = (c.bottom - a.top + 2) + 'px';
     sc.appendChild(d);
   });
@@ -4772,8 +4778,10 @@ function renderInvoices() {
       x[0].classList.add('t-link');
       var m = x[0].querySelector('.inv-number-meta'); if (m) { var l = mk('span', 'inv-link'); l.title = x[1]; l.setAttribute('aria-label', x[1]); l.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>'; m.appendChild(l); }
     });
-    if (sr.nextElementSibling === or) { sr.classList.add('pair-top'); or.classList.add('pair-bot'); pairNeeded = true; }
-    else if (or.nextElementSibling === sr) { or.classList.add('pair-top'); sr.classList.add('pair-bot'); pairNeeded = true; }
+    var pt0 = null;
+    if (sr.nextElementSibling === or) { sr.classList.add('pair-top'); or.classList.add('pair-bot'); pt0 = sr; pairNeeded = true; }
+    else if (or.nextElementSibling === sr) { or.classList.add('pair-top'); sr.classList.add('pair-bot'); pt0 = or; pairNeeded = true; }
+    if (pt0 && pt0.previousElementSibling && pt0.previousElementSibling.dataset.nr) pt0.previousElementSibling.classList.add('pre-pair');
   });
   invPairFrames();
 }

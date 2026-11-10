@@ -48,6 +48,11 @@ try {
     out.vornameSchwarz = getComputedStyle(t0.cells[1].querySelector('.inv-l2')).color === 'rgb(15, 23, 42)';
     out.warnDreieck = !!open.cells[2].querySelector('.inv-pay-cross svg path[d^="M12 3.5"]') && !/×/.test(open.cells[2].textContent);
     out.stornoX = !!ro.cells[2].querySelector('.inv-pay-cross svg path[d^="M6 6"]');
+    const cfr = document.querySelector('#tab-rechnungen .inv-card-frame');
+    out.kartenRand = !!cfr && getComputedStyle(cfr).borderTopWidth === '1px' && parseFloat(getComputedStyle(cfr).borderTopLeftRadius) >= 12;
+    const vor = rows[rows.indexOf(pt) - 1];
+    out.keineLinienAmRahmen = getComputedStyle(pt).getPropertyValue('--sep').trim() === 'transparent' && getComputedStyle(pb).getPropertyValue('--sep').trim() === 'transparent' && getComputedStyle(vor).getPropertyValue('--sep').trim() === 'transparent';
+    out.linienEingerueckt = getComputedStyle(rows[0].cells[0]).backgroundPosition.startsWith('14px');
     out.keinLinkBeiAnderen = !rows.find(tr => tr.dataset.nr === a.nr).classList.contains('t-link');
     // Versandfilter durchschalten
     const n0 = document.querySelectorAll('#inv-table tr[data-nr]').length;

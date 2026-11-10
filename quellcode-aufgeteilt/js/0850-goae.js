@@ -654,13 +654,15 @@ async function toggleInvoiceSent() {
 /* Rahmen um Storno und Original: liegt als eigene Ebene über der Karte, die Karte selbst bleibt durchgehend */
 function invPairFrames() {
   var sc = document.querySelector('#tab-rechnungen .scroll'); if (!sc) return;
-  [].forEach.call(sc.querySelectorAll('.inv-pair-frame'), function (e) { e.remove(); });
+  [].forEach.call(sc.querySelectorAll('.inv-pair-frame, .inv-card-frame'), function (e) { e.remove(); });
   sc.style.position = 'relative';
+  var tb0 = document.getElementById('inv-table'), r0 = tb0 && tb0.querySelector('tr[data-nr]'), r1 = r0 && tb0.querySelector('tr[data-nr]:last-child');
+  if (r0 && r1) { var sr0 = sc.getBoundingClientRect(), a0 = r0.getBoundingClientRect(), z0 = r1.getBoundingClientRect(); if (a0.height) { var cf = mk('div', 'inv-card-frame'); cf.style.left = (a0.left - sr0.left + sc.scrollLeft) + 'px'; cf.style.width = a0.width + 'px'; cf.style.top = (a0.top - sr0.top + sc.scrollTop) + 'px'; cf.style.height = (z0.bottom - a0.top) + 'px'; sc.appendChild(cf); } }
   [].forEach.call(document.querySelectorAll('#inv-table tr.pair-top'), function (t) {
     var z = t.nextElementSibling; if (!z || !z.classList.contains('pair-bot')) return;
     var sr = sc.getBoundingClientRect(), a = t.getBoundingClientRect(), c = z.getBoundingClientRect(); if (!a.height) return;
     var d = mk('div', 'inv-pair-frame');
-    d.style.left = (a.left - sr.left + sc.scrollLeft + 4) + 'px'; d.style.width = (a.width - 8) + 'px';
+    d.style.left = (a.left - sr.left + sc.scrollLeft + 6) + 'px'; d.style.width = (a.width - 12) + 'px';
     d.style.top = (a.top - sr.top + sc.scrollTop - 1) + 'px'; d.style.height = (c.bottom - a.top + 2) + 'px';
     sc.appendChild(d);
   });
@@ -767,8 +769,10 @@ function renderInvoices() {
       x[0].classList.add('t-link');
       var m = x[0].querySelector('.inv-number-meta'); if (m) { var l = mk('span', 'inv-link'); l.title = x[1]; l.setAttribute('aria-label', x[1]); l.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>'; m.appendChild(l); }
     });
-    if (sr.nextElementSibling === or) { sr.classList.add('pair-top'); or.classList.add('pair-bot'); pairNeeded = true; }
-    else if (or.nextElementSibling === sr) { or.classList.add('pair-top'); sr.classList.add('pair-bot'); pairNeeded = true; }
+    var pt0 = null;
+    if (sr.nextElementSibling === or) { sr.classList.add('pair-top'); or.classList.add('pair-bot'); pt0 = sr; pairNeeded = true; }
+    else if (or.nextElementSibling === sr) { or.classList.add('pair-top'); sr.classList.add('pair-bot'); pt0 = or; pairNeeded = true; }
+    if (pt0 && pt0.previousElementSibling && pt0.previousElementSibling.dataset.nr) pt0.previousElementSibling.classList.add('pre-pair');
   });
   invPairFrames();
 }
