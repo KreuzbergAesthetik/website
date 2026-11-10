@@ -21,7 +21,7 @@ if (!function_exists('ka_cfg')) {
         return array(
             'EMPFAENGER'  => 'info@kreuzberg-aesthetik.de',          // Hierhin gehen die Benachrichtigungen
             'ERLAUBT'     => array('https://kreuzbergaesthetik.github.io', 'https://fellamanuel-arch.github.io'), // Seiten, die senden dürfen
-            'EINRICHTUNG' => '',          // Optional: eigenes Wort, das beim ersten Einrichten der App einmal eingegeben werden muss
+            'EINRICHTUNG' => '',          // Dein Einrichtungspasswort: wird beim ersten Einrichten der App (auch auf neuen Geräten) und beim neuen Abgleich-Bereich abgefragt. Leer = keine Prüfung, bitte eintragen.
             'MAX_PAKET'   => 12 * 1024 * 1024,   // größtes Formular (verschlüsselt)
             'MAX_OBJEKT'  => 40 * 1024 * 1024,   // größte Datei im Abgleich
             'MAX_GESAMT'  => 1500 * 1024 * 1024, // Speicher für den Abgleich insgesamt
@@ -131,6 +131,20 @@ if (!function_exists('ka_cfg')) {
         $r = ka_ok(array('texte' => is_array($k) && $k ? $k : new stdClass(), 'felder' => is_array($fk) && $fk ? $fk : new stdClass()));
         $r->header('Cache-Control', 'no-store');
         return $r;
+    }
+
+    /* Einrichtungspasswort: Die App fragt hier beim ersten Einrichten auf einem Gerät, ob das Wort stimmt (EINRICHTUNG). Es gibt nur ja oder nein zurück. */
+    function ka_zugang($req) {
+        $c = ka_cfg();
+        if (!ka_origin_ok($req)) return ka_fail(403, 'Nicht erlaubt.');
+        if ($c['EINRICHTUNG'] === '') return ka_ok(array('offen' => true));
+        $failKey = ka_ip_key('ka_zug_');
+        if ((int) get_transient($failKey) >= 10) return ka_fail(429, 'Zu viele Fehlversuche. Bitte später noch einmal versuchen.');
+        if (!hash_equals($c['EINRICHTUNG'], (string) $req->get_param('e'))) {
+            set_transient($failKey, (int) get_transient($failKey) + 1, HOUR_IN_SECONDS);
+            return ka_fail(403, 'Das Einrichtungspasswort stimmt nicht.');
+        }
+        return ka_ok();
     }
 
     /* Abgleich der Praxis-App: alles mit Zugangs-Token, Daten liegen nur verschlüsselt hier */
@@ -280,5 +294,6 @@ add_action('rest_api_init', function () {
     register_rest_route('ka/v1', '/schluessel', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_schluessel'));
     register_rest_route('ka/v1', '/kalender', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_kalender'));
     register_rest_route('ka/v1', '/texte', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => 'ka_texte'));
+    register_rest_route('ka/v1', '/zugang', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_zugang'));
     register_rest_route('ka/v1', '/abgleich', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_abgleich'));
 });
