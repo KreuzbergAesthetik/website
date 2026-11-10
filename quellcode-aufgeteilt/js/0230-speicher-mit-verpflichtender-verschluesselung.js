@@ -93,14 +93,28 @@ function alImportKey(raw) { return crypto.subtle.importKey('raw', raw, { name: '
 async function alCheck(pw) { var c = alGet(); if (!c) return true; return c.enc ? !!(await alUnwrap(pw, c)) : (await alHash(pw, c.salt)) === c.hash; }
 
 var alFails = 0, alUntil = 0, alTimer = null, alHiddenAt = 0;
+/* Einrichtungspasswort: Eine neue App-Einrichtung (auch Laden einer Sicherung auf einem neuen Gerät) braucht das Wort, das nur im Server-Snippet der Praxis steht.
+   Geprüft wird auf dem Praxis-Server (Route zugang). Lokal (localhost, 127.0.0.1) entfällt die Prüfung, mit ?zugang=1 wird sie erzwungen (Tests). */
+function alGateNeeded() { return !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || /[?&]zugang=1/.test(location.search); }
+async function alZugang(code) {
+  try {
+    var fd = new FormData(); fd.append('e', code);
+    var r = await fetch('https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/zugang', { method: 'POST', body: fd, cache: 'no-store' });
+    if (r.status === 403) return 'falsch';
+    if (r.status === 429) return 'zuviel';
+    if (r.status === 404) return 'alt';
+    var j = await r.json(); return j && j.ok ? 'ok' : 'fehler';
+  } catch (e) { return 'offline'; }
+}
 function alPrepare() {
   var c = alGet(), fresh = !c, inp = document.getElementById('al-pw'), inp2 = document.getElementById('al-pw2');
   var title = document.getElementById('al-title'), hint = document.getElementById('al-hint'), submit = document.getElementById('al-submit');
   if (!inp || !inp2 || !title || !hint || !submit) return;
   title.textContent = fresh ? 'Sicherheit einrichten' : 'Kreuzberg Ästhetik';
   hint.style.display = fresh ? '' : 'none';
-  hint.textContent = fresh ? 'Lege einmalig ein Passwort mit mindestens 8 Zeichen fest. Patientendaten und Dateien werden damit auf diesem Gerät verschlüsselt.' : '';
+  hint.textContent = fresh ? 'Lege einmalig ein Passwort mit mindestens 8 Zeichen fest. Patientendaten und Dateien werden damit auf diesem Gerät verschlüsselt.' + (alGateNeeded() ? ' Zum Einrichten wird zusätzlich das Einrichtungspasswort der Praxis gebraucht.' : '') : '';
   inp2.style.display = fresh ? '' : 'none'; inp2.value = '';
+  var codeIn = document.getElementById('al-code'); if (codeIn) { codeIn.style.display = fresh && alGateNeeded() ? '' : 'none'; codeIn.value = ''; }
   inp.autocomplete = fresh ? 'new-password' : 'current-password';
   submit.textContent = fresh ? 'Verschlüsselung aktivieren' : (c && !c.enc ? 'Entsperren & verschlüsseln' : 'Entsperren');
 }
@@ -127,6 +141,15 @@ async function alUnlock(ev) {
     if (!(window.crypto && crypto.subtle)) { msg.textContent = 'Dieser Browser unterstützt die Verschlüsselung nicht.'; return; }
     if (inp.value.length < 8) { msg.textContent = 'Das Passwort braucht mindestens 8 Zeichen.'; return; }
     if (inp.value !== inp2.value) { msg.textContent = 'Die beiden Passwörter sind nicht gleich.'; return; }
+    if (alGateNeeded()) {
+      msg.textContent = 'Einrichtungspasswort wird geprüft …';
+      var zg = await alZugang(document.getElementById('al-code').value);
+      if (zg !== 'ok') {
+        if (zg === 'falsch') { alFails++; if (alFails >= 3) alUntil = Date.now() + Math.min(60, Math.pow(2, alFails - 2)) * 1000; }
+        msg.textContent = { falsch: 'Das Einrichtungspasswort stimmt nicht.', zuviel: 'Zu viele Versuche. Bitte später noch einmal.', alt: 'Der Server kennt die Prüfung noch nicht. Bitte das Server-Snippet in WPCode aktualisieren.', offline: 'Keine Verbindung zum Server. Zum Einrichten wird Internet gebraucht.' }[zg] || 'Die Prüfung ist fehlgeschlagen. Bitte erneut versuchen.';
+        return;
+      }
+    }
     msg.textContent = 'Daten werden verschlüsselt …';
     try { await alActivateEncryption(inp.value, 5); c = alGet(); }
     catch (e) { KA.key = null; msg.textContent = 'Die Verschlüsselung konnte nicht eingerichtet werden. Bitte erneut versuchen.'; return; }
@@ -154,7 +177,7 @@ async function alUnlock(ev) {
       catch (e) { KA.key = null; msg.textContent = 'Die Daten konnten nicht gelesen werden.'; return; }
     }
   }
-  alFails = 0; inp.value = ''; inp2.value = ''; msg.textContent = '';
+  alFails = 0; inp.value = ''; inp2.value = ''; if (document.getElementById('al-code')) document.getElementById('al-code').value = ''; msg.textContent = '';
   if (!KA.booted) kaBoot(false);
   try { var rjr = typeof restoreJournalStartup === 'function' ? await restoreJournalStartup() : ''; if (rjr === 'reload') { location.reload(); return; } }
   catch (e) { msg.textContent = 'Die unterbrochene Wiederherstellung konnte nicht sicher abgeschlossen werden. ' + (e && e.message ? e.message : ''); return; }
