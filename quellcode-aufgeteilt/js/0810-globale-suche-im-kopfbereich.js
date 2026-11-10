@@ -42,6 +42,27 @@ function recentAdd(id) { try { var l = JSON.parse(kaGet('ka_recent') || '[]').fi
 /* Suche: nur Patienten, die letzten fünf Treffer merkt sich die App */
 function lastSearch() { try { var l = JSON.parse(kaGet('ka_lastsearch') || '[]'); return Array.isArray(l) ? l : []; } catch (x) { return []; } }
 function lastSearchAdd(id) { try { var l = lastSearch().filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_lastsearch', JSON.stringify(l.slice(0, 5))); } catch (x) {} }
+/* Patientenliste: Die drei Punkte öffnen ein Pop-up mit den Aktionen (wie das Plus-Menü der unteren Leiste) */
+function ptPop(btn, items) {
+  var m = document.getElementById('pt-pop');
+  if (!m) { m = mk('div', 'pt-pop'); m.id = 'pt-pop'; m.setAttribute('role', 'menu'); document.body.appendChild(m); }
+  if (m.classList.contains('on') && m._src === btn) { m.classList.remove('on'); return; }
+  m._src = btn; m.innerHTML = '';
+  items.forEach(function (it) {
+    var b = mk('button', 'pt-pop-i ib-' + it.k + (it.cls ? ' ' + it.cls : '')); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.title = it.t;
+    b.innerHTML = tvSvg(it.k) + '<span>' + esc(it.lb) + '</span>';
+    b.onclick = function (ev) { ev.stopPropagation(); m.classList.remove('on'); it.fn({ currentTarget: btn, target: btn, stopPropagation: function () {}, preventDefault: function () {} }); };
+    m.appendChild(b);
+  });
+  m.classList.add('on');
+  var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
+  m.style.left = Math.max(8, Math.min(r.right - mw, window.innerWidth - mw - 8)) + 'px';
+  var top = r.bottom + 6; if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 6);
+  m.style.top = top + 'px';
+}
+document.addEventListener('click', function (ev) { var m = document.getElementById('pt-pop'); if (m && m.classList.contains('on') && !ev.target.closest('#pt-pop')) m.classList.remove('on'); });
+document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { var m = document.getElementById('pt-pop'); if (m) m.classList.remove('on'); } });
+window.addEventListener('scroll', function () { var m = document.getElementById('pt-pop'); if (m) m.classList.remove('on'); }, true);
 /* Aktionsmenü wie in der Patientenakte, direkt aus der Patientenübersicht */
 function ptAMenu(ev, p) {
   var btn = ev.currentTarget, m = document.getElementById('pt-amenu');

@@ -162,21 +162,21 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .a-pane .card { border:none; box-shadow:none; padding:0; margin-bottom:14px; border-radius:0; background:none; }
 .a-pane .card:last-child { margin-bottom:0; }
 .tl-item { position:relative; padding:12px 46px 12px 12px; margin-bottom:10px; background:#f1f4f8; border:1px solid #d5dde7; border-radius:12px; }
-.tl-item.tl-termin .tl-body { border-left-color:#16a34a; }
+.tl-item.tl-termin .tl-body { border-left-color:#22c55e; }
 .tl-item.tl-termin .tl-label { color:#16a34a; font-weight:600; }
-.tl-item.tl-doku .tl-body { border-left-color:#2563eb; }
+.tl-item.tl-doku .tl-body { border-left-color:#3b82f6; }
 .tl-item.tl-doku .tl-label { color:#2563eb; font-weight:600; }
-.tl-item.tl-notiz .tl-body { border-left-color:#ca8a04; }
+.tl-item.tl-notiz .tl-body { border-left-color:#eab308; }
 .tl-item.tl-notiz .tl-label { color:#ca8a04; font-weight:600; }
-.tl-item.tl-med .tl-body { border-left-color:#7c3aed; }
+.tl-item.tl-med .tl-body { border-left-color:#8b5cf6; }
 .tl-item.tl-med .tl-label { color:#7c3aed; font-weight:600; }
-.tl-item.tl-rezept .tl-body { border-left-color:#db2777; }
+.tl-item.tl-rezept .tl-body { border-left-color:#ec4899; }
 .tl-item.tl-rezept .tl-label { color:#db2777; font-weight:600; }
-.tl-item.tl-mail .tl-body { border-left-color:#0d9488; }
+.tl-item.tl-mail .tl-body { border-left-color:#14b8a6; }
 .tl-item.tl-mail .tl-label { color:#0d9488; font-weight:600; }
-.tl-item.tl-rechnung .tl-body { border-left-color:#ea580c; }
+.tl-item.tl-rechnung .tl-body { border-left-color:#f97316; }
 .tl-item.tl-rechnung .tl-label { color:#ea580c; font-weight:600; }
-.tl-item.tl-verbrauch .tl-body { border-left-color:#0891b2; }
+.tl-item.tl-verbrauch .tl-body { border-left-color:#06b6d4; }
 .tl-item.tl-verbrauch .tl-label { color:#0891b2; font-weight:600; }
 .tl-item.tl-angelegt .tl-body { border-left-color:#64748b; }
 .tl-item.tl-angelegt .tl-label { color:#64748b; font-weight:600; }
@@ -217,8 +217,8 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item:not(.open) .tl-first { flex:1; min-width:0; margin:0; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis; font-size:14px; padding:0 !important; background:none !important; border:none !important; }
 .tl-day .tl-item:not(.open) .tl-first * { display:inline !important; white-space:nowrap !important; }
 .tl-day .tl-item { padding-top:6px; padding-bottom:6px; }
-.tl-day .tl-item.tl-termin { background:#e3f4ea; border:1.5px solid #16a34a; border-radius:8px; margin:4px -6px; padding-left:6px; }
-.tl-day .tl-item.tl-doku { background:#e6eefc; border:1.5px solid #2563eb; border-radius:8px; margin:4px -6px; padding-left:6px; }
+.tl-day .tl-item.tl-termin { background:#e3f4ea; border:1.5px solid #22c55e; border-radius:8px; margin:4px -6px; padding-left:6px; }
+.tl-day .tl-item.tl-doku { background:#e6eefc; border:1.5px solid #3b82f6; border-radius:8px; margin:4px -6px; padding-left:6px; }
 .tl-day .tl-item.tl-notiz, .tl-day .tl-item.tl-mail, .tl-day .tl-item.tl-med, .tl-day .tl-item.tl-rezept, .tl-day .tl-item.tl-rechnung, .tl-day .tl-item.tl-verbrauch, .tl-day .tl-item.tl-angelegt { padding-top:3px; padding-bottom:3px; grid-template-columns:40px 1fr; }
 .tl-day .tl-item.tl-notiz .tl-body, .tl-day .tl-item.tl-mail .tl-body, .tl-day .tl-item.tl-med .tl-body, .tl-day .tl-item.tl-rezept .tl-body, .tl-day .tl-item.tl-rechnung .tl-body, .tl-day .tl-item.tl-verbrauch .tl-body, .tl-day .tl-item.tl-angelegt .tl-body { padding-left:8px; line-height:1.25; }
 .tl-day .tl-item.tl-notiz .tl-label, .tl-day .tl-item.tl-mail .tl-label, .tl-day .tl-item.tl-med .tl-label, .tl-day .tl-item.tl-rezept .tl-label, .tl-day .tl-item.tl-rechnung .tl-label, .tl-day .tl-item.tl-verbrauch .tl-label, .tl-day .tl-item.tl-angelegt .tl-label { font-size:10.5px; margin:0; }
@@ -321,7 +321,7 @@ header .nav-btn { min-height:44px; padding:10px 14px; }
 
 .hd-act { gap:4px; }
 .ico-btn { min-height:34px; }
-.hero { background:#fff; color:#0f172a; border:1px solid #dbe2ea; border-left:6px solid #1e3a8a; box-shadow:0 2px 8px rgba(15,23,42,.08); }
+.hero { background:#fff; color:#0f172a; border:1px solid #dbe2ea; border-left:6px solid #3b82f6; box-shadow:0 2px 8px rgba(15,23,42,.08); }
 .hero #hm-date { color:#64748b; font-size:15px; margin-top:2px; }
 .hc { background:var(--bg); border:1px solid var(--bd); border-left:6px solid var(--c); }
 .hc .card-title { color:var(--t); display:flex; align-items:center; gap:10px; }
@@ -332,13 +332,13 @@ header .nav-btn { min-height:44px; padding:10px 14px; }
 .hc .hm-row:last-child { margin-bottom:0; }
 .hc .hm-row.next { box-shadow:none; }
 .hc-termin .hm-row.next { background:#e7f5ec; } .hc-wichtig .hm-row.next { background:#fdeceb; } .hc-bday .hm-row.next { background:#fcebf3; } .hc-week .hm-row.next { background:#e9effc; } .hc-open .hm-row.next { background:#fdeee3; }
-.hc-termin { --c:#16a34a; --bg:#fff; --bd:#dfe5ec; --t:#14532d; }
-.hc-wichtig { --c:#dc2626; --bg:#fff; --bd:#dfe5ec; --t:#991b1b; }
-.hc-bday { --c:#db2777; --bg:#fff; --bd:#dfe5ec; --t:#9d174d; }
-.hc-order { --c:#0d9488; --bg:#fff; --bd:#dfe5ec; --t:#115e59; }
-.hc-week { --c:#2563eb; --bg:#fff; --bd:#dfe5ec; --t:#1e40af; }
-.hc-fin { --c:#7c3aed; --bg:#fff; --bd:#dfe5ec; --t:#5b21b6; }
-.hc-open { --c:#ea580c; --bg:#fff; --bd:#dfe5ec; --t:#9a3412; }
+.hc-termin { --c:#22c55e; --bg:#fff; --bd:#dfe5ec; --t:#14532d; }
+.hc-wichtig { --c:#ef4444; --bg:#fff; --bd:#dfe5ec; --t:#991b1b; }
+.hc-bday { --c:#ec4899; --bg:#fff; --bd:#dfe5ec; --t:#9d174d; }
+.hc-order { --c:#14b8a6; --bg:#fff; --bd:#dfe5ec; --t:#115e59; }
+.hc-week { --c:#3b82f6; --bg:#fff; --bd:#dfe5ec; --t:#1e40af; }
+.hc-fin { --c:#8b5cf6; --bg:#fff; --bd:#dfe5ec; --t:#5b21b6; }
+.hc-open { --c:#f97316; --bg:#fff; --bd:#dfe5ec; --t:#9a3412; }
 
 
 

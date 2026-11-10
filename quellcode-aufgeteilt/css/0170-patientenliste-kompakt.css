@@ -1,0 +1,38 @@
+/* Patientenliste kompakt: nur der Drei-Punkte-Knopf, die Aktionen öffnen als Pop-up */
+#tab-patienten .pt-acts { opacity:1; pointer-events:auto; display:flex; grid-template-columns:none; justify-content:flex-end; }
+#tab-patienten .pt-acts .pt-ib { width:34px; height:34px; border-radius:10px; color:#64748b; flex-direction:row; }
+#tab-patienten .pt-acts .pt-ib svg { width:20px; height:20px; }
+#tab-patienten .pt-wrap::after { content:none; }
+#tab-patienten .pt-wrap { align-items:center; gap:6px; }
+#tab-patienten .scroll > table.pt tbody td { padding-top:6px; padding-bottom:6px; }
+@media (min-width:700px) {
+  #tab-patienten .pt-hg, #tab-patienten .pt-wrap { grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 44px; }
+  #tab-patienten .pt-l { display:flex; align-items:baseline; gap:12px; }
+  #tab-patienten .pt-l .pt-dr { margin:0; }
+  #tab-patienten .pt-ha { font-size:0; }
+}
+.pt-pop { position:fixed; z-index:46; display:none; flex-direction:column; gap:6px; }
+.pt-pop.on { display:flex; }
+.pt-pop .pt-pop-i { display:flex; align-items:center; gap:12px; min-width:190px; height:44px; padding:0 18px 0 14px; background:#fff; border:1px solid #c3cedf; border-radius:12px; box-shadow:0 3px 10px rgba(15,23,42,.34); font:700 14px/1 inherit; color:#0f172a; cursor:pointer; text-align:left; }
+.pt-pop .pt-pop-i svg { width:22px; height:22px; flex:none; }
+.pt-pop .pt-pop-i.ib-cal { --ic:var(--c-termin); } .pt-pop .pt-pop-i.ib-book { --ic:var(--c-doku); } .pt-pop .pt-pop-i.ib-mail { --ic:var(--c-senden); } .pt-pop .pt-pop-i.ib-euro { --ic:var(--c-rechnung); } .pt-pop .pt-pop-i.ib-pill { --ic:var(--c-rezept); } .pt-pop .pt-pop-i.ib-plus { --ic:var(--c-mehr); }
+.pt-pop .pt-pop-i svg { color:var(--ic,#475569); }
+.pt-pop .pt-pop-i.st-ok::after { content:'✓'; margin-left:auto; color:#16a34a; font-weight:800; }
+/* Patienten: Die Hinweis-Punkte bilden einen durchgehenden Strich zwischen ID und Name; mehrere Hinweise teilen sich den Strich in Farbabschnitte */
+#tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:14px; }
+#tab-patienten .pt-dots { position:absolute; left:0; top:0; bottom:0; width:3px; display:flex; flex-direction:column; gap:0; }
+#tab-patienten .pt-dots .pt-dot { flex:1 1 0; width:3px; height:auto; border-radius:0; }
+/* Farbstrich nach der ersten Spalte: Zahlungsart bei Zahlungen, Gruppe bei Leistungen */
+#tab-zahlungen .scroll > table.pt tbody tr td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr td:nth-child(2) { padding-left:12px; background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)), linear-gradient(#e2e8f0, #e2e8f0); background-size:3px 100%, calc(100% - 3px) 1px; background-position:left top, 3px bottom; }
+#tab-zahlungen .scroll > table.pt tbody tr:last-child td:nth-child(2), #tab-leistungen .scroll > table.pt tbody tr:last-child td:nth-child(2) { background-image:linear-gradient(var(--bar,transparent), var(--bar,transparent)); background-size:3px 100%; background-position:left top; }
+.cal-plus svg, .inv-plus svg { width:22px; height:22px; }
+/* Praxis-Menü: jede Gruppe als eigene Karte mit Farbstreifen */
+.nav-menu { background:#eef2f7; padding:8px; }
+.nav-section { --sec:#1e3a8a; background:#fff; border:1px solid #d5dde7; border-left:4px solid var(--sec); border-radius:12px; margin:0 0 8px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(15,23,42,.08); }
+.nav-section:last-child { margin-bottom:0; }
+.nav-section[data-ni="0"] { --sec:#22c55e; } .nav-section[data-ni="1"] { --sec:#3b82f6; } .nav-section[data-ni="2"] { --sec:#a855f7; } .nav-section[data-ni="3"] { --sec:#14b8a6; } .nav-section[data-ni="4"] { --sec:#f97316; }
+.nav-section > .nav-group { background:color-mix(in srgb, var(--sec) 10%, #fff); color:color-mix(in srgb, var(--sec) 70%, #0f172a); font-weight:800; font-size:12.5px; letter-spacing:.07em; }
+.nav-section[open] > .nav-group { border-bottom:1px solid color-mix(in srgb, var(--sec) 25%, #fff); }
+.nav-section .nav-items > button svg { stroke:var(--sec); }
+.nav-section .nav-items > button:disabled svg { stroke:#94a3b8; }
+.nav-section .nav-items > button + button { border-top:1px solid #f1f5f9; border-radius:0; }

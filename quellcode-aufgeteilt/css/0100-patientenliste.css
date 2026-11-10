@@ -14,7 +14,7 @@
   .pt td.pc-er { padding-top:6px; font-size:12.5px; }
 }
 /* Farben der Aktionen = Farben der Kategorien (seitliche Streifen) */
-:root { --c-termin:#7c3aed; --c-patient:#1e3a8a; --c-rechnung:#16a34a; --c-doku:#1e3a8a; --c-senden:#0ea5e9; --c-rezept:#db2777; --c-mehr:#64748b; --c-zahlung:#16a34a; }
+:root { --c-termin:#8b5cf6; --c-patient:#3b82f6; --c-rechnung:#22c55e; --c-doku:#3b82f6; --c-senden:#0ea5e9; --c-rezept:#ec4899; --c-mehr:#64748b; --c-zahlung:#22c55e; }
 /* Kopfzeile = Navigation mit Logo als Start-Knopf; Neu-Knöpfe und Suche schweben unten rechts */
 header { display:flex; align-items:center; gap:8px; padding:0 12px; }
 header .logo-img { width:34px; height:34px; flex:none; }
