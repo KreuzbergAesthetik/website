@@ -277,7 +277,7 @@ function renderPick() {
 var AM_GROUPS = [
   { t: 'Dokumentieren', ic: 'book', items: [['doku', 'book', 'Dokumentation'], ['notiz', 'pen', 'Notiz'], ['produkt', 'box', 'Produkt']] },
   { t: 'Termin und Abrechnung', ic: 'cal', items: [['termin', 'cal', 'Termin'], ['rechnung', 'euro', 'Rechnung']] },
-  { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamlink', 'link', 'Anamnese-Link'], ['umschlag', 'form', 'Briefumschlag B6 (PDF)']] },
+  { t: 'Nachrichten', ic: 'mail', items: [['mail', 'mail', 'E-Mail'], ['anammail', 'mail', 'Anamnese E-Mail'], ['anamlink', 'link', 'Anamnese-Link'], ['umschlag', 'form', 'Briefumschlag C6 (PDF)']] },
   { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] },
   { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
