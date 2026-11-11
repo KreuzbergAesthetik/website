@@ -10,3 +10,24 @@
   #tab-rechnungen #inv-q { order:2; flex:1 1 140px; max-width:240px; height:38px; min-width:0; }
   #tab-rechnungen #inv-flt { order:3; } #tab-rechnungen #inv-b-new { order:4; }
 }
+/* Reiter in der Kopfzeile: Unterstreichung nur so breit wie die Schrift, Farbe je Bereich */
+header nav .nav-btn { position:relative; --np:14px; }
+header nav .nav-btn.active { border-bottom-color:transparent; }
+header nav .nav-btn.active::after { content:''; position:absolute; left:var(--np); right:var(--np); bottom:-2px; height:2px; border-radius:2px; background:var(--nc,#0f172a); }
+header nav .nav-btn.nav-more { --np:10px; }
+@media (max-width:760px) { header nav .nav-btn { --np:1px; } header nav .nav-btn.nav-more { --np:10px; } }
+@media (min-width:761px) and (orientation:landscape) { header nav { justify-content:space-around; } header nav .nav-btn.nav-main { --np:22px; flex:0 0 auto; } }
+/* Querformat und Desktop: Praxis nur als Pfeil, schmalere Reiter und Suche, damit Rechnungen standardmäßig sichtbar bleibt */
+@media (min-width:700px) and (orientation:landscape) {
+  header .nav-more-label { display:none; }
+  .fab-col { z-index:46; }
+  .fab-col .gs-res { max-height:calc(100vh - var(--hdh,56px) - 24px); overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y; }
+}
+@media (min-width:700px) and (max-width:1099px) and (orientation:landscape) {
+  header nav .nav-btn.nav-main { padding:14px 12px; font-size:16px; --np:12px; }
+  header { padding-right:272px; } .fab-col { width:248px; }
+}
+/* Akte: Zurück-Pfeil größer, Alter rechts neben dem Namen */
+.a-top > .icon-btn { background:none; border:0; box-shadow:none; width:38px; height:40px; min-width:38px; padding:0; }
+.a-top > .icon-btn svg { width:28px; height:28px; stroke-width:2.6; }
+.a-age { margin-left:auto; padding:0 4px; align-self:center; font-size:14px; font-weight:500; color:#64748b; white-space:nowrap; }

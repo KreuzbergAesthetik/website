@@ -82,6 +82,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   .akte-page .a-pane.ak-more { border-bottom-left-radius:0; border-bottom-right-radius:0; }
   .a-sidecol .a-flagcard { margin:0; }
   .akte-page .a-side { margin:0; }
+  .akte-page .a-side.card:not(.hc):not(.hero) { border:1px solid #b6c2d1; }
   .akte-page > .btn { display:none; }
   .a-side .a-tiles { display:flex; flex-direction:column; gap:8px; }
   .a-side .a-tile, .a-side .a-tile.a-half { flex:none; width:auto; }

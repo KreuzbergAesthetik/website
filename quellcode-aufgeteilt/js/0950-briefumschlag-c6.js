@@ -279,6 +279,7 @@ function renderHead() {
   if (p.titel) nf.appendChild(mk('small', 'a-tit', p.titel));
   nmb.appendChild(nl); nmb.appendChild(document.createTextNode(' ')); nmb.appendChild(nf);
   ttl.appendChild(idc); ttl.appendChild(nmb);
+  var ageT = p.dob ? ageOf(p.dob) : ''; if (ageT !== '' && ageT !== null && !isNaN(ageT)) { var ag = mk('span', 'a-age', String(ageT)); ag.title = 'Alter: ' + ageT + ' Jahre'; ttl.appendChild(ag); }
   renderFlags();
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
   document.querySelector('.a-fab').style.visibility = stammEdit ? 'hidden' : '';

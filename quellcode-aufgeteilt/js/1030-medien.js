@@ -290,6 +290,25 @@ var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0' }, { t: 'R
     b.onclick = function (ev) { if (d.act) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); } else toggleAMenu(ev, d.g); }; box.appendChild(b);
   });
 })();
+/* Hochkant: Die Akte-Aktionen liegen als farbige Streifen am rechten Rand. Antippen, nach links Herausziehen oder der Pfeil klappen sie aus. */
+var aFabMq = window.matchMedia('(max-width:699px), (orientation:portrait)');
+function aFabOut(on) {
+  var f = document.querySelector('.a-fab'); if (!f) return;
+  var v = on === undefined ? !f.classList.contains('out') : !!on; f.classList.toggle('out', v);
+  var t = f.querySelector('.a-fab-tog'); if (t) t.setAttribute('aria-expanded', v ? 'true' : 'false');
+}
+(function () {
+  var f = document.querySelector('.a-fab'), sx = null; if (!f) return;
+  f.addEventListener('click', function (e) { if (!aFabMq.matches || f.classList.contains('out') || e.target.closest('.a-fab-tog')) return; e.stopPropagation(); e.preventDefault(); aFabOut(true); }, true);
+  f.addEventListener('pointerdown', function (e) { sx = e.clientX; });
+  f.addEventListener('pointermove', function (e) {
+    if (sx === null || !aFabMq.matches) return; var dx = e.clientX - sx;
+    if (dx < -14 && !f.classList.contains('out')) { aFabOut(true); sx = null; } else if (dx > 14 && f.classList.contains('out')) { aFabOut(false); sx = null; }
+  });
+  ['pointerup', 'pointercancel'].forEach(function (t) { f.addEventListener(t, function () { sx = null; }); });
+  document.addEventListener('pointerdown', function (e) { if (aFabMq.matches && f.classList.contains('out') && !e.target.closest('.a-fab')) aFabOut(false); }, true);
+  f.addEventListener('click', function (e) { if (aFabMq.matches && f.classList.contains('out') && e.target.closest('.a-cat')) setTimeout(function () { aFabOut(false); }, 250); });
+})();
 function toggleAMenu(ev, gi) {
   ev.stopPropagation();
   var m = document.getElementById('a-menu'), key = gi === undefined ? 'all' : String(gi);

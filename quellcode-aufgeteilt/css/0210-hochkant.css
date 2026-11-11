@@ -1,0 +1,13 @@
+/* Hochkant: Plus-Knopf schwarz rechts neben der Suche, Akte-Aktionen als Streifen am Rand */
+.a-fab-tog { display:none; }
+@media (max-width:699px), (orientation:portrait) {
+  .fab.fab-plus { order:0; background:#0f172a; border-color:#0f172a; color:#fff; }
+  .fab-col .gs-menu { left:auto; right:0; align-items:flex-end; }
+  body.akte-open .a-fab { right:0; touch-action:pan-y; }
+  .a-fab-tog { display:inline-flex; align-items:center; justify-content:center; width:24px; height:36px; padding:0; border:1px solid #c3cedf; border-right:0; border-radius:10px 0 0 10px; background:#fff; color:#64748b; box-shadow:none; cursor:pointer; }
+  .a-fab-tog svg { width:16px; height:16px; transition:transform .2s; } .a-fab.out .a-fab-tog svg { transform:rotate(180deg); }
+  .a-fab .a-cat, .a-fab .plus-btn { transition:transform .22s ease; }
+  .a-fab.out .a-cat, .a-fab.out .plus-btn { transform:translateX(-10px); }
+  .a-fab:not(.out) .a-cat, .a-fab:not(.out) .plus-btn { transform:translateX(calc(100% - 12px)); border-radius:10px 0 0 10px; border-right:0; box-shadow:none; background:linear-gradient(90deg, var(--ac, var(--c-mehr)) 0 12px, transparent 12px); }
+  .a-fab:not(.out) .a-cat > *, .a-fab:not(.out) .plus-btn > * { opacity:0; }
+}
