@@ -1,5 +1,5 @@
 /* Handy quer: Kategorien stehen nebeneinander */
-@media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
+@media (orientation:landscape) and (min-width:700px){
  .nav-menu{width:min(940px,calc(100vw - 16px))}
  .nav-cols{display:flex;gap:12px;align-items:flex-start}
  .nav-col{flex:1 1 0;min-width:0}

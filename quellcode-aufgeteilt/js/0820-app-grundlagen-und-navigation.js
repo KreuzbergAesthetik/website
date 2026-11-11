@@ -1,6 +1,6 @@
 
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-11-h';
+var KA_V = '2026-11-11-i';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -77,7 +77,7 @@ function navLayout() {
   var box = document.getElementById('nav-menu'); if (!box) return;
   var ver = box.querySelector('.nav-ver'), secs = [].slice.call(box.querySelectorAll('.nav-section')).sort(function (p, q) { return (+p.dataset.ni || 0) - (+q.dataset.ni || 0); });
   var old = box.querySelector('.nav-cols');
-  var land = window.matchMedia('(orientation:landscape) and (max-height:600px) and (pointer:coarse)').matches;
+  var land = window.matchMedia('(orientation:landscape) and (min-width:700px)').matches;
   if (!land) { if (old) { secs.forEach(function (x) { box.insertBefore(x, ver); }); old.remove(); } return; }
   var n = Math.min(940, window.innerWidth - 16) >= 780 ? 3 : 2, wrap = document.createElement('div'), cols = [];
   wrap.className = 'nav-cols';
