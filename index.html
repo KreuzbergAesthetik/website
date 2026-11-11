@@ -1171,6 +1171,14 @@ header nav .nav-btn.nav-more { --np:10px; }
   .a-fab:not(.out) .a-cat, .a-fab:not(.out) .plus-btn { transform:translateX(calc(100% - 12px)); border-radius:10px 0 0 10px; border-right:0; box-shadow:none; background:linear-gradient(90deg, var(--ac, var(--c-mehr)) 0 12px, transparent 12px); }
   .a-fab:not(.out) .a-cat > *, .a-fab:not(.out) .plus-btn > * { opacity:0; }
 }
+/* Zeitleiste in einer Karte: links Datum (erster Eintrag des Tages) und Uhrzeit, dann der durchgehende Strich, rechts das Ereignis */
+.tl-day.tl-all { padding:6px 12px 6px; }
+.tl-day.tl-all .tl-item { grid-template-columns:82px 1fr !important; gap:0; }
+.tl-day.tl-all .tl-date { display:flex; flex-direction:column; gap:1px; padding-right:8px; line-height:1.25; }
+.tl-day.tl-all .tl-date b { display:none; font-size:11.5px; font-weight:800; color:#0f172a; letter-spacing:.01em; white-space:nowrap; }
+.tl-day.tl-all .tl-item.tl-dstart .tl-date b { display:block; }
+.tl-day.tl-all .tl-item.tl-dstart .tl-date { border-top:1px solid #cbd5e1; padding-top:6px; margin-top:4px; }
+.tl-day.tl-all .tl-item.tl-dstart:first-child .tl-date { border-top:0; margin-top:0; padding-top:4px; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -6541,15 +6549,12 @@ function renderVerlauf() {
   auditFilter.appendChild(auditCheck);
   var auditSlot = document.getElementById('a-audit-filter');
   auditSlot.innerHTML = ''; auditSlot.appendChild(auditFilter);
-  var day = null, card = null;
+  /* Eine Karte für die ganze Zeitleiste: durchgehender Strich, links Datum (beim ersten Eintrag eines Tages) und Uhrzeit, rechts das Ereignis */
+  var day = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
   items.forEach(function (it) {
-    var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
-    if (key !== day) {
-      day = key; card = mk('div', 'tl-day');
-      card.appendChild(mk('div', 'tl-day-h', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
-      box.appendChild(card);
-    }
-    var row = tlRow(it), bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
+    var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
+    var row = tlRow(it); if (neuerTag) row.classList.add('tl-dstart');
+    var bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
     if (first) first.classList.add('tl-first');
     var always = it.t === 'termin' || it.t === 'doku';
