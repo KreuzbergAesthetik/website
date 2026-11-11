@@ -724,6 +724,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   .akte-page .a-pane.ak-more { border-bottom-left-radius:0; border-bottom-right-radius:0; }
   .a-sidecol .a-flagcard { margin:0; }
   .akte-page .a-side { margin:0; }
+  .akte-page .a-side.card:not(.hc):not(.hero) { border:1px solid #b6c2d1; }
   .akte-page > .btn { display:none; }
   .a-side .a-tiles { display:flex; flex-direction:column; gap:8px; }
   .a-side .a-tile, .a-side .a-tile.a-half { flex:none; width:auto; }
@@ -2708,7 +2709,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-11-i';
+var KA_V = '2026-11-11-j';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
