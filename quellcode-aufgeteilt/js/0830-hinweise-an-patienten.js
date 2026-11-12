@@ -315,7 +315,7 @@ function renderPatients() {
     if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; pa.style.cssText = 'color:#5b6f95; text-decoration:none;'; i2.appendChild(pa); }
     if (p.email) { var ea = mk('a', '', p.email); ea.href = 'mailto:' + p.email; ea.onclick = function (e) { e.stopPropagation(); }; ea.style.cssText = 'color:#5b6f95; text-decoration:none; overflow:hidden; text-overflow:ellipsis;'; i2.appendChild(ea); }
     info.appendChild(i1); info.appendChild(i2);
-    wrap.appendChild(left); wrap.appendChild(info); wrap.appendChild(acts); c1.appendChild(wrap);
+    var dobc = mk('div', 'pt-dobc', p.dob || ''); wrap.appendChild(left); wrap.appendChild(dobc); wrap.appendChild(info); wrap.appendChild(acts); c1.appendChild(wrap);
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
   });
   if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }

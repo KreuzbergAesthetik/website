@@ -14,7 +14,7 @@
         <table class="pt">
           <thead><tr>
             <th class="sort" style="width:64px;" onclick="sortBy('id')">ID <span class="sarr" data-k="id"></span></th>
-            <th class="sort" onclick="sortBy('name')"><div class="pt-hg"><span>Name <span class="sarr" data-k="name"></span></span><span class="pt-hi" onclick="event.stopPropagation()">Informationen</span><span class="pt-ha" onclick="event.stopPropagation()">Aktionen</span></div></th>
+            <th class="sort" onclick="sortBy('name')"><div class="pt-hg"><span>Name <span class="sarr" data-k="name"></span></span><span class="pt-hb" onclick="event.stopPropagation(); sortBy('dob')" title="Nach Geburtsdatum sortieren">Geburtsdatum <span class="sarr" data-k="dob"></span></span><span class="pt-hi" onclick="event.stopPropagation()">Informationen</span><span class="pt-ha" onclick="event.stopPropagation()">Aktionen</span></div></th>
             <th class="sort pc-er" style="width:190px;" onclick="sortBy('erstellt')">Erstellt am <span class="sarr" data-k="erstellt"></span></th>
           </tr></thead>
           <tbody id="patient-table"></tbody>
