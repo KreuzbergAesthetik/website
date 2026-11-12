@@ -27,3 +27,4 @@
 .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::before, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::before { content:''; position:absolute; left:6px; right:6px; top:-5px; pointer-events:none; background:#94a3b8; z-index:1; }
 .tl-day.tl-all .tl-item.tl-dstart .tl-date { padding-top:5px; }
 .tl-day.tl-all .tl-item.tl-termin + .tl-item.tl-termin, .tl-day.tl-all .tl-item.tl-termin + .tl-item.tl-doku, .tl-day.tl-all .tl-item.tl-doku + .tl-item.tl-termin, .tl-day.tl-all .tl-item.tl-doku + .tl-item.tl-doku { margin-top:4px; }
+@media (max-width:460px) { .tv-acts { gap:6px; padding-left:12px; padding-right:12px; } .tv-acts .tv-tool .tv-lbl { font-size:10px; letter-spacing:-.4px; } }

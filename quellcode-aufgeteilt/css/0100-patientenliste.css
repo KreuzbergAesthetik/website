@@ -46,9 +46,9 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .iv-del { --ivc:#dc2626; border-color:#dc2626; } .iv-pay { --ivc:var(--c-zahlung); } .iv-edit { --ivc:var(--c-doku); } .iv-rec { --ivc:var(--c-rechnung); } .iv-pdf { --ivc:#ea580c; } .iv-send { --ivc:var(--c-senden); }
 @media (min-width:600px) { .iv-b:not(.iv-back) { width:58px; height:48px; flex:none; padding:0; gap:3px; border-radius:10px; } .iv-b:not(.iv-back) span { display:block; font-size:10px; font-weight:700; } }
 .tv-acts .tv-tool { height:60px; gap:5px; color:var(--tcl,#334155); } .tv-acts .tv-tool .tv-lbl { color:var(--tcl,#334155); }
-.tt-book { --tcl:var(--c-doku); } .tt-euro { --tcl:var(--c-rechnung); } .tt-pill { --tcl:var(--c-rezept); } .tt-form { --tcl:#f59e0b; }
 .tv-fbtn { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:#fff; border:1px solid #d5dce6; border-radius:10px; color:var(--tfc,#64748b); cursor:pointer; box-shadow:0 2px 6px rgba(15,23,42,.1); } .tv-fbtn svg { width:19px; height:19px; } .tv-fbtn span { font-size:9.5px; font-weight:700; line-height:1; }
-.tf-copy { --tfc:var(--c-mehr); } .tf-pen { --tfc:var(--c-doku); } .tf-cancel { --tfc:#ea580c; } .tv-fdel { --tfc:#dc2626; border-color:#dc2626; }
+/* Knöpfe der Termin-Ansicht einfarbig (nur Löschen bleibt rot) */
+.tv-fdel { --tfc:#dc2626; border-color:#dc2626; }
 @media (max-width:699px) { #pt-er-row { display:none !important; } .iv-b:not(.iv-back) span { font-size:9.5px; letter-spacing:-.2px; } }
 /* Rote Leiste mit rotem Rahmen, Zeitraum-Knopf schwebt links neben den Buttons */
 .open-box.late { border:1px solid #dc2626; border-left:4px solid #dc2626; }

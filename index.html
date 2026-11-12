@@ -779,9 +779,9 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .iv-del { --ivc:#dc2626; border-color:#dc2626; } .iv-pay { --ivc:var(--c-zahlung); } .iv-edit { --ivc:var(--c-doku); } .iv-rec { --ivc:var(--c-rechnung); } .iv-pdf { --ivc:#ea580c; } .iv-send { --ivc:var(--c-senden); }
 @media (min-width:600px) { .iv-b:not(.iv-back) { width:58px; height:48px; flex:none; padding:0; gap:3px; border-radius:10px; } .iv-b:not(.iv-back) span { display:block; font-size:10px; font-weight:700; } }
 .tv-acts .tv-tool { height:60px; gap:5px; color:var(--tcl,#334155); } .tv-acts .tv-tool .tv-lbl { color:var(--tcl,#334155); }
-.tt-book { --tcl:var(--c-doku); } .tt-euro { --tcl:var(--c-rechnung); } .tt-pill { --tcl:var(--c-rezept); } .tt-form { --tcl:#f59e0b; }
 .tv-fbtn { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:#fff; border:1px solid #d5dce6; border-radius:10px; color:var(--tfc,#64748b); cursor:pointer; box-shadow:0 2px 6px rgba(15,23,42,.1); } .tv-fbtn svg { width:19px; height:19px; } .tv-fbtn span { font-size:9.5px; font-weight:700; line-height:1; }
-.tf-copy { --tfc:var(--c-mehr); } .tf-pen { --tfc:var(--c-doku); } .tf-cancel { --tfc:#ea580c; } .tv-fdel { --tfc:#dc2626; border-color:#dc2626; }
+/* Knöpfe der Termin-Ansicht einfarbig (nur Löschen bleibt rot) */
+.tv-fdel { --tfc:#dc2626; border-color:#dc2626; }
 @media (max-width:699px) { #pt-er-row { display:none !important; } .iv-b:not(.iv-back) span { font-size:9.5px; letter-spacing:-.2px; } }
 /* Rote Leiste mit rotem Rahmen, Zeitraum-Knopf schwebt links neben den Buttons */
 .open-box.late { border:1px solid #dc2626; border-left:4px solid #dc2626; }
@@ -1187,6 +1187,7 @@ header nav .nav-btn.nav-more { --np:10px; }
 .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::before, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::before { content:''; position:absolute; left:6px; right:6px; top:-5px; pointer-events:none; background:#94a3b8; z-index:1; }
 .tl-day.tl-all .tl-item.tl-dstart .tl-date { padding-top:5px; }
 .tl-day.tl-all .tl-item.tl-termin + .tl-item.tl-termin, .tl-day.tl-all .tl-item.tl-termin + .tl-item.tl-doku, .tl-day.tl-all .tl-item.tl-doku + .tl-item.tl-termin, .tl-day.tl-all .tl-item.tl-doku + .tl-item.tl-doku { margin-top:4px; }
+@media (max-width:460px) { .tv-acts { gap:6px; padding-left:12px; padding-right:12px; } .tv-acts .tv-tool .tv-lbl { font-size:10px; letter-spacing:-.4px; } }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2725,7 +2726,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-12-b';
+var KA_V = '2026-11-12-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3840,6 +3841,12 @@ function tvMail(p, vorlName, fallback) {
   var n = (settings.nachrichten || []).filter(function (x) { return x.name === vorlName; })[0];
   if (n) { document.getElementById('m-vorl').value = n.id; applyMailVorl(); } else if (fallback) { document.getElementById('m-betreff').value = fallback[0]; document.getElementById('m-text').value = fillPlatzhalter(fallback[1], p); }
 }
+/* Terminbestätigung für genau diesen Termin: vorhandene Vorlage „Terminbestätigung (E-Mail)“, Datum und Uhrzeit dieses Termins */
+function tvBestaetigung(p, e) {
+  var v = NV_SCREENSHOTS_20261105.filter(function (x) { return x.name === 'Terminbestätigung (E-Mail)'; })[0];
+  phEvent = e;
+  try { tvMail(p, 'Terminbestätigung (E-Mail)', v ? [v.betreff, v.text] : null); } finally { phEvent = null; }
+}
 async function tvCancel(e, p) {
   if (!await kaConfirm('Termin am ' + fmtD(e.date) + ' um ' + e.time + ' absagen? Er bleibt als abgesagt im Kalender stehen.')) return;
   e.phase = 'Abgesagt'; e.mod = Date.now(); persist(); renderCal(); closeModal('modal-tview');
@@ -3864,6 +3871,8 @@ function openTerminView(id, keep) {
   if (p) { var fl = flagPills(p); if (fl.length) { var fw = mk('div', 'tv-fl'); fl.forEach(function (x) { x.style.marginLeft = '0'; fw.appendChild(x); }); hm.appendChild(fw); } }
   if (!p) hm.appendChild(mk('div', 'hm-empty', 'Keine Patientenakte angelegt'));
   hd.appendChild(hm);
+  hd.appendChild(tvIcon('copy', 'Termin kopieren', function () { dupTermin(id); }));
+  hd.appendChild(tvIcon('pen', 'Bearbeiten', function () { closeModal('modal-tview'); editTermin(id); }));
   hd.appendChild(tvIcon('x', 'Schließen', function () { closeModal('modal-tview'); }));
   box.appendChild(hd);
   /* Pillen: Anrufen, E-Mail */
@@ -3888,6 +3897,10 @@ function openTerminView(id, keep) {
   var ac = mk('div', 'tv-acts');
   ac.appendChild(tvTool('book', 'Dokumentation', 'Dokumentation', function () { closeModal('modal-tview'); openDok(id); }));
   if (p) ac.appendChild(tvTool('euro', 'Rechnung erstellen', 'Rechnung', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; invFromEvent(e); }, 80); }));
+  if (p) ac.appendChild(tvTool('mail', 'Terminbestätigung versenden', 'Bestätigung', function () {
+    if (!p.email) { alert('Für ' + nameKey(p) + ' ist keine E-Mail-Adresse hinterlegt.'); return; }
+    closeModal('modal-tview'); setTimeout(function () { tvBestaetigung(p, e); }, 80);
+  }));
   if (p) ac.appendChild(tvTool('pill', 'Rezept erstellen', 'Rezept', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; openRx('e' + e.id); }, 80); }));
   if (p) {
     var fb = tvTool('form', 'Formulare und Unterlagen', 'Formulare', null); fb.classList.add('tv-menu'); fb.querySelector('.tv-ic').insertAdjacentHTML('beforeend', tvSvg('down'));
@@ -3910,8 +3923,6 @@ function openTerminView(id, keep) {
   ft.appendChild(del);
   var fsp = mk('span'); fsp.style.flex = '1'; ft.appendChild(fsp);
   var fb = function (k, t, fn, lb) { var b = tvIcon(k, t, fn); b.className = 'tv-fbtn tf-' + k; b.innerHTML = tvSvg(k) + '<span>' + lb + '</span>'; ft.appendChild(b); };
-  fb('copy', 'Termin kopieren', function () { dupTermin(id); }, 'Kopieren');
-  fb('pen', 'Bearbeiten', function () { closeModal('modal-tview'); editTermin(id); }, 'Bearbeiten');
   if (e.phase !== 'Abgesagt') fb('cancel', 'Termin absagen', function () { tvCancel(e, p); }, 'Absagen');
   box.appendChild(ft);
   if (!keep) openModal('modal-tview');
@@ -7315,8 +7326,9 @@ function pCode(p) {
   }
   return p.code;
 }
+var phEvent = null;   /* gesetzt: Platzhalter für Termin, Uhrzeit usw. beziehen sich auf diesen Termin statt auf den nächsten */
 function fillPlatzhalter(text, p) {
-  var today = iso(new Date()), nx = events.filter(function (e) { return eventBelongs(e, p) && e.date >= today; }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); })[0];
+  var today = iso(new Date()), nx = phEvent || events.filter(function (e) { return eventBelongs(e, p) && e.date >= today; }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); })[0];
   var an = p.anrede || '', nn = p.nachname || '', vn = p.vorname || '';
   var wd = function (iso0) { var d = new Date(iso0 + 'T12:00:00'); return WDL[d.getDay()] + ', ' + fmtD(iso0); };
   var map = { Anrede: an, Vorname: vn, Nachname: nn, Name: nameKey(p), Datum: fmtD(today), Termin: nx ? fmtTermin(nx) : '', Behandlung: nx ? (nx.behandlung || '') : '',

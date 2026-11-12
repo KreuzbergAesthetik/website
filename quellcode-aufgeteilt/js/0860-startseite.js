@@ -169,6 +169,12 @@ function tvMail(p, vorlName, fallback) {
   var n = (settings.nachrichten || []).filter(function (x) { return x.name === vorlName; })[0];
   if (n) { document.getElementById('m-vorl').value = n.id; applyMailVorl(); } else if (fallback) { document.getElementById('m-betreff').value = fallback[0]; document.getElementById('m-text').value = fillPlatzhalter(fallback[1], p); }
 }
+/* Terminbestätigung für genau diesen Termin: vorhandene Vorlage „Terminbestätigung (E-Mail)“, Datum und Uhrzeit dieses Termins */
+function tvBestaetigung(p, e) {
+  var v = NV_SCREENSHOTS_20261105.filter(function (x) { return x.name === 'Terminbestätigung (E-Mail)'; })[0];
+  phEvent = e;
+  try { tvMail(p, 'Terminbestätigung (E-Mail)', v ? [v.betreff, v.text] : null); } finally { phEvent = null; }
+}
 async function tvCancel(e, p) {
   if (!await kaConfirm('Termin am ' + fmtD(e.date) + ' um ' + e.time + ' absagen? Er bleibt als abgesagt im Kalender stehen.')) return;
   e.phase = 'Abgesagt'; e.mod = Date.now(); persist(); renderCal(); closeModal('modal-tview');
@@ -193,6 +199,8 @@ function openTerminView(id, keep) {
   if (p) { var fl = flagPills(p); if (fl.length) { var fw = mk('div', 'tv-fl'); fl.forEach(function (x) { x.style.marginLeft = '0'; fw.appendChild(x); }); hm.appendChild(fw); } }
   if (!p) hm.appendChild(mk('div', 'hm-empty', 'Keine Patientenakte angelegt'));
   hd.appendChild(hm);
+  hd.appendChild(tvIcon('copy', 'Termin kopieren', function () { dupTermin(id); }));
+  hd.appendChild(tvIcon('pen', 'Bearbeiten', function () { closeModal('modal-tview'); editTermin(id); }));
   hd.appendChild(tvIcon('x', 'Schließen', function () { closeModal('modal-tview'); }));
   box.appendChild(hd);
   /* Pillen: Anrufen, E-Mail */
@@ -217,6 +225,10 @@ function openTerminView(id, keep) {
   var ac = mk('div', 'tv-acts');
   ac.appendChild(tvTool('book', 'Dokumentation', 'Dokumentation', function () { closeModal('modal-tview'); openDok(id); }));
   if (p) ac.appendChild(tvTool('euro', 'Rechnung erstellen', 'Rechnung', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; invFromEvent(e); }, 80); }));
+  if (p) ac.appendChild(tvTool('mail', 'Terminbestätigung versenden', 'Bestätigung', function () {
+    if (!p.email) { alert('Für ' + nameKey(p) + ' ist keine E-Mail-Adresse hinterlegt.'); return; }
+    closeModal('modal-tview'); setTimeout(function () { tvBestaetigung(p, e); }, 80);
+  }));
   if (p) ac.appendChild(tvTool('pill', 'Rezept erstellen', 'Rezept', function () { closeModal('modal-tview'); setTimeout(function () { curP = p; openRx('e' + e.id); }, 80); }));
   if (p) {
     var fb = tvTool('form', 'Formulare und Unterlagen', 'Formulare', null); fb.classList.add('tv-menu'); fb.querySelector('.tv-ic').insertAdjacentHTML('beforeend', tvSvg('down'));
@@ -239,8 +251,6 @@ function openTerminView(id, keep) {
   ft.appendChild(del);
   var fsp = mk('span'); fsp.style.flex = '1'; ft.appendChild(fsp);
   var fb = function (k, t, fn, lb) { var b = tvIcon(k, t, fn); b.className = 'tv-fbtn tf-' + k; b.innerHTML = tvSvg(k) + '<span>' + lb + '</span>'; ft.appendChild(b); };
-  fb('copy', 'Termin kopieren', function () { dupTermin(id); }, 'Kopieren');
-  fb('pen', 'Bearbeiten', function () { closeModal('modal-tview'); editTermin(id); }, 'Bearbeiten');
   if (e.phase !== 'Abgesagt') fb('cancel', 'Termin absagen', function () { tvCancel(e, p); }, 'Absagen');
   box.appendChild(ft);
   if (!keep) openModal('modal-tview');

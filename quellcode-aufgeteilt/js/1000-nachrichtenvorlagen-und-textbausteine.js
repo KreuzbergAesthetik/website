@@ -244,8 +244,9 @@ function pCode(p) {
   }
   return p.code;
 }
+var phEvent = null;   /* gesetzt: Platzhalter für Termin, Uhrzeit usw. beziehen sich auf diesen Termin statt auf den nächsten */
 function fillPlatzhalter(text, p) {
-  var today = iso(new Date()), nx = events.filter(function (e) { return eventBelongs(e, p) && e.date >= today; }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); })[0];
+  var today = iso(new Date()), nx = phEvent || events.filter(function (e) { return eventBelongs(e, p) && e.date >= today; }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); })[0];
   var an = p.anrede || '', nn = p.nachname || '', vn = p.vorname || '';
   var wd = function (iso0) { var d = new Date(iso0 + 'T12:00:00'); return WDL[d.getDay()] + ', ' + fmtD(iso0); };
   var map = { Anrede: an, Vorname: vn, Nachname: nn, Name: nameKey(p), Datum: fmtD(today), Termin: nx ? fmtTermin(nx) : '', Behandlung: nx ? (nx.behandlung || '') : '',
