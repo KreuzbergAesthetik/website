@@ -20,10 +20,10 @@
 /* Trennlinien: zwischen Ereignissen dünn und hellgrau nur rechts vom farbigen Strich; zwischen Tagen dick und über die ganze Zeile. Umrandete Karten untereinander mit kleinem Abstand. */
 .tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku)::before { background:linear-gradient(to right, transparent 0 85px, #e2e8f0 85px); }
 .tl-day.tl-all .tl-item:first-child::before { display:none; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child)::before { display:block; height:1.5px; background:linear-gradient(to right, #94a3b8 0 82px, transparent 82px 85px, #94a3b8 85px); }
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child)::before { display:block; height:1.5px; background:#94a3b8; z-index:1; }
 .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::after, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { content:''; position:absolute; left:86.5px; top:-8.5px; width:3px; height:7px; background:#22c55e; pointer-events:none; }
 .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { background:#3b82f6; }
 .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku { margin-top:7px; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::before, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::before { content:''; position:absolute; left:6px; right:6px; top:-5px; pointer-events:none; background:linear-gradient(to right, #94a3b8 0 80.5px, transparent 80.5px 83.5px, #94a3b8 83.5px); }
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::before, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::before { content:''; position:absolute; left:6px; right:6px; top:-5px; pointer-events:none; background:#94a3b8; z-index:1; }
 .tl-day.tl-all .tl-item.tl-dstart .tl-date { padding-top:5px; }
 .tl-day.tl-all .tl-item.tl-termin + .tl-item.tl-termin, .tl-day.tl-all .tl-item.tl-termin + .tl-item.tl-doku, .tl-day.tl-all .tl-item.tl-doku + .tl-item.tl-termin, .tl-day.tl-all .tl-item.tl-doku + .tl-item.tl-doku { margin-top:4px; }
