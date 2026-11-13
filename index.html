@@ -1198,6 +1198,9 @@ header nav .nav-btn.nav-more { --np:10px; }
   #tab-patienten .pt-dots { background:#3b82f6; }
   #tab-patienten .pt-dots .pt-dot { background:transparent !important; }
 }
+/* Querformat: Hinweis-Punkte hinter dem Namen */
+.pt-hints { display:none; }
+@media (min-width:700px) { #tab-patienten .pt-hints { display:inline-flex; align-items:center; gap:5px; align-self:center; } #tab-patienten .pt-hints .pt-dot { width:9px; height:9px; } }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2736,7 +2739,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-12-d';
+var KA_V = '2026-11-13-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3241,6 +3244,9 @@ function renderPatients() {
     acts.appendChild(more);
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
+    /* Querformat: Hinweise als kleine Punkte hinter dem Namen (der Strich ist dort durchgehend blau) */
+    var hints = mk('span', 'pt-hints'); [].forEach.call(dots.children, function (d) { if (!d.classList.contains('d-none')) hints.appendChild(d.cloneNode(true)); });
+    if (hints.childNodes.length) left.appendChild(hints);
     var info = mk('div', 'pt-info'), i1 = mk('div', 'pt-i1'), i2 = mk('div', 'pt-i2'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
     if (String(p.allergien || '').trim()) { var al = mk('span', 'pt-chip', 'Allergie: ' + cut(p.allergien, 30)); al.title = 'Allergie: ' + p.allergien; i1.appendChild(al); }
     if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; pa.style.cssText = 'color:#5b6f95; text-decoration:none;'; i2.appendChild(pa); }

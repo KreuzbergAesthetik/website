@@ -38,3 +38,6 @@
   #tab-patienten .pt-dots { background:#3b82f6; }
   #tab-patienten .pt-dots .pt-dot { background:transparent !important; }
 }
+/* Querformat: Hinweis-Punkte hinter dem Namen */
+.pt-hints { display:none; }
+@media (min-width:700px) { #tab-patienten .pt-hints { display:inline-flex; align-items:center; gap:5px; align-self:center; } #tab-patienten .pt-hints .pt-dot { width:9px; height:9px; } }
