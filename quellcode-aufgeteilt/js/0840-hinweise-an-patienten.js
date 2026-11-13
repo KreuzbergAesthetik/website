@@ -233,6 +233,8 @@ var ICON_MAIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 function mk(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
 function warnIcon(p) { var w = mk('span', 'warn', '!'); w.title = 'Allergie oder Unverträglichkeit hinterlegt'; return w; }
 function sexIcon(p) { var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (!sx) return null; var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; return sp; }
+/* Zeile mit Symbol (Telefon, E-Mail) in der Informationsspalte der Patientenliste */
+function ptLn(box, ico, el) { var r = document.createElement('div'); r.className = 'pt-iln'; r.innerHTML = ico; r.appendChild(el); box.appendChild(r); }
 function renderPatients() {
   ptApplyEr();
   ensurePatients();
@@ -310,15 +312,18 @@ function renderPatients() {
     acts.appendChild(more);
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
-    /* Querformat: Hinweise als kleine Punkte hinter dem Namen (der Strich ist dort durchgehend blau) */
-    var hints = mk('span', 'pt-hints'); [].forEach.call(dots.children, function (d) { if (!d.classList.contains('d-none')) hints.appendChild(d.cloneNode(true)); });
-    if (hints.childNodes.length) left.appendChild(hints);
+    /* Querformat: Hinweise als Punkte in eigener Spalte (der Strich ist dort durchgehend blau) */
+    var hintc = mk('div', 'pt-hintc'); [].forEach.call(dots.children, function (d) { if (!d.classList.contains('d-none')) hintc.appendChild(d.cloneNode(true)); });
     var info = mk('div', 'pt-info'), i1 = mk('div', 'pt-i1'), i2 = mk('div', 'pt-i2'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
     if (String(p.allergien || '').trim()) { var al = mk('span', 'pt-chip', 'Allergie: ' + cut(p.allergien, 30)); al.title = 'Allergie: ' + p.allergien; i1.appendChild(al); }
-    if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; pa.style.cssText = 'color:#5b6f95; text-decoration:none;'; i2.appendChild(pa); }
-    if (p.email) { var ea = mk('a', '', p.email); ea.href = 'mailto:' + p.email; ea.onclick = function (e) { e.stopPropagation(); }; ea.style.cssText = 'color:#5b6f95; text-decoration:none; overflow:hidden; text-overflow:ellipsis;'; i2.appendChild(ea); }
+    if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; pa.style.cssText = 'color:#5b6f95; text-decoration:none;'; ptLn(i2, ICON_PHONE, pa); }
+    if (p.email) { var ea = mk('a', '', p.email); ea.href = 'mailto:' + p.email; ea.onclick = function (e) { e.stopPropagation(); }; ea.style.cssText = 'color:#5b6f95; text-decoration:none; overflow:hidden; text-overflow:ellipsis;'; ptLn(i2, ICON_MAIL, ea); }
     info.appendChild(i1); info.appendChild(i2);
-    var dobc = mk('div', 'pt-dobc', p.dob || ''); wrap.appendChild(left); wrap.appendChild(dobc); wrap.appendChild(info); wrap.appendChild(acts); c1.appendChild(wrap);
+    var dobc = mk('div', 'pt-dobc', p.dob || ''), rz = mk('div', 'pt-rz');
+    /* Größere Klickfläche: Name, Geburtsdatum und Hinweise öffnen die Akte; rechts (Informationen, Aktionen) erscheinen beim Überfahren die Schnellaktionen */
+    [left, dobc, hintc].forEach(function (z) { z.classList.add('pt-hit'); z.onclick = function (ev) { if (ev.target.closest('a, button')) return; viewAkte(p); }; });
+    rz.appendChild(info); rz.appendChild(acts);
+    wrap.appendChild(left); wrap.appendChild(dobc); wrap.appendChild(hintc); wrap.appendChild(rz); c1.appendChild(wrap);
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
   });
   if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }

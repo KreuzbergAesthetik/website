@@ -1,7 +1,7 @@
 /* ===== Globale Suche im Kopfbereich ===== */
 var gsScope = { kal: true, pat: true, rec: true };
 /* Die drei Knöpfe im Header legen Neues an */
-function ptApplyEr() { var t = document.getElementById('tab-patienten'), b = document.getElementById('pt-er-btn'), on = !!settings.ptShowEr; if (t) t.classList.toggle('pt-shower', on); if (b) b.style.background = on ? '#dbeafe' : ''; }
+function ptApplyEr() { var t = document.getElementById('tab-patienten'), b = document.getElementById('pt-er-btn'), on = !!settings.ptShowEr; if (t) t.classList.toggle('pt-shower', on); [].forEach.call(document.querySelectorAll('#pt-er-btn, .pt-erb'), function (x) { x.style.background = on ? '#dbeafe' : ''; }); }
 function ptToggleEr() { settings.ptShowEr = !settings.ptShowEr; persist(); ptApplyEr(); }
 function gsToggle(force) {
   var bar = document.getElementById('gs-bar'), inp = document.getElementById('gs-in'), res = document.getElementById('gs-res'), f = document.getElementById('gs-fab');

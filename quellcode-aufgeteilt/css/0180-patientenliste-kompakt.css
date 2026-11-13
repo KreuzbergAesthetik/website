@@ -22,8 +22,6 @@
 /* Schnellknöpfe nur mit Maus (Hover); auf Touch-Geräten bleibt der Drei-Punkte-Knopf */
 #tab-patienten .pt-quick { display:none; }
 @media (hover:hover) and (pointer:fine) {
-  #tab-patienten tbody tr:hover .pt-quick, #tab-patienten tbody tr:focus-within .pt-quick { display:flex; position:absolute; right:44px; top:50%; transform:translateY(-50%); gap:6px; padding:5px 8px; background:#eaeef4; border-radius:12px; z-index:3; }
-  #tab-patienten tbody tr:hover .pt-info, #tab-patienten tbody tr:focus-within .pt-info { opacity:0; }
   #tab-patienten .pt-quick .pt-ib { width:34px; height:34px; border-radius:10px; flex-direction:row; }
   #tab-patienten .pt-quick .pt-ib svg { width:20px; height:20px; }
   #tab-patienten .pt-acts { position:static; }
