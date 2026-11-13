@@ -310,6 +310,9 @@ function renderPatients() {
     acts.appendChild(more);
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
+    /* Querformat: Hinweise als kleine Punkte hinter dem Namen (der Strich ist dort durchgehend blau) */
+    var hints = mk('span', 'pt-hints'); [].forEach.call(dots.children, function (d) { if (!d.classList.contains('d-none')) hints.appendChild(d.cloneNode(true)); });
+    if (hints.childNodes.length) left.appendChild(hints);
     var info = mk('div', 'pt-info'), i1 = mk('div', 'pt-i1'), i2 = mk('div', 'pt-i2'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
     if (String(p.allergien || '').trim()) { var al = mk('span', 'pt-chip', 'Allergie: ' + cut(p.allergien, 30)); al.title = 'Allergie: ' + p.allergien; i1.appendChild(al); }
     if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; pa.style.cssText = 'color:#5b6f95; text-decoration:none;'; i2.appendChild(pa); }
