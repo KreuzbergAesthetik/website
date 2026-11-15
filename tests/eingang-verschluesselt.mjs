@@ -53,7 +53,7 @@ try {
   assert.equal(sealed.thumbOk, true, 'Vorschaubild lässt sich nicht anzeigen');
 
   // 3) Zuordnen: Foto landet in der Akte, Zwischenspeicher ist leer
-  await page.evaluate(() => { [...document.querySelectorAll('div')].find(d => typeof d.onclick === 'function' && /Ina/.test(d.textContent || ''))?.click(); });
+  await page.evaluate(() => { [...document.querySelectorAll('div')].find(d => typeof d.onclick === 'function' && !d.closest('#tab-patienten') && /Ina/.test(d.textContent || ''))?.click(); });
   await page.evaluate(() => [...document.querySelectorAll('button')].find(b => b.textContent === 'Zur Akte' && !b.disabled)?.click());
   await page.waitForFunction(() => (patients.find(p => p.id === 'eg1')?.bilder || []).length === 1, null, { timeout: 10000 });
   const after = await page.evaluate(async () => (await (await caches.open('ka-eingang')).keys()).length);
