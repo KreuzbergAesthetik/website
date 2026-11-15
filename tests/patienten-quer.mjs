@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-// Patientenliste quer/Desktop: Geburtsdatum als eigene Spalte, Hinweis-Punkte unter dem Namen, Telefon und E-Mail mit Symbol untereinander,
+// Patientenliste quer/Desktop: Geburtsdatum als eigene Spalte, Hinweis-Punkte zwischen blauem Strich und Name, Allergie als größerer roter Punkt, Import oben, Telefon und E-Mail mit Symbol untereinander,
 // Vorname schwarz, schwebende Legende, Schnellaktionen nur beim Überfahren der rechten Zone, große Klickfläche links,
 // Erstellt-am-Symbol in der Kopfzeile. Erfundene Daten.
 const base = process.env.APP_URL || 'http://127.0.0.1:4173/index.html';
@@ -16,7 +16,7 @@ try {
   await page.waitForFunction(() => window.KA && KA.booted === true && !document.documentElement.classList.contains('locked'), null, { timeout: 15000 });
   await page.evaluate(async () => {
     patients.length = 0; events.length = 0; FLC = null;
-    const p = { id: 'q1', nr: 1, anrede: 'Herr', vorname: 'Max', nachname: 'Muster', dob: '13.01.1992', phone: '030 123456', email: 'max@example.invalid', medikation: [], log: [], doku: [], dokumente: [], bilder: [], erstellt: Date.now() };
+    const p = { id: 'q1', nr: 1, anrede: 'Herr', vorname: 'Max', nachname: 'Muster', dob: '13.01.1992', phone: '030 123456', email: 'max@example.invalid', allergien: 'Cashew', medikation: [], log: [], doku: [], dokumente: [], bilder: [], erstellt: Date.now() };
     patients.push(p); const d = new Date(); d.setDate(d.getDate() + 3);
     events.push({ id: 'e1', patientId: p.id, patient: nameKey(p), date: iso(d), time: '10:00', dur: 30, title: 'T', behandlung: 'Botox' });
     switchTab('patienten'); renderPatients(); await new Promise(r => setTimeout(r, 400));
@@ -26,7 +26,7 @@ try {
     const l = row.querySelector('.pt-l'), dob = row.querySelector('.pt-dobc'), hi = row.querySelector('.pt-hints'), nm = row.querySelector('.pn-row'), strich = getComputedStyle(row.querySelector('.pt-dots')).backgroundColor, rz = row.querySelector('.pt-rz'), lines = [...row.querySelectorAll('.pt-iln')];
     const ths = [...document.querySelectorAll('.pt-hg > *')].filter(vis).map(e => e.textContent.trim());
     return {
-      spalten: ths, dobText: dob.textContent, dobRechtsVonName: box(dob).left >= box(l).right - 1, punkteUnterName: box(hi).top >= box(nm).bottom - 1 && box(hi).left < box(dob).left, strich, punkte: hi.querySelectorAll('.pt-dot').length,
+      spalten: ths, dobText: dob.textContent, dobRechtsVonName: box(dob).left >= box(l).right - 1, punkteZwischen: box(hi).left >= box(row.querySelector('.pt-dots')).right - 1 && box(hi).right <= box(nm).left + 1, strich, allergie: (() => { const a = hi.querySelector('.d-allergy'), o = [...hi.querySelectorAll('.pt-dot:not(.d-allergy)')][0]; return !!a && /Cashew/.test(a.title) && (!o || box(a).width > box(o).width); })(), keinChip: !row.querySelector('.pt-chip'), importOben: !!document.querySelector('#tab-patienten .card-header [onclick*=pimp-file]') && !document.querySelector('#tab-patienten .row-actions [onclick*=pimp-file]'), erKnopf: (() => { const b = document.querySelector('.pt-hg .pt-erb'), c = getComputedStyle(b); return c.borderTopWidth === '0px' && c.backgroundColor === 'rgba(0, 0, 0, 0)'; })(), punkte: hi.querySelectorAll('.pt-dot').length,
       infoZeilen: lines.length, symbole: lines.every(x => x.querySelector('svg')), untereinander: lines.length === 2 && box(lines[1]).top > box(lines[0]).bottom - 1,
       vorname: getComputedStyle(row.querySelector('.pn-f')).color, legende: vis(document.getElementById('pt-leg')), legendeFix: getComputedStyle(document.getElementById('pt-leg')).position,
       erKopf: !!document.querySelector('.pt-hg .pt-erb') && box(document.querySelector('.pt-hg .pt-erb')).right > box(rz).right - 60,
@@ -36,7 +36,10 @@ try {
   });
   assert.ok(r.spalten.some(x => /Geburtsdatum/.test(x)) && r.spalten.some(x => /Informationen/.test(x)) && !r.spalten.some(x => /Hinweise/.test(x)), 'Spaltenköpfe: ' + JSON.stringify(r.spalten));
   assert.equal(r.dobText, '13.01.1992'); assert.ok(r.dobRechtsVonName && r.infoRechtsVonDob, 'Reihenfolge Name, Geburtsdatum, Informationen: ' + JSON.stringify(r));
-  assert.ok(r.punkte >= 1 && r.punkteUnterName, 'Hinweis-Punkte fehlen oder stehen nicht unter dem Namen: ' + JSON.stringify(r));
+  assert.ok(r.punkte >= 2 && r.punkteZwischen, 'Hinweis-Punkte fehlen oder stehen nicht zwischen Strich und Name: ' + JSON.stringify(r));
+  assert.ok(r.allergie && r.keinChip, 'Allergie nicht als größerer roter Punkt mit Tooltip: ' + JSON.stringify(r));
+  assert.ok(r.importOben, 'Import nicht oben in der Kopfzeile');
+  assert.ok(r.erKnopf, 'Erstellt-am-Symbol hat Rand oder Fläche');
   assert.equal(r.strich, 'rgb(59, 130, 246)', 'Strich nicht durchgehend blau');
   assert.ok(r.infoZeilen === 2 && r.symbole && r.untereinander, 'Telefon und E-Mail mit Symbol untereinander: ' + JSON.stringify(r));
   assert.equal(r.vorname, 'rgb(15, 23, 42)', 'Vorname nicht schwarz');
