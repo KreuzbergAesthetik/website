@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-// Patientenliste quer/Desktop: Geburtsdatum und Hinweise als eigene Spalten, Telefon und E-Mail mit Symbol untereinander,
+// Patientenliste quer/Desktop: Geburtsdatum als eigene Spalte, Hinweis-Punkte unter dem Namen, Telefon und E-Mail mit Symbol untereinander,
 // Vorname schwarz, schwebende Legende, Schnellaktionen nur beim Überfahren der rechten Zone, große Klickfläche links,
 // Erstellt-am-Symbol in der Kopfzeile. Erfundene Daten.
 const base = process.env.APP_URL || 'http://127.0.0.1:4173/index.html';
@@ -23,20 +23,21 @@ try {
   });
   const r = await page.evaluate(() => {
     const row = document.querySelector('#patient-table tr'), box = e => e.getBoundingClientRect(), vis = e => !!e && getComputedStyle(e).display !== 'none';
-    const l = row.querySelector('.pt-l'), dob = row.querySelector('.pt-dobc'), hi = row.querySelector('.pt-hintc'), rz = row.querySelector('.pt-rz'), lines = [...row.querySelectorAll('.pt-iln')];
+    const l = row.querySelector('.pt-l'), dob = row.querySelector('.pt-dobc'), hi = row.querySelector('.pt-hints'), nm = row.querySelector('.pn-row'), strich = getComputedStyle(row.querySelector('.pt-dots')).backgroundColor, rz = row.querySelector('.pt-rz'), lines = [...row.querySelectorAll('.pt-iln')];
     const ths = [...document.querySelectorAll('.pt-hg > *')].filter(vis).map(e => e.textContent.trim());
     return {
-      spalten: ths, dobText: dob.textContent, dobRechtsVonName: box(dob).left >= box(l).right - 1, hinweiseRechtsVonDob: box(hi).left >= box(dob).right - 1, punkte: hi.querySelectorAll('.pt-dot').length,
+      spalten: ths, dobText: dob.textContent, dobRechtsVonName: box(dob).left >= box(l).right - 1, punkteUnterName: box(hi).top >= box(nm).bottom - 1 && box(hi).left < box(dob).left, strich, punkte: hi.querySelectorAll('.pt-dot').length,
       infoZeilen: lines.length, symbole: lines.every(x => x.querySelector('svg')), untereinander: lines.length === 2 && box(lines[1]).top > box(lines[0]).bottom - 1,
       vorname: getComputedStyle(row.querySelector('.pn-f')).color, legende: vis(document.getElementById('pt-leg')), legendeFix: getComputedStyle(document.getElementById('pt-leg')).position,
       erKopf: !!document.querySelector('.pt-hg .pt-erb') && box(document.querySelector('.pt-hg .pt-erb')).right > box(rz).right - 60,
-      altKnopfWeg: !vis(document.getElementById('pt-er-row')), infoLinksVonZone: box(rz).left > box(hi).right - 1,
+      altKnopfWeg: !vis(document.getElementById('pt-er-row')), infoRechtsVonDob: box(rz).left >= box(dob).right - 1,
       klickBreite: Math.round(box(l).width), klickHoehe: Math.round(box(l).height)
     };
   });
-  assert.ok(r.spalten.some(x => /Geburtsdatum/.test(x)) && r.spalten.some(x => /Hinweise/.test(x)) && r.spalten.some(x => /Informationen/.test(x)), 'Spaltenköpfe: ' + JSON.stringify(r.spalten));
-  assert.equal(r.dobText, '13.01.1992'); assert.ok(r.dobRechtsVonName && r.hinweiseRechtsVonDob, 'Reihenfolge Name, Geburtsdatum, Hinweise: ' + JSON.stringify(r));
-  assert.ok(r.punkte >= 1, 'Hinweis-Punkte fehlen');
+  assert.ok(r.spalten.some(x => /Geburtsdatum/.test(x)) && r.spalten.some(x => /Informationen/.test(x)) && !r.spalten.some(x => /Hinweise/.test(x)), 'Spaltenköpfe: ' + JSON.stringify(r.spalten));
+  assert.equal(r.dobText, '13.01.1992'); assert.ok(r.dobRechtsVonName && r.infoRechtsVonDob, 'Reihenfolge Name, Geburtsdatum, Informationen: ' + JSON.stringify(r));
+  assert.ok(r.punkte >= 1 && r.punkteUnterName, 'Hinweis-Punkte fehlen oder stehen nicht unter dem Namen: ' + JSON.stringify(r));
+  assert.equal(r.strich, 'rgb(59, 130, 246)', 'Strich nicht durchgehend blau');
   assert.ok(r.infoZeilen === 2 && r.symbole && r.untereinander, 'Telefon und E-Mail mit Symbol untereinander: ' + JSON.stringify(r));
   assert.equal(r.vorname, 'rgb(15, 23, 42)', 'Vorname nicht schwarz');
   assert.ok(r.legende && r.legendeFix === 'fixed', 'Legende nicht schwebend sichtbar');

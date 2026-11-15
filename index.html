@@ -1193,28 +1193,28 @@ header nav .nav-btn.nav-more { --np:10px; }
   #tab-patienten .pt-hb { display:block; cursor:pointer; }
   #tab-patienten .pt-dobc { display:block; font-size:13.5px; color:#334155; white-space:nowrap; }
   #tab-patienten .pt-l .pt-dr { display:none; }
-  #tab-patienten .pt-dots { background:#3b82f6; }
-  #tab-patienten .pt-dots .pt-dot { background:transparent !important; }
 }
 /* Querformat: Hinweis-Punkte hinter dem Namen */
-.pt-hints { display:none; }
-@media (min-width:700px) { #tab-patienten .pt-hints { display:inline-flex; align-items:center; gap:5px; align-self:center; } #tab-patienten .pt-hints .pt-dot { width:9px; height:9px; } }
 /* Patientenliste quer: Spalten Name | Geburtsdatum | Hinweise | Informationen + Aktionen */
-.pt-hh, .pt-hz, .pt-hintc { display:none; }
+.pt-hz { display:none; }
+#tab-patienten .pt-hints { position:absolute; left:11px; top:6px; bottom:6px; margin:0; display:flex; flex-flow:column wrap; align-content:center; justify-content:center; gap:4px; cursor:pointer; }
+#tab-patienten .pt-hints .pt-dot { width:10px; height:10px; }
+#tab-patienten .pt-hints .pt-dot.d-allergy { width:13px; height:13px; background:#b91c1c; }
+#tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:36px; }
+#tab-patienten .pt-dots { background:#3b82f6; }
+#tab-patienten .pt-dots .pt-dot { background:transparent !important; }
 #tab-patienten .pn-f { color:#0f172a; }
 .pt-rz { display:contents; }
 @media (min-width:700px) {
-  #tab-patienten .pt-hg, #tab-patienten .pt-wrap { grid-template-columns:minmax(0,1fr) 112px 104px minmax(0,1.3fr); gap:14px; }
+  #tab-patienten .pt-hg, #tab-patienten .pt-wrap { grid-template-columns:minmax(0,1fr) 112px minmax(0,1.3fr); gap:14px; }
   #tab-patienten .pt-hg { align-items:center; }
-  #tab-patienten .pt-hh { display:block; cursor:default; }
   #tab-patienten .pt-hz, #tab-patienten .pt-rz { display:grid; grid-template-columns:minmax(0,1fr) 44px; gap:14px; align-items:center; min-width:0; }
   #tab-patienten .pt-hz .pt-hi, #tab-patienten .pt-hz .pt-ha { display:block; }
   #tab-patienten .pt-ha { font-size:0; text-align:right; }
-  #tab-patienten .pt-erb { width:30px; height:30px; padding:0; border:1px solid #cbd5e1; border-radius:9px; background:#fff; color:#64748b; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+  #tab-patienten .pt-erb { width:22px; height:22px; padding:0; border:0; border-radius:0; background:none; box-shadow:none; color:#64748b; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+  #tab-patienten .pt-erb svg { width:14px; height:14px; }
+  #tab-patienten .pt-hz .pt-ha { align-self:end; margin-bottom:-3px; line-height:0; }
   #pt-er-row { display:none !important; }
-  #tab-patienten .pt-hints { display:none; }
-  #tab-patienten .pt-hintc { display:flex; align-items:center; gap:6px; }
-  #tab-patienten .pt-hintc .pt-dot { width:10px; height:10px; }
   #tab-patienten .pn-f { color:#0f172a; }
   #tab-patienten .pt-info { display:flex; flex-direction:column; justify-content:center; gap:3px; max-height:none; overflow:visible; min-width:0; padding:4px 0; }
   #tab-patienten .pt-i1:empty { display:none; }
@@ -1227,8 +1227,8 @@ header nav .nav-btn.nav-more { --np:10px; }
   #tab-patienten .pt-wrap { align-items:stretch; }
   #tab-patienten .pt-wrap > * { min-height:56px; }
   #tab-patienten .pt-hit { display:flex; align-items:center; cursor:pointer; }
+  #tab-patienten .pt-l.pt-hit { flex-direction:column; align-items:flex-start; justify-content:center; gap:0; }
   #tab-patienten .pt-hit .pt-dr { display:none; }
-  #tab-patienten .pt-l { gap:12px; }
   #tab-patienten .pt-rz { position:relative; }
   /* Legende immer sichtbar, schwebend unten links */
   #pt-leg { display:flex !important; position:fixed; left:16px; bottom:12px; z-index:30; margin:0; padding:7px 14px; background:#fff; border:1px solid #cbd5e1; border-radius:12px; gap:14px; max-width:calc(100vw - 32px); }
@@ -1624,25 +1624,23 @@ function kaStart() {
         <span class="card-title">Patienten</span>
         <button type="button" class="btn btn-sm btn-secondary" style="margin-left:auto" onclick="mgOpen()" title="Doppelte Akten finden und zusammenlegen" aria-label="Doppelte Akten zusammenlegen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5.5" r="2.2"/><circle cx="6" cy="18.5" r="2.2"/><circle cx="18" cy="12" r="2.2"/><path d="M6 7.7v8.6M8.2 5.5c5.5 0 9.8 1.5 9.8 4.3"/></svg></button>
         <button type="button" class="btn btn-sm btn-secondary" onclick="var l=document.getElementById('pt-leg'); l.style.display = l.style.display === 'none' ? 'flex' : 'none';" title="Legende der Punkte" aria-label="Legende der Punkte">ⓘ</button>
+        <button type="button" class="btn btn-sm btn-secondary" id="pt-abrufen" style="display:none" onclick="KS.abrufen()" title="Neue Formulare aus dem Postfach holen">Abrufen</button>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('pimp-file').click()" title="Patienten, Rechnungen oder ausgefüllte Formulare einlesen">Import</button>
+        <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
       <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="display:none;">
-      <div class="pt-leg" id="pt-leg" style="display:none"><span><i style="background:#ef4444"></i>To-Do</span><span><i style="background:#3b82f6"></i>Rechnung offen</span><span><i style="background:#06b6d4"></i>Anamnese</span><span><i style="background:#f97316"></i>Erinnerung fällig</span><span><i style="background:#22c55e"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
+      <div class="pt-leg" id="pt-leg" style="display:none"><span><i style="background:#b91c1c; width:11px; height:11px"></i>Allergie</span><span><i style="background:#ef4444"></i>To-Do</span><span><i style="background:#3b82f6"></i>Rechnung offen</span><span><i style="background:#06b6d4"></i>Anamnese</span><span><i style="background:#f97316"></i>Erinnerung fällig</span><span><i style="background:#22c55e"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
       <div id="pt-er-row" style="display:flex; justify-content:flex-end; margin-bottom:4px;"><button type="button" class="btn btn-sm btn-secondary" id="pt-er-btn" onclick="ptToggleEr()" title="Spalte „Erstellt am“ ein- oder ausblenden" aria-label="Erstellt am ein- oder ausblenden"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button></div>
       <div class="scroll">
         <table class="pt">
           <thead><tr>
             <th class="sort" style="width:64px;" onclick="sortBy('id')">ID <span class="sarr" data-k="id"></span></th>
-            <th class="sort" onclick="sortBy('name')"><div class="pt-hg"><span>Name <span class="sarr" data-k="name"></span></span><span class="pt-hb" onclick="event.stopPropagation(); sortBy('dob')" title="Nach Geburtsdatum sortieren">Geburtsdatum <span class="sarr" data-k="dob"></span></span><span class="pt-hh" onclick="event.stopPropagation()">Hinweise</span><span class="pt-hz"><span class="pt-hi" onclick="event.stopPropagation()">Informationen</span><span class="pt-ha" onclick="event.stopPropagation()"><button type="button" class="pt-erb" onclick="event.stopPropagation(); ptToggleEr()" title="Spalte „Erstellt am“ ein- oder ausblenden" aria-label="Erstellt am ein- oder ausblenden"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button></span></span></div></th>
+            <th class="sort" onclick="sortBy('name')"><div class="pt-hg"><span>Name <span class="sarr" data-k="name"></span></span><span class="pt-hb" onclick="event.stopPropagation(); sortBy('dob')" title="Nach Geburtsdatum sortieren">Geburtsdatum <span class="sarr" data-k="dob"></span></span><span class="pt-hz"><span class="pt-hi" onclick="event.stopPropagation()">Informationen</span><span class="pt-ha" onclick="event.stopPropagation()"><button type="button" class="pt-erb" onclick="event.stopPropagation(); ptToggleEr()" title="Spalte „Erstellt am“ ein- oder ausblenden" aria-label="Erstellt am ein- oder ausblenden"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button></span></span></div></th>
             <th class="sort pc-er" style="width:190px;" onclick="sortBy('erstellt')">Erstellt am <span class="sarr" data-k="erstellt"></span></th>
           </tr></thead>
           <tbody id="patient-table"></tbody>
         </table>
-      </div>
-      <div class="row-actions" style="justify-content:center; margin-top:14px;">
-        <button type="button" class="btn btn-secondary btn-sm" id="pt-abrufen" style="display:none" onclick="KS.abrufen()" title="Neue Formulare aus dem Postfach holen">Abrufen</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('pimp-file').click()" title="Patienten, Rechnungen oder ausgefüllte Formulare einlesen">Import</button>
-        <input type="file" id="pimp-file" multiple style="display:none" onchange="importPatienten(this)">
       </div>
     </div>
   </div>
@@ -2779,7 +2777,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-13-b';
+var KA_V = '2026-11-15-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3286,18 +3284,19 @@ function renderPatients() {
     acts.appendChild(more);
     var wrap = mk('div', 'pt-wrap'), left = mk('div', 'pt-l');
     [].slice.call(c1.children).forEach(function (n) { if (n !== dots) left.appendChild(n); });
-    /* Querformat: Hinweise als Punkte in eigener Spalte (der Strich ist dort durchgehend blau) */
-    var hintc = mk('div', 'pt-hintc'); [].forEach.call(dots.children, function (d) { if (!d.classList.contains('d-none')) hintc.appendChild(d.cloneNode(true)); });
+    /* Hinweise als kleine Punkte unter dem Namen (der Strich ist durchgehend blau) */
+    var hintc = mk('div', 'pt-hints'); [].forEach.call(dots.children, function (d) { if (!d.classList.contains('d-none')) hintc.appendChild(d.cloneNode(true)); });
+    if (String(p.allergien || '').trim()) { var ad = mk('span', 'pt-dot d-allergy'); ad.title = 'Allergie: ' + String(p.allergien).replace(/\s+/g, ' ').trim(); ad.setAttribute('aria-label', ad.title); hintc.insertBefore(ad, hintc.firstChild); }
     var info = mk('div', 'pt-info'), i1 = mk('div', 'pt-i1'), i2 = mk('div', 'pt-i2'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
-    if (String(p.allergien || '').trim()) { var al = mk('span', 'pt-chip', 'Allergie: ' + cut(p.allergien, 30)); al.title = 'Allergie: ' + p.allergien; i1.appendChild(al); }
     if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; pa.style.cssText = 'color:#5b6f95; text-decoration:none;'; ptLn(i2, ICON_PHONE, pa); }
     if (p.email) { var ea = mk('a', '', p.email); ea.href = 'mailto:' + p.email; ea.onclick = function (e) { e.stopPropagation(); }; ea.style.cssText = 'color:#5b6f95; text-decoration:none; overflow:hidden; text-overflow:ellipsis;'; ptLn(i2, ICON_MAIL, ea); }
     info.appendChild(i1); info.appendChild(i2);
     var dobc = mk('div', 'pt-dobc', p.dob || ''), rz = mk('div', 'pt-rz');
     /* Größere Klickfläche: Name, Geburtsdatum und Hinweise öffnen die Akte; rechts (Informationen, Aktionen) erscheinen beim Überfahren die Schnellaktionen */
-    [left, dobc, hintc].forEach(function (z) { z.classList.add('pt-hit'); z.onclick = function (ev) { if (ev.target.closest('a, button')) return; viewAkte(p); }; });
+    [left, dobc].forEach(function (z) { z.classList.add('pt-hit'); z.onclick = function (ev) { if (ev.target.closest('a, button')) return; viewAkte(p); }; });
     rz.appendChild(info); rz.appendChild(acts);
-    wrap.appendChild(left); wrap.appendChild(dobc); wrap.appendChild(hintc); wrap.appendChild(rz); c1.appendChild(wrap);
+    wrap.appendChild(left); wrap.appendChild(dobc); wrap.appendChild(rz); c1.appendChild(wrap);
+    if (hintc.childNodes.length) { hintc.onclick = function () { viewAkte(p); }; c1.appendChild(hintc); }
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
   });
   if (!tb.rows.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 3; ec.textContent = q ? 'Kein Patient gefunden' : 'Noch keine Patienten angelegt'; ec.style.color = '#94a3b8'; }
@@ -3321,7 +3320,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('active')
 /* ===== Globale Suche im Kopfbereich ===== */
 var gsScope = { kal: true, pat: true, rec: true };
 /* Die drei Knöpfe im Header legen Neues an */
-function ptApplyEr() { var t = document.getElementById('tab-patienten'), b = document.getElementById('pt-er-btn'), on = !!settings.ptShowEr; if (t) t.classList.toggle('pt-shower', on); [].forEach.call(document.querySelectorAll('#pt-er-btn, .pt-erb'), function (x) { x.style.background = on ? '#dbeafe' : ''; }); }
+function ptApplyEr() { var t = document.getElementById('tab-patienten'), b = document.getElementById('pt-er-btn'), on = !!settings.ptShowEr; if (t) t.classList.toggle('pt-shower', on); [].forEach.call(document.querySelectorAll('#pt-er-btn, .pt-erb'), function (x) { if (x.classList.contains('pt-erb')) x.style.color = on ? '#2563eb' : ''; else x.style.background = on ? '#dbeafe' : ''; }); }
 function ptToggleEr() { settings.ptShowEr = !settings.ptShowEr; persist(); ptApplyEr(); }
 function gsToggle(force) {
   var bar = document.getElementById('gs-bar'), inp = document.getElementById('gs-in'), res = document.getElementById('gs-res'), f = document.getElementById('gs-fab');
