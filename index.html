@@ -2777,7 +2777,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-16-a';
+var KA_V = '2026-11-16-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3910,7 +3910,7 @@ function tvBestaetigung(p, e) {
 async function tvCancel(e, p) {
   if (!await kaConfirm('Termin am ' + fmtD(e.date) + ' um ' + e.time + ' absagen? Er bleibt als abgesagt im Kalender stehen.')) return;
   e.phase = 'Abgesagt'; e.mod = Date.now(); persist(); renderCal(); closeModal('modal-tview');
-  if (p && p.email && await kaConfirm('Absagebestätigung per E-Mail an ' + nameKey(p) + ' vorbereiten?')) { setTimeout(function () { tvMail(p, 'Bestätigung Terminabsage (E-Mail)', ['Bestätigung Deiner Terminabsage', '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wurde erfolgreich abgesagt.\n\nManuel von Kreuzberg Ästhetik']); }, 100); }
+  if (p && p.email && await kaConfirm('Absagebestätigung per E-Mail an ' + nameKey(p) + ' vorbereiten?')) { setTimeout(function () { phEvent = e; try { tvMail(p, 'Bestätigung Terminabsage (E-Mail)', ['Bestätigung Deiner Terminabsage', '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wurde erfolgreich abgesagt.\n\nManuel von Kreuzberg Ästhetik']); } finally { phEvent = null; } }, 100); }
 }
 function openTerminView(id, keep) {
   if (noClick) return;
