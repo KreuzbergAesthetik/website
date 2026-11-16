@@ -66,7 +66,7 @@ async function newPdf(title, who) {
   doc.setTitle(ascii(title)); doc.setAuthor(PRAXIS_F.name); doc.setCreator('Kreuzberg Ästhetik Webformular');
   var P = { L: L, doc: doc, W: 595.28, H: 841.89, M: 46, page: null, y: 0, who: who, title: title, n: 0 };
   P.f = await doc.embedFont(L.StandardFonts.Helvetica); P.fb = await doc.embedFont(L.StandardFonts.HelveticaBold); P.fi = await doc.embedFont(L.StandardFonts.HelveticaOblique);
-  try { var r = await fetch('icon-192.png'), buf = new Uint8Array(await r.arrayBuffer()); P.logo = (buf[0] === 0xFF && buf[1] === 0xD8) ? await doc.embedJpg(buf) : await doc.embedPng(buf); } catch (x) { P.logo = null; }
+  try { var r = await fetch('logo-praxis.png'), buf = new Uint8Array(await r.arrayBuffer()); P.logo = (buf[0] === 0xFF && buf[1] === 0xD8) ? await doc.embedJpg(buf) : await doc.embedPng(buf); } catch (x) { P.logo = null; }
   P.black = L.rgb(0.06, 0.09, 0.16); P.gray = L.rgb(0.4, 0.45, 0.52); P.line = L.rgb(0.8, 0.84, 0.88);
   P.add = function () {
     P.page = doc.addPage([P.W, P.H]); P.n++;
