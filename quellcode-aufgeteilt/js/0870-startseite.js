@@ -178,7 +178,7 @@ function tvBestaetigung(p, e) {
 async function tvCancel(e, p) {
   if (!await kaConfirm('Termin am ' + fmtD(e.date) + ' um ' + e.time + ' absagen? Er bleibt als abgesagt im Kalender stehen.')) return;
   e.phase = 'Abgesagt'; e.mod = Date.now(); persist(); renderCal(); closeModal('modal-tview');
-  if (p && p.email && await kaConfirm('Absagebestätigung per E-Mail an ' + nameKey(p) + ' vorbereiten?')) { setTimeout(function () { tvMail(p, 'Bestätigung Terminabsage (E-Mail)', ['Bestätigung Deiner Terminabsage', '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wurde erfolgreich abgesagt.\n\nManuel von Kreuzberg Ästhetik']); }, 100); }
+  if (p && p.email && await kaConfirm('Absagebestätigung per E-Mail an ' + nameKey(p) + ' vorbereiten?')) { setTimeout(function () { phEvent = e; try { tvMail(p, 'Bestätigung Terminabsage (E-Mail)', ['Bestätigung Deiner Terminabsage', '{AnredeInformell},\n\nDein Termin am {TerminDatum} um {Uhrzeit} Uhr wurde erfolgreich abgesagt.\n\nManuel von Kreuzberg Ästhetik']); } finally { phEvent = null; } }, 100); }
 }
 function openTerminView(id, keep) {
   if (noClick) return;
