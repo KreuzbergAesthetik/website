@@ -8,6 +8,7 @@ Aktueller Source of Truth ist `main` im Repository `KreuzbergAesthetik/website`.
 ## Zusammenarbeit
 - Auf Deutsch, per Du, knapp und konkret antworten.
 - Mehrere zusammengehörige Änderungen aus einer Nachricht gemeinsam umsetzen.
+- Wenn eine Aufgabe nach Deiner Einschätzung ein stärkeres Modell oder mehr Aufwand verdient (Verschlüsselung, Sync, Datenformate und Migrationen, größere Umbauten, schwer auffindbare Fehler), vorher kurz mit Begründung darauf hinweisen. Der Praxisinhaber entscheidet.
 - Möglichst wenig Rückfragen. Nur fragen, wenn eine fachlich relevante Entscheidung wirklich offen ist.
 - Bei größeren Umbauten zuerst Vorgehen oder Skizze zeigen.
 - Keine Funktionen, Texte, Datenfelder oder Designentscheidungen erfinden.
