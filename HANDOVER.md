@@ -125,11 +125,26 @@ Vor Umsetzung prüfen, ob einer dieser Punkte seit dem letzten Dokumentationssta
 9. Bei App-Code `V` in `sw.js` und `KA_V` in `index.html` identisch erhöhen.
 10. Pull Request nach `main` erstellen und erst nach erfolgreicher Prüfung mergen.
 
-## 8. Startprompt für eine neue Claude-Sitzung
+## 8. Startprompt für eine neue Claude-Sitzung (Stand 16.11.2026)
 
 Kopiere bei Bedarf folgenden Text als erste Nachricht an Claude:
 
-> Übernimm die Weiterentwicklung meiner Praxis-App „Kreuzberg Ästhetik“ aus dem GitHub-Repository `KreuzbergAesthetik/website`. Der aktuelle produktive Stand liegt auf `main`. Lies zuerst vollständig `CLAUDE.md` und `HANDOVER.md`, danach bei Bedarf `LIESMICH.txt`. Prüfe anschließend den aktuellen Code, die jüngsten Commits und offene Pull Requests. Verlasse Dich bei Widersprüchen nicht auf veraltete Dokumentation, sondern auf den aktuellen Code und die Git-Historie. Erhalte bestehende Funktionen und das bestehende Design, sofern ich keine Änderung daran verlange. Verwende niemals echte Patientendaten in Repository, Tests, Issues oder Pull Requests. Bei Änderungen an Gesundheitsdaten, Sync, Verschlüsselung, Dokumentation oder Backups besonders konservativ vorgehen. Arbeite für jede Aufgabe auf einem neuen Branch vom aktuellen `main`, führe die vorhandenen Tests aus und erhöhe bei ausgeliefertem App-Code die PWA-Version in `sw.js` und `index.html` identisch. Antworte mir auf Deutsch, kurz und konkret. Frage nur nach, wenn eine fachlich relevante Entscheidung wirklich offen ist.
+```text
+Übernimm die Weiterentwicklung meiner Praxis-App „Kreuzberg Ästhetik“ aus dem GitHub-Repository KreuzbergAesthetik/website. Der aktuelle produktive Stand liegt auf main.
+
+Lies zuerst vollständig CLAUDE.md und in HANDOVER.md den Abschnitt 0 (er hat Vorrang vor den älteren Abschnitten). Bei Bedarf danach LIESMICH.txt. Prüfe dann den aktuellen Code, die jüngsten Commits und die offenen Pull Requests. Bei Widersprüchen gelten Code und Git-Historie, nicht veraltete Dokumentation.
+
+So arbeiten wir:
+- Antworte auf Deutsch, per Du, sehr kurz. Frage nur, wenn eine fachlich relevante Entscheidung wirklich offen ist.
+- Bei Design-Wünschen zuerst eine Vorschau mit Screenshots (erfundene Daten, per SendUserFile), erst nach meinem „Veröffentliche“ als Pull Request mit CI und Merge.
+- Tests nur auf Zuruf: Zwischendurch nur Screenshots ansehen. Erst wenn ich „Veröffentliche“ oder „bereit für eine Version“ sage, einmal alles testen (test:static, test:browser), nötige Tests anpassen, dann PR und merge.
+- Eigenen Branch vom aktuellen main, vor jedem Push git fetch (es kann eine zweite Claude-Sitzung geben). V in sw.js und KA_V in index.html bei App-Änderungen identisch erhöhen. Vor dem Commit git status ansehen, keine Screenshots einchecken.
+- Erhalte bestehende Funktionen und das Design, sofern ich keine Änderung verlange. Erfinde keine Funktionen, Texte oder Datenfelder.
+- Niemals echte Patientendaten in Repository, Tests, Issues oder Pull Requests. Passwörter nie in den Chat, nur ins Server-Snippet.
+- Weise mich vorher kurz mit Begründung darauf hin, wenn eine Aufgabe ein stärkeres Modell oder mehr Aufwand verdient (Verschlüsselung, Geräte-Abgleich, Datenformate, Migrationen, größere Umbauten, schwer auffindbare Fehler). Ich entscheide.
+
+Offene Punkte stehen in HANDOVER.md Abschnitt 0 (Serverpasswort nach dem IONOS-Umzug, unsicher gedeutete Wünsche, fehlende Tests für Zeitleiste, Termin-Ansicht und Zahlungen). Frag mich zu Beginn, was ich als Nächstes möchte.
+```
 
 ## 9. Nicht automatisch tun
 
