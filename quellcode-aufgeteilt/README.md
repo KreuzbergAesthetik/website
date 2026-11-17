@@ -9,7 +9,7 @@ node werkzeuge/code-aufteilen.mjs --pruefen  # prüfen, ob die Kopie aktuell ist
 ```
 
 Die Teile sind verlustfrei: In der Reihenfolge aus `teile.json` aneinandergehängt ergeben sie exakt `index.html`
-(SHA-256 `452908b0ab10f402…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
+(SHA-256 `d944d4bab8b9e065…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
 
 - `css/`: Gestaltung, nach Themen (19 Teile)
 - `js/`: Programmlogik, nach Funktionsbereichen (35 Teile)
@@ -117,25 +117,25 @@ Bereits vorher eigenständige Dateien (nicht kopiert): `dialoge.js` (Hinweise, R
 | `js/0940-alle-tabellen.js` | Alle Tabellen | 5173 | 239 |
 | `js/0950-pdf-erzeugung.js` | PDF-Erzeugung  | 5412 | 48 |
 | `js/0960-qr-code-erzeugung.js` | QR-Code-Erzeugung  | 5460 | 280 |
-| `js/0970-briefumschlag-c6.js` | Briefumschlag C6  | 5740 | 489 |
-| `js/0980-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 6229 | 494 |
-| `js/0990-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 6723 | 262 |
-| `js/1000-statistik.js` | Statistik | 6985 | 74 |
-| `js/1010-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 7059 | 108 |
-| `js/1020-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 7167 | 281 |
-| `js/1030-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 7448 | 294 |
-| `js/1040-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 7742 | 136 |
-| `js/1050-medien.js` | Medien | 7878 | 381 |
-| `js/1060-webformulare.js` | Webformulare | 8259 | 278 |
-| `js/1070-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 8537 | 198 |
-| `js/1080-produktlager.js` | Produktlager | 8735 | 549 |
-| `js/1090-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 9284 | 242 |
-| `js/1100-sicherung.js` | Sicherung  | 9526 | 219 |
-| `js/1110-sicherung-als-zip.js` | Sicherung als ZIP | 9745 | 318 |
-| `js/1120-geraete-abgleich.js` | Geräte-Abgleich | 10063 | 69 |
-| `js/1130-eingangskorb.js` | Eingangskorb | 10132 | 97 |
-| `html/1140-oberflaeche-rahmen.html` | oberflaeche-rahmen | 10229 | 1 |
-| `js/1150-app-start.js` | app-start | 10230 | 0 |
-| `html/1160-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 10230 | 7 |
-| `js/1170-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 10237 | 12 |
-| `html/1180-dokument-ende.html` | dokument-ende | 10249 | 2 |
+| `js/0970-briefumschlag-c6.js` | Briefumschlag C6  | 5740 | 494 |
+| `js/0980-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 6234 | 494 |
+| `js/0990-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 6728 | 262 |
+| `js/1000-statistik.js` | Statistik | 6990 | 74 |
+| `js/1010-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 7064 | 108 |
+| `js/1020-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 7172 | 281 |
+| `js/1030-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 7453 | 294 |
+| `js/1040-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 7747 | 136 |
+| `js/1050-medien.js` | Medien | 7883 | 381 |
+| `js/1060-webformulare.js` | Webformulare | 8264 | 278 |
+| `js/1070-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 8542 | 198 |
+| `js/1080-produktlager.js` | Produktlager | 8740 | 549 |
+| `js/1090-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 9289 | 242 |
+| `js/1100-sicherung.js` | Sicherung  | 9531 | 219 |
+| `js/1110-sicherung-als-zip.js` | Sicherung als ZIP | 9750 | 318 |
+| `js/1120-geraete-abgleich.js` | Geräte-Abgleich | 10068 | 69 |
+| `js/1130-eingangskorb.js` | Eingangskorb | 10137 | 97 |
+| `html/1140-oberflaeche-rahmen.html` | oberflaeche-rahmen | 10234 | 1 |
+| `js/1150-app-start.js` | app-start | 10235 | 0 |
+| `html/1160-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 10235 | 7 |
+| `js/1170-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 10242 | 12 |
+| `html/1180-dokument-ende.html` | dokument-ende | 10254 | 2 |

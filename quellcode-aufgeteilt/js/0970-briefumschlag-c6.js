@@ -273,8 +273,13 @@ function tileSave(key) {
 /* Name in der Namensleiste: einzeilig groß, sonst zweizeilig etwas kleiner */
 function akteNameFit() {
   var nm = document.querySelector('#a-title .a-nm'); if (!nm) return;
-  nm.classList.remove('a-nm-2'); nm.classList.add('a-nm-1');
-  if (nm.clientWidth > 0 && nm.scrollWidth > nm.clientWidth + 1) { nm.classList.remove('a-nm-1'); nm.classList.add('a-nm-2'); }
+  nm.style.fontSize = ''; nm.classList.remove('a-nm-2'); nm.classList.add('a-nm-1');
+  if (nm.clientWidth <= 0) return;
+  if (nm.scrollWidth <= nm.clientWidth + 1) return;
+  /* passt nicht in eine Zeile: Nachname oben, Vorname darunter, nie drei Zeilen (bei Bedarf kleinere Schrift, zuletzt Auslassungspunkte) */
+  nm.classList.remove('a-nm-1'); nm.classList.add('a-nm-2');
+  var l = nm.querySelector('.a-nl'), f = nm.querySelector('.a-nf'), fs = 19.5;
+  while (fs > 14 && (l.scrollWidth > nm.clientWidth + 1 || f.scrollWidth > nm.clientWidth + 1)) { fs -= 0.5; nm.style.fontSize = fs + 'px'; }
 }
 try { if (window.ResizeObserver) new ResizeObserver(function () { akteNameFit(); }).observe(document.getElementById('a-title')); } catch (e) {}
 
@@ -290,7 +295,7 @@ function renderHead() {
   ttl.appendChild(nmb);
   var rt = mk('div', 'a-rt');
   var ageT = p.dob ? ageOf(p.dob) : ''; if (ageT !== '' && ageT !== null && !isNaN(ageT)) { var ag = mk('span', 'a-age', String(ageT)); ag.title = 'Alter: ' + ageT + ' Jahre'; rt.appendChild(ag); }
-  rt.appendChild(pidn); ttl.appendChild(rt); akteNameFit();
+  rt.appendChild(pidn); ttl.appendChild(rt); akteNameFit(); requestAnimationFrame(akteNameFit);
   renderFlags();
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
   document.querySelector('.a-fab').style.visibility = stammEdit ? 'hidden' : '';
