@@ -9,6 +9,8 @@ Aktueller Source of Truth ist `main` im Repository `KreuzbergAesthetik/website`.
 - Auf Deutsch, per Du, knapp und konkret antworten.
 - Mehrere zusammengehörige Änderungen aus einer Nachricht gemeinsam umsetzen.
 - Wenn eine Aufgabe nach Deiner Einschätzung ein stärkeres Modell oder mehr Aufwand verdient (Verschlüsselung, Sync, Datenformate und Migrationen, größere Umbauten, schwer auffindbare Fehler), vorher kurz mit Begründung darauf hinweisen. Der Praxisinhaber entscheidet.
+- **Veröffentlichen höchstens einmal am Tag** (Tests, Pull Request, Merge gebündelt), oder wenn die Menge der Änderungen es nach Deiner Einschätzung lohnt (dann kurz vorschlagen). Sonst nur auf ausdrückliche Aufforderung des Praxisinhabers. Zwischendurch nur ändern und Screenshots zeigen; Sichern auf den eigenen Branch ist erlaubt.
+- **Keine Git-Fachbegriffe** (Pull Request, Merge, Push, CI) in Antworten an den Praxisinhaber. Nur das Ergebnis nennen („veröffentlicht, Version …“). Nur bei Problemen oder Entscheidungen darauf eingehen.
 - Möglichst wenig Rückfragen. Nur fragen, wenn eine fachlich relevante Entscheidung wirklich offen ist.
 - Bei größeren Umbauten zuerst Vorgehen oder Skizze zeigen.
 - Keine Funktionen, Texte, Datenfelder oder Designentscheidungen erfinden.
