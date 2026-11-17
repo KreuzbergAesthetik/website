@@ -1,0 +1,13 @@
+/* Namensleiste: Rahmenfarbe nach Anrede, Name groß, Alter und Nummer rechts untereinander unter dem Stift */
+.a-top { --sxc:#1e3a8a; border-color:var(--sxc); }
+.a-top.sx-w { --sxc:#ec4899; } .a-top.sx-m { --sxc:#3b82f6; } .a-top.sx-d { --sxc:#00ad29; }
+.a-top > .icon-btn { color:var(--sxc); opacity:.4; } .a-top > .icon-btn:hover { color:var(--sxc); opacity:.7; background:none; }
+.a-top #a-edit.a-pen { position:absolute; top:1px; right:6px; }
+.a-top .a-rt { flex:none; display:flex; flex-direction:column; align-items:flex-end; margin-left:auto; padding-top:13px; line-height:1.1; }
+.a-top .a-rt .a-age, .a-top .a-rt .a-pid { margin:0; padding:0; font-size:16px; font-weight:400; color:#94a3b8; white-space:nowrap; cursor:default; } .a-top .a-rt .a-pid { cursor:pointer; }
+.a-top .a-nm { flex:1; min-width:0; line-height:1.1; }
+.a-top .a-nm-1 { display:flex; flex-wrap:nowrap; align-items:baseline; gap:.28em; white-space:nowrap; font-size:26px; }
+.a-top .a-nm-1 > * { flex:none; white-space:nowrap; overflow-wrap:normal; }
+.a-top .a-nm-2 { display:block; font-size:19.5px; }
+.a-top .a-nm-2 .a-nl { display:block; white-space:normal; overflow-wrap:anywhere; } .a-top .a-nm-2 .a-nf { display:block; }
+.a-top .a-nf { font-weight:400; }

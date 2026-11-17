@@ -270,16 +270,27 @@ function tileSave(key) {
   if (changed && key !== 'notizen') auditOne(curP, 'Patientenakte', AUD_LABEL[key] || key, old, v);
   tileEdit = ''; persist(); renderHead(); renderVerlauf(); renderPatients();
 }
+/* Name in der Namensleiste: einzeilig groß, sonst zweizeilig etwas kleiner */
+function akteNameFit() {
+  var nm = document.querySelector('#a-title .a-nm'); if (!nm) return;
+  nm.classList.remove('a-nm-2'); nm.classList.add('a-nm-1');
+  if (nm.clientWidth > 0 && nm.scrollWidth > nm.clientWidth + 1) { nm.classList.remove('a-nm-1'); nm.classList.add('a-nm-2'); }
+}
+try { if (window.ResizeObserver) new ResizeObserver(function () { akteNameFit(); }).observe(document.getElementById('a-title')); } catch (e) {}
+
 function renderHead() {
   var p = curP, box = document.getElementById('a-head'), ttl = document.getElementById('a-title'); box.innerHTML = ''; ttl.innerHTML = '';
   var pidn = mk('span', 'a-pid', '#' + patNr(p)); pidn.title = 'Nummer ändern'; pidn.style.cursor = 'pointer'; pidn.onclick = function () { changePatNr(p); };
-  var idc = mk('div', 'a-idc'); idc.appendChild(pidn);
-  var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (sx) { var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; idc.appendChild(sp); }
+  var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede];
+  var topBar = document.querySelector('.a-top'); if (topBar) { topBar.classList.remove('sx-w', 'sx-m', 'sx-d'); var sxc = { Frau: 'sx-w', Herr: 'sx-m', Divers: 'sx-d' }[p.anrede]; if (sxc) topBar.classList.add(sxc); }
+  ttl.title = sx ? sx[1] : '';
   var nmb = mk('div', 'a-nm'), nl = mk('span', 'a-nl', (noTitel(p.nachname) || p.nachname || '').toUpperCase() + ','), nf = mk('span', 'a-nf', noTitel(p.vorname) || p.vorname || '');
   if (p.titel) nf.appendChild(mk('small', 'a-tit', p.titel));
   nmb.appendChild(nl); nmb.appendChild(document.createTextNode(' ')); nmb.appendChild(nf);
-  ttl.appendChild(idc); ttl.appendChild(nmb);
-  var ageT = p.dob ? ageOf(p.dob) : ''; if (ageT !== '' && ageT !== null && !isNaN(ageT)) { var ag = mk('span', 'a-age', String(ageT)); ag.title = 'Alter: ' + ageT + ' Jahre'; ttl.appendChild(ag); }
+  ttl.appendChild(nmb);
+  var rt = mk('div', 'a-rt');
+  var ageT = p.dob ? ageOf(p.dob) : ''; if (ageT !== '' && ageT !== null && !isNaN(ageT)) { var ag = mk('span', 'a-age', String(ageT)); ag.title = 'Alter: ' + ageT + ' Jahre'; rt.appendChild(ag); }
+  rt.appendChild(pidn); ttl.appendChild(rt); akteNameFit();
   renderFlags();
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
   document.querySelector('.a-fab').style.visibility = stammEdit ? 'hidden' : '';
