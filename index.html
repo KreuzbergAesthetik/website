@@ -1156,6 +1156,19 @@ header nav .nav-btn.nav-more { --np:10px; }
 .a-top > .icon-btn { background:none; border:0; box-shadow:none; width:38px; height:40px; min-width:38px; padding:0; }
 .a-top > .icon-btn svg { width:28px; height:28px; stroke-width:2.6; }
 .a-age { margin-left:auto; padding:0 4px; align-self:center; font-size:14px; font-weight:500; color:#64748b; white-space:nowrap; }
+/* Namensleiste: Rahmenfarbe nach Anrede, Name groß, Alter und Nummer rechts untereinander unter dem Stift */
+.a-top { --sxc:#1e3a8a; border-color:var(--sxc); }
+.a-top.sx-w { --sxc:#ee05b1; } .a-top.sx-m { --sxc:#3a81ff; } .a-top.sx-d { --sxc:#00ae1e; }
+.a-top > .icon-btn { color:var(--sxc); opacity:.28; } .a-top > .icon-btn:hover { color:var(--sxc); opacity:.7; background:none; }
+.a-top #a-edit.a-pen { position:absolute; top:1px; right:9.5px; }
+.a-top .a-rt { flex:none; display:flex; flex-direction:column; align-items:flex-end; margin-left:auto; padding-top:13px; line-height:1.1; }
+.a-top .a-rt .a-age, .a-top .a-rt .a-pid { margin:0; padding:0; align-self:flex-end; font-size:16px; font-weight:400; color:#b0b9c8; white-space:nowrap; cursor:default; } .a-top .a-rt .a-pid { cursor:pointer; }
+.a-top .a-nm { flex:1; min-width:0; line-height:1.1; }
+.a-top .a-nm-1 { display:flex; flex-wrap:nowrap; align-items:baseline; gap:.28em; white-space:nowrap; font-size:26px; }
+.a-top .a-nm-1 > * { flex:none; white-space:nowrap; overflow-wrap:normal; }
+.a-top .a-nm-2 { display:block; font-size:19.5px; }
+.a-top .a-nm-2 .a-nl, .a-top .a-nm-2 .a-nf { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
+.a-top .a-nf { font-weight:400; }
 /* Hochkant: Plus-Knopf schwarz rechts neben der Suche, Akte-Aktionen als Streifen am Rand */
 .a-fab-tog { display:none; }
 @media (max-width:699px), (orientation:portrait) {
@@ -2777,7 +2790,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-16-d';
+var KA_V = '2026-11-17-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -5996,16 +6009,32 @@ function tileSave(key) {
   if (changed && key !== 'notizen') auditOne(curP, 'Patientenakte', AUD_LABEL[key] || key, old, v);
   tileEdit = ''; persist(); renderHead(); renderVerlauf(); renderPatients();
 }
+/* Name in der Namensleiste: einzeilig groß, sonst zweizeilig etwas kleiner */
+function akteNameFit() {
+  var nm = document.querySelector('#a-title .a-nm'); if (!nm) return;
+  nm.style.fontSize = ''; nm.classList.remove('a-nm-2'); nm.classList.add('a-nm-1');
+  if (nm.clientWidth <= 0) return;
+  if (nm.scrollWidth <= nm.clientWidth + 1) return;
+  /* passt nicht in eine Zeile: Nachname oben, Vorname darunter, nie drei Zeilen (bei Bedarf kleinere Schrift, zuletzt Auslassungspunkte) */
+  nm.classList.remove('a-nm-1'); nm.classList.add('a-nm-2');
+  var l = nm.querySelector('.a-nl'), f = nm.querySelector('.a-nf'), fs = 19.5;
+  while (fs > 14 && (l.scrollWidth > nm.clientWidth + 1 || f.scrollWidth > nm.clientWidth + 1)) { fs -= 0.5; nm.style.fontSize = fs + 'px'; }
+}
+try { if (window.ResizeObserver) new ResizeObserver(function () { akteNameFit(); }).observe(document.getElementById('a-title')); } catch (e) {}
+
 function renderHead() {
   var p = curP, box = document.getElementById('a-head'), ttl = document.getElementById('a-title'); box.innerHTML = ''; ttl.innerHTML = '';
   var pidn = mk('span', 'a-pid', '#' + patNr(p)); pidn.title = 'Nummer ändern'; pidn.style.cursor = 'pointer'; pidn.onclick = function () { changePatNr(p); };
-  var idc = mk('div', 'a-idc'); idc.appendChild(pidn);
-  var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede]; if (sx) { var sp = mk('span', 'a-sex', sx[0]); sp.title = sx[1]; idc.appendChild(sp); }
+  var sx = { Frau: ['♀', 'weiblich'], Herr: ['♂', 'männlich'], Divers: ['⚧', 'divers'] }[p.anrede];
+  var topBar = document.querySelector('.a-top'); if (topBar) { topBar.classList.remove('sx-w', 'sx-m', 'sx-d'); var sxc = { Frau: 'sx-w', Herr: 'sx-m', Divers: 'sx-d' }[p.anrede]; if (sxc) topBar.classList.add(sxc); }
+  ttl.title = sx ? sx[1] : '';
   var nmb = mk('div', 'a-nm'), nl = mk('span', 'a-nl', (noTitel(p.nachname) || p.nachname || '').toUpperCase() + ','), nf = mk('span', 'a-nf', noTitel(p.vorname) || p.vorname || '');
   if (p.titel) nf.appendChild(mk('small', 'a-tit', p.titel));
   nmb.appendChild(nl); nmb.appendChild(document.createTextNode(' ')); nmb.appendChild(nf);
-  ttl.appendChild(idc); ttl.appendChild(nmb);
-  var ageT = p.dob ? ageOf(p.dob) : ''; if (ageT !== '' && ageT !== null && !isNaN(ageT)) { var ag = mk('span', 'a-age', String(ageT)); ag.title = 'Alter: ' + ageT + ' Jahre'; ttl.appendChild(ag); }
+  ttl.appendChild(nmb);
+  var rt = mk('div', 'a-rt');
+  var ageT = p.dob ? ageOf(p.dob) : ''; if (ageT !== '' && ageT !== null && !isNaN(ageT)) { var ag = mk('span', 'a-age', String(ageT)); ag.title = 'Alter: ' + ageT + ' Jahre'; rt.appendChild(ag); }
+  rt.appendChild(pidn); ttl.appendChild(rt); akteNameFit(); requestAnimationFrame(akteNameFit);
   renderFlags();
   document.getElementById('a-edit').style.display = stammEdit ? 'none' : 'inline-flex';
   document.querySelector('.a-fab').style.visibility = stammEdit ? 'hidden' : '';
