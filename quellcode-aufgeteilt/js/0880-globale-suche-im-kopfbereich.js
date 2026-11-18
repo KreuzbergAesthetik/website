@@ -15,6 +15,7 @@ function gsToggle(force) {
 function gsCollapse(force, noSave) {
   var bar = document.getElementById('gs-bar'), inp = document.getElementById('gs-in'), lupe = document.getElementById('gs-lupe'), res = document.getElementById('gs-res');
   var zu = typeof force === 'boolean' ? force : !bar.classList.contains('zu');
+  if (typeof KA_PH !== 'undefined' && KA_PH.matches) { zu = false; noSave = true; }   /* Handy hochkant: Suche steht oben und bleibt offen */
   bar.classList.toggle('zu', zu); lupe.setAttribute('aria-expanded', zu ? 'false' : 'true'); lupe.title = zu ? 'Suche aufklappen' : 'Suche einklappen';
   gsMenu(false);
   if (zu) { inp.value = ''; res.style.display = 'none'; inp.blur(); } else { inp.focus(); gsRun(true); }

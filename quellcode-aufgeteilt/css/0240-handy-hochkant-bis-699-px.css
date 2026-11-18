@@ -1,0 +1,24 @@
+/* Handy hochkant (bis 699 px): Reiter unten als Leiste, oben Logo, Suche und Plus. Tablet und Querformat unverändert. */
+.bnav { display:none; }
+@media (max-width:699px) and (orientation:portrait) {
+  header nav { display:none !important; }
+  header { min-height:60px; }
+  header .hd-act { margin-left:auto; }
+  .fab-col { top:calc((var(--hdh,60px) - 46px) / 2); bottom:auto; left:56px; right:12px; width:auto; height:46px; z-index:35; }
+  body:has(#al-btn:not([style*="none"])) .fab-col { right:52px; }
+  .fab-col .gs-bar, .fab-col .gs-bar.zu { flex:1 1 0; width:auto; min-width:0; padding:3px; justify-content:flex-start; box-shadow:none; }
+  .fab-col .gs-bar.zu .gs-box { padding:0 8px; justify-content:flex-start; } .fab-col .gs-bar.zu input { display:block; }
+  .fab-col .gs-res { position:fixed; left:8px; right:8px; top:calc(var(--hdh,60px) + 6px); bottom:auto; width:auto; max-height:calc(100vh - var(--hdh,60px) - 96px); overscroll-behavior:contain; }
+  .fab-col > .fab.fab-plus { box-shadow:none; }
+  .fab-col .gs-menu { position:absolute; top:calc(100% + 8px); bottom:auto; left:auto; right:0; align-items:flex-end; }
+  .bnav { display:flex; position:fixed; left:0; right:0; bottom:0; z-index:44; height:calc(64px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:#fff; border-top:1px solid #e2e8f0; box-shadow:0 -4px 14px rgba(15,23,42,.12); }
+  .bnav-it { flex:1 1 0; min-width:0; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border:0; background:none; padding:0; color:#64748b; font:600 11px/1.1 inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .bnav-it svg { width:24px; height:24px; }
+  .bnav-it.on { color:var(--bc); }
+  .bnav-it.on::before { content:''; position:absolute; top:0; left:22%; right:22%; height:3px; border-radius:0 0 3px 3px; background:var(--bc); }
+  .bnav-bd { position:absolute; top:6px; left:calc(50% + 7px); min-width:17px; height:17px; padding:0 4px; border-radius:9px; background:#ef4444; color:#fff; font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  body { padding-bottom:calc(84px + env(safe-area-inset-bottom)); }
+  .a-fab { bottom:calc(76px + env(safe-area-inset-bottom)); }
+  #upd-bar, #ks-bar { bottom:calc(76px + env(safe-area-inset-bottom)) !important; }
+  #err-bar { bottom:calc(72px + env(safe-area-inset-bottom)) !important; }
+}

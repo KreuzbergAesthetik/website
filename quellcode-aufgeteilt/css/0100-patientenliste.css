@@ -82,7 +82,9 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .a-fab .a-cats { flex:none; gap:6px; }
 .a-cat.d0 { --ac:var(--c-doku); } .a-cat.d3 { --ac:var(--c-rezept); } .a-cat.d4 { --ac:var(--c-senden); } .a-cat.d5 { --ac:#1fa855; } .a-cat.d6, .a-cat.d7 { --ac:#0d9488; }
 .a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.14); }
-@media (max-width:699px) { .a-cat.hm { display:none; } }
+@media (max-width:699px) and (orientation:landscape) { .a-cat.hm { display:none; } }
+.a-cat.xk { display:none; } .a-cat.ov { display:none !important; }
+@media (max-width:699px), (orientation:portrait) { .a-cat.xk { display:inline-flex; } }
 /* Stifte: unsichtbar, bei Mausover sichtbar; am Handy genügt der Tipp auf die Zeile bzw. Chargen-Bezeichnung */
 .ph-edit, .ra-pen { opacity:0; transition:opacity .15s; } .ph-edit:focus-visible, .ra-pen:focus-visible { opacity:1; }
 @media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen, div:hover > .ra-pen { opacity:1; } }
