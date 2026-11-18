@@ -28,7 +28,7 @@ try {
     return {
       spalten: ths, dobText: dob.textContent, dobRechtsVonName: box(dob).left >= box(l).right - 1, punkteZwischen: box(hi).left >= box(row.querySelector('.pt-dots')).right - 1 && box(hi).right <= box(nm).left + 1, strich, allergie: (() => { const a = hi.querySelector('.d-allergy'), o = [...hi.querySelectorAll('.pt-dot:not(.d-allergy)')][0]; return !!a && /Cashew/.test(a.title) && (!o || box(a).width > box(o).width); })(), keinChip: !row.querySelector('.pt-chip'), importOben: !!document.querySelector('#tab-patienten .card-header [onclick*=pimp-file]') && !document.querySelector('#tab-patienten .row-actions [onclick*=pimp-file]'), erKnopf: (() => { const b = document.querySelector('.pt-hg .pt-erb'), c = getComputedStyle(b); return c.borderTopWidth === '0px' && c.backgroundColor === 'rgba(0, 0, 0, 0)'; })(), punkte: hi.querySelectorAll('.pt-dot').length,
       infoZeilen: lines.length, symbole: lines.every(x => x.querySelector('svg')), untereinander: lines.length === 2 && box(lines[1]).top > box(lines[0]).bottom - 1,
-      vorname: getComputedStyle(row.querySelector('.pn-f')).color, legende: vis(document.getElementById('pt-leg')), legendeFix: getComputedStyle(document.getElementById('pt-leg')).position,
+      vorname: getComputedStyle(row.querySelector('.pn-f')).color, legende: vis(document.getElementById('lg-btn')) && (() => { lgToggle(true); const ok = /Allergie/.test(document.getElementById('lg-body').textContent) && /Termin gebucht/.test(document.getElementById('lg-body').textContent); lgToggle(false); return ok; })(), legendeFix: getComputedStyle(document.getElementById('lg-float')).position,
       erKopf: !!document.querySelector('.pt-hg .pt-erb') && box(document.querySelector('.pt-hg .pt-erb')).right > box(rz).right - 60,
       altKnopfWeg: !vis(document.getElementById('pt-er-row')), infoRechtsVonDob: box(rz).left >= box(dob).right - 1,
       klickBreite: Math.round(box(l).width), klickHoehe: Math.round(box(l).height)
@@ -43,7 +43,7 @@ try {
   assert.equal(r.strich, 'rgb(59, 130, 246)', 'Strich nicht durchgehend blau');
   assert.ok(r.infoZeilen === 2 && r.symbole && r.untereinander, 'Telefon und E-Mail mit Symbol untereinander: ' + JSON.stringify(r));
   assert.equal(r.vorname, 'rgb(15, 23, 42)', 'Vorname nicht schwarz');
-  assert.ok(r.legende && r.legendeFix === 'fixed', 'Legende nicht schwebend sichtbar');
+  assert.ok(r.legende && r.legendeFix === 'fixed', 'Schwebende Legende (Knopf mit Ausklappen) fehlt');
   assert.ok(r.erKopf && r.altKnopfWeg, 'Erstellt-am-Symbol nicht in der Kopfzeile: ' + JSON.stringify(r));
   assert.ok(r.klickBreite > 200 && r.klickHoehe >= 50, 'Klickfläche zu klein: ' + r.klickBreite + 'x' + r.klickHoehe);
   // Schnellaktionen: links nicht sichtbar, rechts beim Überfahren sichtbar

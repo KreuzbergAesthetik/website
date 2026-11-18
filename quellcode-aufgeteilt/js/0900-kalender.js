@@ -1,5 +1,5 @@
 /* ===== Kalender ===== */
-var H = 48, START = 8, END = 20, DSTART = 8, DEND = 20, view = 'tag', cur = new Date();
+var H = 48, START = 8, END = 20, DSTART = 8, DEND = 20, view = 'tag', cur = new Date(), H0 = 48;
 var MN = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 var WD = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -57,13 +57,13 @@ function timeGrid(days) {
   });
   if (addC) html += '<div class="dh" style="padding:2px">' + (wkSa ? '' : '<button type="button" class="wk-add" onclick="wkTog(\'sa\')" title="Samstag einblenden">+Sa</button>') + (wkSo ? '' : '<button type="button" class="wk-add" onclick="wkTog(\'so\')" title="Sonntag einblenden">+So</button>') + '</div>';
   html += '</div><div class="tg-row" style="' + cols + '"><div class="tc">';
-  for (var h = START; h < END; h++) html += '<div class="hl">' + h + '</div>';
+  for (var h = START; h < END; h++) html += '<div class="hl" style="height:' + H + 'px">' + h + '</div>';
   var nw = new Date(), nmin = nw.getHours() * 60 + nw.getMinutes(), nowShow = days.some(function (d) { return iso(d) === today; }) && nmin >= START * 60 && nmin < END * 60;
   if (nowShow) html += '<div class="now-tag" style="top:' + ((nmin - START * 60) * H / 60) + 'px">' + pad(nw.getHours()) + ':' + pad(nw.getMinutes()) + '</div>';
   html += '</div>';
   days.forEach(function (d) {
     var k = iso(d);
-    html += '<div class="dc" data-date="' + k + '" style="height:' + (END - START) * H + 'px;cursor:pointer" onclick="slotClick(event,\'' + k + '\')">';
+    html += '<div class="dc" data-date="' + k + '" style="height:' + (END - START) * H + 'px;cursor:pointer;background-size:100% ' + H + 'px" onclick="slotClick(event,\'' + k + '\')">';
     html += EXT.blocks(k);
     layoutDay(events.filter(function (e) { return e.date === k; })).forEach(function (x) { html += evBlock(x.e, x.lane, x.lanes); });
     if (nowShow && k === today) html += '<div class="now-line" style="top:' + ((nmin - START * 60) * H / 60) + 'px"></div>';
@@ -126,15 +126,25 @@ function renderCal() {
     title = MN[cur.getMonth()] + ' ' + cur.getFullYear();
     body = monthGrid();
   }
-  calLegend();
+  calLegend(); lgUpdate();
   document.getElementById('cal-title').innerText = title; saveLast();
-  var cb = document.getElementById('cal-body'); cb.innerHTML = body;
+  var cb = document.getElementById('cal-body');
+  /* Tag am Handy hochkant: Stundenhöhe so wählen, dass der ganze Tag (bis 20 Uhr) ohne Scrollen auf die Seite passt */
+  var fitH = 0;
+  if (view === 'tag' && typeof KA_PH !== 'undefined' && KA_PH.matches) {
+    H = H0; body = timeGrid([cur]); cb.innerHTML = body;
+    var bn = document.getElementById('bnav'), lim = (bn && bn.offsetHeight ? bn.getBoundingClientRect().top : window.innerHeight) - 22, avail = lim - cb.getBoundingClientRect().top - ((cb.querySelector('.tg-row') || {}).offsetHeight || 0);
+    fitH = Math.max(30, Math.min(H0, Math.floor(avail / (END - START))));
+    if (fitH !== H) { H = fitH; body = timeGrid([cur]); }
+  } else H = H0;
+  cb.innerHTML = body;
   if (view !== 'monat' && cb.scrollHeight > cb.clientHeight + 4) {
     var nw = new Date(), hr = nw.getHours(), isNowView = !!cb.querySelector('.now-line'), t0 = isNowView ? hr - 1 : START + 0;
     var first = (cb.querySelector('.ev') || {}).offsetTop; cb.scrollTop = isNowView ? Math.max(0, (t0 - START) * H) : (first != null ? Math.max(0, Math.floor((first - 20) / H) * H) : 0);
   }
 }
 function setView(v) { view = v; renderCal(); }
+var calRz = 0; window.addEventListener('resize', function () { clearTimeout(calRz); calRz = setTimeout(function () { var t = document.getElementById('tab-kalender'); if (t && t.classList.contains('active') && view === 'tag') renderCal(); }, 200); });
 function step(n) {
   if (view === 'tag') cur = addDays(cur, n);
   else if (view === 'woche') cur = addDays(cur, 7 * n);

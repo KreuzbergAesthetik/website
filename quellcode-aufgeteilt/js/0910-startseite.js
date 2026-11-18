@@ -62,7 +62,7 @@ function renderHome() {
       else ml.forEach(function (t) { var c2 = mk('span', 'badge badge-amber', 'Offen: ' + t); c2.title = t; ex.appendChild(c2); });
     }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
-    var row = hmRow(e.time + ' bis ' + endStr, nmEl(eventPatientDisplay(e)), e.behandlung || '', function () { openAkteFromTermin(e.id); }, null, isNext ? 'next' : '');
+    var row = hmRow(e.time + ' bis ' + endStr, nmAkte(e, nmEl(eventPatientDisplay(e))), e.behandlung || '', function () { showInCal(e); }, null, isNext ? 'next' : '');
     if (ex) row.querySelector('.hm-main').appendChild(ex);
     return row;
   }), 'Heute stehen keine Termine an.');
@@ -110,7 +110,7 @@ function renderHome() {
     var dd = addDays(now, di - wd), k = iso(dd), ev = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time.localeCompare(b.time); });
     if (!ev.length) continue; any = true;
     wk.appendChild(mk('div', 'hm-sec', WDL[dd.getDay()] + ', ' + dd.getDate() + '. ' + MN[dd.getMonth()] + (k === today ? ' (heute)' : '')));
-    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, nmEl(eventPatientDisplay(e)), e.behandlung || '', function () { openAkteFromTermin(e.id); })); });
+    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, nmAkte(e, nmEl(eventPatientDisplay(e))), e.behandlung || '', function () { showInCal(e); })); });
   }
   if (!any) wk.appendChild(mk('div', 'hm-empty', 'Diese Woche stehen keine Termine an.'));
   /* Umsatz und Ausgaben des Jahres */

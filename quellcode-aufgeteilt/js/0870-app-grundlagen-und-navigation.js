@@ -1,6 +1,6 @@
 
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-18-b';
+var KA_V = '2026-11-19-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -128,6 +128,24 @@ function toggleNavMenu(ev) {
   m.style.bottom = '';
   m.style.top = (r.bottom + 4) + 'px'; m.style.maxHeight = Math.max(120, window.innerHeight - r.bottom - 12) + 'px'; m.scrollTop = 0; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
+
+/* Schwebende Legende: Inhalt je nach Seite (Patienten: Punkte, Kalender: Leistungsgruppen) */
+function lgToggle(force) {
+  var b = document.getElementById('lg-btn'), body = document.getElementById('lg-body'); if (!b || !body) return;
+  var on = typeof force === 'boolean' ? force : body.style.display === 'none';
+  body.style.display = on ? 'flex' : 'none'; b.setAttribute('aria-expanded', on ? 'true' : 'false');
+}
+function lgUpdate() {
+  var f = document.getElementById('lg-float'), body = document.getElementById('lg-body'); if (!f || !body) return;
+  var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '', html = '';
+  if (id === 'patienten') {
+    var src = document.getElementById('pt-leg'); if (src) html = [].map.call(src.children, function (x) { return '<span>' + x.innerHTML + '</span>'; }).join('');
+  } else if (id === 'kalender') {
+    try { html = ensureLKats().map(function (c) { return '<span><i class="lg-sq" style="background:' + esc(c.color) + '"></i>' + esc(c.name) + '</span>'; }).join(''); } catch (x) {}
+    html += '<span><b style="display:inline-flex;width:15px;height:15px;border-radius:50%;background:#ef4444;color:#fff;font-size:11px;align-items:center;justify-content:center;">!</b>Offenes To-Do</span>';
+  }
+  body.innerHTML = html; f.style.display = html ? 'flex' : 'none'; if (!html) lgToggle(false);
+}
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
 var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
@@ -165,7 +183,7 @@ function switchTab(tabId) {
   document.getElementById('tab-' + tabId).classList.add('active');
   var nb = document.getElementById('btn-' + tabId); if (!nb || nb.style.display === 'none') nb = PRAXIS_TABS.indexOf(tabId) >= 0 ? document.getElementById('btn-praxis') : null; if (nb) nb.classList.add('active');
   if (tabId === 'start') histClean(); else histPush();
-  bnavSync(); saveLast();
+  bnavSync(); lgToggle(false); lgUpdate(); saveLast();
 }
 function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') { document.body.classList.add('akte-open'); requestAnimationFrame(function () { try { aFabFit(); } catch (x) {} }); } }
 var ausgaben = [], todos = [], entw = [];
