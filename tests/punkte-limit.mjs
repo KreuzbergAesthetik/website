@@ -41,7 +41,7 @@ try {
       if (innerWidth >= 700) {
         const tx = e => { const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (n.textContent.trim()) { const g = document.createRange(); g.selectNodeContents(n); return g.getBoundingClientRect().left; } return NaN; };
         const r0 = row('VIELE'), hs = document.querySelectorAll('.pt-hg > *'), th0 = document.querySelector('#tab-patienten table.pt thead th');
-        out.ueberschriften = Math.abs(tx(th0) - tx(r0.cells[0])) <= 1 && Math.abs(tx(hs[0]) - tx(r0.querySelector('.pn-row'))) <= 1 && Math.abs(tx(hs[1]) - tx(r0.querySelector('.pt-dobc'))) <= 1 && Math.abs(tx(r0.parentElement.parentElement.querySelector('.pt-hi')) - tx(r0.querySelector('.pt-iln'))) <= 1;
+        out.ueberschriften = Math.abs(tx(th0) - tx(r0.cells[0])) <= 1 && Math.abs(tx(hs[0]) - tx(r0.querySelector('.pn-row'))) <= 1 && Math.abs(tx(hs[1]) - tx(r0.querySelector('.pt-dobc'))) <= 1 && Math.abs(tx(r0.parentElement.parentElement.querySelector('.pt-hi')) - r0.querySelector('.pt-iln').getBoundingClientRect().left) <= 1;
       } else out.ueberschriften = true;
       return out;
     });
