@@ -180,8 +180,8 @@ textarea.form-control { font-size:15px; }
 .now-line::before { content:''; position:absolute; left:-4px; top:-5px; width:8px; height:8px; border-radius:50%; background:#dc2626; }
 .tc { position:relative; }
 .now-tag { position:absolute; right:0; white-space:nowrap; transform:translateY(-50%); background:#dc2626; color:#fff; font-size:9.5px; font-weight:700; padding:1px 3px; border-radius:6px; z-index:4; pointer-events:none; }
-.dc { position:relative; border-right:1px solid #f1f5f9; background:repeating-linear-gradient(#e2e8f0 0 1px, transparent 1px 48px); }
-.ev { position:absolute; left:2px; right:2px; min-width:0; background:#fef3c7; border-left:3px solid #d97706; color:#78350f; border-radius:4px; padding:2px 5px; font-size:11px; line-height:1.3; overflow:hidden; }
+.dc { position:relative; border-right:1px solid #f1f5f9; background:linear-gradient(#e2e8f0 0 1px, transparent 1px) 0 0/100% 48px repeat-y; }
+.ev { position:absolute; left:2px; right:2px; min-width:0; background:#e8edf3; border-left:3px solid #64748b; color:#1e293b; border-radius:4px; padding:2px 5px; font-size:11px; line-height:1.3; overflow:hidden; }
 .ev.multi { border-left-width:0; padding-left:12px; }
 .evseg { position:absolute; left:0; top:0; bottom:0; width:6px; display:flex; flex-direction:column; }
 .evseg i { flex:1; }
@@ -195,7 +195,7 @@ textarea.form-control { font-size:15px; }
 .mc.out { background:#fafafa; color:#cbd5e1; }
 .mc .n { font-size:12px; font-weight:600; margin-bottom:2px; }
 .mc.today .n { background:#0f172a; color:#fff; border-radius:10px; display:inline-block; padding:0 6px; }
-.mp { background:#fef3c7; color:#78350f; border-radius:3px; padding:1px 4px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mp { background:#e8edf3; color:#1e293b; border-radius:3px; padding:1px 4px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .mp.ok { background:#d1fae5; color:#064e3b; }
 
 .tm-top { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding-bottom:10px; font-size:13px; color:#475569; }
@@ -569,8 +569,8 @@ body { overflow-x:clip; }
 /* Kein Farbstreifen links mehr: Vor der Überschrift steht ein kleiner Strich in der Farbe des Bereichs (wie in den Fenstern), der aktive Reiter in der Kopfzeile hat die Unterstreichung in derselben Farbe */
 .tab-content > .card .card-header > .card-title { display:inline-flex; align-items:center; gap:10px; }
 .tab-content > .card .card-header > .card-title::before { content:''; flex:none; width:5px; height:24px; border-radius:3px; background:var(--tc,#94a3b8); }
-header nav #btn-kalender.nav-btn.active { --nc:#8b5cf6; } header nav #btn-patienten.nav-btn.active { --nc:#3b82f6; } header nav #btn-rechnungen.nav-btn.active { --nc:#22c55e; } header nav #btn-todos.nav-btn.active { --nc:#f97316; } header nav #btn-settings.nav-btn.active { --nc:#64748b; } header nav #btn-lager.nav-btn.active { --nc:#14b8a6; } header nav #btn-leistungen.nav-btn.active { --nc:#ec4899; } header nav #btn-dokumente.nav-btn.active { --nc:#64748b; } header nav #btn-nachrichten.nav-btn.active { --nc:#0ea5e9; } header nav #btn-textbausteine.nav-btn.active { --nc:#8b5cf6; } header nav #btn-webformulare.nav-btn.active { --nc:#f59e0b; } header nav #btn-zahlungen.nav-btn.active { --nc:#22c55e; } header nav #btn-statistik.nav-btn.active { --nc:#3b82f6; }
-#tab-kalender { --tc:#8b5cf6; } #tab-patienten { --tc:#3b82f6; } #tab-rechnungen { --tc:#22c55e; } #tab-todos { --tc:#f97316; }
+header nav #btn-kalender.nav-btn.active { --nc:var(--c-kal); } header nav #btn-patienten.nav-btn.active { --nc:#3b82f6; } header nav #btn-rechnungen.nav-btn.active { --nc:#22c55e; } header nav #btn-todos.nav-btn.active { --nc:#f97316; } header nav #btn-settings.nav-btn.active { --nc:#64748b; } header nav #btn-lager.nav-btn.active { --nc:#14b8a6; } header nav #btn-leistungen.nav-btn.active { --nc:#ec4899; } header nav #btn-dokumente.nav-btn.active { --nc:#64748b; } header nav #btn-nachrichten.nav-btn.active { --nc:#0ea5e9; } header nav #btn-textbausteine.nav-btn.active { --nc:#8b5cf6; } header nav #btn-webformulare.nav-btn.active { --nc:#f59e0b; } header nav #btn-zahlungen.nav-btn.active { --nc:#22c55e; } header nav #btn-statistik.nav-btn.active { --nc:#3b82f6; }
+#tab-kalender { --tc:var(--c-kal); } #tab-patienten { --tc:#3b82f6; } #tab-rechnungen { --tc:#22c55e; } #tab-todos { --tc:#f97316; }
 #tab-settings { --tc:#64748b; } #tab-lager { --tc:#14b8a6; } #tab-leistungen { --tc:#ec4899; } #tab-dokumente { --tc:#64748b; } #tab-nachrichten { --tc:#0ea5e9; }
 #tab-textbausteine { --tc:#8b5cf6; } #tab-webformulare { --tc:#f59e0b; } #tab-zahlungen { --tc:#22c55e; } #tab-statistik { --tc:#3b82f6; }
 /* Tabellen: leicht, nur feine Linien zwischen den Zeilen */
@@ -747,7 +747,7 @@ html.locked #applock { display:flex; } html.locked body { overflow:hidden; }
   .pt td.pc-er { padding-top:6px; font-size:12.5px; }
 }
 /* Farben der Aktionen = Farben der Kategorien (seitliche Streifen) */
-:root { --c-termin:#8b5cf6; --c-patient:#3b82f6; --c-rechnung:#22c55e; --c-doku:#3b82f6; --c-senden:#0ea5e9; --c-rezept:#ec4899; --c-mehr:#64748b; --c-zahlung:#22c55e; }
+:root { --c-kal:#06b6d4; --c-termin:#8b5cf6; --c-patient:#3b82f6; --c-rechnung:#22c55e; --c-doku:#3b82f6; --c-senden:#0ea5e9; --c-rezept:#ec4899; --c-mehr:#64748b; --c-zahlung:#22c55e; }
 /* Kopfzeile = Navigation mit Logo als Start-Knopf; Neu-Knöpfe und Suche schweben unten rechts */
 header { display:flex; align-items:center; gap:8px; padding:0 12px; }
 header .logo-img { width:34px; height:34px; flex:none; }
@@ -1247,10 +1247,6 @@ header nav .nav-btn.nav-more { --np:10px; }
   #tab-patienten .pt-l.pt-hit { flex-direction:column; align-items:flex-start; justify-content:center; gap:0; }
   #tab-patienten .pt-hit .pt-dr { display:none; }
   #tab-patienten .pt-rz { position:relative; }
-  /* Legende immer sichtbar, schwebend unten links */
-  #pt-leg { display:flex !important; position:fixed; left:16px; bottom:12px; z-index:30; margin:0; padding:7px 14px; background:#fff; border:1px solid #cbd5e1; border-radius:12px; gap:14px; max-width:calc(100vw - 32px); }
-  #tab-patienten .card-header button[title="Legende der Punkte"] { display:none; }
-  #tab-patienten { padding-bottom:56px; }
 }
 @media (min-width:700px) and (hover:hover) and (pointer:fine) {
   #tab-patienten .pt-quick { display:flex; position:absolute; right:58px; top:50%; transform:translateY(-50%); gap:6px; padding:5px 8px; background:#eaeef4; border-radius:12px; z-index:3; opacity:0; pointer-events:none; transition:opacity .15s; }
@@ -1265,7 +1261,7 @@ header nav .nav-btn.nav-more { --np:10px; }
   header { min-height:60px; }
   header .hd-act { margin-left:auto; }
   .fab-col { top:calc((var(--hdh,60px) - 46px) / 2); bottom:auto; left:56px; right:12px; width:auto; height:46px; z-index:35; }
-  body:has(#al-btn:not([style*="none"])) .fab-col { right:52px; }
+  #al-btn { display:none !important; }
   .fab-col .gs-bar, .fab-col .gs-bar.zu { flex:1 1 0; width:auto; min-width:0; padding:3px; justify-content:flex-start; box-shadow:none; }
   .fab-col .gs-bar.zu .gs-box { padding:0 8px; justify-content:flex-start; } .fab-col .gs-bar.zu input { display:block; }
   .fab-col .gs-res { position:fixed; left:8px; right:8px; top:calc(var(--hdh,60px) + 6px); bottom:auto; width:auto; max-height:calc(100vh - var(--hdh,60px) - 96px); overscroll-behavior:contain; }
@@ -1282,6 +1278,30 @@ header nav .nav-btn.nav-more { --np:10px; }
   #upd-bar, #ks-bar { bottom:calc(76px + env(safe-area-inset-bottom)) !important; }
   #err-bar { bottom:calc(72px + env(safe-area-inset-bottom)) !important; }
 }
+/* Legende der Punkte und Farben: kleiner schwebender Knopf mit hoher Transparenz, klappt auf Antippen aus (Patienten und Kalender) */
+#pt-leg, #cal-legend, #tab-patienten .card-header button[title="Legende der Punkte"] { display:none !important; }
+.lg-float { position:fixed; left:12px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:30; display:flex; flex-direction:column; align-items:flex-start; gap:8px; pointer-events:none; }
+.lg-float > * { pointer-events:auto; }
+.lg-btn { width:38px; height:38px; border-radius:50%; border:1px solid rgba(148,163,184,.55); background:rgba(255,255,255,.5); color:#475569; font-size:18px; line-height:1; cursor:pointer; opacity:.75; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); padding:0; display:flex; align-items:center; justify-content:center; }
+.lg-btn[aria-expanded="true"] { opacity:1; background:rgba(255,255,255,.7); }
+.lg-body { display:flex; flex-direction:column; gap:7px; padding:10px 14px; border-radius:14px; border:1px solid rgba(148,163,184,.45); background:rgba(255,255,255,.6); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); font-size:12.5px; color:#334155; max-width:min(300px, calc(100vw - 24px)); box-shadow:0 6px 18px rgba(15,23,42,.12); }
+.lg-body span { display:flex; align-items:center; gap:8px; } .lg-body i { display:inline-block; width:10px; height:10px; border-radius:50%; flex:none; }
+.lg-body i.lg-allergy { position:relative; width:15px; height:15px; } .lg-body i.lg-allergy::after { content:'!'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font:800 11px/1 Inter,Arial,sans-serif; }
+.lg-body i.lg-sq { border-radius:3px; }
+@media (max-width:699px) and (orientation:portrait) { .lg-float { bottom:calc(76px + env(safe-area-inset-bottom)); } }
+/* Plus-Knopf in der Kopfzeile: ruhig statt schwarz */
+@media (max-width:699px) and (orientation:portrait), (min-width:700px) and (orientation:landscape) {
+  .fab-col > .fab.fab-plus, .fab.fab-plus { background:#f1f5f9; border-color:#c3cedf; color:#475569; box-shadow:none; }
+  .fab-col > .fab.fab-plus.on { background:#e2e8f0; color:#0f172a; }
+}
+/* Akte: am Ende nicht über den Rand hinausziehen (kein grauer Hintergrund) */
+html:has(body.akte-open), body.akte-open { overscroll-behavior-y:none; overscroll-behavior:none; }
+/* Startseite: kein Farbstreifen an der Seite; vor der Überschrift steht ein Strich in der Farbe des Bereichs, zu dem die Karte gehört */
+.hero { border-left:1px solid #dbe2ea; } .hc { border-left:1px solid var(--bd); }
+.tab-content > .card.hc .card-header > .card-title::before, .hm-grid > .card.hc .card-header > .card-title::before { content:''; flex:none; width:5px; height:24px; border-radius:3px; background:var(--c); }
+.hc .card-title { color:#0f172a; } .hc .hm-sec { color:#475569; }
+.hc-termin, .hc-week { --c:var(--c-kal); } .hc-wichtig { --c:#f97316; } .hc-bday { --c:#3b82f6; } .hc-order { --c:#14b8a6; } .hc-fin { --c:#3b82f6; } .hc-open { --c:#22c55e; }
+.hc-ic { background:#f1f5f9; color:var(--c); }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1594,12 +1614,13 @@ function kaStart() {
 <div id="nav-menu" class="nav-menu" style="display:none;"></div>
 <!-- Handy hochkant: Hauptnavigation unten (Daumenreichweite); Tablet und Querformat behalten die Reiter oben -->
 <div class="bnav" id="bnav" role="navigation" aria-label="Hauptnavigation">
-  <button type="button" class="bnav-it" id="bnav-kalender" data-tab="kalender" style="--bc:#8b5cf6" onclick="switchTab('kalender')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="bnav-l">Kalender</span></button>
+  <button type="button" class="bnav-it" id="bnav-kalender" data-tab="kalender" style="--bc:var(--c-kal)" onclick="switchTab('kalender')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="bnav-l">Kalender</span></button>
   <button type="button" class="bnav-it" id="bnav-patienten" data-tab="patienten" style="--bc:#3b82f6" onclick="switchTab('patienten')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/></svg><span class="bnav-l">Patienten</span></button>
   <button type="button" class="bnav-it" id="bnav-todos" data-tab="todos" style="--bc:#f97316" onclick="switchTab('todos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg><span class="bnav-l">To-Dos</span><span id="bnav-todo-badge" class="bnav-bd" style="display:none;"></span></button>
   <button type="button" class="bnav-it" id="bnav-rechnungen" data-tab="rechnungen" style="--bc:#22c55e" onclick="switchTab('rechnungen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="bnav-l">Rechnungen</span></button>
   <button type="button" class="bnav-it" id="bnav-mehr" data-tab="mehr" style="--bc:#64748b" onclick="toggleNavMenu(event)" aria-haspopup="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span class="bnav-l">Mehr</span></button>
 </div>
+<div class="lg-float" id="lg-float" style="display:none;"><div class="lg-body" id="lg-body" style="display:none;"></div><button type="button" class="lg-btn" id="lg-btn" onclick="lgToggle()" aria-expanded="false" aria-controls="lg-body" title="Legende" aria-label="Legende der Punkte und Farben">ⓘ</button></div>
 <div class="fab-col" id="fab-col">
   <div id="gs-res" class="gs-res" style="display:none;"></div>
   <div class="gs-menu" id="gs-menu" role="menu" aria-label="Neu anlegen">
@@ -2826,7 +2847,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-18-b';
+var KA_V = '2026-11-19-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -2954,6 +2975,24 @@ function toggleNavMenu(ev) {
   m.style.bottom = '';
   m.style.top = (r.bottom + 4) + 'px'; m.style.maxHeight = Math.max(120, window.innerHeight - r.bottom - 12) + 'px'; m.scrollTop = 0; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
+
+/* Schwebende Legende: Inhalt je nach Seite (Patienten: Punkte, Kalender: Leistungsgruppen) */
+function lgToggle(force) {
+  var b = document.getElementById('lg-btn'), body = document.getElementById('lg-body'); if (!b || !body) return;
+  var on = typeof force === 'boolean' ? force : body.style.display === 'none';
+  body.style.display = on ? 'flex' : 'none'; b.setAttribute('aria-expanded', on ? 'true' : 'false');
+}
+function lgUpdate() {
+  var f = document.getElementById('lg-float'), body = document.getElementById('lg-body'); if (!f || !body) return;
+  var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '', html = '';
+  if (id === 'patienten') {
+    var src = document.getElementById('pt-leg'); if (src) html = [].map.call(src.children, function (x) { return '<span>' + x.innerHTML + '</span>'; }).join('');
+  } else if (id === 'kalender') {
+    try { html = ensureLKats().map(function (c) { return '<span><i class="lg-sq" style="background:' + esc(c.color) + '"></i>' + esc(c.name) + '</span>'; }).join(''); } catch (x) {}
+    html += '<span><b style="display:inline-flex;width:15px;height:15px;border-radius:50%;background:#ef4444;color:#fff;font-size:11px;align-items:center;justify-content:center;">!</b>Offenes To-Do</span>';
+  }
+  body.innerHTML = html; f.style.display = html ? 'flex' : 'none'; if (!html) lgToggle(false);
+}
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
 var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
@@ -2991,7 +3030,7 @@ function switchTab(tabId) {
   document.getElementById('tab-' + tabId).classList.add('active');
   var nb = document.getElementById('btn-' + tabId); if (!nb || nb.style.display === 'none') nb = PRAXIS_TABS.indexOf(tabId) >= 0 ? document.getElementById('btn-praxis') : null; if (nb) nb.classList.add('active');
   if (tabId === 'start') histClean(); else histPush();
-  bnavSync(); saveLast();
+  bnavSync(); lgToggle(false); lgUpdate(); saveLast();
 }
 function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') { document.body.classList.add('akte-open'); requestAnimationFrame(function () { try { aFabFit(); } catch (x) {} }); } }
 var ausgaben = [], todos = [], entw = [];
@@ -3513,7 +3552,7 @@ function gsRun(hint) {
 }
 
 /* ===== Kalender ===== */
-var H = 48, START = 8, END = 20, DSTART = 8, DEND = 20, view = 'tag', cur = new Date();
+var H = 48, START = 8, END = 20, DSTART = 8, DEND = 20, view = 'tag', cur = new Date(), H0 = 48;
 var MN = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 var WD = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -3571,13 +3610,13 @@ function timeGrid(days) {
   });
   if (addC) html += '<div class="dh" style="padding:2px">' + (wkSa ? '' : '<button type="button" class="wk-add" onclick="wkTog(\'sa\')" title="Samstag einblenden">+Sa</button>') + (wkSo ? '' : '<button type="button" class="wk-add" onclick="wkTog(\'so\')" title="Sonntag einblenden">+So</button>') + '</div>';
   html += '</div><div class="tg-row" style="' + cols + '"><div class="tc">';
-  for (var h = START; h < END; h++) html += '<div class="hl">' + h + '</div>';
+  for (var h = START; h < END; h++) html += '<div class="hl" style="height:' + H + 'px">' + h + '</div>';
   var nw = new Date(), nmin = nw.getHours() * 60 + nw.getMinutes(), nowShow = days.some(function (d) { return iso(d) === today; }) && nmin >= START * 60 && nmin < END * 60;
   if (nowShow) html += '<div class="now-tag" style="top:' + ((nmin - START * 60) * H / 60) + 'px">' + pad(nw.getHours()) + ':' + pad(nw.getMinutes()) + '</div>';
   html += '</div>';
   days.forEach(function (d) {
     var k = iso(d);
-    html += '<div class="dc" data-date="' + k + '" style="height:' + (END - START) * H + 'px;cursor:pointer" onclick="slotClick(event,\'' + k + '\')">';
+    html += '<div class="dc" data-date="' + k + '" style="height:' + (END - START) * H + 'px;cursor:pointer;background-size:100% ' + H + 'px" onclick="slotClick(event,\'' + k + '\')">';
     html += EXT.blocks(k);
     layoutDay(events.filter(function (e) { return e.date === k; })).forEach(function (x) { html += evBlock(x.e, x.lane, x.lanes); });
     if (nowShow && k === today) html += '<div class="now-line" style="top:' + ((nmin - START * 60) * H / 60) + 'px"></div>';
@@ -3640,15 +3679,25 @@ function renderCal() {
     title = MN[cur.getMonth()] + ' ' + cur.getFullYear();
     body = monthGrid();
   }
-  calLegend();
+  calLegend(); lgUpdate();
   document.getElementById('cal-title').innerText = title; saveLast();
-  var cb = document.getElementById('cal-body'); cb.innerHTML = body;
+  var cb = document.getElementById('cal-body');
+  /* Tag am Handy hochkant: Stundenhöhe so wählen, dass der ganze Tag (bis 20 Uhr) ohne Scrollen auf die Seite passt */
+  var fitH = 0;
+  if (view === 'tag' && typeof KA_PH !== 'undefined' && KA_PH.matches) {
+    H = H0; body = timeGrid([cur]); cb.innerHTML = body;
+    var bn = document.getElementById('bnav'), lim = (bn && bn.offsetHeight ? bn.getBoundingClientRect().top : window.innerHeight) - 22, avail = lim - cb.getBoundingClientRect().top - ((cb.querySelector('.tg-row') || {}).offsetHeight || 0);
+    fitH = Math.max(30, Math.min(H0, Math.floor(avail / (END - START))));
+    if (fitH !== H) { H = fitH; body = timeGrid([cur]); }
+  } else H = H0;
+  cb.innerHTML = body;
   if (view !== 'monat' && cb.scrollHeight > cb.clientHeight + 4) {
     var nw = new Date(), hr = nw.getHours(), isNowView = !!cb.querySelector('.now-line'), t0 = isNowView ? hr - 1 : START + 0;
     var first = (cb.querySelector('.ev') || {}).offsetTop; cb.scrollTop = isNowView ? Math.max(0, (t0 - START) * H) : (first != null ? Math.max(0, Math.floor((first - 20) / H) * H) : 0);
   }
 }
 function setView(v) { view = v; renderCal(); }
+var calRz = 0; window.addEventListener('resize', function () { clearTimeout(calRz); calRz = setTimeout(function () { var t = document.getElementById('tab-kalender'); if (t && t.classList.contains('active') && view === 'tag') renderCal(); }, 200); });
 function step(n) {
   if (view === 'tag') cur = addDays(cur, n);
   else if (view === 'woche') cur = addDays(cur, 7 * n);
@@ -3855,7 +3904,7 @@ function renderHome() {
       else ml.forEach(function (t) { var c2 = mk('span', 'badge badge-amber', 'Offen: ' + t); c2.title = t; ex.appendChild(c2); });
     }
     var endStr = pad(Math.floor(end / 60)) + ':' + pad(end % 60);
-    var row = hmRow(e.time + ' bis ' + endStr, nmEl(eventPatientDisplay(e)), e.behandlung || '', function () { openAkteFromTermin(e.id); }, null, isNext ? 'next' : '');
+    var row = hmRow(e.time + ' bis ' + endStr, nmAkte(e, nmEl(eventPatientDisplay(e))), e.behandlung || '', function () { showInCal(e); }, null, isNext ? 'next' : '');
     if (ex) row.querySelector('.hm-main').appendChild(ex);
     return row;
   }), 'Heute stehen keine Termine an.');
@@ -3903,7 +3952,7 @@ function renderHome() {
     var dd = addDays(now, di - wd), k = iso(dd), ev = events.filter(function (e) { return e.date === k; }).sort(function (a, b) { return a.time.localeCompare(b.time); });
     if (!ev.length) continue; any = true;
     wk.appendChild(mk('div', 'hm-sec', WDL[dd.getDay()] + ', ' + dd.getDate() + '. ' + MN[dd.getMonth()] + (k === today ? ' (heute)' : '')));
-    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, nmEl(eventPatientDisplay(e)), e.behandlung || '', function () { openAkteFromTermin(e.id); })); });
+    ev.forEach(function (e) { wk.appendChild(hmRow(e.time, nmAkte(e, nmEl(eventPatientDisplay(e))), e.behandlung || '', function () { showInCal(e); })); });
   }
   if (!any) wk.appendChild(mk('div', 'hm-empty', 'Diese Woche stehen keine Termine an.'));
   /* Umsatz und Ausgaben des Jahres */
@@ -6541,7 +6590,10 @@ function invFromEvent(e) {
 }
 function showInCal(e) {
   cur = new Date(e.date + 'T12:00:00'); view = 'tag'; switchTab('kalender'); renderCal();
+  if (e && e.id != null) setTimeout(function () { openTerminView(e.id); }, 60);   /* Termin immer im Kalender mit geöffneter Terminanzeige */
 }
+/* Name in einer Zeile: führt zur Akte, ohne die Zeile selbst auszulösen */
+function nmAkte(e, el) { var p = eventPatient(e); if (p) { el.style.cursor = 'pointer'; el.title = 'Patientenakte öffnen'; el.onclick = function (ev) { ev.stopPropagation(); viewAkte(p); }; } return el; }
 function tlShell(ts, label) {
   var d = new Date(ts);
   var row = mk('div', 'tl-item');
@@ -6595,6 +6647,7 @@ function tlRow(it) {
   if (it.t === 'termin') {
     var e = it.e;
     sh = tlShell(it.k, 'Termin · ' + fmtTermin(e));
+    var tlb = sh.body.querySelector('.tl-label'); if (tlb) { tlb.style.cursor = 'pointer'; tlb.title = 'Termin im Kalender öffnen'; tlb.onclick = function (ev) { ev.stopPropagation(); showInCal(e); }; }
     sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));
     tlPlus(sh, [['Dokumentation', function () { openDok(e.id); }], ['Termin bearbeiten', function () { editTermin(e.id, true); }], ['Im Kalender anzeigen', function () { showInCal(e); }]]
@@ -7180,7 +7233,7 @@ function renderZahlungen() {
   tin.innerHTML = '';
   pays.forEach(function (p) {
     var row = tin.insertRow(), c0 = row.insertCell(), c1 = row.insertCell(), c2 = row.insertCell(), c3 = row.insertCell(), c4 = row.insertCell();
-    var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 6) + zd.slice(8) + '</span>'; c0.className = 'nw'; var zn = String(invNm(p.inv) || ''), zk = zn.indexOf(', '); c1.innerHTML = '<b class="za-n1">' + esc(zk < 0 ? zn : zn.slice(0, zk)) + '</b>' + (zk < 0 ? '' : '<span class="za-n2">' + esc(zn.slice(zk + 2)) + '</span>'); c4.className = 'nw';
+    var zd = fmtD(p.date); c0.innerHTML = '<span class="hm-l">' + zd + '</span><span class="hm-s">' + zd.slice(0, 6) + zd.slice(8) + '</span>'; c0.className = 'nw'; var zn = String(invNm(p.inv) || ''), zk = zn.indexOf(', '); c1.innerHTML = '<b class="za-n1">' + esc(zk < 0 ? zn : zn.slice(0, zk)) + '</b>' + (zk < 0 ? '' : '<span class="za-n2">' + esc(zn.slice(zk + 2)) + '</span>'); (function (pid) { var pt = pid ? patients.filter(function (x) { return x.id === pid; })[0] : null; if (pt) { c1.style.cursor = 'pointer'; c1.title = 'Patientenakte öffnen'; c1.onclick = function (ev) { ev.stopPropagation(); viewAkte(pt); }; } })(p.inv.pid); c4.className = 'nw';
     var b = mk('button', 'pn'); b.type = 'button'; var nrm = /^(.*?-)(\d+)$/.exec(String(p.inv.nr || '')); if (nrm) { b.appendChild(document.createTextNode(nrm[1])); b.appendChild(document.createElement('br')); b.appendChild(document.createTextNode(nrm[2])); } else b.textContent = p.inv.nr; b.style.lineHeight = '1.25'; b.onclick = function () { viewInvoice(p.inv.id); }; c2.appendChild(b);
     row.style.setProperty('--bar', ZA_COL[p.art] || '#94a3b8'); row.title = 'Zahlungsart: ' + p.art; var ar = mk('span', 'zart'), ad = mk('i'); ad.style.background = ZA_COL[p.art] || '#94a3b8'; ar.appendChild(ad); ar.appendChild(document.createTextNode(p.art)); c3.appendChild(ar);
     c4.appendChild(mk('span', '', eur(p.amount)));

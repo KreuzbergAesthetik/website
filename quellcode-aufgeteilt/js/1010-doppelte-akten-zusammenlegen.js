@@ -260,7 +260,10 @@ function invFromEvent(e) {
 }
 function showInCal(e) {
   cur = new Date(e.date + 'T12:00:00'); view = 'tag'; switchTab('kalender'); renderCal();
+  if (e && e.id != null) setTimeout(function () { openTerminView(e.id); }, 60);   /* Termin immer im Kalender mit geöffneter Terminanzeige */
 }
+/* Name in einer Zeile: führt zur Akte, ohne die Zeile selbst auszulösen */
+function nmAkte(e, el) { var p = eventPatient(e); if (p) { el.style.cursor = 'pointer'; el.title = 'Patientenakte öffnen'; el.onclick = function (ev) { ev.stopPropagation(); viewAkte(p); }; } return el; }
 function tlShell(ts, label) {
   var d = new Date(ts);
   var row = mk('div', 'tl-item');
@@ -314,6 +317,7 @@ function tlRow(it) {
   if (it.t === 'termin') {
     var e = it.e;
     sh = tlShell(it.k, 'Termin · ' + fmtTermin(e));
+    var tlb = sh.body.querySelector('.tl-label'); if (tlb) { tlb.style.cursor = 'pointer'; tlb.title = 'Termin im Kalender öffnen'; tlb.onclick = function (ev) { ev.stopPropagation(); showInCal(e); }; }
     sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));
     tlPlus(sh, [['Dokumentation', function () { openDok(e.id); }], ['Termin bearbeiten', function () { editTermin(e.id, true); }], ['Im Kalender anzeigen', function () { showInCal(e); }]]
