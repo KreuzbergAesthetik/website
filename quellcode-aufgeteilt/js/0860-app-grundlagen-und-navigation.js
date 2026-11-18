@@ -1,6 +1,6 @@
 
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-17-b';
+var KA_V = '2026-11-18-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -28,6 +28,7 @@ function navFit() {
   xs.forEach(function (b, i) { b.style.display = i < n ? '' : 'none'; });
   nav.classList.remove('nav-meas');
   var cur = document.querySelector('.tab-content.active'); if (cur) { var id = cur.id.replace(/^tab-/, ''), nb = document.getElementById('btn-' + id), vis = nb && nb.style.display !== 'none'; [].forEach.call(nav.querySelectorAll('.nav-btn'), function (b) { b.classList.remove('active'); }); var t = vis ? nb : (PRAXIS_TABS.indexOf(id) >= 0 ? more : null); if (t) t.classList.add('active'); }
+  try { bnavSync(); } catch (x) {}
 }
 var NAV_ICON = {
   rechnungen: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/>',
@@ -122,9 +123,19 @@ function toggleNavMenu(ev) {
   if (m.style.display !== 'none') { m.style.display = 'none'; return; }
   fillNavMenu();
   var r = ev.currentTarget.getBoundingClientRect(); m.style.display = 'grid';
+  /* Aus der unteren Leiste: Menü öffnet sich nach oben über der Leiste */
+  if (ev.currentTarget.classList && ev.currentTarget.classList.contains('bnav-it')) { var hd = document.querySelector('header'), top0 = hd ? hd.getBoundingClientRect().bottom : 0; m.style.top = 'auto'; m.style.bottom = (window.innerHeight - r.top + 6) + 'px'; m.style.maxHeight = Math.max(120, r.top - top0 - 18) + 'px'; m.scrollTop = 0; m.style.left = Math.max(8, window.innerWidth - m.offsetWidth - 8) + 'px'; return; }
+  m.style.bottom = '';
   m.style.top = (r.bottom + 4) + 'px'; m.style.maxHeight = Math.max(120, window.innerHeight - r.bottom - 12) + 'px'; m.scrollTop = 0; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
+/* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
+var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
+function bnavSync() {
+  var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '';
+  var on = ['kalender', 'patienten', 'todos', 'rechnungen'].indexOf(id) >= 0 ? id : (PRAXIS_TABS.indexOf(id) >= 0 ? 'mehr' : '');
+  [].forEach.call(document.querySelectorAll('.bnav-it'), function (b) { var a = b.dataset.tab === on; b.classList.toggle('on', a); if (a) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+}
 /* Letzte Seite merken: nach dem Neuladen (z. B. Ziehen nach unten) geht es dort weiter, wo man war */
 var lastTab = 'start', lastReady = false;
 function saveLast() {
@@ -154,9 +165,9 @@ function switchTab(tabId) {
   document.getElementById('tab-' + tabId).classList.add('active');
   var nb = document.getElementById('btn-' + tabId); if (!nb || nb.style.display === 'none') nb = PRAXIS_TABS.indexOf(tabId) >= 0 ? document.getElementById('btn-praxis') : null; if (nb) nb.classList.add('active');
   if (tabId === 'start') histClean(); else histPush();
-  saveLast();
+  bnavSync(); saveLast();
 }
-function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
+function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') { document.body.classList.add('akte-open'); requestAnimationFrame(function () { try { aFabFit(); } catch (x) {} }); } }
 var ausgaben = [], todos = [], entw = [];
 try { var sen = JSON.parse(kaGet('ka_entw')); if (Array.isArray(sen)) entw = sen; } catch (x) {}
 try { var sa = JSON.parse(kaGet('ka_ausgaben')); if (Array.isArray(sa)) ausgaben = sa; } catch (x) {}

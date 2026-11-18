@@ -815,7 +815,9 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .a-fab .a-cats { flex:none; gap:6px; }
 .a-cat.d0 { --ac:var(--c-doku); } .a-cat.d3 { --ac:var(--c-rezept); } .a-cat.d4 { --ac:var(--c-senden); } .a-cat.d5 { --ac:#1fa855; } .a-cat.d6, .a-cat.d7 { --ac:#0d9488; }
 .a-cat, .plus-btn { box-shadow:0 2px 8px rgba(15,23,42,.14); }
-@media (max-width:699px) { .a-cat.hm { display:none; } }
+@media (max-width:699px) and (orientation:landscape) { .a-cat.hm { display:none; } }
+.a-cat.xk { display:none; } .a-cat.ov { display:none !important; }
+@media (max-width:699px), (orientation:portrait) { .a-cat.xk { display:inline-flex; } }
 /* Stifte: unsichtbar, bei Mausover sichtbar; am Handy genügt der Tipp auf die Zeile bzw. Chargen-Bezeichnung */
 .ph-edit, .ra-pen { opacity:0; transition:opacity .15s; } .ph-edit:focus-visible, .ra-pen:focus-visible { opacity:1; }
 @media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen, div:hover > .ra-pen { opacity:1; } }
@@ -1212,7 +1214,9 @@ header nav .nav-btn.nav-more { --np:10px; }
 .pt-hz { display:none; }
 #tab-patienten .pt-hints { position:absolute; left:11px; top:6px; bottom:6px; margin:0; display:flex; flex-flow:column wrap; align-content:center; justify-content:center; gap:4px; cursor:pointer; }
 #tab-patienten .pt-hints .pt-dot { width:10px; height:10px; }
-#tab-patienten .pt-hints .pt-dot.d-allergy { width:13px; height:13px; background:#b91c1c; }
+#tab-patienten .pt-hints .pt-dot.d-allergy { width:15px; height:15px; margin-bottom:-2px; background:#b91c1c; position:relative; }
+.pt-dot.d-allergy::after, .pt-leg i.lg-allergy::after { content:'!'; position:absolute; left:0; right:0; top:0; bottom:0; display:flex; align-items:center; justify-content:center; color:#fff; font:800 11px/1 Inter,Arial,sans-serif; }
+.pt-leg i.lg-allergy { position:relative; width:15px; height:15px; vertical-align:-3px; } .pt-leg i.lg-allergy::after { font-size:11px; }
 #tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:36px; }
 #tab-patienten .pt-dots { background:#3b82f6; }
 #tab-patienten .pt-dots .pt-dot { background:transparent !important; }
@@ -1253,6 +1257,30 @@ header nav .nav-btn.nav-more { --np:10px; }
   #tab-patienten .pt-rz:hover .pt-quick, #tab-patienten .pt-rz:focus-within .pt-quick { opacity:1; pointer-events:auto; }
   #tab-patienten .pt-info { transition:opacity .15s; }
   #tab-patienten .pt-rz:hover .pt-info, #tab-patienten .pt-rz:focus-within .pt-info { opacity:0; }
+}
+/* Handy hochkant (bis 699 px): Reiter unten als Leiste, oben Logo, Suche und Plus. Tablet und Querformat unverändert. */
+.bnav { display:none; }
+@media (max-width:699px) and (orientation:portrait) {
+  header nav { display:none !important; }
+  header { min-height:60px; }
+  header .hd-act { margin-left:auto; }
+  .fab-col { top:calc((var(--hdh,60px) - 46px) / 2); bottom:auto; left:56px; right:12px; width:auto; height:46px; z-index:35; }
+  body:has(#al-btn:not([style*="none"])) .fab-col { right:52px; }
+  .fab-col .gs-bar, .fab-col .gs-bar.zu { flex:1 1 0; width:auto; min-width:0; padding:3px; justify-content:flex-start; box-shadow:none; }
+  .fab-col .gs-bar.zu .gs-box { padding:0 8px; justify-content:flex-start; } .fab-col .gs-bar.zu input { display:block; }
+  .fab-col .gs-res { position:fixed; left:8px; right:8px; top:calc(var(--hdh,60px) + 6px); bottom:auto; width:auto; max-height:calc(100vh - var(--hdh,60px) - 96px); overscroll-behavior:contain; }
+  .fab-col > .fab.fab-plus { box-shadow:none; }
+  .fab-col .gs-menu { position:absolute; top:calc(100% + 8px); bottom:auto; left:auto; right:0; align-items:flex-end; }
+  .bnav { display:flex; position:fixed; left:0; right:0; bottom:0; z-index:44; height:calc(64px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:#fff; border-top:1px solid #e2e8f0; box-shadow:0 -4px 14px rgba(15,23,42,.12); }
+  .bnav-it { flex:1 1 0; min-width:0; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border:0; background:none; padding:0; color:#64748b; font:600 11px/1.1 inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .bnav-it svg { width:24px; height:24px; }
+  .bnav-it.on { color:var(--bc); }
+  .bnav-it.on::before { content:''; position:absolute; top:0; left:22%; right:22%; height:3px; border-radius:0 0 3px 3px; background:var(--bc); }
+  .bnav-bd { position:absolute; top:6px; left:calc(50% + 7px); min-width:17px; height:17px; padding:0 4px; border-radius:9px; background:#ef4444; color:#fff; font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  body { padding-bottom:calc(84px + env(safe-area-inset-bottom)); }
+  .a-fab { bottom:calc(76px + env(safe-area-inset-bottom)); }
+  #upd-bar, #ks-bar { bottom:calc(76px + env(safe-area-inset-bottom)) !important; }
+  #err-bar { bottom:calc(72px + env(safe-area-inset-bottom)) !important; }
 }
 </style>
 <script src="dialoge.js"></script>
@@ -1564,6 +1592,14 @@ function kaStart() {
     </div>
 </header>
 <div id="nav-menu" class="nav-menu" style="display:none;"></div>
+<!-- Handy hochkant: Hauptnavigation unten (Daumenreichweite); Tablet und Querformat behalten die Reiter oben -->
+<div class="bnav" id="bnav" role="navigation" aria-label="Hauptnavigation">
+  <button type="button" class="bnav-it" id="bnav-kalender" data-tab="kalender" style="--bc:#8b5cf6" onclick="switchTab('kalender')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="bnav-l">Kalender</span></button>
+  <button type="button" class="bnav-it" id="bnav-patienten" data-tab="patienten" style="--bc:#3b82f6" onclick="switchTab('patienten')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/></svg><span class="bnav-l">Patienten</span></button>
+  <button type="button" class="bnav-it" id="bnav-todos" data-tab="todos" style="--bc:#f97316" onclick="switchTab('todos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg><span class="bnav-l">To-Dos</span><span id="bnav-todo-badge" class="bnav-bd" style="display:none;"></span></button>
+  <button type="button" class="bnav-it" id="bnav-rechnungen" data-tab="rechnungen" style="--bc:#22c55e" onclick="switchTab('rechnungen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="bnav-l">Rechnungen</span></button>
+  <button type="button" class="bnav-it" id="bnav-mehr" data-tab="mehr" style="--bc:#64748b" onclick="toggleNavMenu(event)" aria-haspopup="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span class="bnav-l">Mehr</span></button>
+</div>
 <div class="fab-col" id="fab-col">
   <div id="gs-res" class="gs-res" style="display:none;"></div>
   <div class="gs-menu" id="gs-menu" role="menu" aria-label="Neu anlegen">
@@ -1643,7 +1679,7 @@ function kaStart() {
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
       <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="display:none;">
-      <div class="pt-leg" id="pt-leg" style="display:none"><span><i style="background:#b91c1c; width:11px; height:11px"></i>Allergie</span><span><i style="background:#ef4444"></i>To-Do</span><span><i style="background:#3b82f6"></i>Rechnung offen</span><span><i style="background:#06b6d4"></i>Anamnese</span><span><i style="background:#f97316"></i>Erinnerung fällig</span><span><i style="background:#22c55e"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
+      <div class="pt-leg" id="pt-leg" style="display:none"><span><i class="lg-allergy" style="background:#b91c1c"></i>Allergie</span><span><i style="background:#ef4444"></i>To-Do</span><span><i style="background:#3b82f6"></i>Rechnung offen</span><span><i style="background:#06b6d4"></i>Anamnese</span><span><i style="background:#f97316"></i>Erinnerung fällig</span><span><i style="background:#22c55e"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
       <div id="pt-er-row" style="display:flex; justify-content:flex-end; margin-bottom:4px;"><button type="button" class="btn btn-sm btn-secondary" id="pt-er-btn" onclick="ptToggleEr()" title="Spalte „Erstellt am“ ein- oder ausblenden" aria-label="Erstellt am ein- oder ausblenden"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button></div>
       <div class="scroll">
         <table class="pt">
@@ -2790,7 +2826,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-17-b';
+var KA_V = '2026-11-18-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -2818,6 +2854,7 @@ function navFit() {
   xs.forEach(function (b, i) { b.style.display = i < n ? '' : 'none'; });
   nav.classList.remove('nav-meas');
   var cur = document.querySelector('.tab-content.active'); if (cur) { var id = cur.id.replace(/^tab-/, ''), nb = document.getElementById('btn-' + id), vis = nb && nb.style.display !== 'none'; [].forEach.call(nav.querySelectorAll('.nav-btn'), function (b) { b.classList.remove('active'); }); var t = vis ? nb : (PRAXIS_TABS.indexOf(id) >= 0 ? more : null); if (t) t.classList.add('active'); }
+  try { bnavSync(); } catch (x) {}
 }
 var NAV_ICON = {
   rechnungen: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/>',
@@ -2912,9 +2949,19 @@ function toggleNavMenu(ev) {
   if (m.style.display !== 'none') { m.style.display = 'none'; return; }
   fillNavMenu();
   var r = ev.currentTarget.getBoundingClientRect(); m.style.display = 'grid';
+  /* Aus der unteren Leiste: Menü öffnet sich nach oben über der Leiste */
+  if (ev.currentTarget.classList && ev.currentTarget.classList.contains('bnav-it')) { var hd = document.querySelector('header'), top0 = hd ? hd.getBoundingClientRect().bottom : 0; m.style.top = 'auto'; m.style.bottom = (window.innerHeight - r.top + 6) + 'px'; m.style.maxHeight = Math.max(120, r.top - top0 - 18) + 'px'; m.scrollTop = 0; m.style.left = Math.max(8, window.innerWidth - m.offsetWidth - 8) + 'px'; return; }
+  m.style.bottom = '';
   m.style.top = (r.bottom + 4) + 'px'; m.style.maxHeight = Math.max(120, window.innerHeight - r.bottom - 12) + 'px'; m.scrollTop = 0; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
 }
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
+/* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
+var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
+function bnavSync() {
+  var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '';
+  var on = ['kalender', 'patienten', 'todos', 'rechnungen'].indexOf(id) >= 0 ? id : (PRAXIS_TABS.indexOf(id) >= 0 ? 'mehr' : '');
+  [].forEach.call(document.querySelectorAll('.bnav-it'), function (b) { var a = b.dataset.tab === on; b.classList.toggle('on', a); if (a) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+}
 /* Letzte Seite merken: nach dem Neuladen (z. B. Ziehen nach unten) geht es dort weiter, wo man war */
 var lastTab = 'start', lastReady = false;
 function saveLast() {
@@ -2944,9 +2991,9 @@ function switchTab(tabId) {
   document.getElementById('tab-' + tabId).classList.add('active');
   var nb = document.getElementById('btn-' + tabId); if (!nb || nb.style.display === 'none') nb = PRAXIS_TABS.indexOf(tabId) >= 0 ? document.getElementById('btn-praxis') : null; if (nb) nb.classList.add('active');
   if (tabId === 'start') histClean(); else histPush();
-  saveLast();
+  bnavSync(); saveLast();
 }
-function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') document.body.classList.add('akte-open'); }
+function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') { document.body.classList.add('akte-open'); requestAnimationFrame(function () { try { aFabFit(); } catch (x) {} }); } }
 var ausgaben = [], todos = [], entw = [];
 try { var sen = JSON.parse(kaGet('ka_entw')); if (Array.isArray(sen)) entw = sen; } catch (x) {}
 try { var sa = JSON.parse(kaGet('ka_ausgaben')); if (Array.isArray(sa)) ausgaben = sa; } catch (x) {}
@@ -3347,6 +3394,7 @@ function gsToggle(force) {
 function gsCollapse(force, noSave) {
   var bar = document.getElementById('gs-bar'), inp = document.getElementById('gs-in'), lupe = document.getElementById('gs-lupe'), res = document.getElementById('gs-res');
   var zu = typeof force === 'boolean' ? force : !bar.classList.contains('zu');
+  if (typeof KA_PH !== 'undefined' && KA_PH.matches) { zu = false; noSave = true; }   /* Handy hochkant: Suche steht oben und bleibt offen */
   bar.classList.toggle('zu', zu); lupe.setAttribute('aria-expanded', zu ? 'false' : 'true'); lupe.title = zu ? 'Suche aufklappen' : 'Suche einklappen';
   gsMenu(false);
   if (zu) { inp.value = ''; res.style.display = 'none'; inp.blur(); } else { inp.focus(); gsRun(true); }
@@ -6955,6 +7003,7 @@ function refreshTodoViews() {
 function updateTodoBadge() {
   var n = todos.filter(todoOpenToday).length, b = document.getElementById('todo-badge'); if (!b) return;
   b.textContent = n; b.style.display = n ? 'inline' : 'none';
+  var bb = document.getElementById('bnav-todo-badge'); if (bb) { bb.textContent = n; bb.style.display = n ? 'flex' : 'none'; }
 }
 function setTdPrio(v) { tdPrio = v; renderTodos(); }
 function setTdStat(v) { tdStat = v; renderTodos(); }
@@ -8163,15 +8212,28 @@ var AM_GROUPS = [
   { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] },
   { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
-/* Symbolleiste: Termin, Rechnung und Rezept (häufigste Aktionen) starten direkt, die anderen öffnen ihre Kategorie */
-var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4' }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6' }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1 }];
+/* Symbolleiste der Akte. Breit (Querformat, Desktop): die fünf Grundaktionen. Als Streifen am Rand (hochkant): alle Aktionen der Reihe nach, so viele wie die Bildschirmhöhe hergibt; der Rest steckt unter „Alle Aktionen“ (…). */
+var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0', b: 1 }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1, b: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4', b: 1 }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6', b: 1 }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1, b: 1 },
+  { t: 'Notiz', ic: 'pen', act: 'notiz', c: 'd0' }, { t: 'Produkt', ic: 'box', act: 'produkt', c: 'd0' }, { t: 'Medikament hinzufügen', ic: 'pill', act: 'med', c: 'd3' }, { t: 'Anamnese E-Mail', ic: 'mail', act: 'anammail', c: 'd4' }, { t: 'Anamnese-Link', ic: 'link', act: 'anamlink', c: 'd4' }, { t: 'Briefumschlag C6 (PDF)', ic: 'form', act: 'umschlag', c: 'd4' }, { t: 'Dateien zuordnen', ic: 'auto', act: 'auto', c: 'd7' }];
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
   AM_DOCK.forEach(function (d) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c + (d.hm ? ' hm' : ''); b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c + (d.hm ? ' hm' : '') + (d.b ? '' : ' xk'); b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
     b.onclick = function (ev) { if (d.act) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); } else toggleAMenu(ev, d.g); }; box.appendChild(b);
   });
 })();
+function aFabFit() {
+  var f = document.querySelector('.a-fab'); if (!f || !document.body.classList.contains('akte-open')) return;
+  var bs = [].slice.call(f.querySelectorAll('.a-cats .a-cat'));
+  bs.forEach(function (b) { b.classList.remove('ov'); });
+  if (!aFabMq.matches) return;
+  bs.forEach(function (b) { b.classList.remove('xk-off'); });
+  var top = document.querySelector('.a-top'), lim = top ? top.getBoundingClientRect().bottom + 12 : 140, fb = f.getBoundingClientRect(), one = (bs[0] ? bs[0].offsetHeight : 42) + 6;
+  var rest = [].slice.call(f.children).filter(function (x) { return !x.classList.contains('a-cats') && x.offsetHeight; }).reduce(function (t, x) { return t + x.offsetHeight + 6; }, 0);
+  var n = Math.max(1, Math.floor((fb.bottom - lim - rest) / one));
+  bs.forEach(function (b, i) { b.classList.toggle('ov', i >= n); });
+}
+window.addEventListener('resize', function () { try { aFabFit(); } catch (x) {} });
 /* Hochkant: Die Akte-Aktionen liegen als farbige Streifen am rechten Rand. Antippen, nach links Herausziehen oder der Pfeil klappen sie aus. */
 var aFabMq = window.matchMedia('(max-width:699px), (orientation:portrait)');
 function aFabOut(on) {

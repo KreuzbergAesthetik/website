@@ -281,15 +281,28 @@ var AM_GROUPS = [
   { t: 'Dateien', ic: 'img', items: [['bild', 'img', 'Bilder'], ['dokument', 'form', 'Datei'], ['auto', 'auto', 'Dateien zuordnen']] },
   { t: 'Medikamente', ic: 'pill', items: [['med', 'pill', 'Medikament hinzufügen'], ['rezept', 'rx', 'Rezept erstellen']] }
 ];
-/* Symbolleiste: Termin, Rechnung und Rezept (häufigste Aktionen) starten direkt, die anderen öffnen ihre Kategorie */
-var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4' }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6' }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1 }];
+/* Symbolleiste der Akte. Breit (Querformat, Desktop): die fünf Grundaktionen. Als Streifen am Rand (hochkant): alle Aktionen der Reihe nach, so viele wie die Bildschirmhöhe hergibt; der Rest steckt unter „Alle Aktionen“ (…). */
+var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0', b: 1 }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1, b: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4', b: 1 }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6', b: 1 }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1, b: 1 },
+  { t: 'Notiz', ic: 'pen', act: 'notiz', c: 'd0' }, { t: 'Produkt', ic: 'box', act: 'produkt', c: 'd0' }, { t: 'Medikament hinzufügen', ic: 'pill', act: 'med', c: 'd3' }, { t: 'Anamnese E-Mail', ic: 'mail', act: 'anammail', c: 'd4' }, { t: 'Anamnese-Link', ic: 'link', act: 'anamlink', c: 'd4' }, { t: 'Briefumschlag C6 (PDF)', ic: 'form', act: 'umschlag', c: 'd4' }, { t: 'Dateien zuordnen', ic: 'auto', act: 'auto', c: 'd7' }];
 (function () {
   var box = document.getElementById('a-cats'); if (!box) return;
   AM_DOCK.forEach(function (d) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c + (d.hm ? ' hm' : ''); b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c + (d.hm ? ' hm' : '') + (d.b ? '' : ' xk'); b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
     b.onclick = function (ev) { if (d.act) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); } else toggleAMenu(ev, d.g); }; box.appendChild(b);
   });
 })();
+function aFabFit() {
+  var f = document.querySelector('.a-fab'); if (!f || !document.body.classList.contains('akte-open')) return;
+  var bs = [].slice.call(f.querySelectorAll('.a-cats .a-cat'));
+  bs.forEach(function (b) { b.classList.remove('ov'); });
+  if (!aFabMq.matches) return;
+  bs.forEach(function (b) { b.classList.remove('xk-off'); });
+  var top = document.querySelector('.a-top'), lim = top ? top.getBoundingClientRect().bottom + 12 : 140, fb = f.getBoundingClientRect(), one = (bs[0] ? bs[0].offsetHeight : 42) + 6;
+  var rest = [].slice.call(f.children).filter(function (x) { return !x.classList.contains('a-cats') && x.offsetHeight; }).reduce(function (t, x) { return t + x.offsetHeight + 6; }, 0);
+  var n = Math.max(1, Math.floor((fb.bottom - lim - rest) / one));
+  bs.forEach(function (b, i) { b.classList.toggle('ov', i >= n); });
+}
+window.addEventListener('resize', function () { try { aFabFit(); } catch (x) {} });
 /* Hochkant: Die Akte-Aktionen liegen als farbige Streifen am rechten Rand. Antippen, nach links Herausziehen oder der Pfeil klappen sie aus. */
 var aFabMq = window.matchMedia('(max-width:699px), (orientation:portrait)');
 function aFabOut(on) {

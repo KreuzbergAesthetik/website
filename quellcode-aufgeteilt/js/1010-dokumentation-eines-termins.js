@@ -228,6 +228,7 @@ function refreshTodoViews() {
 function updateTodoBadge() {
   var n = todos.filter(todoOpenToday).length, b = document.getElementById('todo-badge'); if (!b) return;
   b.textContent = n; b.style.display = n ? 'inline' : 'none';
+  var bb = document.getElementById('bnav-todo-badge'); if (bb) { bb.textContent = n; bb.style.display = n ? 'flex' : 'none'; }
 }
 function setTdPrio(v) { tdPrio = v; renderTodos(); }
 function setTdStat(v) { tdStat = v; renderTodos(); }
