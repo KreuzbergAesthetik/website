@@ -46,3 +46,9 @@ html:has(body.akte-open), body.akte-open { overscroll-behavior-y:none; overscrol
 .hc .card-title { color:#0f172a; } .hc .hm-sec { color:#475569; }
 .hc-termin, .hc-week { --c:var(--c-kal); } .hc-wichtig { --c:#f97316; } .hc-bday { --c:#3b82f6; } .hc-order { --c:#14b8a6; } .hc-fin { --c:#3b82f6; } .hc-open { --c:#22c55e; }
 .hc-ic { background:#f1f5f9; color:var(--c); }
+/* Hinweis-Punkte: höchstens drei untereinander, mittig zur Allergie (der größte Punkt) ausgerichtet; ab vier wird der dritte zum Plus mit Liste */
+#tab-patienten .pt-hints { flex-flow:column nowrap; align-items:center; align-content:normal; justify-content:center; }
+#tab-patienten .pt-hints .pt-dot.d-more { width:10px; height:10px; padding:0; border:0; border-radius:0; background:none; color:#64748b; font:700 15px/10px Inter,Arial,sans-serif; text-align:center; cursor:pointer; flex:none; }
+.pt-hintpop { display:none; position:fixed; z-index:70; background:#fff; border:1px solid #cbd5e1; border-radius:12px; box-shadow:0 8px 24px rgba(15,23,42,.2); padding:8px 12px; max-width:min(300px, calc(100vw - 16px)); }
+.pt-hintpop.on { display:block; } .pt-hintrow { display:flex; align-items:center; gap:9px; padding:5px 0; font-size:13px; color:#334155; } .pt-hintrow .pt-dot { flex:none; position:relative; }
+.pt-hintrow .pt-dot.d-allergy { width:15px; height:15px; background:#b91c1c; } .pt-hintrow .pt-dot.d-allergy::after { content:'!'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font:800 11px/1 Inter,Arial,sans-serif; }

@@ -69,6 +69,22 @@ function ptPop(btn, items) {
 document.addEventListener('click', function (ev) { var m = document.getElementById('pt-pop'); if (m && m.classList.contains('on') && !ev.target.closest('#pt-pop')) m.classList.remove('on'); });
 document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { var m = document.getElementById('pt-pop'); if (m) m.classList.remove('on'); } });
 window.addEventListener('scroll', function () { var m = document.getElementById('pt-pop'); if (m) m.classList.remove('on'); }, true);
+/* Alle Hinweise eines Patienten (Allergie, To-Do, Rechnung usw.) als kleines Pop-up, wenn mehr als drei Punkte da sind */
+function ptHintPop(btn, infos) {
+  var m = document.getElementById('pt-hintpop');
+  if (!m) { m = mk('div', 'pt-hintpop'); m.id = 'pt-hintpop'; m.setAttribute('role', 'menu'); document.body.appendChild(m); }
+  if (m.classList.contains('on') && m._src === btn) { m.classList.remove('on'); return; }
+  m._src = btn; m.innerHTML = '';
+  infos.forEach(function (x) { var r = mk('div', 'pt-hintrow'), d = mk('span', 'pt-dot ' + x.cls); r.appendChild(d); r.appendChild(mk('span', '', x.t)); m.appendChild(r); });
+  m.classList.add('on');
+  var r0 = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
+  m.style.left = Math.max(8, Math.min(r0.left - 4, window.innerWidth - mw - 8)) + 'px';
+  var top = r0.bottom + 6; if (top + mh > window.innerHeight - 8) top = Math.max(8, r0.top - mh - 6);
+  m.style.top = top + 'px';
+}
+document.addEventListener('click', function (ev) { var m = document.getElementById('pt-hintpop'); if (m && m.classList.contains('on') && !ev.target.closest('#pt-hintpop')) m.classList.remove('on'); });
+document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { var m = document.getElementById('pt-hintpop'); if (m) m.classList.remove('on'); } });
+window.addEventListener('scroll', function () { var m = document.getElementById('pt-hintpop'); if (m) m.classList.remove('on'); }, true);
 /* Aktionsmenü wie in der Patientenakte, direkt aus der Patientenübersicht */
 function ptAMenu(ev, p) {
   var btn = ev.currentTarget, m = document.getElementById('pt-amenu');

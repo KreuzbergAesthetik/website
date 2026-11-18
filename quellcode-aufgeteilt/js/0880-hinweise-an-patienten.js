@@ -315,6 +315,15 @@ function renderPatients() {
     /* Hinweise als kleine Punkte unter dem Namen (der Strich ist durchgehend blau) */
     var hintc = mk('div', 'pt-hints'); [].forEach.call(dots.children, function (d) { if (!d.classList.contains('d-none')) hintc.appendChild(d.cloneNode(true)); });
     if (String(p.allergien || '').trim()) { var ad = mk('span', 'pt-dot d-allergy'); ad.title = 'Allergie: ' + String(p.allergien).replace(/\s+/g, ' ').trim(); ad.setAttribute('aria-label', ad.title); hintc.insertBefore(ad, hintc.firstChild); }
+    /* Höchstens drei Punkte: Allergie immer oben, der dritte wird bei mehr als drei zum Plus mit Liste aller Hinweise */
+    (function () {
+      var all = [].slice.call(hintc.children); if (all.length <= 3) return;
+      var infos = all.map(function (d) { return { cls: d.className.replace('pt-dot', '').trim(), t: d.getAttribute('title') || d.getAttribute('aria-label') || '' }; });
+      all.slice(2).forEach(function (d) { hintc.removeChild(d); });
+      var mb = mk('button', 'pt-dot d-more', '+'); mb.type = 'button'; mb.title = 'Alle Hinweise (' + infos.length + ')'; mb.setAttribute('aria-label', mb.title); mb.setAttribute('aria-haspopup', 'true');
+      mb.onclick = function (ev) { ev.stopPropagation(); ptHintPop(mb, infos); };
+      hintc.appendChild(mb);
+    })();
     var info = mk('div', 'pt-info'), i1 = mk('div', 'pt-i1'), i2 = mk('div', 'pt-i2'), cut = function (t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
     if (p.phone) { var pa = mk('a', '', p.phone); pa.href = 'tel:' + String(p.phone).replace(/\s/g, ''); pa.onclick = function (e) { e.stopPropagation(); }; pa.style.cssText = 'color:#5b6f95; text-decoration:none;'; ptLn(i2, ICON_PHONE, pa); }
     if (p.email) { var ea = mk('a', '', p.email); ea.href = 'mailto:' + p.email; ea.onclick = function (e) { e.stopPropagation(); }; ea.style.cssText = 'color:#5b6f95; text-decoration:none; overflow:hidden; text-overflow:ellipsis;'; ptLn(i2, ICON_MAIL, ea); }
