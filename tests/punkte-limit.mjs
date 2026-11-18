@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
 // Patientenliste: höchstens drei Hinweis-Punkte untereinander (Allergie oben, mittig ausgerichtet), ab vier wird der dritte zum grauen Plus mit Liste aller Hinweise;
-// Spalte „Informationen“ im Querformat linksbündig. Erfundene Daten.
+// Spaltenüberschriften stehen links bündig über dem Inhalt (ab 700 px). Erfundene Daten.
 const base = process.env.APP_URL || 'http://127.0.0.1:4173/index.html';
 const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}) });
 const pageErrors = [];
@@ -38,6 +38,11 @@ try {
       document.body.click(); await wait(100); out.listeZu = !pop.classList.contains('on');
       if (innerWidth >= 700) { const hi = document.querySelector('.pt-hi'), ln = row('VIELE').querySelector('.pt-iln'); out.infoLinks = Math.abs(ln.getBoundingClientRect().left - row('VIELE').querySelector('.pt-info').getBoundingClientRect().left) <= 1 && ln.getBoundingClientRect().left - hi.getBoundingClientRect().left <= 20; }
       else out.infoLinks = true;
+      if (innerWidth >= 700) {
+        const tx = e => { const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (n.textContent.trim()) { const g = document.createRange(); g.selectNodeContents(n); return g.getBoundingClientRect().left; } return NaN; };
+        const r0 = row('VIELE'), hs = document.querySelectorAll('.pt-hg > *'), th0 = document.querySelector('#tab-patienten table.pt thead th');
+        out.ueberschriften = Math.abs(tx(th0) - tx(r0.cells[0])) <= 1 && Math.abs(tx(hs[0]) - tx(r0.querySelector('.pn-row'))) <= 1 && Math.abs(tx(hs[1]) - tx(r0.querySelector('.pt-dobc'))) <= 1 && Math.abs(tx(r0.parentElement.parentElement.querySelector('.pt-hi')) - tx(r0.querySelector('.pt-iln'))) <= 1;
+      } else out.ueberschriften = true;
       return out;
     });
     for (const k of Object.keys(r)) assert.equal(r[k], true, w + 'x' + h + ' Punkte: ' + k + ' ' + JSON.stringify(r));

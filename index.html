@@ -1308,6 +1308,13 @@ html:has(body.akte-open), body.akte-open { overscroll-behavior-y:none; overscrol
 .pt-hintpop { display:none; position:fixed; z-index:70; background:#fff; border:1px solid #cbd5e1; border-radius:12px; box-shadow:0 8px 24px rgba(15,23,42,.2); padding:8px 12px; max-width:min(300px, calc(100vw - 16px)); }
 .pt-hintpop.on { display:block; } .pt-hintrow { display:flex; align-items:center; gap:9px; padding:5px 0; font-size:13px; color:#334155; } .pt-hintrow .pt-dot { flex:none; position:relative; }
 .pt-hintrow .pt-dot.d-allergy { width:15px; height:15px; background:#b91c1c; } .pt-hintrow .pt-dot.d-allergy::after { content:'!'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font:800 11px/1 Inter,Arial,sans-serif; }
+/* Patientenliste ab 700 px: Spaltenüberschriften stehen direkt über dem jeweiligen Inhalt (gleiche linke Kante) */
+@media (min-width:700px) {
+  #tab-patienten .pt-hg > span:first-child { padding-left:24px; }
+  #tab-patienten .pt-hg > .pt-hb { padding-left:13.6px; }
+  #tab-patienten .pt-hg .pt-hi { padding-left:13.6px; }
+  #tab-patienten table.pt thead th:first-child { text-indent:2px; }
+}
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
