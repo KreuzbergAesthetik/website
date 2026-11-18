@@ -2,7 +2,9 @@
 .pt-hz { display:none; }
 #tab-patienten .pt-hints { position:absolute; left:11px; top:6px; bottom:6px; margin:0; display:flex; flex-flow:column wrap; align-content:center; justify-content:center; gap:4px; cursor:pointer; }
 #tab-patienten .pt-hints .pt-dot { width:10px; height:10px; }
-#tab-patienten .pt-hints .pt-dot.d-allergy { width:13px; height:13px; background:#b91c1c; }
+#tab-patienten .pt-hints .pt-dot.d-allergy { width:15px; height:15px; margin-bottom:-2px; background:#b91c1c; position:relative; }
+.pt-dot.d-allergy::after, .pt-leg i.lg-allergy::after { content:'!'; position:absolute; left:0; right:0; top:0; bottom:0; display:flex; align-items:center; justify-content:center; color:#fff; font:800 11px/1 Inter,Arial,sans-serif; }
+.pt-leg i.lg-allergy { position:relative; width:15px; height:15px; vertical-align:-3px; } .pt-leg i.lg-allergy::after { font-size:11px; }
 #tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:36px; }
 #tab-patienten .pt-dots { background:#3b82f6; }
 #tab-patienten .pt-dots .pt-dot { background:transparent !important; }

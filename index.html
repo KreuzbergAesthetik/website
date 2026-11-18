@@ -1212,7 +1212,9 @@ header nav .nav-btn.nav-more { --np:10px; }
 .pt-hz { display:none; }
 #tab-patienten .pt-hints { position:absolute; left:11px; top:6px; bottom:6px; margin:0; display:flex; flex-flow:column wrap; align-content:center; justify-content:center; gap:4px; cursor:pointer; }
 #tab-patienten .pt-hints .pt-dot { width:10px; height:10px; }
-#tab-patienten .pt-hints .pt-dot.d-allergy { width:13px; height:13px; background:#b91c1c; }
+#tab-patienten .pt-hints .pt-dot.d-allergy { width:15px; height:15px; margin-bottom:-2px; background:#b91c1c; position:relative; }
+.pt-dot.d-allergy::after, .pt-leg i.lg-allergy::after { content:'!'; position:absolute; left:0; right:0; top:0; bottom:0; display:flex; align-items:center; justify-content:center; color:#fff; font:800 11px/1 Inter,Arial,sans-serif; }
+.pt-leg i.lg-allergy { position:relative; width:15px; height:15px; vertical-align:-3px; } .pt-leg i.lg-allergy::after { font-size:11px; }
 #tab-patienten .scroll > table.pt tbody td:nth-child(2) { padding-left:36px; }
 #tab-patienten .pt-dots { background:#3b82f6; }
 #tab-patienten .pt-dots .pt-dot { background:transparent !important; }
@@ -1643,7 +1645,7 @@ function kaStart() {
         <button type="button" class="btn btn-sm" onclick="openModal('modal-patient')" title="Neuer Patient" aria-label="Neuer Patient"><svg class="np-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg><span class="np-t">+ Patient</span></button>
       </div>
       <input type="text" id="p-filter" class="form-control" placeholder="Name, Telefon, Geburtsdatum, #ID..." autocomplete="off" oninput="renderPatients()" style="display:none;">
-      <div class="pt-leg" id="pt-leg" style="display:none"><span><i style="background:#b91c1c; width:11px; height:11px"></i>Allergie</span><span><i style="background:#ef4444"></i>To-Do</span><span><i style="background:#3b82f6"></i>Rechnung offen</span><span><i style="background:#06b6d4"></i>Anamnese</span><span><i style="background:#f97316"></i>Erinnerung fällig</span><span><i style="background:#22c55e"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
+      <div class="pt-leg" id="pt-leg" style="display:none"><span><i class="lg-allergy" style="background:#b91c1c"></i>Allergie</span><span><i style="background:#ef4444"></i>To-Do</span><span><i style="background:#3b82f6"></i>Rechnung offen</span><span><i style="background:#06b6d4"></i>Anamnese</span><span><i style="background:#f97316"></i>Erinnerung fällig</span><span><i style="background:#22c55e"></i>Termin gebucht</span><span><i style="background:#eab308"></i>Rechnung nicht versendet</span></div>
       <div id="pt-er-row" style="display:flex; justify-content:flex-end; margin-bottom:4px;"><button type="button" class="btn btn-sm btn-secondary" id="pt-er-btn" onclick="ptToggleEr()" title="Spalte „Erstellt am“ ein- oder ausblenden" aria-label="Erstellt am ein- oder ausblenden"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button></div>
       <div class="scroll">
         <table class="pt">
@@ -2790,7 +2792,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-17-b';
+var KA_V = '2026-11-18-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
