@@ -13,13 +13,3 @@
 #tab-patienten .pt-quick .pt-ib { width:34px !important; height:34px !important; border-radius:50% !important; border-color:var(--pf-navy) !important; color:var(--pf-navy) !important; }
 @media (min-width:700px) and (orientation:landscape) { .a-fab .a-cat, .a-fab .plus-btn { border-radius:50% !important; background:#fff !important; border:1px solid var(--pf-navy) !important; color:var(--pf-navy) !important; box-shadow:none !important; } }
 .a-fab.out .a-cat, .a-fab.out .plus-btn { border-radius:50% !important; background:#fff !important; border:1px solid var(--pf-navy) !important; color:var(--pf-navy) !important; box-shadow:none !important; }
-/* Bildvergleich: Überblenden mit Regler oder nebeneinander */
-.cmp-stage { width:100%; max-width:960px; display:flex; justify-content:center; }
-.cmp-wrap { position:relative; width:100%; max-height:76vh; aspect-ratio:4/3; touch-action:none; user-select:none; -webkit-user-select:none; border-radius:10px; overflow:hidden; background:#0f172a; cursor:ew-resize; }
-.cmp-wrap img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none; }
-.cmp-line { position:absolute; top:0; bottom:0; width:2px; background:#fff; box-shadow:0 0 0 1px rgba(1,34,101,.5); transform:translateX(-1px); pointer-events:none; }
-.cmp-knob { position:absolute; top:50%; left:50%; width:38px; height:38px; margin:-19px 0 0 -19px; border-radius:50%; background:#fff; color:#012265; border:1px solid #012265; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; }
-.cmp-tag { position:absolute; bottom:8px; padding:3px 10px; border-radius:999px; background:rgba(1,34,101,.78); color:#fff; font-size:12px; pointer-events:none; } .cmp-tag-l { left:8px; } .cmp-tag-r { right:8px; }
-.cmp-side { gap:10px; align-items:flex-start; } .cmp-fig { flex:1 1 0; min-width:0; margin:0; color:#fff; font-size:12px; text-align:center; } .cmp-fig img { width:100%; max-height:70vh; object-fit:contain; border-radius:8px; background:#fff; } .cmp-fig figcaption { margin-top:4px; }
-@media (max-width:520px) { .cmp-side { flex-direction:column; } .cmp-fig img { max-height:34vh; } }
-#img-cmp-btn.on { background:var(--pf-navy); color:#fff; border-color:var(--pf-navy); }
