@@ -21,7 +21,7 @@
 .tm-dr { display:flex; gap:8px; align-items:center; } .tm-dr .form-control { flex:1; min-width:0; }
 .tm-sw { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#334155; cursor:pointer; flex:none; } .tm-sw input { display:none; }
 .tm-sw i { width:34px; height:20px; border-radius:10px; background:#cbd5e1; position:relative; transition:background .15s; } .tm-sw i::after { content:''; position:absolute; left:2px; top:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .15s; }
-.tm-sw input:checked + i { background:#0f172a; } .tm-sw input:checked + i::after { left:16px; }
+.tm-sw input:checked + i { background:var(--pf-navy); } .tm-sw input:checked + i::after { left:16px; }
 .tm-times { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:13px; color:#64748b; } .tm-times .form-control { flex:1; min-width:0; }
 .tm-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; } .tm-chips:empty { display:none; }
 .tm-dot { width:26px; height:26px; padding:0; border:2px solid #fff; border-radius:50%; box-shadow:0 0 0 1px #cbd5e1; cursor:pointer; background:none; flex:none; -webkit-appearance:none; appearance:none; overflow:hidden; } .tm-dot::-webkit-color-swatch-wrapper { padding:0; } .tm-dot::-webkit-color-swatch { border:none; border-radius:50%; } .tm-dot::-moz-color-swatch { border:none; border-radius:50%; }

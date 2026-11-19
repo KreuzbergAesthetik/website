@@ -23,7 +23,7 @@
 .tv-acts .tv-tool { flex-direction:column; padding:6px 2px; } .tv-acts .tv-tool svg { width:24px; height:24px; }
 .tv-acts .tv-tool .tv-lbl { display:block; font-size:11px; line-height:1.1; letter-spacing:-.25px; font-weight:600; } .tv-acts .tv-tool[data-tip]:hover::after { display:none; }
 .tv-menu .tv-ic svg + svg { width:12px; height:12px; color:#64748b; }
-@media (hover:hover) { .tv-tool[data-tip]:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#0f172a; color:#fff; font-size:12px; font-weight:600; padding:4px 9px; border-radius:7px; white-space:nowrap; z-index:5; pointer-events:none; } }
+@media (hover:hover) { .tv-tool[data-tip]:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--pf-navy); color:#fff; font-size:12px; font-weight:600; padding:4px 9px; border-radius:7px; white-space:nowrap; z-index:5; pointer-events:none; } }
 @media (min-width:768px) {
   .tv-box { max-width:680px !important; }
   .tv-tool .tv-ic svg:first-child { display:none; } .tv-tool .tv-lbl, .tv-acts .tv-tool .tv-lbl { display:inline; font-size:14px; color:inherit; } .tv-tool[data-tip]:hover::after { display:none; }
