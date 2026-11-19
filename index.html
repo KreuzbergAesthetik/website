@@ -2602,6 +2602,7 @@ function kaStart() {
     <div class="form-group"><label>Bezeichnung</label><input type="text" id="tp-name" class="form-control" autocomplete="off"></div>
     <div class="form-group"><label>Kategorie</label><select id="tp-kat" class="form-control"></select></div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-neu"> Bei jedem neuen Patienten vorschlagen</label>
+    <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="tp-fill"> Patientendaten automatisch eintragen (Name, Geburtsdatum, Datum)</label>
     <div id="tp-leist" style="font-size:12px; color:#64748b; margin:8px 0;"></div>
     <div class="ak-h">Unterschriftsfeld</div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-sig" onchange="updateSigPrev()"> Unterschrift am Tablet erforderlich</label>
@@ -2960,7 +2961,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-a';
+var KA_V = '2026-11-21-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -7733,15 +7734,21 @@ function tplsForEvent(e) {
   });
   return out;
 }
-function addTplTo(p, t, zu, i) {
+function addTplTo(p, t, zu, i, datum) {
   var id = newId();
-  return fileBlob(t).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
+  return fileBlob(t).then(function (bl) {
+    if (bl && t.fill && /pdf/i.test(bl.type || 'pdf')) {
+      var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
+      return fillStampPdf(bl, { name: [p.vorname, p.nachname].filter(Boolean).join(' '), dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) }).catch(function () { return bl; });
+    }
+    return bl;
+  }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
     if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: t.name, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
     return ok;
   });
 }
-function addTplsTo(p, list, zu, then) {
-  Promise.all(list.map(function (t, i) { return addTplTo(p, t, zu, i); })).then(function (r) {
+function addTplsTo(p, list, zu, then, datum) {
+  Promise.all(list.map(function (t, i) { return addTplTo(p, t, zu, i, datum); })).then(function (r) {
     persist(); if (curP === p && document.getElementById('modal-akte').classList.contains('active')) { renderVerlauf(); }
     if (r.some(function (x) { return !x; })) alert('Nicht alle Vorlagen konnten übernommen werden.');
     if (then) then();
@@ -7753,7 +7760,7 @@ async function offerVorlagen(e) {
   var miss = tplsForEvent(e).filter(function (t) { return !hasTpl(p, t); });
   if (!miss.length) return;
   if (!await kaConfirm('Zu "' + (e.leistung || e.behandlung) + '" gehören diese Unterlagen:\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n') + '\n\nJetzt der Akte von ' + nameKey(p) + ' hinzufügen?')) return;
-  addTplsTo(p, miss, 'e' + e.id);
+  addTplsTo(p, miss, 'e' + e.id, null, e.date);
 }
 /* bei einem neuen Patienten: Aufnahme, Anamnese, Datenschutz usw. */
 async function offerNeu(p) {
@@ -8036,6 +8043,36 @@ function stampPdf(srcBlob, cfg, sigBlob, text) {
     }).then(function (bytes) { return new Blob([bytes], { type: 'application/pdf' }); });
   });
 }
+/* Patientendaten automatisch in die PDF-Vorlage eintragen (Praxisbogen: Kopf Seite 1, Fußzeile aller Seiten, Kopf letzte Seite).
+   Positionen als Anteil der Seite, y von oben. */
+var FILL_POS = {
+  first: [['name', 0.578, 0.203], ['dob', 0.51, 0.249], ['datum', 0.087, 0.250]],
+  foot: [['name', 0.128, 0.956], ['datum', 0.112, 0.975]],
+  last: [['name+dob', 0.722, 0.059, 7.5]]
+};
+function fillStampPdf(srcBlob, d) {
+  return loadPdfLib().then(function (L) {
+    return srcBlob.arrayBuffer().then(function (buf) {
+      return L.PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false }).then(function (doc) {
+        return doc.embedFont(L.StandardFonts.Helvetica).then(function (font) {
+          var pages = doc.getPages();
+          function put(pg, key, fx, fy, fz) {
+            var sz = pg.getSize(), txt = key === 'name' ? d.name : key === 'dob' ? d.dob : key === 'datum' ? d.datum : [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
+            if (!txt) return;
+            var fs = fz || Math.max(7, Math.min(11, sz.width * 0.0185));
+            pg.drawText(pdfText(txt), { x: sz.width * fx, y: sz.height * (1 - fy), size: fs, font: font, color: L.rgb(0.1, 0.1, 0.1) });
+          }
+          pages.forEach(function (pg, i) {
+            if (i === 0) FILL_POS.first.forEach(function (f) { put(pg, f[0], f[1], f[2]); });
+            if (i === pages.length - 1 && pages.length > 1) FILL_POS.last.forEach(function (f) { put(pg, f[0], f[1], f[2], f[3]); });
+            FILL_POS.foot.forEach(function (f) { put(pg, f[0], f[1], f[2]); });
+          });
+          return doc.save();
+        });
+      });
+    }).then(function (bytes) { return new Blob([bytes], { type: 'application/pdf' }); });
+  });
+}
 function sgSetup() {
   var cv = document.getElementById('sg-cv'); sgCtx = cv.getContext('2d');
   if (cv._ready) return; cv._ready = true;
@@ -8101,7 +8138,7 @@ function openTpl(id) {
   tpCur = templates.filter(function (t) { return t.id === id; })[0]; if (!tpCur) return;
   document.getElementById('tp-name').value = tpCur.name;
   var sel = document.getElementById('tp-kat'); fillKatSelect(sel, false); sel.value = katOf(tpCur);
-  document.getElementById('tp-neu').checked = !!tpCur.neu;
+  document.getElementById('tp-neu').checked = !!tpCur.neu; document.getElementById('tp-fill').checked = !!tpCur.fill;
   var sg = tpCur.sig && tpCur.sig.on ? tpCur.sig : DEF_SIG;
   document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on);
   document.getElementById('tp-pg').value = sg.page; document.getElementById('tp-x').value = Math.round(sg.x * 100); document.getElementById('tp-y').value = Math.round(sg.y * 100); document.getElementById('tp-w').value = Math.round(sg.w * 100);
@@ -8112,7 +8149,7 @@ function openTpl(id) {
 }
 function saveTpl() {
   var name = document.getElementById('tp-name').value.trim(); if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
-  tpCur.name = name; tpCur.kat = document.getElementById('tp-kat').value; tpCur.neu = document.getElementById('tp-neu').checked;
+  tpCur.name = name; tpCur.kat = document.getElementById('tp-kat').value; tpCur.neu = document.getElementById('tp-neu').checked; if (document.getElementById('tp-fill').checked) tpCur.fill = 1; else delete tpCur.fill;
   if (document.getElementById('tp-sig').checked) tpCur.sig = sigFromForm(); else delete tpCur.sig;
   persist(); renderTemplates(); closeModal('modal-tpl');
 }
