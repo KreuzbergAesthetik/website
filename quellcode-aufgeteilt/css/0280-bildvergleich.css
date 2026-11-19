@@ -18,4 +18,5 @@
 .ak-act.ak-datei, .ak-act.ak-rec { color:var(--pf-navy); }
 /* Symbole in Menüs (Patientenliste) nach Praxisfarben: navy */
 .pt-pop .pt-pop-i[class*="ib-"] { --ic:var(--pf-navy); }
+.pt-pop .pt-pop-i { border-radius:999px; padding-left:18px; }
 .pt-ib.ib-cal, .pt-ib.ib-book, .pt-ib.ib-mail, .pt-ib.ib-euro, .pt-ib.ib-pill { color:var(--pf-navy); }
