@@ -1350,6 +1350,8 @@ header .hd-logo { background:none; }
 .btn.btn-ico { font-size:20px; line-height:1; color:var(--pf-navy); } .btn.btn-sm.btn-ico, .btn.btn-sm:has(> svg:only-child) { width:30px; height:30px; }
 .btn.btn-ico svg, .btn:has(> svg:only-child) svg { width:18px; height:18px; }
 /* Kalender-Regler (zurück, Titel, weiter) in einem Stück mit feinem Rahmen in Pillenform, Titel einzeilig */
+/* Überschrift „Kalender“ entfällt: der aktive Reiter zeigt es bereits */
+#tab-kalender .cal-top > .card-header > .card-title { display:none; }
 .cal-nav { flex-wrap:nowrap; }
 .cal-reg { display:flex; align-items:center; flex:1 1 auto; min-width:0; border:1px solid var(--pf-navy); border-radius:999px; padding:1px 2px; }
 .cal-reg #cal-title { flex:1 1 auto; min-width:0; text-align:center; white-space:nowrap; overflow:hidden; font-weight:700; color:var(--pf-navy); }
