@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-// Handy hochkant: Tageskalender passt auf eine Seite (8 bis 20 Uhr), schwebende Legende (Patienten, Kalender), Plus-Knopf ruhig und ganz rechts.
+// Handy hochkant: Tages- und Wochenkalender passen auf eine Seite (8 bis 20 Uhr), Monat ohne seitliches Scrollen, schwebende Legende (Patienten, Kalender), Plus-Knopf ruhig und ganz rechts.
 // Verknüpfungen: Termin führt immer zum Termin im Kalender mit geöffneter Terminanzeige, Name zur Akte, Zahlung zur Zahlungsmaske. Erfundene Daten.
 const base = process.env.APP_URL || 'http://127.0.0.1:4173/index.html';
 const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}) });
@@ -32,7 +32,7 @@ try {
     out.tagPasst = hl.length === 12 && lastHl.bottom <= bar + 1 && cb.querySelector('.dc').getBoundingClientRect().bottom <= bar + 1 && document.documentElement.scrollHeight <= innerHeight + 90;
     out.stundenhoehe = H >= 30 && H <= 48 && Math.abs(cb.querySelector('.dc').getBoundingClientRect().height - 12 * H) <= 1;
     // Woche behält die normale Höhe
-    view = 'woche'; renderCal(); out.wocheNormal = H === 48; view = 'tag'; renderCal();
+    view = 'woche'; renderCal(); await wait(300); { const hw = [...cb.querySelectorAll('.hl')], lw = hw[hw.length - 1].getBoundingClientRect(); out.wochePasst = hw.length === 12 && lw.bottom <= bar + 1 && H >= 30 && H <= 48; } view = 'monat'; renderCal(); await wait(200); out.monatBreite = cb.scrollWidth <= cb.clientWidth + 2; view = 'tag'; renderCal();
     // Legende: Kalender und Patienten
     const lf = document.getElementById('lg-float'), lb = document.getElementById('lg-btn');
     out.legendeKalender = vis(lb) && getComputedStyle(lb).opacity < 1 && getComputedStyle(document.getElementById('lg-body')).display === 'none';

@@ -1,0 +1,12 @@
+/* Überschrift „Kalender“ entfällt: der aktive Reiter zeigt es bereits */
+#tab-kalender .cal-top > .card-header > .card-title { display:none; }
+.cal-nav { flex-wrap:nowrap; }
+.cal-reg { display:flex; align-items:center; flex:1 1 auto; min-width:0; border:1px solid var(--pf-navy); border-radius:999px; padding:1px 2px; }
+.cal-reg #cal-title { flex:1 1 auto; min-width:0; text-align:center; white-space:nowrap; overflow:hidden; font-weight:700; color:var(--pf-navy); }
+.cal-reg .btn.btn-ico { border:0 !important; background:transparent !important; box-shadow:none; width:30px; height:30px; flex:none; }
+@media (max-width:520px) { #tab-patienten > .card > .card-header .btn:has(> .np-ic) { width:34px; height:34px; min-height:0 !important; padding:0 !important; border-radius:50% !important; display:inline-flex; align-items:center; justify-content:center; } }
+@media (max-width:699px) and (orientation:portrait) { #cal-body[data-view="woche"] > div, #cal-body[data-view="monat"] > div { min-width:0 !important; } #cal-body[data-view="woche"] .ev { font-size:9.5px; padding:1px 3px; } #cal-body[data-view="woche"] .dh { font-size:11px; padding:6px 2px; }
+  #cal-body[data-view="monat"] > div { min-width:0 !important; } #cal-body[data-view="monat"] .mc { min-height:52px; height:auto; padding:2px 2px; } #cal-body[data-view="monat"] .mc .n { font-size:11px; } #cal-body[data-view="monat"] .mp { font-size:10px; } }
+.tab-content > .card .card-header > .card-title, .hc .card-title { color:var(--pf-navy); }
+header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf-navy); } header nav .nav-btn.active::after { background:var(--pf-gold) !important; }
+.bnav { background:linear-gradient(180deg,#ffffff 0%,#dbe6f6 100%); } .bnav-it.on { color:var(--pf-navy); } .bnav-it.on::before { background:var(--pf-gold); }
