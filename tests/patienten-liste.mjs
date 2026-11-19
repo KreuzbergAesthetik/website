@@ -27,16 +27,16 @@ try {
     out.keinHinweis = sb.voll && sb.blau && sb.farben.length === 0;
     out.mehrfarbig = sa.voll && sa.blau && sa.farben.length >= 2 && new Set(sa.farben).size === sa.farben.length;
     out.zeileKompakt = rows.every(tr => tr.getBoundingClientRect().height <= 80);
-    out.nurDreiPunkte = rows.every(tr => tr.querySelectorAll('.pt-acts > .pt-ib').length === 1 && getComputedStyle(tr.querySelector('.pt-quick')).display === 'none' && getComputedStyle(tr.querySelector('.pt-acts')).opacity === '1');
+    out.nurDreiPunkte = rows.every(tr => tr.querySelectorAll('.pt-acts > .pt-ib').length === 1 && getComputedStyle(tr.querySelector('.pt-quick')).opacity === '0' && getComputedStyle(tr.querySelector('.pt-acts')).opacity === '1');
     const mc = getComputedStyle(rows[0].querySelector('.pt-ib.ib-more')); out.punkteOhneKnopf = mc.boxShadow === 'none' && mc.backgroundColor === 'rgba(0, 0, 0, 0)' && mc.borderTopWidth === '0px';
     const btn = rows[0].querySelector('.pt-ib.ib-more'); btn.click(); await wait(200);
-    const pop = document.getElementById('pt-pop'), items = [...pop.querySelectorAll('.pt-pop-i')];
-    out.popOffen = getComputedStyle(pop).display !== 'none' && items.map(x => x.textContent.trim()).join('|') === 'Termin|Dokumentation|Senden|Rechnung|Rezept|Alle Aktionen';
-    const pr = pop.getBoundingClientRect(); out.popImBild = pr.left >= 0 && pr.right <= innerWidth && pr.top >= 0 && pr.bottom <= innerHeight;
-    btn.click(); await wait(100); out.popZu = getComputedStyle(pop).display === 'none';
-    btn.click(); await wait(100); document.body.click(); await wait(100); out.popAussen = getComputedStyle(pop).display === 'none';
-    // Aktion aus dem Menü: Dokumentation öffnet die Akte
-    btn.click(); await wait(100); pop.querySelectorAll('.pt-pop-i')[1].click(); await wait(400);
+    const rz = rows[0].querySelector('.pt-rz'), qk = rows[0].querySelector('.pt-quick'), qb = [...qk.querySelectorAll('.pt-ib')];
+    out.streifenOffen = rz.classList.contains('quick-on') && getComputedStyle(qk).opacity === '1' && qb.map(x => x.getAttribute('aria-label')).join('|') === 'Termin|Dokumentation|Senden|Rechnung|Rezept|Alle Aktionen' && qb.every(x => !x.textContent.trim());
+    out.nurDieseZeile = !rows[1].querySelector('.pt-rz').classList.contains('quick-on');
+    btn.click(); await wait(100); out.streifenZu = !rz.classList.contains('quick-on');
+    btn.click(); await wait(100); document.body.click(); await wait(100); out.streifenAussen = !rz.classList.contains('quick-on');
+    // Aktion aus dem Streifen: Dokumentation öffnet die Akte
+    btn.click(); await wait(100); qb[1].click(); await wait(400);
     out.aktion = document.getElementById('modal-akte').classList.contains('active');
     return out;
   });
