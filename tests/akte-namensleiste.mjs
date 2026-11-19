@@ -28,7 +28,7 @@ const pruefe = (page, rows) => page.evaluate(async rows => {
     const rt = bar.querySelector('.a-rt'), age = rt.querySelector('.a-age'), pid = rt.querySelector('.a-pid'), pen = document.getElementById('a-edit');
     const r = e => e.getBoundingClientRect();
     out.push({ anrede, ein: nm.classList.contains('a-nm-1'), zwei: nm.classList.contains('a-nm-2'), zeilen, vornameUnten: r(f).top >= r(l).bottom - 2 || nm.classList.contains('a-nm-1'),
-      farbe: getComputedStyle(bar).borderTopColor, rechtsUntereinander: r(age).bottom <= r(pid).top + 1 && r(pen).bottom <= r(age).top + 2,
+      farbe: getComputedStyle(bar).borderTopColor, pfeil: getComputedStyle(bar.querySelector(':scope > .icon-btn')).color, rechtsUntereinander: r(age).bottom <= r(pid).top + 1 && r(pen).bottom <= r(age).top + 2,
       rechtsbuendig: Math.abs(r(pen.querySelector('svg')).right - r(age).right) <= 1.5 && Math.abs(r(age).right - r(pid).right) <= 1.5,
       nichtAbgeschnitten: r(nm).right <= r(rt).left + 1 && r(rt).right <= r(bar).right && l.scrollWidth <= nm.clientWidth + 1 && f.scrollWidth <= nm.clientWidth + 1 });
   }
@@ -40,14 +40,15 @@ try {
     const t = await neu(w, h);
     const r = await pruefe(t.page, [['Frau', 'Eva', 'Lau'], ['Herr', 'Jan', 'Lau'], ['Divers', 'Alex', 'Beispiel'], ['', 'Eva', 'Muster'], ['Herr', 'Jan', 'Musterfrau-Beispiel'], lang]);
     const [a, b, c, d, e, g] = r;
-    assert.equal(a.farbe, 'rgb(232, 121, 169)', w + ' Frau'); assert.equal(b.farbe, 'rgb(91, 135, 214)', w + ' Herr'); assert.equal(c.farbe, 'rgb(124, 195, 138)', w + ' Divers'); assert.equal(d.farbe, 'rgb(30, 58, 138)', w + ' ohne Angabe');
+    for (const x of [a, b, c, d]) assert.equal(x.farbe, 'rgb(30, 58, 138)', w + ' Rahmen immer dunkles Patientenblau');
+    assert.equal(a.pfeil, 'rgb(232, 121, 169)', w + ' Pfeil Frau'); assert.equal(b.pfeil, 'rgb(91, 135, 214)', w + ' Pfeil Herr'); assert.equal(c.pfeil, 'rgb(124, 195, 138)', w + ' Pfeil Divers');
     assert.ok(a.ein && a.zeilen === 1, w + ' kurzer Name einzeilig ' + JSON.stringify(a));
     for (const x of r) { assert.ok(x.ein !== x.zwei, w + ' genau ein Modus'); assert.ok(x.zeilen <= 2, w + ' nie dreizeilig ' + JSON.stringify(x)); assert.ok(x.vornameUnten, w + ' Vorname unter Nachname'); assert.ok(x.rechtsbuendig, w + ' Stift, Alter, Nummer rechtsbündig ' + JSON.stringify(x)); assert.ok(x.rechtsUntereinander, w + ' Stift, Alter, Nummer untereinander ' + JSON.stringify(x)); if (x !== g) assert.ok(x.nichtAbgeschnitten, w + ' nichts abgeschnitten ' + JSON.stringify(x)); }
     assert.ok(g.zwei && g.zeilen === 2, w + ' sehr langer Name zweizeilig ' + JSON.stringify(g));
     await t.context.close();
   }
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
-  console.log('Namensleiste OK (Rahmenfarben, ein-/zweizeilig, nie dreizeilig, Alter und Nummer rechts; 3 Größen)');
+  console.log('Namensleiste OK (Rahmen immer dunkelblau mit Pfeil in der Farbe der Anrede, ein-/zweizeilig, nie dreizeilig, Alter und Nummer rechts; 3 Größen)');
 } finally {
   await browser.close();
 }
