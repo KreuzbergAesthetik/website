@@ -1,0 +1,15 @@
+/* Werkzeug-Knöpfe: runde Kreise nur mit Symbol in Navy, Beschriftung als Tooltip (Termin-Ansicht, Rechnungsansicht, Akte-Aktionen, Schnellaktionen) */
+.tv-acts { justify-content:center; gap:12px !important; }
+.tv-acts .tv-tool, .tv-foot .tv-fbtn:not(.tv-fdel) { flex:none !important; width:44px !important; height:44px !important; min-width:0 !important; padding:0 !important; border-radius:50% !important; background:#fff !important; border:1px solid var(--pf-navy) !important; color:var(--pf-navy) !important; box-shadow:none !important; flex-direction:row !important; }
+.tv-acts .tv-tool .tv-lbl, .tv-foot .tv-fbtn:not(.tv-fdel) span { display:none !important; }
+.tv-acts .tv-tool .tv-ic svg:first-child { display:inline !important; width:20px !important; height:20px !important; }
+.tv-acts .tv-tool.tv-menu .tv-ic svg + svg { width:12px !important; height:12px !important; margin-left:-2px; }
+.tv-foot .tv-fbtn:not(.tv-fdel) svg { width:20px; height:20px; }
+@media (hover:hover) { .tv-acts .tv-tool[data-tip]:hover::after { display:block !important; } }
+.iv-bar { gap:8px; }
+.iv-b:not(.iv-back):not(.iv-del) { flex:none !important; width:40px !important; height:40px !important; padding:0 !important; border-radius:50% !important; background:#fff !important; border:1px solid var(--pf-navy) !important; color:var(--pf-navy) !important; box-shadow:none !important; }
+.iv-b:not(.iv-back):not(.iv-del) span { display:none !important; } .iv-b:not(.iv-back):not(.iv-del) svg { color:var(--pf-navy) !important; stroke:currentColor; }
+.iv-b.iv-back { color:var(--pf-navy); }
+#tab-patienten .pt-quick .pt-ib { width:34px !important; height:34px !important; border-radius:50% !important; border-color:var(--pf-navy) !important; color:var(--pf-navy) !important; }
+@media (min-width:700px) and (orientation:landscape) { .a-fab .a-cat, .a-fab .plus-btn { border-radius:50% !important; background:#fff !important; border:1px solid var(--pf-navy) !important; color:var(--pf-navy) !important; box-shadow:none !important; } }
+.a-fab.out .a-cat, .a-fab.out .plus-btn { border-radius:50% !important; background:#fff !important; border:1px solid var(--pf-navy) !important; color:var(--pf-navy) !important; box-shadow:none !important; }
