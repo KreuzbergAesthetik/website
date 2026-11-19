@@ -21,12 +21,12 @@
 /* Rechnungsliste im Stil der Patientenakte: Karte mit getönter Fläche, durchgehender Farbstrich links, feine Trennlinien */
 #tab-rechnungen .scroll { background:none; border:0; padding:0; overflow-x:auto; }
 #tab-rechnungen .scroll .pt { border-collapse:separate; border-spacing:0; }
-#tab-rechnungen .scroll .pt thead th { border-bottom:1px solid #d5dde7; background:#fff; padding-bottom:8px; }
+#tab-rechnungen .scroll .pt thead th { border-bottom:1px solid #c5d1e3; background:#fff; padding-bottom:8px; }
 /* Kopfzeile weiß mit grauem Strich, die Zeilen darunter in einer grauen, abgerundeten Karte */
 #inv-table::before { content:''; display:table-row; height:10px; }
 #zl-open-t::before { content:''; display:table-row; height:10px; }
-#inv-table tr:not(.t-late) td { background-color:#f1f4f8; }
-#zl-open-t tr:not(.t-late) td { background-color:#f1f4f8; }
+#inv-table tr:not(.t-late) td { background-color:#e8eef9; }
+#zl-open-t tr:not(.t-late) td { background-color:#e8eef9; }
 #inv-table td:first-child { padding-left:16px !important; } #inv-table td:last-child { padding-right:16px !important; }
 #zl-open-t td:first-child { padding-left:16px !important; } #zl-open-t td:last-child { padding-right:16px !important; }
 #inv-table tr:first-child td:first-child { border-top-left-radius:16px; } #inv-table tr:first-child td:last-child { border-top-right-radius:16px; }

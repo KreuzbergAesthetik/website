@@ -37,7 +37,7 @@
 .cal-plus svg, .inv-plus svg { width:22px; height:22px; }
 /* Praxis-Menü: jede Gruppe als eigene Karte mit Farbstreifen */
 .nav-menu { background:#eef2f7; padding:8px; }
-.nav-section { --sec:#1e3a8a; background:#fff; border:1px solid #d5dde7; border-left:4px solid var(--sec); border-radius:12px; margin:0 0 8px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(15,23,42,.08); }
+.nav-section { --sec:#1e3a8a; background:#fff; border:1px solid #c5d1e3; border-left:4px solid var(--sec); border-radius:12px; margin:0 0 8px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(15,23,42,.08); }
 .nav-section:last-child { margin-bottom:0; }
 .nav-section[data-ni="0"] { --sec:#22c55e; } .nav-section[data-ni="1"] { --sec:#3b82f6; } .nav-section[data-ni="2"] { --sec:#a855f7; } .nav-section[data-ni="3"] { --sec:#14b8a6; } .nav-section[data-ni="4"] { --sec:#f97316; }
 .nav-section > .nav-group { background:color-mix(in srgb, var(--sec) 10%, #fff); color:color-mix(in srgb, var(--sec) 70%, #0f172a); font-weight:800; font-size:12.5px; letter-spacing:.07em; }
