@@ -1392,6 +1392,16 @@ header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf
 #tab-patienten .pt-quick .pt-ib { width:34px !important; height:34px !important; border-radius:50% !important; border-color:var(--pf-navy) !important; color:var(--pf-navy) !important; }
 @media (min-width:700px) and (orientation:landscape) { .a-fab .a-cat, .a-fab .plus-btn { border-radius:50% !important; background:#fff !important; border:1px solid var(--pf-navy) !important; color:var(--pf-navy) !important; box-shadow:none !important; } }
 .a-fab.out .a-cat, .a-fab.out .plus-btn { border-radius:50% !important; background:#fff !important; border:1px solid var(--pf-navy) !important; color:var(--pf-navy) !important; box-shadow:none !important; }
+/* Bildvergleich: Überblenden mit Regler oder nebeneinander */
+.cmp-stage { width:100%; max-width:960px; display:flex; justify-content:center; }
+.cmp-wrap { position:relative; width:100%; max-height:76vh; aspect-ratio:4/3; touch-action:none; user-select:none; -webkit-user-select:none; border-radius:10px; overflow:hidden; background:#0f172a; cursor:ew-resize; }
+.cmp-wrap img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none; }
+.cmp-line { position:absolute; top:0; bottom:0; width:2px; background:#fff; box-shadow:0 0 0 1px rgba(1,34,101,.5); transform:translateX(-1px); pointer-events:none; }
+.cmp-knob { position:absolute; top:50%; left:50%; width:38px; height:38px; margin:-19px 0 0 -19px; border-radius:50%; background:#fff; color:#012265; border:1px solid #012265; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; }
+.cmp-tag { position:absolute; bottom:8px; padding:3px 10px; border-radius:999px; background:rgba(1,34,101,.78); color:#fff; font-size:12px; pointer-events:none; } .cmp-tag-l { left:8px; } .cmp-tag-r { right:8px; }
+.cmp-side { gap:10px; align-items:flex-start; } .cmp-fig { flex:1 1 0; min-width:0; margin:0; color:#fff; font-size:12px; text-align:center; } .cmp-fig img { width:100%; max-height:70vh; object-fit:contain; border-radius:8px; background:#fff; } .cmp-fig figcaption { margin-top:4px; }
+@media (max-width:520px) { .cmp-side { flex-direction:column; } .cmp-fig img { max-height:34vh; } }
+#img-cmp-btn.on { background:var(--pf-navy); color:#fff; border-color:var(--pf-navy); }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2921,7 +2931,18 @@ function kaStart() {
     <button type="button" class="btn btn-secondary" onclick="galStep(-1)" aria-label="Zurück">&lsaquo;</button>
     <span id="img-cnt"></span>
     <button type="button" class="btn btn-secondary" onclick="galStep(1)" aria-label="Weiter">&rsaquo;</button>
+    <button type="button" class="btn btn-secondary btn-ico" id="img-cmp-btn" title="Mit einem anderen Bild vergleichen" aria-label="Mit einem anderen Bild vergleichen" onclick="galCompare()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="8" height="14" rx="1.5"/><rect x="13" y="5" width="8" height="14" rx="1.5"/></svg></button>
     <button type="button" class="btn btn-secondary btn-ico" title="Ausblenden" aria-label="Ausblenden" onclick="galDelete()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 10.6a2 2 0 002.8 2.8M9.9 5.2A11 11 0 0112 5c7 0 10 7 10 7a17 17 0 01-3.3 4.4M6.5 6.5A19 19 0 002 12s3 7 10 7a11 11 0 005.5-1.5"/></svg></button>
+  </div>
+</div>
+
+<!-- MODAL: BILDVERGLEICH -->
+<div id="modal-cmp" class="modal-overlay" style="z-index:62; flex-direction:column; gap:12px; background:#0b1530;" onclick="closeModal('modal-cmp')">
+  <div id="cmp-stage" class="cmp-stage" onclick="event.stopPropagation()"></div>
+  <div id="cmp-bar" onclick="event.stopPropagation()" style="display:flex; gap:8px; align-items:center; color:#fff; flex-wrap:wrap; justify-content:center;">
+    <button type="button" class="btn btn-secondary" id="cmp-mode" onclick="cmpMode()">Nebeneinander</button>
+    <button type="button" class="btn btn-secondary btn-ico" title="Vorher und Nachher tauschen" aria-label="Vorher und Nachher tauschen" onclick="cmpSwap()">&#8644;</button>
+    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-cmp')">Schließen</button>
   </div>
 </div>
 
@@ -2937,7 +2958,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-20-b';
+var KA_V = '2026-11-21-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -8197,7 +8218,46 @@ function galShow() {
     if (r.hiddenFromView) hideButton.textContent = 'Wieder einblenden'; else hideButton.innerHTML = hideButton.dataset.hideIcon;
   }
   if (r.hiddenFromView) document.getElementById('img-cnt').textContent += ' · Ausgeblendet';
+  var cb = document.getElementById('img-cmp-btn'); if (cb) { cb.classList.toggle('on', !!gal.cmpA); if (gal.cmpA) document.getElementById('img-cnt').textContent += gal.cmpA === r ? ' · erstes Bild für den Vergleich' : ' · jetzt „Vergleichen“ tippen'; }
   fileURL(r).then(function (u) { if (u && gal && gal.list[gal.i] === r) im.src = u; });
+}
+/* Zwei Bilder vergleichen: erstes Bild merken, mit ‹ › zweites wählen, nochmal tippen; dann Überblenden mit Regler oder nebeneinander */
+function galCompare() {
+  if (!gal) return;
+  var r = gal.list[gal.i];
+  if (!gal.cmpA) { gal.cmpA = r; galShow(); return; }
+  if (gal.cmpA === r) { gal.cmpA = null; galShow(); return; }
+  var a = gal.cmpA; gal.cmpA = null; galShow(); openCompare(a, r);
+}
+var cmp = null;
+function openCompare(a, b) {
+  cmp = tsOf(a) <= tsOf(b) ? { v: a, n: b, mode: 'slider', pos: 50 } : { v: b, n: a, mode: 'slider', pos: 50 };
+  cmpRender(); openModal('modal-cmp');
+}
+function cmpSwap() { if (!cmp) return; var t = cmp.v; cmp.v = cmp.n; cmp.n = t; cmpRender(); }
+function cmpMode() { if (!cmp) return; cmp.mode = cmp.mode === 'slider' ? 'side' : 'slider'; cmpRender(); }
+function cmpRender() {
+  var st = document.getElementById('cmp-stage'); if (!st || !cmp) return; st.innerHTML = '';
+  document.getElementById('cmp-mode').textContent = cmp.mode === 'slider' ? 'Nebeneinander' : 'Überblenden';
+  var lab = function (r, t) { var d = new Date(tsOf(r)); return t + ' · ' + fmtD(iso(d)); };
+  var img = function (r) { var i = document.createElement('img'); i.alt = r.name || ''; fileURL(r).then(function (u) { if (u) i.src = u; }); return i; };
+  if (cmp.mode === 'side') {
+    st.className = 'cmp-stage cmp-side';
+    [[cmp.v, 'Vorher'], [cmp.n, 'Nachher']].forEach(function (x) { var f = mk('figure', 'cmp-fig'); f.appendChild(img(x[0])); f.appendChild(mk('figcaption', '', lab(x[0], x[1]))); st.appendChild(f); });
+    return;
+  }
+  st.className = 'cmp-stage cmp-over';
+  var wrap = mk('div', 'cmp-wrap'), a = img(cmp.v), b = img(cmp.n), line = mk('div', 'cmp-line'), knob = mk('div', 'cmp-knob', '\u2194');
+  a.className = 'cmp-a'; b.className = 'cmp-b'; line.appendChild(knob);
+  var set = function (pct) { pct = Math.max(0, Math.min(100, pct)); cmp.pos = pct; b.style.clipPath = 'inset(0 0 0 ' + pct + '%)'; line.style.left = pct + '%'; };
+  var move = function (ev) { var r = wrap.getBoundingClientRect(); set((ev.clientX - r.left) / r.width * 100); };
+  wrap.addEventListener('pointerdown', function (ev) { wrap.setPointerCapture(ev.pointerId); move(ev); wrap._drag = true; });
+  wrap.addEventListener('pointermove', function (ev) { if (wrap._drag) move(ev); });
+  ['pointerup', 'pointercancel'].forEach(function (t) { wrap.addEventListener(t, function () { wrap._drag = false; }); });
+  wrap.tabIndex = 0; wrap.addEventListener('keydown', function (ev) { if (ev.key === 'ArrowLeft') set(cmp.pos - 5); else if (ev.key === 'ArrowRight') set(cmp.pos + 5); });
+  wrap.appendChild(a); wrap.appendChild(b); wrap.appendChild(line); set(cmp.pos);
+  var l1 = mk('span', 'cmp-tag cmp-tag-l', lab(cmp.v, 'Vorher')), l2 = mk('span', 'cmp-tag cmp-tag-r', lab(cmp.n, 'Nachher'));
+  wrap.appendChild(l1); wrap.appendChild(l2); st.appendChild(wrap);
 }
 function galStep(n) { if (!gal) return; gal.i = (gal.i + n + gal.list.length) % gal.list.length; galShow(); }
 function galDelete() {
