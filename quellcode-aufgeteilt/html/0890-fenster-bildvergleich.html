@@ -1,0 +1,10 @@
+<!-- MODAL: BILDVERGLEICH -->
+<div id="modal-cmp" class="modal-overlay" style="z-index:62; flex-direction:column; gap:12px; background:#0b1530;" onclick="closeModal('modal-cmp')">
+  <div id="cmp-stage" class="cmp-stage" onclick="event.stopPropagation()"></div>
+  <div id="cmp-bar" onclick="event.stopPropagation()" style="display:flex; gap:8px; align-items:center; color:#fff; flex-wrap:wrap; justify-content:center;">
+    <button type="button" class="btn btn-secondary" id="cmp-mode" onclick="cmpMode()">Nebeneinander</button>
+    <button type="button" class="btn btn-secondary btn-ico" title="Vorher und Nachher tauschen" aria-label="Vorher und Nachher tauschen" onclick="cmpSwap()">&#8644;</button>
+    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-cmp')">Schließen</button>
+  </div>
+</div>
+
