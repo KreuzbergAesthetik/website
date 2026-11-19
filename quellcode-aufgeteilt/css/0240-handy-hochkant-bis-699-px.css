@@ -60,22 +60,26 @@ html:has(body.akte-open), body.akte-open { overscroll-behavior-y:none; overscrol
   #tab-patienten table.pt thead th:first-child { text-indent:2px; }
 }
 /* Praxisfarben: Hauptfarbe Navy, 1. Akzent Dunkelgrün, 2. Akzent Gold; Verläufe und Hellblau der Praxis-Website */
-:root { --pf-navy:#012265; --pf-green:#004d17; --pf-gold:#ebc848; --pf-cream:#eae5d9; --pf-inlay:#e8eef9; --pf-line:#c5d1e3; --navy:#012265; }
-html { background:#dbe5f4; }
+:root { --pf-navy:#012265; --pf-green:#004d17; --pf-gold:#ebc848; --pf-cream:#eae5d9; --pf-inlay:#f2f5fc; --pf-line:#dbe3f0; --navy:#012265; }
+html { background:#e3e9f4; }
 body { background:transparent; }
-body::before { content:''; position:fixed; inset:0; z-index:-1; background:linear-gradient(180deg,#9baed3 0%,#c7d2e8 22%,#dde6f4 55%,#d3deef 100%); pointer-events:none; }
+body::before { content:''; position:fixed; inset:0; z-index:-1; background:linear-gradient(180deg,#9baed3 0%,#c7d2e8 18%,#eef1f8 40%,#ffffff 58%,#e3e9f4 100%); pointer-events:none; }
 /* Kopfzeile: oben weiß, unten zart blau; Navigation und Logo ohne eigenen Hintergrund */
 header { background:linear-gradient(180deg,#ffffff 0%,#dbe6f6 100%); }
 header nav { background:transparent !important; }
 header .hd-logo { background:none; }
 /* Karten weiß, darin hellblaue Einlagekarten (ohne Verlauf) */
 .card, .hc { background:#fff; }
-.hero { background:var(--pf-navy); border-color:var(--pf-navy); color:#fff; } .hero #hm-greet { color:#fff; } .hero #hm-date { color:#c9d3ea; }
+.hero #hm-greet { color:var(--pf-navy); } .hero #hm-date { color:#4a5d86; }
 /* Knöpfe ohne Verlauf: 1 Dunkelblau mit weißer Schrift, 2 transparent mit dunkelblauem Rahmen und Schrift, 3 Sonderknöpfe (Speichern, Senden) dunkelgrün mit weißer Schrift */
 .btn { background:var(--pf-navy); color:#fff; border:1px solid var(--pf-navy); } .btn:hover { background:#0a2f80; }
 .btn-secondary, .btn.btn-cancel { background:transparent; color:var(--pf-navy); border:1px solid var(--pf-navy); box-shadow:none; } .btn-secondary:hover, .btn.btn-cancel:hover { background:rgba(1,34,101,.08); }
 .btn.btn-save { background:var(--pf-green); color:#fff; border:1px solid var(--pf-green); } .btn.btn-save:hover { background:#003a11; }
 .seg button.on { background:var(--pf-navy); color:#fff; }
+/* Knöpfe in Pillenform */
+.btn, .btn.btn-sm, .btn-secondary, .btn.btn-cancel, .btn.btn-save, .btn.btn-del { border-radius:999px !important; } .btn { padding-left:18px; padding-right:18px; } .btn.btn-sm { padding-left:14px; padding-right:14px; }
+.seg { border-radius:999px; }
+.cal-plus.btn { border-radius:50% !important; padding:0; }
 .tab-content > .card .card-header > .card-title, .hc .card-title { color:var(--pf-navy); }
 header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf-navy); } header nav .nav-btn.active::after { background:var(--pf-gold) !important; }
 .bnav { background:linear-gradient(180deg,#ffffff 0%,#dbe6f6 100%); } .bnav-it.on { color:var(--pf-navy); } .bnav-it.on::before { background:var(--pf-gold); }

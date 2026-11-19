@@ -41,7 +41,7 @@ header { background:#fff; border-bottom:1px solid #e2e8f0; box-shadow:0 4px 12px
 .dk-grow { resize:none; overflow:hidden; min-height:38px; } .dk-vgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-bottom:8px; } .dk-h { font-size:13px; font-weight:700; color:#334155; margin-bottom:4px; }
 .prio { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; }
 .prio-hoch { background:#fee2e2; color:#b91c1c; } .prio-mittel { background:#fef3c7; color:#92400e; } .prio-niedrig { background:#bbf0cb; color:#166534; }
-.td-row { display:flex; gap:10px; align-items:flex-start; padding:10px; margin-bottom:6px; border-radius:10px; background:#e8eef9; }
+.td-row { display:flex; gap:10px; align-items:flex-start; padding:10px; margin-bottom:6px; border-radius:10px; background:#f2f5fc; }
 .td-row.td-hoch { background:#fde8e8; } .td-row.td-mittel { background:#fdf1cf; } .td-row.td-niedrig { background:#dcf5e3; }
 .td-row.done { opacity:.55; } .td-row .prio { align-self:flex-start; }
 #td-prio button[data-v="hoch"] { background:#fde8e8; color:#b91c1c; } #td-prio button[data-v="mittel"] { background:#fdf1cf; color:#92400e; } #td-prio button[data-v="niedrig"] { background:#dcf5e3; color:#166534; }

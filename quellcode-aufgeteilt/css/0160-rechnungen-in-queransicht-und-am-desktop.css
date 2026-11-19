@@ -34,7 +34,7 @@
 }
 /* Storno und zugehörige Rechnung: gemeinsamer Rahmen, der wie in der Patientenakte oben auf der Karte liegt */
 .inv-pair-frame { position:absolute; box-sizing:border-box; border:2px solid #a9b6c8; border-radius:14px; pointer-events:none; z-index:2; }
-.inv-card-frame { position:absolute; box-sizing:border-box; border:1px solid #c5d1e3; border-radius:16px; pointer-events:none; z-index:1; }
+.inv-card-frame { position:absolute; box-sizing:border-box; border:1px solid #dbe3f0; border-radius:16px; pointer-events:none; z-index:1; }
 /* Trennlinien wie in der Akte: eingerückt, nicht bis an den Kartenrand */
 #inv-table td:first-child { background-size:calc(100% - 14px) 1px; background-position:14px bottom; }
 #zl-open-t td:first-child { background-size:calc(100% - 14px) 1px; background-position:14px bottom; }
