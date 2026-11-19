@@ -61,8 +61,3 @@ html:has(body.akte-open), body.akte-open { overscroll-behavior-y:none; overscrol
 }
 /* Praxisfarben: Hauptfarbe Navy, 1. Akzent Dunkelgrün, 2. Akzent Gold, Hintergrund Creme (Palette der Praxis) */
 :root { --pf-navy:#012265; --pf-green:#004d17; --pf-gold:#ebc848; --pf-cream:#eae5d9; --navy:#012265; }
-body { background:#efebe2; }
-.btn.btn-save { background:var(--pf-green); } .btn.btn-save:hover { background:#003a11; }
-.tab-content > .card .card-header > .card-title, .hc .card-title { color:var(--pf-navy); }
-header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf-navy); } header nav .nav-btn.active::after { background:var(--pf-gold) !important; }
-.bnav-it.on { color:var(--pf-navy); } .bnav-it.on::before { background:var(--pf-gold); }

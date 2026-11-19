@@ -1,0 +1,12 @@
+/* Verläufe der Praxis-Website: Seite Himmelblau nach Weiß, Karten zart bläulich, Kopfzeile hell, dunkle Knöpfe von Mittelblau nach Navy */
+:root { --pf-deep:linear-gradient(180deg,#5f7db5 0%,#012265 100%); --pf-page:linear-gradient(180deg,#9baed3 0%,#c7d2e8 18%,#eef1f8 40%,#ffffff 58%,#e3e9f4 100%); --pf-card:linear-gradient(180deg,rgba(255,255,255,.92) 0%,rgba(234,239,247,.86) 100%); --pf-nav:linear-gradient(180deg,#a9bad9 0%,#ffffff 100%); }
+html { background:#e3e9f4; }
+body { background:transparent; }
+body::before { content:''; position:fixed; inset:0; z-index:-1; background:var(--pf-page); pointer-events:none; }
+header { background:var(--pf-nav); }
+.card, .hc, .hero { background:var(--pf-card); }
+.bnav { background:linear-gradient(180deg,#ffffff 0%,#dbe3f1 100%); }
+.btn.btn-save { background:var(--pf-green); } .btn.btn-save:hover { background:#003a11; }
+.tab-content > .card .card-header > .card-title, .hc .card-title { color:var(--pf-navy); }
+header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf-navy); } header nav .nav-btn.active::after { background:var(--pf-gold) !important; }
+.bnav-it.on { color:var(--pf-navy); } .bnav-it.on::before { background:var(--pf-gold); }
