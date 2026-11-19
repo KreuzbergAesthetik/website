@@ -39,9 +39,9 @@
 @media (min-width:700px) {
   #tab-patienten .pt-quick { display:flex; position:absolute; right:58px; top:50%; transform:translateY(-50%); gap:6px; padding:0; background:none; border-radius:0; z-index:3; opacity:0; pointer-events:none; transition:opacity .15s; }
   /* Schnellaktionen beim Überfahren: einzelne kleine weiße Knöpfe mit dünnem Rand und dunklem Symbol, ohne Fläche dahinter */
-  #tab-patienten .pt-quick .pt-ib { width:36px; height:32px; border-radius:8px; background:#fff; border:1px solid #cbd5e1; box-shadow:none; color:#0f172a; }
+  #tab-patienten .pt-quick .pt-ib { width:36px; height:32px; border-radius:8px; background:#fff; border:1px solid #cbd5e1; box-shadow:none; color:#475569; }
   #tab-patienten .pt-quick .pt-ib svg { width:17px; height:17px; }
-  #tab-patienten .pt-quick .pt-ib:hover { background:#f1f5f9; border-color:#94a3b8; }
+  #tab-patienten .pt-quick .pt-ib:hover { background:#f1f5f9; border-color:#94a3b8; color:#334155; }
   #tab-patienten .pt-info { transition:opacity .15s; }
   /* Antippen der rechten Zone (Touch) blendet die Schnellaktionen ein und aus */
   #tab-patienten .pt-rz.quick-on .pt-quick { opacity:1; pointer-events:auto; } #tab-patienten .pt-rz.quick-on .pt-info { opacity:0; }
