@@ -82,6 +82,7 @@ function ptHintPop(btn, infos) {
   var top = r0.bottom + 6; if (top + mh > window.innerHeight - 8) top = Math.max(8, r0.top - mh - 6);
   m.style.top = top + 'px';
 }
+document.addEventListener('click', function (ev) { if (!ev.target.closest('.pt-rz')) [].forEach.call(document.querySelectorAll('.pt-rz.quick-on'), function (x) { x.classList.remove('quick-on'); }); });
 document.addEventListener('click', function (ev) { var m = document.getElementById('pt-hintpop'); if (m && m.classList.contains('on') && !ev.target.closest('#pt-hintpop')) m.classList.remove('on'); });
 document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { var m = document.getElementById('pt-hintpop'); if (m) m.classList.remove('on'); } });
 window.addEventListener('scroll', function () { var m = document.getElementById('pt-hintpop'); if (m) m.classList.remove('on'); }, true);

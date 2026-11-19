@@ -332,6 +332,8 @@ function renderPatients() {
     /* Größere Klickfläche: Name, Geburtsdatum und Hinweise öffnen die Akte; rechts (Informationen, Aktionen) erscheinen beim Überfahren die Schnellaktionen */
     [left, dobc].forEach(function (z) { z.classList.add('pt-hit'); z.onclick = function (ev) { if (ev.target.closest('a, button')) return; viewAkte(p); }; });
     rz.appendChild(info); rz.appendChild(acts);
+    /* Touch (Tablet, Querformat): Antippen der rechten Zone zeigt die Schnellaktionen wie beim Überfahren mit der Maus */
+    rz.addEventListener('click', function (ev) { if (!window.matchMedia('(min-width:700px)').matches || window.matchMedia('(hover:hover) and (pointer:fine)').matches || ev.target.closest('a, button')) return; var on = !rz.classList.contains('quick-on'); [].forEach.call(document.querySelectorAll('.pt-rz.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) rz.classList.add('quick-on'); });
     wrap.appendChild(left); wrap.appendChild(dobc); wrap.appendChild(rz); c1.appendChild(wrap);
     if (hintc.childNodes.length) { hintc.onclick = function () { viewAkte(p); }; c1.appendChild(hintc); }
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';

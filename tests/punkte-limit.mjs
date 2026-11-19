@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
 // Patientenliste: höchstens drei Hinweis-Punkte untereinander (Allergie oben, mittig ausgerichtet), ab vier wird der dritte zum grauen Plus mit Liste aller Hinweise;
-// Spaltenüberschriften stehen links bündig über dem Inhalt (ab 700 px). Erfundene Daten.
+// Spaltenüberschriften stehen links bündig über dem Inhalt (ab 700 px); Antippen der rechten Zone zeigt per Touch die Schnellaktionen. Erfundene Daten.
 const base = process.env.APP_URL || 'http://127.0.0.1:4173/index.html';
 const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}) });
 const pageErrors = [];
@@ -43,6 +43,14 @@ try {
         const r0 = row('VIELE'), hs = document.querySelectorAll('.pt-hg > *'), th0 = document.querySelector('#tab-patienten table.pt thead th');
         out.ueberschriften = Math.abs(tx(th0) - tx(r0.cells[0])) <= 1 && Math.abs(tx(hs[0]) - tx(r0.querySelector('.pn-row'))) <= 1 && Math.abs(tx(hs[1]) - tx(r0.querySelector('.pt-dobc'))) <= 1 && Math.abs(tx(r0.parentElement.parentElement.querySelector('.pt-hi')) - r0.querySelector('.pt-iln').getBoundingClientRect().left) <= 1;
       } else out.ueberschriften = true;
+      if (innerWidth >= 700) {
+        const rz = row('VIELE').querySelector('.pt-rz'), q = rz.querySelector('.pt-quick');
+        out.quickAus = getComputedStyle(q).opacity === '0';
+        rz.click(); await wait(300);
+        out.quickAntippen = rz.classList.contains('quick-on') && getComputedStyle(q).opacity === '1' && q.querySelectorAll('.pt-ib').length >= 4 && !document.getElementById('modal-akte').classList.contains('active');
+        document.body.click(); await wait(300);
+        out.quickZu = !rz.classList.contains('quick-on') && getComputedStyle(q).opacity === '0';
+      } else { out.quickAus = out.quickAntippen = out.quickZu = true; }
       return out;
     });
     for (const k of Object.keys(r)) assert.equal(r[k], true, w + 'x' + h + ' Punkte: ' + k + ' ' + JSON.stringify(r));

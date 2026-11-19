@@ -1248,14 +1248,18 @@ header nav .nav-btn.nav-more { --np:10px; }
   #tab-patienten .pt-hit .pt-dr { display:none; }
   #tab-patienten .pt-rz { position:relative; }
 }
-@media (min-width:700px) and (hover:hover) and (pointer:fine) {
+@media (min-width:700px) {
   #tab-patienten .pt-quick { display:flex; position:absolute; right:58px; top:50%; transform:translateY(-50%); gap:6px; padding:0; background:none; border-radius:0; z-index:3; opacity:0; pointer-events:none; transition:opacity .15s; }
   /* Schnellaktionen beim Überfahren: einzelne kleine weiße Knöpfe mit dünnem Rand und dunklem Symbol, ohne Fläche dahinter */
   #tab-patienten .pt-quick .pt-ib { width:36px; height:32px; border-radius:8px; background:#fff; border:1px solid #cbd5e1; box-shadow:none; color:#0f172a; }
   #tab-patienten .pt-quick .pt-ib svg { width:17px; height:17px; }
   #tab-patienten .pt-quick .pt-ib:hover { background:#f1f5f9; border-color:#94a3b8; }
-  #tab-patienten .pt-rz:hover .pt-quick, #tab-patienten .pt-rz:focus-within .pt-quick { opacity:1; pointer-events:auto; }
   #tab-patienten .pt-info { transition:opacity .15s; }
+  /* Antippen der rechten Zone (Touch) blendet die Schnellaktionen ein und aus */
+  #tab-patienten .pt-rz.quick-on .pt-quick { opacity:1; pointer-events:auto; } #tab-patienten .pt-rz.quick-on .pt-info { opacity:0; }
+}
+@media (min-width:700px) and (hover:hover) and (pointer:fine) {
+  #tab-patienten .pt-rz:hover .pt-quick, #tab-patienten .pt-rz:focus-within .pt-quick { opacity:1; pointer-events:auto; }
   #tab-patienten .pt-rz:hover .pt-info, #tab-patienten .pt-rz:focus-within .pt-info { opacity:0; }
 }
 /* Handy hochkant (bis 699 px): Reiter unten als Leiste, oben Logo, Suche und Plus. Tablet und Querformat unverändert. */
@@ -3420,6 +3424,8 @@ function renderPatients() {
     /* Größere Klickfläche: Name, Geburtsdatum und Hinweise öffnen die Akte; rechts (Informationen, Aktionen) erscheinen beim Überfahren die Schnellaktionen */
     [left, dobc].forEach(function (z) { z.classList.add('pt-hit'); z.onclick = function (ev) { if (ev.target.closest('a, button')) return; viewAkte(p); }; });
     rz.appendChild(info); rz.appendChild(acts);
+    /* Touch (Tablet, Querformat): Antippen der rechten Zone zeigt die Schnellaktionen wie beim Überfahren mit der Maus */
+    rz.addEventListener('click', function (ev) { if (!window.matchMedia('(min-width:700px)').matches || window.matchMedia('(hover:hover) and (pointer:fine)').matches || ev.target.closest('a, button')) return; var on = !rz.classList.contains('quick-on'); [].forEach.call(document.querySelectorAll('.pt-rz.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) rz.classList.add('quick-on'); });
     wrap.appendChild(left); wrap.appendChild(dobc); wrap.appendChild(rz); c1.appendChild(wrap);
     if (hintc.childNodes.length) { hintc.onclick = function () { viewAkte(p); }; c1.appendChild(hintc); }
     c3.textContent = fmtDT(p.erstellt); c3.className = 'pc-er';
@@ -3526,6 +3532,7 @@ function ptHintPop(btn, infos) {
   var top = r0.bottom + 6; if (top + mh > window.innerHeight - 8) top = Math.max(8, r0.top - mh - 6);
   m.style.top = top + 'px';
 }
+document.addEventListener('click', function (ev) { if (!ev.target.closest('.pt-rz')) [].forEach.call(document.querySelectorAll('.pt-rz.quick-on'), function (x) { x.classList.remove('quick-on'); }); });
 document.addEventListener('click', function (ev) { var m = document.getElementById('pt-hintpop'); if (m && m.classList.contains('on') && !ev.target.closest('#pt-hintpop')) m.classList.remove('on'); });
 document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { var m = document.getElementById('pt-hintpop'); if (m) m.classList.remove('on'); } });
 window.addEventListener('scroll', function () { var m = document.getElementById('pt-hintpop'); if (m) m.classList.remove('on'); }, true);
