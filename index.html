@@ -1343,7 +1343,20 @@ header .hd-logo { background:none; }
 /* Knöpfe in Pillenform */
 .btn, .btn.btn-sm, .btn-secondary, .btn.btn-cancel, .btn.btn-save, .btn.btn-del { border-radius:999px !important; } .btn { padding-left:18px; padding-right:18px; } .btn.btn-sm { padding-left:14px; padding-right:14px; }
 .seg { border-radius:999px; }
-.cal-plus.btn { border-radius:50% !important; padding:0; }
+/* Niedrigere Knöpfe; Knöpfe nur mit Symbol sind runde Kreise */
+.btn { padding-top:5px; padding-bottom:5px; min-height:32px; font-size:13.5px; }
+.btn.btn-sm, .row-actions .btn, .card-header .btn { padding-top:3px; padding-bottom:3px; min-height:28px; font-size:12.5px; }
+.btn.btn-ico, .btn:has(> svg:only-child), .cal-plus.btn { width:34px; height:34px; min-height:0 !important; padding:0 !important; border-radius:50% !important; display:inline-flex; align-items:center; justify-content:center; flex:none; }
+.btn.btn-ico { font-size:20px; line-height:1; color:var(--pf-navy); } .btn.btn-sm.btn-ico, .btn.btn-sm:has(> svg:only-child) { width:30px; height:30px; }
+.btn.btn-ico svg, .btn:has(> svg:only-child) svg { width:18px; height:18px; }
+/* Kalender-Regler (zurück, Titel, weiter) in einem Stück mit feinem Rahmen in Pillenform, Titel einzeilig */
+.cal-nav { flex-wrap:nowrap; }
+.cal-reg { display:flex; align-items:center; flex:1 1 auto; min-width:0; border:1px solid var(--pf-navy); border-radius:999px; padding:1px 2px; }
+.cal-reg #cal-title { flex:1 1 auto; min-width:0; text-align:center; white-space:nowrap; overflow:hidden; font-weight:700; color:var(--pf-navy); }
+.cal-reg .btn.btn-ico { border:0 !important; background:transparent !important; box-shadow:none; width:30px; height:30px; flex:none; }
+@media (max-width:520px) { #tab-patienten > .card > .card-header .btn:has(> .np-ic) { width:34px; height:34px; min-height:0 !important; padding:0 !important; border-radius:50% !important; display:inline-flex; align-items:center; justify-content:center; } }
+@media (max-width:699px) and (orientation:portrait) { #cal-body[data-view="woche"] > div, #cal-body[data-view="monat"] > div { min-width:0 !important; } #cal-body[data-view="woche"] .ev { font-size:9.5px; padding:1px 3px; } #cal-body[data-view="woche"] .dh { font-size:11px; padding:6px 2px; }
+  #cal-body[data-view="monat"] > div { min-width:0 !important; } #cal-body[data-view="monat"] .mc { min-height:52px; height:auto; padding:2px 2px; } #cal-body[data-view="monat"] .mc .n { font-size:11px; } #cal-body[data-view="monat"] .mp { font-size:10px; } }
 .tab-content > .card .card-header > .card-title, .hc .card-title { color:var(--pf-navy); }
 header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf-navy); } header nav .nav-btn.active::after { background:var(--pf-gold) !important; }
 .bnav { background:linear-gradient(180deg,#ffffff 0%,#dbe6f6 100%); } .bnav-it.on { color:var(--pf-navy); } .bnav-it.on::before { background:var(--pf-gold); }
@@ -1720,9 +1733,9 @@ function kaStart() {
       </div>
       <div class="cal-bar" style="justify-content:flex-end">
         <div class="cal-nav">
-          <button type="button" class="btn btn-secondary" onclick="step(-1)">&lsaquo;</button>
+          <div class="cal-reg"><button type="button" class="btn btn-secondary btn-ico" onclick="step(-1)" aria-label="Zurück">&lsaquo;</button>
           <span id="cal-title"></span>
-          <button type="button" class="btn btn-secondary" onclick="step(1)">&rsaquo;</button>
+          <button type="button" class="btn btn-secondary btn-ico" onclick="step(1)" aria-label="Weiter">&rsaquo;</button></div>
           <button type="button" class="btn btn-secondary" onclick="goToday()">Heute</button>
         </div>
       </div>
@@ -2037,9 +2050,9 @@ function kaStart() {
       <div class="card-header">
         <span class="card-title">Statistik</span>
         <div class="cal-nav">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="stStep(-1)" aria-label="Vorjahr">&lsaquo;</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-ico" onclick="stStep(-1)" aria-label="Vorjahr">&lsaquo;</button>
           <b id="st-year" style="min-width:48px; text-align:center;"></b>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="stStep(1)" aria-label="Folgejahr">&rsaquo;</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-ico" onclick="stStep(1)" aria-label="Folgejahr">&rsaquo;</button>
         </div>
       </div>
       <div id="st-kpi" style="margin-bottom:6px;"></div>
@@ -3753,15 +3766,17 @@ function renderCal() {
     body = monthGrid();
   }
   calLegend(); lgUpdate();
-  document.getElementById('cal-title').innerText = title; saveLast();
+  calSetTitle(title); saveLast();
   var cb = document.getElementById('cal-body');
   /* Tag am Handy hochkant: Stundenhöhe so wählen, dass der ganze Tag (bis 20 Uhr) ohne Scrollen auf die Seite passt */
   var fitH = 0;
-  if (view === 'tag' && typeof KA_PH !== 'undefined' && KA_PH.matches) {
-    H = H0; body = timeGrid([cur]); cb.innerHTML = body;
+  cb.dataset.view = view;
+  if ((view === 'tag' || view === 'woche') && typeof KA_PH !== 'undefined' && KA_PH.matches) {
+    var gd = view === 'tag' ? [cur] : days;
+    H = H0; body = timeGrid(gd); cb.innerHTML = body;
     var bn = document.getElementById('bnav'), lim = (bn && bn.offsetHeight ? bn.getBoundingClientRect().top : window.innerHeight) - 22, avail = lim - cb.getBoundingClientRect().top - ((cb.querySelector('.tg-row') || {}).offsetHeight || 0);
     fitH = Math.max(30, Math.min(H0, Math.floor(avail / (END - START))));
-    if (fitH !== H) { H = fitH; body = timeGrid([cur]); }
+    if (fitH !== H) { H = fitH; body = timeGrid(gd); }
   } else H = H0;
   cb.innerHTML = body;
   if (view !== 'monat' && cb.scrollHeight > cb.clientHeight + 4) {
@@ -3769,8 +3784,18 @@ function renderCal() {
     var first = (cb.querySelector('.ev') || {}).offsetTop; cb.scrollTop = isNowView ? Math.max(0, (t0 - START) * H) : (first != null ? Math.max(0, Math.floor((first - 20) / H) * H) : 0);
   }
 }
+function isoWeek(d) { var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), n = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - n); return Math.ceil(((t - new Date(Date.UTC(t.getUTCFullYear(), 0, 1))) / 864e5 + 1) / 7); }
+/* Titel im Kalender-Regler: immer einzeilig; passt er nicht, wird er kürzer, zuletzt nur die Zahl (Tag: 19, Woche: KW 47) */
+function calSetTitle(full) {
+  var el = document.getElementById('cal-title'); if (!el) return;
+  var c = [full];
+  if (view === 'tag') c.push(WD[(cur.getDay() + 6) % 7] + ', ' + cur.getDate() + '. ' + MN[cur.getMonth()].slice(0, 3) + ' ' + cur.getFullYear(), WD[(cur.getDay() + 6) % 7] + ', ' + pad(cur.getDate()) + '.' + pad(cur.getMonth() + 1) + '.', String(cur.getDate()) + '.');
+  else if (view === 'woche') { var mo = monday(cur), fr = addDays(mo, 4); c.push(mo.getDate() + '. – ' + fr.getDate() + '. ' + MN[fr.getMonth()].slice(0, 3), pad(mo.getDate()) + '.–' + pad(fr.getDate()) + '.' + pad(fr.getMonth() + 1) + '.', 'KW ' + isoWeek(cur)); }
+  for (var i = 0; i < c.length; i++) { el.textContent = c[i]; el.title = full; if (el.scrollWidth <= el.clientWidth + 1) break; }
+}
+window.addEventListener('resize', function () { try { var t = document.getElementById('tab-kalender'); if (t && t.classList.contains('active') && view !== 'monat') { var e = document.getElementById('cal-title'); if (e) calSetTitle(e.title || e.textContent); } } catch (x) {} });
 function setView(v) { view = v; renderCal(); }
-var calRz = 0; window.addEventListener('resize', function () { clearTimeout(calRz); calRz = setTimeout(function () { var t = document.getElementById('tab-kalender'); if (t && t.classList.contains('active') && view === 'tag') renderCal(); }, 200); });
+var calRz = 0; window.addEventListener('resize', function () { clearTimeout(calRz); calRz = setTimeout(function () { var t = document.getElementById('tab-kalender'); if (t && t.classList.contains('active') && (view === 'tag' || view === 'woche')) renderCal(); }, 200); });
 function step(n) {
   if (view === 'tag') cur = addDays(cur, n);
   else if (view === 'woche') cur = addDays(cur, 7 * n);

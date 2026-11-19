@@ -127,15 +127,17 @@ function renderCal() {
     body = monthGrid();
   }
   calLegend(); lgUpdate();
-  document.getElementById('cal-title').innerText = title; saveLast();
+  calSetTitle(title); saveLast();
   var cb = document.getElementById('cal-body');
   /* Tag am Handy hochkant: Stundenhöhe so wählen, dass der ganze Tag (bis 20 Uhr) ohne Scrollen auf die Seite passt */
   var fitH = 0;
-  if (view === 'tag' && typeof KA_PH !== 'undefined' && KA_PH.matches) {
-    H = H0; body = timeGrid([cur]); cb.innerHTML = body;
+  cb.dataset.view = view;
+  if ((view === 'tag' || view === 'woche') && typeof KA_PH !== 'undefined' && KA_PH.matches) {
+    var gd = view === 'tag' ? [cur] : days;
+    H = H0; body = timeGrid(gd); cb.innerHTML = body;
     var bn = document.getElementById('bnav'), lim = (bn && bn.offsetHeight ? bn.getBoundingClientRect().top : window.innerHeight) - 22, avail = lim - cb.getBoundingClientRect().top - ((cb.querySelector('.tg-row') || {}).offsetHeight || 0);
     fitH = Math.max(30, Math.min(H0, Math.floor(avail / (END - START))));
-    if (fitH !== H) { H = fitH; body = timeGrid([cur]); }
+    if (fitH !== H) { H = fitH; body = timeGrid(gd); }
   } else H = H0;
   cb.innerHTML = body;
   if (view !== 'monat' && cb.scrollHeight > cb.clientHeight + 4) {
@@ -143,8 +145,18 @@ function renderCal() {
     var first = (cb.querySelector('.ev') || {}).offsetTop; cb.scrollTop = isNowView ? Math.max(0, (t0 - START) * H) : (first != null ? Math.max(0, Math.floor((first - 20) / H) * H) : 0);
   }
 }
+function isoWeek(d) { var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), n = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - n); return Math.ceil(((t - new Date(Date.UTC(t.getUTCFullYear(), 0, 1))) / 864e5 + 1) / 7); }
+/* Titel im Kalender-Regler: immer einzeilig; passt er nicht, wird er kürzer, zuletzt nur die Zahl (Tag: 19, Woche: KW 47) */
+function calSetTitle(full) {
+  var el = document.getElementById('cal-title'); if (!el) return;
+  var c = [full];
+  if (view === 'tag') c.push(WD[(cur.getDay() + 6) % 7] + ', ' + cur.getDate() + '. ' + MN[cur.getMonth()].slice(0, 3) + ' ' + cur.getFullYear(), WD[(cur.getDay() + 6) % 7] + ', ' + pad(cur.getDate()) + '.' + pad(cur.getMonth() + 1) + '.', String(cur.getDate()) + '.');
+  else if (view === 'woche') { var mo = monday(cur), fr = addDays(mo, 4); c.push(mo.getDate() + '. – ' + fr.getDate() + '. ' + MN[fr.getMonth()].slice(0, 3), pad(mo.getDate()) + '.–' + pad(fr.getDate()) + '.' + pad(fr.getMonth() + 1) + '.', 'KW ' + isoWeek(cur)); }
+  for (var i = 0; i < c.length; i++) { el.textContent = c[i]; el.title = full; if (el.scrollWidth <= el.clientWidth + 1) break; }
+}
+window.addEventListener('resize', function () { try { var t = document.getElementById('tab-kalender'); if (t && t.classList.contains('active') && view !== 'monat') { var e = document.getElementById('cal-title'); if (e) calSetTitle(e.title || e.textContent); } } catch (x) {} });
 function setView(v) { view = v; renderCal(); }
-var calRz = 0; window.addEventListener('resize', function () { clearTimeout(calRz); calRz = setTimeout(function () { var t = document.getElementById('tab-kalender'); if (t && t.classList.contains('active') && view === 'tag') renderCal(); }, 200); });
+var calRz = 0; window.addEventListener('resize', function () { clearTimeout(calRz); calRz = setTimeout(function () { var t = document.getElementById('tab-kalender'); if (t && t.classList.contains('active') && (view === 'tag' || view === 'woche')) renderCal(); }, 200); });
 function step(n) {
   if (view === 'tag') cur = addDays(cur, n);
   else if (view === 'woche') cur = addDays(cur, 7 * n);
