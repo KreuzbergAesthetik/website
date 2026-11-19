@@ -26,15 +26,21 @@ function tplsForEvent(e) {
   });
   return out;
 }
-function addTplTo(p, t, zu, i) {
+function addTplTo(p, t, zu, i, datum) {
   var id = newId();
-  return fileBlob(t).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
+  return fileBlob(t).then(function (bl) {
+    if (bl && t.fill && /pdf/i.test(bl.type || 'pdf')) {
+      var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
+      return fillStampPdf(bl, { name: [p.vorname, p.nachname].filter(Boolean).join(' '), dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) }).catch(function () { return bl; });
+    }
+    return bl;
+  }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
     if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: t.name, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
     return ok;
   });
 }
-function addTplsTo(p, list, zu, then) {
-  Promise.all(list.map(function (t, i) { return addTplTo(p, t, zu, i); })).then(function (r) {
+function addTplsTo(p, list, zu, then, datum) {
+  Promise.all(list.map(function (t, i) { return addTplTo(p, t, zu, i, datum); })).then(function (r) {
     persist(); if (curP === p && document.getElementById('modal-akte').classList.contains('active')) { renderVerlauf(); }
     if (r.some(function (x) { return !x; })) alert('Nicht alle Vorlagen konnten übernommen werden.');
     if (then) then();
@@ -46,7 +52,7 @@ async function offerVorlagen(e) {
   var miss = tplsForEvent(e).filter(function (t) { return !hasTpl(p, t); });
   if (!miss.length) return;
   if (!await kaConfirm('Zu "' + (e.leistung || e.behandlung) + '" gehören diese Unterlagen:\n' + miss.map(function (t) { return '- ' + t.name; }).join('\n') + '\n\nJetzt der Akte von ' + nameKey(p) + ' hinzufügen?')) return;
-  addTplsTo(p, miss, 'e' + e.id);
+  addTplsTo(p, miss, 'e' + e.id, null, e.date);
 }
 /* bei einem neuen Patienten: Aufnahme, Anamnese, Datenschutz usw. */
 async function offerNeu(p) {

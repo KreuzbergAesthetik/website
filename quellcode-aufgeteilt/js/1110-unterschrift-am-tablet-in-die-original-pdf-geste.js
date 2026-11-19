@@ -35,6 +35,36 @@ function stampPdf(srcBlob, cfg, sigBlob, text) {
     }).then(function (bytes) { return new Blob([bytes], { type: 'application/pdf' }); });
   });
 }
+/* Patientendaten automatisch in die PDF-Vorlage eintragen (Praxisbogen: Kopf Seite 1, Fußzeile aller Seiten, Kopf letzte Seite).
+   Positionen als Anteil der Seite, y von oben. */
+var FILL_POS = {
+  first: [['name', 0.578, 0.203], ['dob', 0.51, 0.249], ['datum', 0.087, 0.250]],
+  foot: [['name', 0.128, 0.956], ['datum', 0.112, 0.975]],
+  last: [['name+dob', 0.722, 0.059, 7.5]]
+};
+function fillStampPdf(srcBlob, d) {
+  return loadPdfLib().then(function (L) {
+    return srcBlob.arrayBuffer().then(function (buf) {
+      return L.PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false }).then(function (doc) {
+        return doc.embedFont(L.StandardFonts.Helvetica).then(function (font) {
+          var pages = doc.getPages();
+          function put(pg, key, fx, fy, fz) {
+            var sz = pg.getSize(), txt = key === 'name' ? d.name : key === 'dob' ? d.dob : key === 'datum' ? d.datum : [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
+            if (!txt) return;
+            var fs = fz || Math.max(7, Math.min(11, sz.width * 0.0185));
+            pg.drawText(pdfText(txt), { x: sz.width * fx, y: sz.height * (1 - fy), size: fs, font: font, color: L.rgb(0.1, 0.1, 0.1) });
+          }
+          pages.forEach(function (pg, i) {
+            if (i === 0) FILL_POS.first.forEach(function (f) { put(pg, f[0], f[1], f[2]); });
+            if (i === pages.length - 1 && pages.length > 1) FILL_POS.last.forEach(function (f) { put(pg, f[0], f[1], f[2], f[3]); });
+            FILL_POS.foot.forEach(function (f) { put(pg, f[0], f[1], f[2]); });
+          });
+          return doc.save();
+        });
+      });
+    }).then(function (bytes) { return new Blob([bytes], { type: 'application/pdf' }); });
+  });
+}
 function sgSetup() {
   var cv = document.getElementById('sg-cv'); sgCtx = cv.getContext('2d');
   if (cv._ready) return; cv._ready = true;
@@ -100,7 +130,7 @@ function openTpl(id) {
   tpCur = templates.filter(function (t) { return t.id === id; })[0]; if (!tpCur) return;
   document.getElementById('tp-name').value = tpCur.name;
   var sel = document.getElementById('tp-kat'); fillKatSelect(sel, false); sel.value = katOf(tpCur);
-  document.getElementById('tp-neu').checked = !!tpCur.neu;
+  document.getElementById('tp-neu').checked = !!tpCur.neu; document.getElementById('tp-fill').checked = !!tpCur.fill;
   var sg = tpCur.sig && tpCur.sig.on ? tpCur.sig : DEF_SIG;
   document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on);
   document.getElementById('tp-pg').value = sg.page; document.getElementById('tp-x').value = Math.round(sg.x * 100); document.getElementById('tp-y').value = Math.round(sg.y * 100); document.getElementById('tp-w').value = Math.round(sg.w * 100);
@@ -111,7 +141,7 @@ function openTpl(id) {
 }
 function saveTpl() {
   var name = document.getElementById('tp-name').value.trim(); if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
-  tpCur.name = name; tpCur.kat = document.getElementById('tp-kat').value; tpCur.neu = document.getElementById('tp-neu').checked;
+  tpCur.name = name; tpCur.kat = document.getElementById('tp-kat').value; tpCur.neu = document.getElementById('tp-neu').checked; if (document.getElementById('tp-fill').checked) tpCur.fill = 1; else delete tpCur.fill;
   if (document.getElementById('tp-sig').checked) tpCur.sig = sigFromForm(); else delete tpCur.sig;
   persist(); renderTemplates(); closeModal('modal-tpl');
 }
