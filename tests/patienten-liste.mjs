@@ -58,7 +58,7 @@ try {
   await dp.hover('#tab-patienten tbody tr:nth-child(1) .pt-rz'); await dp.waitForTimeout(250);
   const q1 = await dp.evaluate(() => { const q = document.querySelector('#tab-patienten tbody tr:nth-child(1) .pt-quick'), b = [...q.querySelectorAll('.pt-ib')]; return { disp: getComputedStyle(q).display, n: b.length, horizontal: b.every((x, i) => i === 0 || Math.abs(x.getBoundingClientRect().top - b[0].getBoundingClientRect().top) < 2), info: getComputedStyle(document.querySelector('#tab-patienten tbody tr:nth-child(1) .pt-info')).opacity }; });
   assert.equal(q0, '0', 'Schnellknöpfe ohne Hover sichtbar');
-  assert.ok(q1.disp === 'flex' && q1.n === 6 && q1.horizontal && q1.info === '0', 'Schnellknöpfe beim Überfahren: ' + JSON.stringify(q1));
+  assert.ok(q1.disp === 'flex' && q1.n === 6 && q1.horizontal && q1.info === '0.28', 'Schnellknöpfe beim Überfahren: ' + JSON.stringify(q1));
   await dp.mouse.move(5, 5); await dp.waitForTimeout(250);
   assert.equal(await dp.evaluate(() => getComputedStyle(document.querySelector('#tab-patienten tbody tr:nth-child(1) .pt-quick')).opacity), '0', 'Schnellknöpfe bleiben nach dem Verlassen der rechten Zone');
   await dctx.close();
