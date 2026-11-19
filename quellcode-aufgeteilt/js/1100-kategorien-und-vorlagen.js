@@ -132,7 +132,7 @@ function renderUnterlagen() {
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;
   };
-  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu|akte legen/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '') + (/^(Per E-Mail|Senden|Unterschreiben)$/.test(txt) ? ' ak-go' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu|akte legen/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
   var unReset = function (keys) {
     var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');

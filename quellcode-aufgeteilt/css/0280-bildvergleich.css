@@ -10,3 +10,9 @@
 #img-bar .btn, #cmp-bar .btn { color:#fff !important; border-color:rgba(255,255,255,.85) !important; background:transparent !important; }
 #img-bar .btn:hover, #cmp-bar .btn:hover { background:rgba(255,255,255,.14) !important; }
 #img-cmp-btn.on { background:#fff !important; color:var(--pf-navy) !important; border-color:#fff !important; }
+/* Aktionsknöpfe der Akte nach Praxisfarben: auslösende Aktion (Senden, Unterschreiben) grün, sonst navy als Umriss, Import grau */
+.ak-act { border-radius:999px; box-shadow:none; background:#fff; color:var(--pf-navy); border:1px solid var(--pf-navy); }
+.ak-act.hl { background:#fff; border-color:var(--pf-navy); }
+.ak-act.ak-go { background:var(--pf-green); color:#fff; border-color:var(--pf-green); }
+.ak-act.ak-grey { color:#64748b; border-color:#c3cedf; }
+.ak-act.ak-datei, .ak-act.ak-rec { color:var(--pf-navy); }

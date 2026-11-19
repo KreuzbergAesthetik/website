@@ -1405,6 +1405,12 @@ header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf
 #img-bar .btn, #cmp-bar .btn { color:#fff !important; border-color:rgba(255,255,255,.85) !important; background:transparent !important; }
 #img-bar .btn:hover, #cmp-bar .btn:hover { background:rgba(255,255,255,.14) !important; }
 #img-cmp-btn.on { background:#fff !important; color:var(--pf-navy) !important; border-color:#fff !important; }
+/* Aktionsknöpfe der Akte nach Praxisfarben: auslösende Aktion (Senden, Unterschreiben) grün, sonst navy als Umriss, Import grau */
+.ak-act { border-radius:999px; box-shadow:none; background:#fff; color:var(--pf-navy); border:1px solid var(--pf-navy); }
+.ak-act.hl { background:#fff; border-color:var(--pf-navy); }
+.ak-act.ak-go { background:var(--pf-green); color:#fff; border-color:var(--pf-green); }
+.ak-act.ak-grey { color:#64748b; border-color:#c3cedf; }
+.ak-act.ak-datei, .ak-act.ak-rec { color:var(--pf-navy); }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -7841,7 +7847,7 @@ function renderUnterlagen() {
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;
   };
-  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu|akte legen/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '') + (/^(Per E-Mail|Senden|Unterschreiben)$/.test(txt) ? ' ak-go' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu|akte legen/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
   var unReset = function (keys) {
     var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
