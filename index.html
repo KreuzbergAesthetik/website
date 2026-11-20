@@ -1460,6 +1460,11 @@ header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf
 .tl-qb svg { width:16px; height:16px; }
 .tl-item.quick-on .tl-quick { opacity:1; pointer-events:auto; }
 @media (hover:hover) and (pointer:fine) { .tl-item:hover .tl-quick, .tl-item:focus-within .tl-quick { opacity:1; pointer-events:auto; } }
+/* Mehr-Menü: ohne seitliche Streifen, alles in Praxis-Navy */
+.nav-section, .nav-section[data-ni] { --sec:var(--pf-navy); border-left:1px solid #dbe3f0; }
+.nav-section > .nav-group { background:var(--pf-inlay); color:var(--pf-navy); }
+.nav-section[open] > .nav-group { border-bottom:1px solid var(--pf-line); }
+.nav-section .nav-items > button svg { stroke:var(--pf-navy); }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3102,7 +3107,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-g';
+var KA_V = '2026-11-21-h';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
