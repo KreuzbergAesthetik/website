@@ -26,8 +26,11 @@
 .tl-qb svg { width:16px; height:16px; }
 .tl-item.quick-on .tl-quick { opacity:1; pointer-events:auto; }
 @media (hover:hover) and (pointer:fine) { .tl-item:hover .tl-quick, .tl-item:focus-within .tl-quick { opacity:1; pointer-events:auto; } }
-/* Mehr-Menü: ohne seitliche Streifen, alles in Praxis-Navy */
-.nav-section, .nav-section[data-ni] { --sec:var(--pf-navy); border-left:1px solid #dbe3f0; }
-.nav-section > .nav-group { background:var(--pf-inlay); color:var(--pf-navy); }
-.nav-section[open] > .nav-group { border-bottom:1px solid var(--pf-line); }
+/* Mehr-Menü als Pillen: Jede Gruppe ist ein hellblaues, abgerundetes Feld; die Überschrift steht oben darin, die weißen Pillen liegen darunter im selben Feld */
+.nav-section, .nav-section[data-ni] { --sec:var(--pf-navy); background:var(--pf-inlay); border:1px solid var(--pf-line); border-radius:26px; box-shadow:none; margin:0 0 10px; padding:4px 6px 6px; overflow:visible; }
+.nav-section > .nav-group { background:transparent; border:0; border-radius:999px; color:var(--pf-navy); padding:0 14px; min-height:42px; }
+.nav-section[open] > .nav-group { border-bottom:0; }
+.nav-section .nav-items { display:flex; flex-direction:column; gap:6px; padding:2px 0 2px; }
+.nav-section .nav-items > button { background:#fff; border:1px solid var(--pf-line); border-radius:999px; padding:0 16px; min-height:42px; box-shadow:0 2px 8px rgba(1,34,101,.08); }
+.nav-section .nav-items > button + button { border-top:1px solid var(--pf-line); border-radius:999px; }
 .nav-section .nav-items > button svg { stroke:var(--pf-navy); }
