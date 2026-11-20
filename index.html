@@ -1432,6 +1432,19 @@ header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf
 /* Was die Symbolleiste überdeckt, bleibt dahinter blass sichtbar */
 #tab-patienten .pt-rz.quick-on .pt-info, #tab-patienten .pt-rz:hover .pt-info { opacity:.28 !important; }
 #tab-patienten .pt-quick .pt-ib { background:rgba(255,255,255,.85) !important; }
+/* Videos in der Akte */
+.vid-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; margin-top:6px; }
+.vid-tile { display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:10px; text-align:left; background:var(--pf-inlay); border:1px solid var(--pf-line); border-radius:12px; color:var(--pf-navy); cursor:pointer; font-family:inherit; min-width:0; }
+.vid-tile svg { width:34px; height:34px; margin-bottom:4px; }
+.vid-t { font-weight:600; font-size:13px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#0d1b3d; }
+.vid-s { font-size:11.5px; color:#64748b; }
+.vid-tile.vid-miss { opacity:.6; } .vid-tile.vid-hid { opacity:.5; border-style:dashed; }
+.vid-view { position:fixed; inset:0; z-index:70; background:rgba(1,16,48,.92); display:none; flex-direction:column; }
+.vid-bar { display:flex; align-items:center; gap:10px; padding:10px 14px; color:#fff; }
+.vid-cap { flex:1; min-width:0; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vid-x { width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.5); background:transparent; color:#fff; font-size:22px; cursor:pointer; }
+.vid-stage { flex:1; display:flex; align-items:center; justify-content:center; color:#e2e8f0; padding:12px; text-align:center; min-height:0; }
+.vid-stage video { max-width:100%; max-height:100%; border-radius:8px; background:#000; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1572,6 +1585,7 @@ function alPrepare() {
 }
 function alLockNow() {
   if (!alGet()) return;
+  alSessClear();
   document.querySelectorAll('.modal-overlay.active').forEach(function (m) { m.dataset.dirty = ''; });
   document.documentElement.classList.add('locked');
   document.getElementById('al-pw').value = ''; document.getElementById('al-msg').textContent = ''; alPrepare();
@@ -1633,19 +1647,70 @@ async function alUnlock(ev) {
   if (!KA.booted) kaBoot(false);
   try { var rjr = typeof restoreJournalStartup === 'function' ? await restoreJournalStartup() : ''; if (rjr === 'reload') { location.reload(); return; } }
   catch (e) { msg.textContent = 'Die unterbrochene Wiederherstellung konnte nicht sicher abgeschlossen werden. ' + (e && e.message ? e.message : ''); return; }
-  document.documentElement.classList.remove('locked'); alArm();
+  document.documentElement.classList.remove('locked'); alArm(); alSessSave();
   c = alGet(); if (c && c.enc && c.sweep) kaFilesToEnc().catch(function () {});
 }
 function alArm() {
   clearTimeout(alTimer); var c = alGet(); if (!c || document.documentElement.classList.contains('locked')) return;
+  alSessTouch();
   if (+c.min > 0) alTimer = setTimeout(alLockNow, c.min * 60000);
 }
 ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { document.addEventListener(t, alArm, { passive: true, capture: true }); });
 document.addEventListener('visibilitychange', function () {
   var c = alGet(); if (!c || !KA.booted) return;
-  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); }
+  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); else if (!document.documentElement.classList.contains('locked')) alSessSave(); }
   else if (alHiddenAt && Date.now() - alHiddenAt >= c.min * 60000) alLockNow();
 });
+/* Sitzung merken: Nach dem Entsperren bleibt der Datenschlüssel bis 20 Minuten nach der letzten Nutzung auf diesem Gerät hinterlegt,
+   damit ein Neuladen oder Wiederöffnen der App nicht jedes Mal das Passwort verlangt. Hinterlegt wird nur der nicht exportierbare
+   Schlüssel (CryptoKey) im IndexedDB dieses Geräts, nie das Passwort. "App sperren", die automatische Sperre und das Abschalten
+   im Menü Sicherheit löschen ihn sofort. Abschaltbar über c.sess = false. */
+var AL_SESS_MIN = 20, alSessLast = 0;
+function alSessOn() { var c = alGet(); return !!(c && c.enc && c.sess !== false && window.indexedDB); }
+function alSessTx(mode, fn) {
+  return new Promise(function (res, rej) {
+    var rq = indexedDB.open('ka-sitzung', 1);
+    rq.onupgradeneeded = function () { rq.result.createObjectStore('s'); };
+    rq.onerror = function () { rej(rq.error); };
+    rq.onsuccess = function () {
+      var db = rq.result, out;
+      try {
+        var tx = db.transaction('s', mode), q = fn(tx.objectStore('s'));
+        if (q) q.onsuccess = function () { out = q.result; };
+        tx.oncomplete = function () { db.close(); res(out); };
+        tx.onerror = tx.onabort = function () { db.close(); rej(tx.error); };
+      } catch (x) { db.close(); rej(x); }
+    };
+  });
+}
+function alSessSave() {
+  if (!KA.key || !alSessOn()) return Promise.resolve(false);
+  alSessLast = Date.now();
+  return alSessTx('readwrite', function (s) { return s.put({ key: KA.key, exp: Date.now() + AL_SESS_MIN * 60000 }, 'k'); }).then(function () { return true; }).catch(function () { return false; });
+}
+function alSessClear() { alSessLast = 0; if (!window.indexedDB) return Promise.resolve(); return alSessTx('readwrite', function (s) { return s.delete('k'); }).catch(function () {}); }
+function alSessTouch() { if (alSessLast && Date.now() - alSessLast > 60000) alSessSave(); }
+async function alSessResume() {
+  var r = null, now = Date.now(), c = alGet(), msg = document.getElementById('al-msg');
+  try { r = await alSessTx('readonly', function (s) { return s.get('k'); }); } catch (e) { return false; }
+  if (!r || !r.key || !(r.exp > now) || r.exp > now + (AL_SESS_MIN + 1) * 60000 || !c || !c.enc) { await alSessClear(); return false; }
+  try { KA.key = r.key; if (!KA.enc) { await rjEarlyCore(); await kaLoadAll(); await kaIdle(); } }
+  catch (e) { KA.key = null; await alSessClear(); return false; }
+  if (!KA.booted) kaBoot(false);
+  try { var rjr = typeof restoreJournalStartup === 'function' ? await restoreJournalStartup() : ''; if (rjr === 'reload') { location.reload(); return true; } }
+  catch (e) { if (msg) msg.textContent = 'Die unterbrochene Wiederherstellung konnte nicht sicher abgeschlossen werden. ' + (e && e.message ? e.message : ''); return true; }
+  if (msg) msg.textContent = '';
+  document.documentElement.classList.remove('locked'); alArm(); alSessSave();
+  if (c.sweep) kaFilesToEnc().catch(function () {});
+  return true;
+}
+function alSessSet(on) {
+  var c = alGet(); if (!c) return;
+  if (on) delete c.sess; else c.sess = false;
+  alPut(c);
+  if (on && !document.documentElement.classList.contains('locked')) alSessSave(); else alSessClear();
+}
+window.addEventListener('pagehide', function () { if (KA.key && alSessLast && !document.documentElement.classList.contains('locked')) alSessSave(); });
 function alUi() {
   var c = alGet();
   document.getElementById('al-info').textContent = c && c.enc
@@ -1703,7 +1768,7 @@ async function alEncryptAll() {
     alPut({ enc: true, salt: salt, wrap: await alWrap(cur, raw, salt), min: c.min, sweep: true });
     progSet(10, 'Daten werden verschlüsselt ...'); await kaLoadAll(); await kaIdle();
     await kaFilesToEnc(function (i, n) { progSet(15 + 80 * i / Math.max(1, n), 'Datei ' + i + ' von ' + n); });
-    progSet(100, 'Fertig. Die Daten sind jetzt verschlüsselt.'); document.getElementById('pg-close').style.display = ''; alUi();
+    progSet(100, 'Fertig. Die Daten sind jetzt verschlüsselt.'); document.getElementById('pg-close').style.display = ''; alUi(); alSessSave();
   } catch (e) { progClose(true); alert('Das Verschlüsseln wurde unterbrochen: ' + (e && e.message ? e.message : e) + '\n\nDie Daten sind nicht verloren. Beim nächsten Entsperren wird der Rest nachgeholt.'); }
 }
 async function alDecryptAll() {
@@ -1723,6 +1788,18 @@ function kaBoot(lockAfter) {
 function kaStart() {
   document.documentElement.classList.add('locked');
   alPrepare();
+  if (alSessOn()) {
+    window.alResuming = true;
+    var m = document.getElementById('al-msg'); if (m) m.textContent = 'Sitzung wird fortgesetzt …';
+    alSessResume().catch(function () { return false; }).then(function (ok) {
+      window.alResuming = false;
+      if (ok) return;
+      if (m && /fortgesetzt/.test(m.textContent)) m.textContent = '';
+      document.getElementById('al-pw').focus();
+      if (typeof window.pkMaybeAutoUnlock === 'function') window.pkMaybeAutoUnlock();
+    });
+    return;
+  }
   setTimeout(function () { document.getElementById('al-pw').focus(); }, 50);
 }
 </script>
@@ -2250,6 +2327,7 @@ function kaStart() {
   <div class="card a-side">
     <input type="file" id="a-img-in" accept="image/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addImages(this)">
     <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'dokumente')">
+    <input type="file" id="a-vid-in" accept="video/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addVideos(this)">
     <input type="file" id="a-tpl-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'templates')">
     <div id="a-head"></div>
   </div>
@@ -2288,6 +2366,7 @@ function kaStart() {
       <div class="ak-h" style="margin:0; border:none; padding:0;">Bilder und Dateien</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
         <button type="button" id="md-addf" class="ak-act ak-datei" onclick="zuNext = null; document.getElementById('a-img-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span>Foto</span></button>
+        <button type="button" id="md-addv" class="ak-act ak-datei" title="Video hinzufügen (nur auf diesem Gerät)" onclick="document.getElementById('a-vid-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><span>Video</span></button>
         <button type="button" id="md-addd" class="ak-act ak-datei" onclick="zuNext = null; document.getElementById('a-doc-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 12v5M9.5 14.5h5"/></svg><span>Datei</span></button>
       </div>
     </div>
@@ -2989,7 +3068,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-d';
+var KA_V = '2026-11-21-e';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -6452,6 +6531,7 @@ async function deletePatient() {
   var name = nameKey(p), n = events.filter(function (e) { return eventBelongs(e, p); }).length;
   if (!await kaConfirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
   (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });
+  (p.videos || []).forEach(function (x) { vDel(x.id); });
   patients = patients.filter(function (x) { return x !== p; });
   events = events.filter(function (e) { return !eventBelongs(e, p); });
   stammEdit = false; curP = null;
@@ -6596,7 +6676,7 @@ function mgMerge(keep, other, pick) {
     if (b && !a) keep[k] = b; else if (a && b && a.toLowerCase().indexOf(b.toLowerCase()) < 0) keep[k] = a + '\n' + b;
   });
   var med = (keep.medikation = keep.medikation || []); (other.medikation || []).forEach(function (m) { if (med.indexOf(m) < 0) med.push(m); });
-  ['doku', 'log', 'audit', 'bilder', 'dokumente', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
+  ['doku', 'log', 'audit', 'bilder', 'dokumente', 'videos', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
   if (other.code) { if (!keep.code) keep.code = other.code; else if (other.code !== keep.code) keep.codes2 = (keep.codes2 || []).concat([other.code]); }
   (other.codes2 || []).forEach(function (c) { keep.codes2 = (keep.codes2 || []).concat([c]); });
   Object.keys(other).forEach(function (k) { if (keep[k] === undefined && other[k] !== undefined && k !== 'id' && k !== 'nr') keep[k] = other[k]; });
@@ -6989,6 +7069,93 @@ function addImages(inp) {
     auditFilesAdded(p, ok, 'Bilder');
     persist(); if (curP === p) renderVerlauf();
     if (ok.length < files.length) alert((files.length - ok.length) + ' Bild(er) konnten nicht gespeichert werden.');
+  });
+}
+/* Videos: nur auf diesem Gerät, verschlüsselt in einem eigenen Speicher (ka-videos), höchstens 100 MB je Video.
+   Sie sind bewusst nicht in der Sicherung (ZIP) und nicht im Geräte-Abgleich. Die Akte führt nur die Angaben (p.videos: id, ts, name, size, type). */
+var VID_MAX = 100 * 1048576, vdb = null, vUrlCache = {};
+function vOpen() {
+  return new Promise(function (res) {
+    if (vdb) { res(vdb); return; }
+    try { var rq = indexedDB.open('ka-videos', 1); rq.onupgradeneeded = function () { rq.result.createObjectStore('v', { keyPath: 'id' }); }; rq.onsuccess = function () { vdb = rq.result; res(vdb); }; rq.onerror = function () { res(null); }; }
+    catch (x) { res(null); }
+  });
+}
+function vTx(mode, fn) {
+  return vOpen().then(function (db) {
+    if (!db) return null;
+    return new Promise(function (res) {
+      var tx = db.transaction('v', mode), out = null;
+      try { out = fn(tx.objectStore('v')); } catch (x) { res(null); return; }
+      tx.oncomplete = function () { res(out && out.result !== undefined ? out.result : true); };
+      tx.onerror = tx.onabort = function () { res(null); };
+    });
+  });
+}
+function vPut(id, name, blob) {
+  if (!KA.enc || !KA.key) return Promise.resolve(false);
+  return blob.arrayBuffer().then(async function (ab) {
+    var e = await kaEncBytes(new Uint8Array(ab)), m = await kaEncBytes(new TextEncoder().encode(JSON.stringify({ name: name, type: blob.type || '' })));
+    return vTx('readwrite', function (st) { return st.put({ id: id, enc: e.buffer, emeta: m.buffer }); });
+  }).then(function (r) { return r !== null; }).catch(function () { return false; });
+}
+function vGet(id) { return vTx('readonly', function (st) { return st.get(id); }).then(function (r) { return r && r !== true ? fRec(r).catch(function () { return null; }) : null; }); }
+function vHas(id) { return vTx('readonly', function (st) { return st.count(id); }).then(function (n) { return n === 1; }); }
+function vDel(id) { if (vUrlCache[id]) { URL.revokeObjectURL(vUrlCache[id]); delete vUrlCache[id]; } return vTx('readwrite', function (st) { return st.delete(id); }); }
+function vURL(rec) { if (vUrlCache[rec.id]) return Promise.resolve(vUrlCache[rec.id]); return vGet(rec.id).then(function (f) { return f ? (vUrlCache[rec.id] = URL.createObjectURL(f.blob)) : null; }); }
+function fmtMB(n) { return n >= 1048576 ? (n / 1048576).toFixed(n >= 10485760 ? 0 : 1).replace('.', ',') + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+async function addVideos(inp) {
+  var files = [].slice.call(inp.files || []); inp.value = '';
+  if (!files.length || !curP) return;
+  var p = curP, gross = files.filter(function (f) { return f.size > VID_MAX; }), ok0 = files.filter(function (f) { return f.size <= VID_MAX && (/^video\//.test(f.type) || /\.(mp4|mov|m4v|webm|3gp)$/i.test(f.name)); });
+  if (gross.length) alert(gross.length + ' Video(s) über 100 MB werden nicht übernommen. Bitte kürzen oder verkleinern.');
+  if (!ok0.length) return;
+  var seen = false; try { seen = localStorage.getItem('ka_vid_hinweis') === '1'; } catch (x) {}
+  if (!seen) {
+    if (!await kaConfirm('Videos bleiben nur auf diesem Gerät.\n\nSie werden verschlüsselt gespeichert, sind aber nicht in der Sicherung (ZIP) und nicht im Geräte-Abgleich enthalten. Geht das Gerät verloren oder wird die App gelöscht, sind die Videos weg.\n\nVideos hinzufügen?', { ok: 'Hinzufügen', danger: false })) return;
+    try { localStorage.setItem('ka_vid_hinweis', '1'); } catch (x) {}
+  }
+  alert(ok0.length === 1 ? 'Video wird verschlüsselt gespeichert …' : ok0.length + ' Videos werden verschlüsselt gespeichert …');
+  var base = Date.now(), recs = [];
+  for (var i = 0; i < ok0.length; i++) {
+    var f = ok0[i], id = newId();
+    if (await vPut(id, f.name, f)) recs.push({ id: id, ts: base + i, name: f.name, size: f.size, type: f.type || '' });
+  }
+  if (recs.length) { p.videos = (p.videos || []).concat(recs); auditFilesAdded(p, recs, 'Videos'); persist(); }
+  if (curP === p) { try { renderMedien(); } catch (x) {} }
+  alert(recs.length === ok0.length ? (recs.length === 1 ? 'Video gespeichert.' : recs.length + ' Videos gespeichert.') : (ok0.length - recs.length) + ' Video(s) konnten nicht gespeichert werden (Speicher voll?).');
+}
+function medVideos(p, list) {
+  var c = mk('div', 'md-item'), h = mk('div', 'md-gh');
+  h.appendChild(mk('div', 'md-day', 'Videos · nur auf diesem Gerät')); c.appendChild(h);
+  var g = mk('div', 'vid-grid');
+  list.forEach(function (v) {
+    var b = mk('button', 'vid-tile'); b.type = 'button'; b.title = v.name || 'Video';
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".12"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg>';
+    var t = mk('span', 'vid-t', v.name || 'Video'), sub = mk('span', 'vid-s', fmtDT(tsOf(v)) + (v.size ? ' · ' + fmtMB(v.size) : ''));
+    b.appendChild(t); b.appendChild(sub);
+    if (v.hiddenFromView) b.classList.add('vid-hid');
+    vHas(v.id).then(function (has) { if (!has) { b.classList.add('vid-miss'); sub.textContent = fmtDT(tsOf(v)) + ' · liegt auf einem anderen Gerät'; } });
+    b.onclick = function () { openVideo(p, v); };
+    g.appendChild(b);
+  });
+  c.appendChild(g); return c;
+}
+function openVideo(p, v) {
+  var ov = document.getElementById('vid-view');
+  if (!ov) { ov = mk('div', 'vid-view'); ov.id = 'vid-view'; document.body.appendChild(ov); }
+  ov.innerHTML = ''; ov.style.display = 'flex';
+  var bar = mk('div', 'vid-bar'), close = function () { var vv = ov.querySelector('video'); if (vv) { vv.pause(); vv.removeAttribute('src'); vv.load(); } ov.style.display = 'none'; ov.innerHTML = ''; };
+  var hb = mk('button', 'btn btn-secondary btn-sm', v.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden'); hb.type = 'button';
+  hb.onclick = function () { setRecordHidden(p, v, !v.hiddenFromView, 'Videos', v.name || v.id); close(); try { renderMedien(); } catch (x) {} };
+  var xb = mk('button', 'vid-x', '×'); xb.type = 'button'; xb.title = 'Schließen'; xb.setAttribute('aria-label', 'Schließen'); xb.onclick = close;
+  bar.appendChild(hb); bar.appendChild(mk('div', 'vid-cap', (v.name || 'Video') + ' · ' + fmtDT(tsOf(v)))); bar.appendChild(xb); ov.appendChild(bar);
+  var stage = mk('div', 'vid-stage', 'Video wird entschlüsselt …'); ov.appendChild(stage);
+  ov.onclick = function (ev) { if (ev.target === ov) close(); };
+  vURL(v).then(function (u) {
+    if (ov.style.display === 'none') return;
+    if (!u) { stage.textContent = 'Dieses Video liegt nur auf dem Gerät, auf dem es aufgenommen oder hinzugefügt wurde.'; return; }
+    stage.textContent = ''; var vid = document.createElement('video'); vid.controls = true; vid.playsInline = true; vid.preload = 'metadata'; vid.src = u; stage.appendChild(vid);
   });
 }
 function addDocs(inp, key) {
@@ -8428,10 +8595,10 @@ function medDocRow(p, dd) {
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
   akTabs();
-  var nb = (curP.bilder || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
+  var nb = (curP.bilder || []).filter(recordVisible).length + (curP.videos || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
   document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dateien (' + nd + ')';
   document.getElementById('md-bild').className = medFilter === 'bild' ? 'on' : ''; document.getElementById('md-dok').className = medFilter === 'dok' ? 'on' : '';
-  document.getElementById('md-addf').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addd').style.display = medFilter === 'dok' ? '' : 'none';
+  document.getElementById('md-addf').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addv').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addd').style.display = medFilter === 'dok' ? '' : 'none';
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
   var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
   var kats = []; (curP.dokumente || []).filter(recordVisible).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });
@@ -8447,7 +8614,9 @@ function renderMedien() {
   });
   items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = '';
-  if (!items.length) { box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
+  var vids = medFilter === 'bild' ? (curP.videos || []).filter(function (v) { return recordVisible(v) && (!q || String(v.name || '').toLowerCase().indexOf(q) >= 0); }).sort(function (a, b) { return tsOf(b) - tsOf(a); }) : [];
+  if (vids.length) box.appendChild(medVideos(curP, vids));
+  if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
   items.slice(0, medLimit).forEach(function (it) {
     var g = it.g, d = new Date(it.k);
     var c = mk('div', 'md-item'), zl = g.zu ? mk('div', 'md-zu', zuLabel(g.p, g.zu)) : null;

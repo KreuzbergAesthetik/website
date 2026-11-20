@@ -227,10 +227,10 @@ function medDocRow(p, dd) {
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
   akTabs();
-  var nb = (curP.bilder || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
+  var nb = (curP.bilder || []).filter(recordVisible).length + (curP.videos || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
   document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dateien (' + nd + ')';
   document.getElementById('md-bild').className = medFilter === 'bild' ? 'on' : ''; document.getElementById('md-dok').className = medFilter === 'dok' ? 'on' : '';
-  document.getElementById('md-addf').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addd').style.display = medFilter === 'dok' ? '' : 'none';
+  document.getElementById('md-addf').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addv').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addd').style.display = medFilter === 'dok' ? '' : 'none';
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
   var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
   var kats = []; (curP.dokumente || []).filter(recordVisible).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });
@@ -246,7 +246,9 @@ function renderMedien() {
   });
   items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = '';
-  if (!items.length) { box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
+  var vids = medFilter === 'bild' ? (curP.videos || []).filter(function (v) { return recordVisible(v) && (!q || String(v.name || '').toLowerCase().indexOf(q) >= 0); }).sort(function (a, b) { return tsOf(b) - tsOf(a); }) : [];
+  if (vids.length) box.appendChild(medVideos(curP, vids));
+  if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
   items.slice(0, medLimit).forEach(function (it) {
     var g = it.g, d = new Date(it.k);
     var c = mk('div', 'md-item'), zl = g.zu ? mk('div', 'md-zu', zuLabel(g.p, g.zu)) : null;

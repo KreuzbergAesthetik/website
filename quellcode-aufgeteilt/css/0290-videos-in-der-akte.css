@@ -1,0 +1,13 @@
+/* Videos in der Akte */
+.vid-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; margin-top:6px; }
+.vid-tile { display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:10px; text-align:left; background:var(--pf-inlay); border:1px solid var(--pf-line); border-radius:12px; color:var(--pf-navy); cursor:pointer; font-family:inherit; min-width:0; }
+.vid-tile svg { width:34px; height:34px; margin-bottom:4px; }
+.vid-t { font-weight:600; font-size:13px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#0d1b3d; }
+.vid-s { font-size:11.5px; color:#64748b; }
+.vid-tile.vid-miss { opacity:.6; } .vid-tile.vid-hid { opacity:.5; border-style:dashed; }
+.vid-view { position:fixed; inset:0; z-index:70; background:rgba(1,16,48,.92); display:none; flex-direction:column; }
+.vid-bar { display:flex; align-items:center; gap:10px; padding:10px 14px; color:#fff; }
+.vid-cap { flex:1; min-width:0; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vid-x { width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.5); background:transparent; color:#fff; font-size:22px; cursor:pointer; }
+.vid-stage { flex:1; display:flex; align-items:center; justify-content:center; color:#e2e8f0; padding:12px; text-align:center; min-height:0; }
+.vid-stage video { max-width:100%; max-height:100%; border-radius:8px; background:#000; }
