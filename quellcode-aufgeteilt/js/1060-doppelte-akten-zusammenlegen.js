@@ -248,7 +248,23 @@ function tlMenu(ev, items) {
 function tlPlus(sh, items) {
   var b = mk('button', 'tl-plus'); b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'; b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   sh.actions = items;
-  b.onclick = function (ev) { tlMenu(ev, sh.actions); }; sh.row.appendChild(b);
+  var q = mk('div', 'tl-quick');
+  dockIds().forEach(function (id) {
+    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
+    var qb = mk('button', 'tl-qb'); qb.type = 'button'; qb.title = d.t; qb.setAttribute('aria-label', d.t); qb.innerHTML = tvSvg(d.ic);
+    qb.onclick = function (ev) { ev.stopPropagation(); sh.row.classList.remove('quick-on'); aAct(d.act); }; q.appendChild(qb);
+  });
+  var mb = mk('button', 'tl-qb'); mb.type = 'button'; mb.title = 'Weitere Aktionen dieses Eintrags'; mb.setAttribute('aria-label', mb.title);
+  mb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+  mb.onclick = function (ev) { sh.row.classList.remove('quick-on'); tlMenu(ev, sh.actions); }; q.appendChild(mb);
+  sh.row.appendChild(q);
+  /* Maus: Überfahren zeigt die Symbole; Touch: Antippen des Pfeils blendet sie ein und aus */
+  b.onclick = function (ev) {
+    if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) { tlMenu(ev, sh.actions); return; }
+    ev.stopPropagation(); var on = !sh.row.classList.contains('quick-on');
+    [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) sh.row.classList.add('quick-on');
+  };
+  sh.row.appendChild(b);
 }
 function attItems(key) { return [['Bilder hinzufügen', function () { zuNext = key; document.getElementById('a-img-in').click(); }], ['Dokument hinzufügen', function () { zuNext = key; document.getElementById('a-doc-in').click(); }]]; }
 function attMove(key) {

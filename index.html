@@ -1445,6 +1445,21 @@ header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf
 .vid-x { width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.5); background:transparent; color:#fff; font-size:22px; cursor:pointer; }
 .vid-stage { flex:1; display:flex; align-items:center; justify-content:center; color:#e2e8f0; padding:12px; text-align:center; min-height:0; }
 .vid-stage video { max-width:100%; max-height:100%; border-radius:8px; background:#000; }
+/* Schnellzugriffe der Akte: dauerhaft schwebend, rund, durchsichtig */
+.a-fab-tog { display:none !important; }
+.a-fab .a-cat, .a-fab .plus-btn, .a-fab.out .a-cat, .a-fab.out .plus-btn, .a-fab:not(.out) .a-cat, .a-fab:not(.out) .plus-btn { transform:none !important; border-radius:50% !important; width:42px !important; height:42px !important; background:rgba(255,255,255,.55) !important; border:1px solid rgba(1,34,101,.28) !important; color:var(--pf-navy) !important; box-shadow:0 2px 12px rgba(1,34,101,.14) !important; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
+.a-fab .a-cat > *, .a-fab .plus-btn > *, .a-fab:not(.out) .a-cat > *, .a-fab:not(.out) .plus-btn > * { opacity:1 !important; }
+.a-fab .a-cat svg, .a-fab .plus-btn svg { color:var(--pf-navy) !important; }
+.am-edit { display:block; width:100%; margin-top:8px; padding:9px; border:1px dashed var(--pf-navy); border-radius:999px; background:transparent; color:var(--pf-navy); font:600 13px inherit; cursor:pointer; }
+.dk-row { display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid #eef1f7; font-size:14px; cursor:pointer; }
+.dk-row input { width:18px; height:18px; accent-color:var(--pf-green); } .dk-ic svg { width:20px; height:20px; color:var(--pf-navy); vertical-align:middle; }
+/* Zeitleiste: Symbole der Schnellzugriffe in der Zeile */
+.tl-item { position:relative; }
+.tl-quick { position:absolute; top:4px; right:34px; display:flex; gap:6px; padding:3px; background:rgba(255,255,255,.7); border-radius:999px; box-shadow:0 2px 10px rgba(1,34,101,.12); opacity:0; pointer-events:none; transition:opacity .15s; z-index:3; }
+.tl-qb { width:30px; height:30px; padding:0; border-radius:50%; border:1px solid var(--pf-navy); background:rgba(255,255,255,.85); color:var(--pf-navy); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+.tl-qb svg { width:16px; height:16px; }
+.tl-item.quick-on .tl-quick { opacity:1; pointer-events:auto; }
+@media (hover:hover) and (pointer:fine) { .tl-item:hover .tl-quick, .tl-item:focus-within .tl-quick { opacity:1; pointer-events:auto; } }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2713,6 +2728,15 @@ function kaStart() {
 </div>
 
 <!-- MODAL: VORLAGE -->
+<div id="modal-dock" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Schnellzugriffe der Akte</strong><button type="button" class="close-btn" onclick="closeModal('modal-dock')">&times;</button></div>
+    <div style="font-size:13px; color:#475569; margin-bottom:10px;">Wähle bis zu drei Aktionen. Sie schweben als runde, durchsichtige Knöpfe am Rand der Akte. Alles andere bleibt unter „…“. <b id="dk-n"></b></div>
+    <div id="dk-list"></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-dock')">Abbrechen</button><button type="button" class="btn btn-save" onclick="aDockSave()">Speichern</button></div>
+  </div>
+</div>
+
 <div id="modal-tpl" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><strong>Vorlage bearbeiten</strong><button type="button" class="close-btn" onclick="closeModal('modal-tpl')">&times;</button></div>
@@ -3078,7 +3102,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-f';
+var KA_V = '2026-11-21-g';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -6850,7 +6874,23 @@ function tlMenu(ev, items) {
 function tlPlus(sh, items) {
   var b = mk('button', 'tl-plus'); b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'; b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   sh.actions = items;
-  b.onclick = function (ev) { tlMenu(ev, sh.actions); }; sh.row.appendChild(b);
+  var q = mk('div', 'tl-quick');
+  dockIds().forEach(function (id) {
+    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
+    var qb = mk('button', 'tl-qb'); qb.type = 'button'; qb.title = d.t; qb.setAttribute('aria-label', d.t); qb.innerHTML = tvSvg(d.ic);
+    qb.onclick = function (ev) { ev.stopPropagation(); sh.row.classList.remove('quick-on'); aAct(d.act); }; q.appendChild(qb);
+  });
+  var mb = mk('button', 'tl-qb'); mb.type = 'button'; mb.title = 'Weitere Aktionen dieses Eintrags'; mb.setAttribute('aria-label', mb.title);
+  mb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+  mb.onclick = function (ev) { sh.row.classList.remove('quick-on'); tlMenu(ev, sh.actions); }; q.appendChild(mb);
+  sh.row.appendChild(q);
+  /* Maus: Überfahren zeigt die Symbole; Touch: Antippen des Pfeils blendet sie ein und aus */
+  b.onclick = function (ev) {
+    if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) { tlMenu(ev, sh.actions); return; }
+    ev.stopPropagation(); var on = !sh.row.classList.contains('quick-on');
+    [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) sh.row.classList.add('quick-on');
+  };
+  sh.row.appendChild(b);
 }
 function attItems(key) { return [['Bilder hinzufügen', function () { zuNext = key; document.getElementById('a-img-in').click(); }], ['Dokument hinzufügen', function () { zuNext = key; document.getElementById('a-doc-in').click(); }]]; }
 function attMove(key) {
@@ -8703,13 +8743,39 @@ var AM_GROUPS = [
 /* Symbolleiste der Akte. Breit (Querformat, Desktop): die fünf Grundaktionen. Als Streifen am Rand (hochkant): alle Aktionen der Reihe nach, so viele wie die Bildschirmhöhe hergibt; der Rest steckt unter „Alle Aktionen“ (…). */
 var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0', b: 1 }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1, b: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4', b: 1 }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6', b: 1 }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1, b: 1 },
   { t: 'Notiz', ic: 'pen', act: 'notiz', c: 'd0' }, { t: 'Produkt', ic: 'box', act: 'produkt', c: 'd0' }, { t: 'Medikament hinzufügen', ic: 'pill', act: 'med', c: 'd3' }, { t: 'Anamnese E-Mail', ic: 'mail', act: 'anammail', c: 'd4' }, { t: 'Anamnese-Link', ic: 'link', act: 'anamlink', c: 'd4' }, { t: 'Briefumschlag C6 (PDF)', ic: 'form', act: 'umschlag', c: 'd4' }, { t: 'Dateien zuordnen', ic: 'auto', act: 'auto', c: 'd7' }];
-(function () {
+/* Schnellzugriffe: höchstens drei runde, durchsichtige Knöpfe, schweben dauerhaft am Rand. Die Auswahl legt Praxis in settings.akteDock ab (Aktions-Kennungen aus AM_DOCK). */
+var DOCK_DEF = ['doku', 'termin', 'rechnung'];
+function dockIds() {
+  var ok = AM_DOCK.map(function (d) { return d.act; }), l = (settings.akteDock || DOCK_DEF).filter(function (a, i, arr) { return ok.indexOf(a) >= 0 && arr.indexOf(a) === i; }).slice(0, 3);
+  return l.length ? l : DOCK_DEF.slice();
+}
+function aDockBuild() {
   var box = document.getElementById('a-cats'); if (!box) return;
-  AM_DOCK.forEach(function (d) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c + (d.hm ? ' hm' : '') + (d.b ? '' : ' xk'); b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
-    b.onclick = function (ev) { if (d.act) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); } else toggleAMenu(ev, d.g); }; box.appendChild(b);
+  box.innerHTML = '';
+  dockIds().forEach(function (id) {
+    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c; b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
+    b.onclick = function (ev) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); }; box.appendChild(b);
   });
-})();
+}
+aDockBuild();
+function aDockEdit() {
+  document.getElementById('a-menu').style.display = 'none';
+  var cur = dockIds(), box = document.getElementById('dk-list'); box.innerHTML = '';
+  var upd = function () { var n = box.querySelectorAll('input:checked').length; [].forEach.call(box.querySelectorAll('input'), function (c) { c.disabled = !c.checked && n >= 3; }); document.getElementById('dk-n').textContent = n + ' von 3'; };
+  AM_DOCK.forEach(function (d) {
+    var lab = document.createElement('label'); lab.className = 'dk-row';
+    var c = document.createElement('input'); c.type = 'checkbox'; c.value = d.act; c.checked = cur.indexOf(d.act) >= 0; c.onchange = upd;
+    var ic = document.createElement('span'); ic.className = 'dk-ic'; ic.innerHTML = tvSvg(d.ic);
+    lab.appendChild(c); lab.appendChild(ic); lab.appendChild(document.createTextNode(d.t)); box.appendChild(lab);
+  });
+  upd(); openModal('modal-dock');
+}
+function aDockSave() {
+  var l = [].map.call(document.querySelectorAll('#dk-list input:checked'), function (c) { return c.value; }).slice(0, 3);
+  if (!l.length) { alert('Bitte mindestens eine Aktion wählen.'); return; }
+  settings.akteDock = l; persist(); aDockBuild(); try { renderVerlauf(); } catch (x) {} closeModal('modal-dock');
+}
 function aFabFit() {
   var f = document.querySelector('.a-fab'); if (!f || !document.body.classList.contains('akte-open')) return;
   var bs = [].slice.call(f.querySelectorAll('.a-cats .a-cat'));
@@ -8724,11 +8790,9 @@ function aFabFit() {
 window.addEventListener('resize', function () { try { aFabFit(); } catch (x) {} });
 /* Hochkant: Die Akte-Aktionen liegen als farbige Streifen am rechten Rand. Antippen, nach links Herausziehen oder der Pfeil klappen sie aus. */
 var aFabMq = window.matchMedia('(max-width:699px), (orientation:portrait)');
-function aFabOut(on) {
-  var f = document.querySelector('.a-fab'); if (!f) return;
-  var v = on === undefined ? !f.classList.contains('out') : !!on; f.classList.toggle('out', v);
-  var t = f.querySelector('.a-fab-tog'); if (t) t.setAttribute('aria-expanded', v ? 'true' : 'false');
-}
+/* Die Schnellzugriffe bleiben dauerhaft sichtbar (kein Ein- und Ausklappen mehr) */
+function aFabOut() { var f = document.querySelector('.a-fab'); if (f) f.classList.add('out'); }
+aFabOut();
 (function () {
   var f = document.querySelector('.a-fab'), sx = null; if (!f) return;
   f.addEventListener('click', function (e) { if (!aFabMq.matches || f.classList.contains('out') || e.target.closest('.a-fab-tog')) return; e.stopPropagation(); e.preventDefault(); aFabOut(true); }, true);
@@ -8756,6 +8820,7 @@ function toggleAMenu(ev, gi) {
     });
     m.appendChild(gr);
   });
+  if (gi === undefined) { var ed = document.createElement('button'); ed.type = 'button'; ed.className = 'am-edit'; ed.textContent = 'Schnellzugriffe anpassen …'; ed.onclick = function (e2) { e2.stopPropagation(); aDockEdit(); }; m.appendChild(ed); }
   m.style.display = 'block';
 }
 document.addEventListener('click', function (ev) {

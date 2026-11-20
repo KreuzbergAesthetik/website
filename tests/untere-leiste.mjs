@@ -75,7 +75,7 @@ try {
     if (ph) {
       assert.ok(r.bnav.n === 5 && Math.abs(r.bnav.b - r.vh) <= 1 && r.bnav.badge === '1', 'Untere Leiste: 5 Reiter, ganz unten, To-Do-Zähler ' + tag);
       assert.ok(r.bnav.rech && r.bnav.mehr && r.bnav.mehrZu && r.bnav.praxisAlsMehr && r.bnav.kopfReiterWeg, 'Untere Leiste: Umschalten, Mehr-Menü über der Leiste, Praxis-Seiten unter Mehr ' + tag);
-      assert.ok(r.akteAktionen.b <= r.bnav.t + 1 && r.akteAktionen.n >= 6, 'Akte-Aktionen über der unteren Leiste, viele Streifen ' + tag);
+      assert.ok(r.akteAktionen.b <= r.bnav.t + 1 && r.akteAktionen.n === 3, 'Akte-Aktionen über der unteren Leiste, genau drei Knöpfe ' + tag);
     }
     assert.ok(r.akteAktionen.h > r.akteAktionen.w && r.akteAktionen.r <= r.vw && r.akteAktionen.t >= 40, 'Akte-Aktionen nicht untereinander oder außerhalb ' + tag);
     assert.ok(r.akteAktionen.vis && (kopf || r.akteAktionen.b <= r.bar.t + 1), 'Akte-Aktionen überdecken die Leiste ' + tag);

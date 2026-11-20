@@ -160,3 +160,12 @@ Offene Punkte stehen in HANDOVER.md Abschnitt 0 (Serverpasswort nach dem IONOS-U
 - Keine externen Cloud-Dienste für Patientendaten ergänzen.
 - Keine rechtlichen oder medizinischen Texte als geprüft kennzeichnen, wenn keine entsprechende Freigabe vorliegt.
 - Keine UI-„Verbesserungen“ außerhalb des konkreten Auftrags.
+
+
+## Schnellzugriffe der Akte (2026-11-21-g)
+- Höchstens drei runde, durchsichtige Knöpfe schweben dauerhaft am Rand (kein Ein-/Ausklappen mehr). Auswahl in `settings.akteDock` (Aktions-Kennungen aus `AM_DOCK`), Standard Dokumentation, Termin, Rechnung. Anpassen über das „…“-Menü → „Schnellzugriffe anpassen“ (`aDockEdit`/`aDockSave`).
+- Zeitleisten-Zeilen zeigen beim Überfahren (Maus) bzw. Antippen des Pfeils (Touch) dieselben Symbole plus „…“ für die Aktionen des Eintrags (`tlPlus`, `.tl-quick`).
+
+## Sitzung merken und Videos (2026-11-21-e/f)
+- Sitzung merken: nach dem Entsperren liegt der nicht exportierbare Datenschlüssel bis 20 Minuten nach der letzten Nutzung in IndexedDB `ka-sitzung`; „App sperren“, Ablauf und Abschalten (Menü Sicherheit) löschen ihn. Tests, die einen gesperrten Neustart brauchen, müssen `alSessSet(false)` aufrufen.
+- Videos: nur auf dem Gerät (IndexedDB `ka-videos`, verschlüsselt, höchstens 100 MB), Angaben in `p.videos`; nicht in der normalen Sicherung und nicht im Abgleich. Eigene verschlüsselte Videosicherung unter Sicherung → Videos (`vbkExport`/`vbkImport`).

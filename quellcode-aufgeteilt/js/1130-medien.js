@@ -325,13 +325,39 @@ var AM_GROUPS = [
 /* Symbolleiste der Akte. Breit (Querformat, Desktop): die fünf Grundaktionen. Als Streifen am Rand (hochkant): alle Aktionen der Reihe nach, so viele wie die Bildschirmhöhe hergibt; der Rest steckt unter „Alle Aktionen“ (…). */
 var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0', b: 1 }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1, b: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4', b: 1 }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6', b: 1 }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1, b: 1 },
   { t: 'Notiz', ic: 'pen', act: 'notiz', c: 'd0' }, { t: 'Produkt', ic: 'box', act: 'produkt', c: 'd0' }, { t: 'Medikament hinzufügen', ic: 'pill', act: 'med', c: 'd3' }, { t: 'Anamnese E-Mail', ic: 'mail', act: 'anammail', c: 'd4' }, { t: 'Anamnese-Link', ic: 'link', act: 'anamlink', c: 'd4' }, { t: 'Briefumschlag C6 (PDF)', ic: 'form', act: 'umschlag', c: 'd4' }, { t: 'Dateien zuordnen', ic: 'auto', act: 'auto', c: 'd7' }];
-(function () {
+/* Schnellzugriffe: höchstens drei runde, durchsichtige Knöpfe, schweben dauerhaft am Rand. Die Auswahl legt Praxis in settings.akteDock ab (Aktions-Kennungen aus AM_DOCK). */
+var DOCK_DEF = ['doku', 'termin', 'rechnung'];
+function dockIds() {
+  var ok = AM_DOCK.map(function (d) { return d.act; }), l = (settings.akteDock || DOCK_DEF).filter(function (a, i, arr) { return ok.indexOf(a) >= 0 && arr.indexOf(a) === i; }).slice(0, 3);
+  return l.length ? l : DOCK_DEF.slice();
+}
+function aDockBuild() {
   var box = document.getElementById('a-cats'); if (!box) return;
-  AM_DOCK.forEach(function (d) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c + (d.hm ? ' hm' : '') + (d.b ? '' : ' xk'); b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
-    b.onclick = function (ev) { if (d.act) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); } else toggleAMenu(ev, d.g); }; box.appendChild(b);
+  box.innerHTML = '';
+  dockIds().forEach(function (id) {
+    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c; b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
+    b.onclick = function (ev) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); }; box.appendChild(b);
   });
-})();
+}
+aDockBuild();
+function aDockEdit() {
+  document.getElementById('a-menu').style.display = 'none';
+  var cur = dockIds(), box = document.getElementById('dk-list'); box.innerHTML = '';
+  var upd = function () { var n = box.querySelectorAll('input:checked').length; [].forEach.call(box.querySelectorAll('input'), function (c) { c.disabled = !c.checked && n >= 3; }); document.getElementById('dk-n').textContent = n + ' von 3'; };
+  AM_DOCK.forEach(function (d) {
+    var lab = document.createElement('label'); lab.className = 'dk-row';
+    var c = document.createElement('input'); c.type = 'checkbox'; c.value = d.act; c.checked = cur.indexOf(d.act) >= 0; c.onchange = upd;
+    var ic = document.createElement('span'); ic.className = 'dk-ic'; ic.innerHTML = tvSvg(d.ic);
+    lab.appendChild(c); lab.appendChild(ic); lab.appendChild(document.createTextNode(d.t)); box.appendChild(lab);
+  });
+  upd(); openModal('modal-dock');
+}
+function aDockSave() {
+  var l = [].map.call(document.querySelectorAll('#dk-list input:checked'), function (c) { return c.value; }).slice(0, 3);
+  if (!l.length) { alert('Bitte mindestens eine Aktion wählen.'); return; }
+  settings.akteDock = l; persist(); aDockBuild(); try { renderVerlauf(); } catch (x) {} closeModal('modal-dock');
+}
 function aFabFit() {
   var f = document.querySelector('.a-fab'); if (!f || !document.body.classList.contains('akte-open')) return;
   var bs = [].slice.call(f.querySelectorAll('.a-cats .a-cat'));
@@ -346,11 +372,9 @@ function aFabFit() {
 window.addEventListener('resize', function () { try { aFabFit(); } catch (x) {} });
 /* Hochkant: Die Akte-Aktionen liegen als farbige Streifen am rechten Rand. Antippen, nach links Herausziehen oder der Pfeil klappen sie aus. */
 var aFabMq = window.matchMedia('(max-width:699px), (orientation:portrait)');
-function aFabOut(on) {
-  var f = document.querySelector('.a-fab'); if (!f) return;
-  var v = on === undefined ? !f.classList.contains('out') : !!on; f.classList.toggle('out', v);
-  var t = f.querySelector('.a-fab-tog'); if (t) t.setAttribute('aria-expanded', v ? 'true' : 'false');
-}
+/* Die Schnellzugriffe bleiben dauerhaft sichtbar (kein Ein- und Ausklappen mehr) */
+function aFabOut() { var f = document.querySelector('.a-fab'); if (f) f.classList.add('out'); }
+aFabOut();
 (function () {
   var f = document.querySelector('.a-fab'), sx = null; if (!f) return;
   f.addEventListener('click', function (e) { if (!aFabMq.matches || f.classList.contains('out') || e.target.closest('.a-fab-tog')) return; e.stopPropagation(); e.preventDefault(); aFabOut(true); }, true);
@@ -378,6 +402,7 @@ function toggleAMenu(ev, gi) {
     });
     m.appendChild(gr);
   });
+  if (gi === undefined) { var ed = document.createElement('button'); ed.type = 'button'; ed.className = 'am-edit'; ed.textContent = 'Schnellzugriffe anpassen …'; ed.onclick = function (e2) { e2.stopPropagation(); aDockEdit(); }; m.appendChild(ed); }
   m.style.display = 'block';
 }
 document.addEventListener('click', function (ev) {
