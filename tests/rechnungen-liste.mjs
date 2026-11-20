@@ -64,7 +64,7 @@ try {
     // Praxis-Menü als Karten
     toggleNavMenu({ stopPropagation() {}, currentTarget: document.getElementById('btn-praxis'), target: document.getElementById('btn-praxis') }); await wait(200);
     const secs = [...document.querySelectorAll('#nav-menu .nav-section')];
-    out.menueKarten = secs.length >= 3 && secs.every(x => parseFloat(getComputedStyle(x).borderTopLeftRadius) >= 10 && parseFloat(getComputedStyle(x).marginBottom) >= 0) && new Set(secs.map(x => getComputedStyle(x).borderLeftColor)).size >= 3;
+    out.menueKarten = secs.length >= 3 && secs.every(x => parseFloat(getComputedStyle(x).borderTopLeftRadius) >= 10 && parseFloat(getComputedStyle(x).marginBottom) >= 0) && secs.every(x => parseFloat(getComputedStyle(x).borderLeftWidth) <= 1);
     return out;
   });
   for (const k of Object.keys(r)) if (k !== 'zeilen') assert.equal(r[k], true, 'Rechnungsliste: ' + k + ' ' + JSON.stringify(r));
