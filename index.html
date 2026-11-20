@@ -2118,6 +2118,16 @@ function kaStart() {
       </div>
       <div style="font-size:13px; color:#64748b; margin-top:16px;"><b>Sichern</b> speichert den aktuellen Stand. <b>Laden</b> liest eine Sicherung wieder ein, bei mehreren Teilen bitte alle Teile gemeinsam wählen. Einzelne Formulare, Rechnungen oder Patienten liest der Knopf <b>Import</b> unter der Patientenliste ein.</div>
     </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Videos</span></div>
+      <div id="vbk-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
+      <div style="font-size:13px; color:#64748b; margin-bottom:16px;">Videos liegen nur auf diesem Gerät und sind weder in der normalen Sicherung noch im Geräte-Abgleich. Hier lassen sie sich getrennt sichern: als ZIP-Datei, die immer mit einem eigenen Passwort verschlüsselt wird. <b>Laden</b> bringt sie auf diesem oder einem anderen Gerät zurück in die jeweilige Akte.</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-save" onclick="vbkExport()">Videos sichern</button>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('vbk-file').click()">Videos laden</button>
+        <input type="file" id="vbk-file" accept=".zip,application/zip" multiple style="display:none" onchange="vbkImport(this)">
+      </div>
+    </div>
   </div>
 
   <!-- TAB: GERÄTE-ABGLEICH -->
@@ -3068,7 +3078,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-e';
+var KA_V = '2026-11-21-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -10384,6 +10394,7 @@ async function restoreZips(zips, inp) {
       var map = await readZipBlob(zips[i]);
       if (!map['info.json']) throw new Error('Keine Sicherung: ' + zips[i].name);
       var info = JSON.parse(await map['info.json'].text());
+      if (info && info.format === 'ka-videosicherung-teil') throw new Error('Das ist eine Videosicherung. Bitte unter Sicherung bei „Videos“ auf „Videos laden“ tippen');
       if (!info || info.format !== 'ka-sicherung-teil') throw new Error('Ungültige Teilinformation');
       parts.push({ map: map, info: info, file: zips[i] });
     }
@@ -10607,12 +10618,153 @@ fixImported();
 restoreLast();
 /* ===== Geräte-Abgleich ===== */
 function renderSicherung() {
+  vbkState();
   var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
   var el = document.getElementById('sk-state'); if (!el) return;
   if (!lb) { el.textContent = 'Noch keine Sicherung auf diesem Gerät'; el.style.color = '#b91c1c'; return; }
   var d = new Date(lb), days = Math.round((new Date(iso(new Date())) - new Date(iso(d))) / 86400000);
   el.textContent = 'Letzte Sicherung: ' + (days === 0 ? 'heute' : days === 1 ? 'gestern' : 'vor ' + days + ' Tagen') + ' um ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' Uhr';
   el.style.color = days >= 2 ? '#92400e' : '#15803d';
+}
+/* Videos getrennt sichern und laden. Format: ZIP-Teile (je bis 400 MB) mit info.json (Salz, Prüfwert, Teil x von y),
+   videos/<id>.enc (AES-GCM, Schlüssel aus dem Passwort mit PBKDF2) und im ersten Teil videos.json.enc (Liste mit Patient, Name, Typ, Größe, Datum, SHA-256). */
+var vbkParts = [];
+function vbkList() {
+  var out = [];
+  patients.forEach(function (p) { (p.videos || []).forEach(function (v) { out.push({ p: p, v: v }); }); });
+  return out;
+}
+function vbkState() {
+  var el = document.getElementById('vbk-state'); if (!el) return;
+  var l = vbkList(); el.textContent = 'Videos werden geprüft …'; el.style.color = '#475569';
+  Promise.all(l.map(function (x) { return vHas(x.v.id); })).then(function (h) {
+    var n = 0, mb = 0; h.forEach(function (ok, i) { if (ok) { n++; mb += l[i].v.size || 0; } });
+    var last = null; try { last = localStorage.getItem('ka_lastvideobackup'); } catch (x) {}
+    el.textContent = n ? n + (n === 1 ? ' Video' : ' Videos') + ' auf diesem Gerät (' + fmtMB(mb) + ')' + (last ? ' · zuletzt gesichert am ' + fmtDT(Date.parse(last)) : ' · noch nie gesichert') : 'Keine Videos auf diesem Gerät';
+    el.style.color = n && !last ? '#92400e' : '#475569';
+  });
+}
+async function vbkPassword(neu) {
+  var pw = await kaPrompt(neu ? 'Passwort für die Videosicherung (mindestens 12 Zeichen). Ohne dieses Passwort lässt sie sich nicht mehr öffnen.' : 'Passwort der Videosicherung:', '', { password: true, ok: 'Weiter' });
+  if (pw == null) return null;
+  if (!neu) return pw;
+  if (pw.length < 12) { alert('Das Passwort braucht mindestens 12 Zeichen.'); return null; }
+  var pw2 = await kaPrompt('Passwort wiederholen:', '', { password: true, ok: 'Weiter' });
+  if (pw2 == null) return null;
+  if (pw2 !== pw) { alert('Die beiden Passwörter stimmen nicht überein.'); return null; }
+  return pw;
+}
+async function vbkExport() {
+  var all = vbkList(), have = [];
+  for (var i = 0; i < all.length; i++) if (await vHas(all[i].v.id)) have.push(all[i]);
+  if (!have.length) { alert('Auf diesem Gerät liegen keine Videos.'); return; }
+  var pw = await vbkPassword(true); if (!pw) return;
+  progOpen('Videos werden gesichert');
+  try {
+    var salt = crypto.getRandomValues(new Uint8Array(16)), key = await bkKey(pw, salt, BK_ITER), sid = newId(), parts = [new ZipPart()], meta = [], now = new Date();
+    for (var k = 0; k < have.length; k++) {
+      var x = have[k], f = await vGet(x.v.id); if (!f) continue;
+      progSet(k / have.length * 92, 'Video ' + (k + 1) + ' von ' + have.length + ' wird verschlüsselt');
+      var raw = new Uint8Array(await f.blob.arrayBuffer()), hash = await sha256Hex(raw), e = await encEntry(key, raw), eb = new Blob([e]), crc = (crcBytes(e, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0;
+      raw = null;
+      var part = parts[parts.length - 1];
+      if (part.ents.length && part.off + eb.size > BK_PART) { part = new ZipPart(); parts.push(part); }
+      part.add('videos/' + x.v.id + '.enc', eb, crc);
+      meta.push({ id: x.v.id, pid: x.p.id, patient: nameKey(x.p), name: x.v.name || f.name || '', type: x.v.type || f.type || '', size: x.v.size || f.blob.size, ts: tsOf(x.v), sha256: hash, teil: parts.length });
+      await new Promise(function (r) { setTimeout(r, 0); });
+    }
+    if (!meta.length) throw new Error('Keine Videos lesbar');
+    var jb = await encEntry(key, new TextEncoder().encode(JSON.stringify({ format: 'ka-videosicherung', version: 1, id: sid, exportiert: now.toISOString(), videos: meta })));
+    parts[0].add('videos.json.enc', new Blob([jb]), (crcBytes(jb, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0);
+    var pruef = toB64(await encEntry(key, new TextEncoder().encode('ka-ok')));
+    var blobs = parts.map(function (pt, idx) {
+      var info = new TextEncoder().encode(JSON.stringify({ format: 'ka-videosicherung-teil', sicherung: sid, teil: idx + 1, von: parts.length, exportiert: now.toISOString(), verschluesselt: true, iter: BK_ITER, salt: toB64(salt), pruefung: pruef }));
+      pt.add('info.json', new Blob([info]), (crcBytes(info, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0);
+      return pt.finish();
+    });
+    vbkParts = blobs;
+    progSet(100, 'Fertig. Bitte jetzt alle Teile speichern.');
+    var base = 'kreuzberg-aesthetik-videos-' + iso(now), box = document.getElementById('pg-parts'), got = 0, total = blobs.length;
+    box.innerHTML = ''; bkOpen = total;
+    blobs.forEach(function (bl, idx) {
+      var nm = base + (total > 1 ? '-teil-' + (idx + 1) + '-von-' + total : '') + '-verschluesselt.zip';
+      var row = mk('div'); row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9;';
+      row.appendChild(mk('span', '', (total > 1 ? 'Teil ' + (idx + 1) + ' von ' + total + ' · ' : '') + fmtMB(bl.size)));
+      var b = mk('button', 'btn btn-save btn-sm', 'Speichern'); b.type = 'button';
+      b.onclick = function () {
+        var a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = nm; document.body.appendChild(a); a.click(); a.remove();
+        if (!b.getAttribute('data-ok')) { b.setAttribute('data-ok', '1'); b.textContent = 'Gespeichert ✓'; got++; bkOpen = total - got; }
+        if (got === total) { try { localStorage.setItem('ka_lastvideobackup', new Date().toISOString()); } catch (x) {} vbkState(); document.getElementById('pg-status').textContent = 'Alle Teile wurden gespeichert.'; }
+      };
+      row.appendChild(b); box.appendChild(row);
+    });
+    document.getElementById('pg-close').style.display = '';
+    return blobs;
+  } catch (x) {
+    progClose(true);
+    alert('Die Videosicherung konnte nicht erstellt werden. (' + (x && x.message ? x.message : 'unbekannter Fehler') + ')');
+    return null;
+  }
+}
+async function vbkImport(inp, pwGiven) {
+  var files = [].slice.call(inp.files || []).filter(function (f) { return /\.zip$/i.test(f.name) || f.type === 'application/zip'; }); inp.value = '';
+  if (!files.length) return null;
+  var maps = [], infos = [];
+  try {
+    for (var i = 0; i < files.length; i++) {
+      var m = await readZip(files[i]); if (!m['info.json']) throw new Error('„' + files[i].name + '“ ist keine Videosicherung.');
+      var inf = JSON.parse(await m['info.json'].text()); if (!inf || inf.format !== 'ka-videosicherung-teil') throw new Error('„' + files[i].name + '“ ist keine Videosicherung (für die normale Sicherung bitte oben „Laden“ nehmen).');
+      maps.push(m); infos.push(inf);
+    }
+  } catch (x) { alert(x && x.message ? x.message : 'Die Datei konnte nicht gelesen werden.'); return null; }
+  var sid = infos[0].sicherung, von = infos[0].von;
+  if (infos.some(function (x) { return x.sicherung !== sid; })) { alert('Die gewählten Teile gehören zu verschiedenen Videosicherungen.'); return null; }
+  var teile = {}; infos.forEach(function (x) { teile[x.teil] = 1; });
+  var fehlt = []; for (var t = 1; t <= von; t++) if (!teile[t]) fehlt.push(t);
+  if (fehlt.length) { alert('Es fehlen Teile: ' + fehlt.join(', ') + ' von ' + von + '. Bitte alle Teile gemeinsam wählen.'); return null; }
+  var iter = +infos[0].iter;
+  if (!Number.isInteger(iter) || iter < 100000 || iter > 2000000) { alert('Ungültige Videosicherung.'); return null; }
+  var pw = pwGiven || await vbkPassword(false); if (!pw) return null;
+  var key;
+  try { key = await bkKey(pw, fromB64(infos[0].salt), iter); var ok = new TextDecoder().decode(await decEntry(key, fromB64(infos[0].pruefung))); if (ok !== 'ka-ok') throw new Error(); }
+  catch (x) { alert('Das Passwort stimmt nicht.'); return null; }
+  progOpen('Videos werden geladen');
+  var res = { neu: 0, schon: 0, ohneAkte: 0, fehler: 0 };
+  try {
+    var first = maps[infos.findIndex(function (x) { return x.teil === 1; })], jb = first && first['videos.json.enc'];
+    if (!jb) throw new Error('Das Verzeichnis der Videos fehlt.');
+    var list = JSON.parse(new TextDecoder().decode(await decEntry(key, new Uint8Array(await jb.arrayBuffer())))).videos || [];
+    var touched = {};
+    for (var k = 0; k < list.length; k++) {
+      var v = list[k]; progSet(k / Math.max(1, list.length) * 95, 'Video ' + (k + 1) + ' von ' + list.length);
+      var p = patById(v.pid);
+      if (!p) { res.ohneAkte++; continue; }
+      if (await vHas(v.id)) { res.schon++; }
+      else {
+        var src = null; maps.forEach(function (mm) { if (mm['videos/' + v.id + '.enc']) src = mm['videos/' + v.id + '.enc']; });
+        try {
+          if (!src) throw new Error('fehlt');
+          var raw = await decEntry(key, new Uint8Array(await src.arrayBuffer()));
+          if (await sha256Hex(raw) !== v.sha256) throw new Error('Prüfsumme');
+          if (!await vPut(v.id, v.name, new Blob([raw], { type: v.type || '' }))) throw new Error('Speichern');
+          res.neu++;
+        } catch (x) { res.fehler++; continue; }
+      }
+      if (!(p.videos || []).some(function (r) { return r.id === v.id; })) {
+        var rec = { id: v.id, ts: v.ts, name: v.name, size: v.size, type: v.type };
+        p.videos = (p.videos || []).concat([rec]); auditFilesAdded(p, [rec], 'Videos'); touched[p.id] = 1;
+      }
+      await new Promise(function (r) { setTimeout(r, 0); });
+    }
+    if (Object.keys(touched).length) persist();
+    progSet(100, 'Fertig.'); document.getElementById('pg-close').style.display = '';
+    var txt = res.neu + ' Video(s) geladen' + (res.schon ? ', ' + res.schon + ' waren schon da' : '') + (res.ohneAkte ? ', ' + res.ohneAkte + ' ohne passende Akte auf diesem Gerät (zuerst die normale Sicherung laden oder abgleichen)' : '') + (res.fehler ? ', ' + res.fehler + ' fehlerhaft' : '') + '.';
+    document.getElementById('pg-status').textContent = txt;
+    vbkState(); try { if (curP) renderMedien(); } catch (x) {}
+    return res;
+  } catch (x) {
+    progClose(true); alert('Die Videos konnten nicht geladen werden. (' + (x && x.message ? x.message : 'unbekannter Fehler') + ')'); return null;
+  }
 }
 function calCopy() { var u = KS.calUrl(); copyText(u, function () { alert('Adresse kopiert.'); }, async function () { await kaPrompt('Adresse zum Kopieren:', u, { readonly: true, ok: 'Schließen', single: true }); }); }
 async function calOffAsk() { if (await kaConfirm('Kalender ausschalten? Die Adresse wird ungültig, und der Kalender in Google verschwindet nach der nächsten Aktualisierung.')) KS.calOff(); }
