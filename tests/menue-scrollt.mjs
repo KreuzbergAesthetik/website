@@ -23,6 +23,12 @@ try {
     out.imBild = r.top >= 0 && r.bottom <= innerHeight;
     out.scrollbar = cs.overflowY === 'auto' && m.scrollHeight > m.clientHeight && cs.overscrollBehaviorY === 'contain';
     m.scrollTop = 200; await wait(50); out.scrollt = m.scrollTop > 0;
+    // Echtes Hinzufügen-Menü: Eintrag "Link senden" darf keinen Fehler auslösen (Anker des Menüs muss erhalten bleiben)
+    const fehler = []; window.addEventListener('error', e => fehler.push(String(e.message)));
+    document.getElementById('tl-menu').style.display = 'none'; b.click(); await wait(100);
+    const eintrag = [...document.querySelectorAll('#tl-menu button')].find(x => /^Link senden/.test(x.textContent));
+    out.linkEintrag = !!eintrag; if (eintrag) eintrag.click(); await wait(300);
+    out.keinFehler = fehler.length === 0 && getComputedStyle(document.getElementById('tl-menu')).display === 'block' && /E-Mail/.test(document.getElementById('tl-menu').textContent);
     return out;
   });
   for (const k of Object.keys(r)) assert.equal(r[k], true, 'Menü scrollt: ' + k + ' ' + JSON.stringify(r));

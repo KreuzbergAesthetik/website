@@ -3107,7 +3107,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-m';
+var KA_V = '2026-11-21-n';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -8169,9 +8169,10 @@ function renderUnterlagen() {
 /* Menü "Hinzufügen": Links zu Hinweisblättern/Aufklärungen und weitere Vorlagen */
 function untAddMenu(ev) {
   var p = curP; if (!p) return;
+  var anker = ev.currentTarget;   /* currentTarget ist nach dem Klick leer, deshalb jetzt merken */
   var items = [];
   templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]); });
-  KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { docSend({ stopPropagation: function () {}, currentTarget: ev.currentTarget }, p, d); }]); });
+  KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]); });
   tlMenu(ev, items);
 }
 /* Pakete verwalten (Praxis, Nachrichten) */

@@ -193,9 +193,10 @@ function renderUnterlagen() {
 /* Menü "Hinzufügen": Links zu Hinweisblättern/Aufklärungen und weitere Vorlagen */
 function untAddMenu(ev) {
   var p = curP; if (!p) return;
+  var anker = ev.currentTarget;   /* currentTarget ist nach dem Klick leer, deshalb jetzt merken */
   var items = [];
   templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]); });
-  KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { docSend({ stopPropagation: function () {}, currentTarget: ev.currentTarget }, p, d); }]); });
+  KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]); });
   tlMenu(ev, items);
 }
 /* Pakete verwalten (Praxis, Nachrichten) */
