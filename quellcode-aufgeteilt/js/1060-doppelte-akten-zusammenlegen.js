@@ -84,7 +84,7 @@ function mgMerge(keep, other, pick) {
     if (b && !a) keep[k] = b; else if (a && b && a.toLowerCase().indexOf(b.toLowerCase()) < 0) keep[k] = a + '\n' + b;
   });
   var med = (keep.medikation = keep.medikation || []); (other.medikation || []).forEach(function (m) { if (med.indexOf(m) < 0) med.push(m); });
-  ['doku', 'log', 'audit', 'bilder', 'dokumente', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
+  ['doku', 'log', 'audit', 'bilder', 'dokumente', 'videos', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
   if (other.code) { if (!keep.code) keep.code = other.code; else if (other.code !== keep.code) keep.codes2 = (keep.codes2 || []).concat([other.code]); }
   (other.codes2 || []).forEach(function (c) { keep.codes2 = (keep.codes2 || []).concat([c]); });
   Object.keys(other).forEach(function (k) { if (keep[k] === undefined && other[k] !== undefined && k !== 'id' && k !== 'nr') keep[k] = other[k]; });
@@ -248,7 +248,23 @@ function tlMenu(ev, items) {
 function tlPlus(sh, items) {
   var b = mk('button', 'tl-plus'); b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'; b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   sh.actions = items;
-  b.onclick = function (ev) { tlMenu(ev, sh.actions); }; sh.row.appendChild(b);
+  var q = mk('div', 'tl-quick');
+  dockIds().forEach(function (id) {
+    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
+    var qb = mk('button', 'tl-qb'); qb.type = 'button'; qb.title = d.t; qb.setAttribute('aria-label', d.t); qb.innerHTML = tvSvg(d.ic);
+    qb.onclick = function (ev) { ev.stopPropagation(); sh.row.classList.remove('quick-on'); aAct(d.act); }; q.appendChild(qb);
+  });
+  var mb = mk('button', 'tl-qb'); mb.type = 'button'; mb.title = 'Weitere Aktionen dieses Eintrags'; mb.setAttribute('aria-label', mb.title);
+  mb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+  mb.onclick = function (ev) { sh.row.classList.remove('quick-on'); tlMenu(ev, sh.actions); }; q.appendChild(mb);
+  sh.row.appendChild(q);
+  /* Maus: Überfahren zeigt die Symbole; Touch: Antippen des Pfeils blendet sie ein und aus */
+  b.onclick = function (ev) {
+    if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) { tlMenu(ev, sh.actions); return; }
+    ev.stopPropagation(); var on = !sh.row.classList.contains('quick-on');
+    [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) sh.row.classList.add('quick-on');
+  };
+  sh.row.appendChild(b);
 }
 function attItems(key) { return [['Bilder hinzufügen', function () { zuNext = key; document.getElementById('a-img-in').click(); }], ['Dokument hinzufügen', function () { zuNext = key; document.getElementById('a-doc-in').click(); }]]; }
 function attMove(key) {
@@ -477,6 +493,93 @@ function addImages(inp) {
     auditFilesAdded(p, ok, 'Bilder');
     persist(); if (curP === p) renderVerlauf();
     if (ok.length < files.length) alert((files.length - ok.length) + ' Bild(er) konnten nicht gespeichert werden.');
+  });
+}
+/* Videos: nur auf diesem Gerät, verschlüsselt in einem eigenen Speicher (ka-videos), höchstens 100 MB je Video.
+   Sie sind bewusst nicht in der Sicherung (ZIP) und nicht im Geräte-Abgleich. Die Akte führt nur die Angaben (p.videos: id, ts, name, size, type). */
+var VID_MAX = 100 * 1048576, vdb = null, vUrlCache = {};
+function vOpen() {
+  return new Promise(function (res) {
+    if (vdb) { res(vdb); return; }
+    try { var rq = indexedDB.open('ka-videos', 1); rq.onupgradeneeded = function () { rq.result.createObjectStore('v', { keyPath: 'id' }); }; rq.onsuccess = function () { vdb = rq.result; res(vdb); }; rq.onerror = function () { res(null); }; }
+    catch (x) { res(null); }
+  });
+}
+function vTx(mode, fn) {
+  return vOpen().then(function (db) {
+    if (!db) return null;
+    return new Promise(function (res) {
+      var tx = db.transaction('v', mode), out = null;
+      try { out = fn(tx.objectStore('v')); } catch (x) { res(null); return; }
+      tx.oncomplete = function () { res(out && out.result !== undefined ? out.result : true); };
+      tx.onerror = tx.onabort = function () { res(null); };
+    });
+  });
+}
+function vPut(id, name, blob) {
+  if (!KA.enc || !KA.key) return Promise.resolve(false);
+  return blob.arrayBuffer().then(async function (ab) {
+    var e = await kaEncBytes(new Uint8Array(ab)), m = await kaEncBytes(new TextEncoder().encode(JSON.stringify({ name: name, type: blob.type || '' })));
+    return vTx('readwrite', function (st) { return st.put({ id: id, enc: e.buffer, emeta: m.buffer }); });
+  }).then(function (r) { return r !== null; }).catch(function () { return false; });
+}
+function vGet(id) { return vTx('readonly', function (st) { return st.get(id); }).then(function (r) { return r && r !== true ? fRec(r).catch(function () { return null; }) : null; }); }
+function vHas(id) { return vTx('readonly', function (st) { return st.count(id); }).then(function (n) { return n === 1; }); }
+function vDel(id) { if (vUrlCache[id]) { URL.revokeObjectURL(vUrlCache[id]); delete vUrlCache[id]; } return vTx('readwrite', function (st) { return st.delete(id); }); }
+function vURL(rec) { if (vUrlCache[rec.id]) return Promise.resolve(vUrlCache[rec.id]); return vGet(rec.id).then(function (f) { return f ? (vUrlCache[rec.id] = URL.createObjectURL(f.blob)) : null; }); }
+function fmtMB(n) { return n >= 1048576 ? (n / 1048576).toFixed(n >= 10485760 ? 0 : 1).replace('.', ',') + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+async function addVideos(inp) {
+  var files = [].slice.call(inp.files || []); inp.value = '';
+  if (!files.length || !curP) return;
+  var p = curP, gross = files.filter(function (f) { return f.size > VID_MAX; }), ok0 = files.filter(function (f) { return f.size <= VID_MAX && (/^video\//.test(f.type) || /\.(mp4|mov|m4v|webm|3gp)$/i.test(f.name)); });
+  if (gross.length) alert(gross.length + ' Video(s) über 100 MB werden nicht übernommen. Bitte kürzen oder verkleinern.');
+  if (!ok0.length) return;
+  var seen = false; try { seen = localStorage.getItem('ka_vid_hinweis') === '1'; } catch (x) {}
+  if (!seen) {
+    if (!await kaConfirm('Videos bleiben nur auf diesem Gerät.\n\nSie werden verschlüsselt gespeichert, sind aber nicht in der Sicherung (ZIP) und nicht im Geräte-Abgleich enthalten. Geht das Gerät verloren oder wird die App gelöscht, sind die Videos weg.\n\nVideos hinzufügen?', { ok: 'Hinzufügen', danger: false })) return;
+    try { localStorage.setItem('ka_vid_hinweis', '1'); } catch (x) {}
+  }
+  alert(ok0.length === 1 ? 'Video wird verschlüsselt gespeichert …' : ok0.length + ' Videos werden verschlüsselt gespeichert …');
+  var base = Date.now(), recs = [];
+  for (var i = 0; i < ok0.length; i++) {
+    var f = ok0[i], id = newId();
+    if (await vPut(id, f.name, f)) recs.push({ id: id, ts: base + i, name: f.name, size: f.size, type: f.type || '' });
+  }
+  if (recs.length) { p.videos = (p.videos || []).concat(recs); auditFilesAdded(p, recs, 'Videos'); persist(); }
+  if (curP === p) { try { renderMedien(); } catch (x) {} }
+  alert(recs.length === ok0.length ? (recs.length === 1 ? 'Video gespeichert.' : recs.length + ' Videos gespeichert.') : (ok0.length - recs.length) + ' Video(s) konnten nicht gespeichert werden (Speicher voll?).');
+}
+function medVideos(p, list) {
+  var c = mk('div', 'md-item'), h = mk('div', 'md-gh');
+  h.appendChild(mk('div', 'md-day', 'Videos · nur auf diesem Gerät')); c.appendChild(h);
+  var g = mk('div', 'vid-grid');
+  list.forEach(function (v) {
+    var b = mk('button', 'vid-tile'); b.type = 'button'; b.title = v.name || 'Video';
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".12"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg>';
+    var t = mk('span', 'vid-t', v.name || 'Video'), sub = mk('span', 'vid-s', fmtDT(tsOf(v)) + (v.size ? ' · ' + fmtMB(v.size) : ''));
+    b.appendChild(t); b.appendChild(sub);
+    if (v.hiddenFromView) b.classList.add('vid-hid');
+    vHas(v.id).then(function (has) { if (!has) { b.classList.add('vid-miss'); sub.textContent = fmtDT(tsOf(v)) + ' · liegt auf einem anderen Gerät'; } });
+    b.onclick = function () { openVideo(p, v); };
+    g.appendChild(b);
+  });
+  c.appendChild(g); return c;
+}
+function openVideo(p, v) {
+  var ov = document.getElementById('vid-view');
+  if (!ov) { ov = mk('div', 'vid-view'); ov.id = 'vid-view'; document.body.appendChild(ov); }
+  ov.innerHTML = ''; ov.style.display = 'flex';
+  var bar = mk('div', 'vid-bar'), close = function () { var vv = ov.querySelector('video'); if (vv) { vv.pause(); vv.removeAttribute('src'); vv.load(); } ov.style.display = 'none'; ov.innerHTML = ''; };
+  var hb = mk('button', 'btn btn-secondary btn-sm', v.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden'); hb.type = 'button';
+  hb.onclick = function () { setRecordHidden(p, v, !v.hiddenFromView, 'Videos', v.name || v.id); close(); try { renderMedien(); } catch (x) {} };
+  var xb = mk('button', 'vid-x', '×'); xb.type = 'button'; xb.title = 'Schließen'; xb.setAttribute('aria-label', 'Schließen'); xb.onclick = close;
+  bar.appendChild(hb); bar.appendChild(mk('div', 'vid-cap', (v.name || 'Video') + ' · ' + fmtDT(tsOf(v)))); bar.appendChild(xb); ov.appendChild(bar);
+  var stage = mk('div', 'vid-stage', 'Video wird entschlüsselt …'); ov.appendChild(stage);
+  ov.onclick = function (ev) { if (ev.target === ov) close(); };
+  vURL(v).then(function (u) {
+    if (ov.style.display === 'none') return;
+    if (!u) { stage.textContent = 'Dieses Video liegt nur auf dem Gerät, auf dem es aufgenommen oder hinzugefügt wurde.'; return; }
+    stage.textContent = ''; var vid = document.createElement('video'); vid.controls = true; vid.playsInline = true; vid.preload = 'metadata'; vid.src = u; stage.appendChild(vid);
   });
 }
 function addDocs(inp, key) {

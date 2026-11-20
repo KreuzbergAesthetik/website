@@ -116,6 +116,7 @@
       var rjr = typeof window.restoreJournalStartup === 'function' ? await window.restoreJournalStartup() : '';
       if (rjr === 'reload') { location.reload(); return true; }
       document.documentElement.classList.remove('locked'); window.alArm();
+      if (typeof window.alSessSave === 'function') window.alSessSave();
       var c = window.alGet(); if (c && c.enc && c.sweep && typeof window.kaFilesToEnc === 'function') window.kaFilesToEnc().catch(function () {});
       return true;
     } catch (x) {
@@ -207,6 +208,7 @@
     var locked = document.documentElement.classList.contains('locked');
     if (!locked) { pkAutoWasLocked = false; pkAutoAttempted = false; return; }
     if (!pkAutoWasLocked) { pkAutoWasLocked = true; pkAutoAttempted = false; }
+    if (window.alResuming) return;
     if (pkAutoBusy || pkAutoAttempted || document.visibilityState === 'hidden') return;
     var c = typeof window.alGet === 'function' ? window.alGet() : null;
     if (!c || !c.pk || !pkSupported()) return;
@@ -316,6 +318,16 @@
     var c = typeof window.alGet === 'function' ? window.alGet() : null;
     item(c && c.pk ? 'Passkey ersetzen' : 'Passkey einrichten', KEY, function () { pkSetup(); });
     if (c && c.pk) item('Passkey entfernen', KEY, function () { pkRemove(); });
+    var CLOCK = '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', sessOn = !!(c && c.enc && c.sess !== false);
+    item('Sitzung merken (20 Min.): ' + (sessOn ? 'an' : 'aus'), CLOCK, async function () {
+      var cc = window.alGet(), on = !!(cc && cc.sess !== false);
+      if (on) {
+        if (!await window.kaConfirm('Sitzung merken ausschalten?\n\nDann fragt die App nach jedem Neuladen oder Wiederöffnen wieder nach Passwort oder Passkey.', { ok: 'Ausschalten', danger: false })) return;
+      } else if (!await window.kaConfirm('Sitzung merken einschalten?\n\nNach dem Entsperren bleibt die App bis 20 Minuten nach der letzten Nutzung offen, auch wenn sie neu geladen oder wieder geöffnet wird. Wer in dieser Zeit das entsperrte Gerät hat, sieht die Daten. „App sperren“ beendet die Sitzung sofort.', { ok: 'Einschalten', danger: false })) return;
+      if (typeof window.alSessSet === 'function') window.alSessSet(!on);
+      var old = box.querySelector('[data-ka-security-root]'); if (old) old.remove(); addLockMenuItem();
+      window.kaToast(on ? 'Sitzung merken ist aus.' : 'Sitzung merken ist an (20 Minuten).');
+    });
     item('App sperren', LOCK, function () { if (typeof window.alLockNow === 'function') window.alLockNow(); });
     if (ver) box.insertBefore(sec, ver); else box.appendChild(sec);
     if (typeof window.navLayout === 'function') window.navLayout();

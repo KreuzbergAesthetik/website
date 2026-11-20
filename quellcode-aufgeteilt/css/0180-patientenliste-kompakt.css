@@ -12,7 +12,7 @@
   #tab-patienten .pt-l .pt-dr { margin:0; }
   #tab-patienten .pt-ha { font-size:0; }
 }
-.pt-pop { position:fixed; z-index:46; display:none; flex-direction:column; gap:6px; }
+.pt-pop { position:fixed; z-index:46; display:none; flex-direction:column; gap:10px; }
 .pt-pop.on { display:flex; }
 .pt-pop .pt-pop-i { display:flex; align-items:center; gap:12px; min-width:190px; height:44px; padding:0 18px 0 14px; background:#fff; border:1px solid #c3cedf; border-radius:12px; box-shadow:0 3px 10px rgba(15,23,42,.34); font:700 14px/1 inherit; color:#0f172a; cursor:pointer; text-align:left; }
 .pt-pop .pt-pop-i svg { width:22px; height:22px; flex:none; }

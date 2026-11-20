@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-// Hochkant: Akte-Aktionen liegen als schmale Streifen am rechten Rand, Pfeil oder Antippen klappt sie aus, Tippen daneben klappt zu.
-// Querformat: Knöpfe bleiben voll sichtbar. Erfundene Daten.
+// Akte-Schnellzugriffe schweben dauerhaft als runde Knöpfe am Rand (hochkant und quer), ohne Ein- und Ausklappen. Erfundene Daten.
 const base = process.env.APP_URL || 'http://127.0.0.1:4173/index.html';
 const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}) });
 const pageErrors = [];
@@ -27,20 +26,13 @@ const sicht = page => page.evaluate(() => {
 try {
   let t = await neu(390, 844);
   let z = await sicht(t.page);
-  assert.equal(z.out, false, 'Aktionen starten ausgeklappt');
-  assert.ok(z.sichtbar > 4 && z.sichtbar <= 14, 'Streifen nicht schmal: ' + JSON.stringify(z));
-  assert.ok(await t.page.evaluate(() => getComputedStyle(document.querySelector('.a-fab-tog')).display !== 'none'), 'Ausklapp-Pfeil fehlt');
-  await t.page.click('.a-fab-tog'); await t.page.waitForTimeout(400);
-  z = await sicht(t.page); assert.equal(z.out, true, 'Pfeil klappt nicht aus'); assert.ok(z.sichtbar >= z.breite - 1, 'Knopf nicht ganz sichtbar: ' + JSON.stringify(z));
-  await t.page.tap('.a-head', { position: { x: 10, y: 10 }, force: true }).catch(() => {});
-  await t.page.evaluate(() => document.querySelector('.a-top').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
-  await t.page.waitForTimeout(400);
-  z = await sicht(t.page); assert.equal(z.out, false, 'Tippen daneben klappt nicht zu');
-  // Antippen des Streifens klappt aus, ohne die Aktion auszuführen
+  assert.ok(z.sichtbar >= z.breite - 1, 'Hochkant: Knopf nicht ganz sichtbar ' + JSON.stringify(z));
+  assert.equal(await t.page.evaluate(() => getComputedStyle(document.querySelector('.a-fab-tog')).display), 'none', 'Ausklapp-Pfeil darf es nicht mehr geben');
+  // Antippen löst die Aktion sofort aus, nichts klappt ein oder aus
   await t.page.evaluate(() => { window.__aktion = 0; document.querySelector('.a-fab .a-cat').addEventListener('click', () => { window.__aktion++; }); });
   await t.page.evaluate(() => document.querySelector('.a-fab .a-cat').click()); await t.page.waitForTimeout(300);
-  z = await sicht(t.page); assert.equal(z.out, true, 'Antippen klappt nicht aus');
-  assert.equal(await t.page.evaluate(() => window.__aktion), 0, 'Aktion wurde beim Ausklappen ausgelöst');
+  assert.equal(await t.page.evaluate(() => window.__aktion), 1, 'Aktion wurde beim ersten Antippen nicht ausgelöst');
+  z = await sicht(t.page); assert.ok(z.sichtbar >= z.breite - 1, 'Knopf nach dem Antippen nicht mehr ganz sichtbar ' + JSON.stringify(z));
   await t.context.close();
 
   t = await neu(915, 412);
@@ -49,7 +41,7 @@ try {
   await t.context.close();
 
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
-  console.log('Akte-Aktionen am Rand OK (hochkant Streifen, Pfeil, Antippen, zuklappen; quer unverändert)');
+  console.log('Akte-Aktionen am Rand OK (dauerhaft sichtbar, kein Ein-/Ausklappen, Antippen löst sofort aus)');
 } finally {
   await browser.close();
 }

@@ -24,6 +24,8 @@ try {
     persist(); await kaIdle();
   });
 
+  // Sitzung merken ausschalten, damit das Neuladen wirklich gesperrt startet
+  await page.evaluate(() => alSessSet(false));
   // 2) Neu laden (gesperrt) und ein Foto so ablegen, wie es der Service Worker beim Teilen tut
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForSelector('#al-pw', { state: 'visible', timeout: 10000 });

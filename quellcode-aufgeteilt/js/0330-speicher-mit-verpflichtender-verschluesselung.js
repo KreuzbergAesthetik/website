@@ -120,6 +120,7 @@ function alPrepare() {
 }
 function alLockNow() {
   if (!alGet()) return;
+  alSessClear();
   document.querySelectorAll('.modal-overlay.active').forEach(function (m) { m.dataset.dirty = ''; });
   document.documentElement.classList.add('locked');
   document.getElementById('al-pw').value = ''; document.getElementById('al-msg').textContent = ''; alPrepare();
@@ -181,19 +182,70 @@ async function alUnlock(ev) {
   if (!KA.booted) kaBoot(false);
   try { var rjr = typeof restoreJournalStartup === 'function' ? await restoreJournalStartup() : ''; if (rjr === 'reload') { location.reload(); return; } }
   catch (e) { msg.textContent = 'Die unterbrochene Wiederherstellung konnte nicht sicher abgeschlossen werden. ' + (e && e.message ? e.message : ''); return; }
-  document.documentElement.classList.remove('locked'); alArm();
+  document.documentElement.classList.remove('locked'); alArm(); alSessSave();
   c = alGet(); if (c && c.enc && c.sweep) kaFilesToEnc().catch(function () {});
 }
 function alArm() {
   clearTimeout(alTimer); var c = alGet(); if (!c || document.documentElement.classList.contains('locked')) return;
+  alSessTouch();
   if (+c.min > 0) alTimer = setTimeout(alLockNow, c.min * 60000);
 }
 ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { document.addEventListener(t, alArm, { passive: true, capture: true }); });
 document.addEventListener('visibilitychange', function () {
   var c = alGet(); if (!c || !KA.booted) return;
-  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); }
+  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); else if (!document.documentElement.classList.contains('locked')) alSessSave(); }
   else if (alHiddenAt && Date.now() - alHiddenAt >= c.min * 60000) alLockNow();
 });
+/* Sitzung merken: Nach dem Entsperren bleibt der Datenschlüssel bis 20 Minuten nach der letzten Nutzung auf diesem Gerät hinterlegt,
+   damit ein Neuladen oder Wiederöffnen der App nicht jedes Mal das Passwort verlangt. Hinterlegt wird nur der nicht exportierbare
+   Schlüssel (CryptoKey) im IndexedDB dieses Geräts, nie das Passwort. "App sperren", die automatische Sperre und das Abschalten
+   im Menü Sicherheit löschen ihn sofort. Abschaltbar über c.sess = false. */
+var AL_SESS_MIN = 20, alSessLast = 0;
+function alSessOn() { var c = alGet(); return !!(c && c.enc && c.sess !== false && window.indexedDB); }
+function alSessTx(mode, fn) {
+  return new Promise(function (res, rej) {
+    var rq = indexedDB.open('ka-sitzung', 1);
+    rq.onupgradeneeded = function () { rq.result.createObjectStore('s'); };
+    rq.onerror = function () { rej(rq.error); };
+    rq.onsuccess = function () {
+      var db = rq.result, out;
+      try {
+        var tx = db.transaction('s', mode), q = fn(tx.objectStore('s'));
+        if (q) q.onsuccess = function () { out = q.result; };
+        tx.oncomplete = function () { db.close(); res(out); };
+        tx.onerror = tx.onabort = function () { db.close(); rej(tx.error); };
+      } catch (x) { db.close(); rej(x); }
+    };
+  });
+}
+function alSessSave() {
+  if (!KA.key || !alSessOn()) return Promise.resolve(false);
+  alSessLast = Date.now();
+  return alSessTx('readwrite', function (s) { return s.put({ key: KA.key, exp: Date.now() + AL_SESS_MIN * 60000 }, 'k'); }).then(function () { return true; }).catch(function () { return false; });
+}
+function alSessClear() { alSessLast = 0; if (!window.indexedDB) return Promise.resolve(); return alSessTx('readwrite', function (s) { return s.delete('k'); }).catch(function () {}); }
+function alSessTouch() { if (alSessLast && Date.now() - alSessLast > 60000) alSessSave(); }
+async function alSessResume() {
+  var r = null, now = Date.now(), c = alGet(), msg = document.getElementById('al-msg');
+  try { r = await alSessTx('readonly', function (s) { return s.get('k'); }); } catch (e) { return false; }
+  if (!r || !r.key || !(r.exp > now) || r.exp > now + (AL_SESS_MIN + 1) * 60000 || !c || !c.enc) { await alSessClear(); return false; }
+  try { KA.key = r.key; if (!KA.enc) { await rjEarlyCore(); await kaLoadAll(); await kaIdle(); } }
+  catch (e) { KA.key = null; await alSessClear(); return false; }
+  if (!KA.booted) kaBoot(false);
+  try { var rjr = typeof restoreJournalStartup === 'function' ? await restoreJournalStartup() : ''; if (rjr === 'reload') { location.reload(); return true; } }
+  catch (e) { if (msg) msg.textContent = 'Die unterbrochene Wiederherstellung konnte nicht sicher abgeschlossen werden. ' + (e && e.message ? e.message : ''); return true; }
+  if (msg) msg.textContent = '';
+  document.documentElement.classList.remove('locked'); alArm(); alSessSave();
+  if (c.sweep) kaFilesToEnc().catch(function () {});
+  return true;
+}
+function alSessSet(on) {
+  var c = alGet(); if (!c) return;
+  if (on) delete c.sess; else c.sess = false;
+  alPut(c);
+  if (on && !document.documentElement.classList.contains('locked')) alSessSave(); else alSessClear();
+}
+window.addEventListener('pagehide', function () { if (KA.key && alSessLast && !document.documentElement.classList.contains('locked')) alSessSave(); });
 function alUi() {
   var c = alGet();
   document.getElementById('al-info').textContent = c && c.enc
@@ -251,7 +303,7 @@ async function alEncryptAll() {
     alPut({ enc: true, salt: salt, wrap: await alWrap(cur, raw, salt), min: c.min, sweep: true });
     progSet(10, 'Daten werden verschlüsselt ...'); await kaLoadAll(); await kaIdle();
     await kaFilesToEnc(function (i, n) { progSet(15 + 80 * i / Math.max(1, n), 'Datei ' + i + ' von ' + n); });
-    progSet(100, 'Fertig. Die Daten sind jetzt verschlüsselt.'); document.getElementById('pg-close').style.display = ''; alUi();
+    progSet(100, 'Fertig. Die Daten sind jetzt verschlüsselt.'); document.getElementById('pg-close').style.display = ''; alUi(); alSessSave();
   } catch (e) { progClose(true); alert('Das Verschlüsseln wurde unterbrochen: ' + (e && e.message ? e.message : e) + '\n\nDie Daten sind nicht verloren. Beim nächsten Entsperren wird der Rest nachgeholt.'); }
 }
 async function alDecryptAll() {
@@ -271,5 +323,17 @@ function kaBoot(lockAfter) {
 function kaStart() {
   document.documentElement.classList.add('locked');
   alPrepare();
+  if (alSessOn()) {
+    window.alResuming = true;
+    var m = document.getElementById('al-msg'); if (m) m.textContent = 'Sitzung wird fortgesetzt …';
+    alSessResume().catch(function () { return false; }).then(function (ok) {
+      window.alResuming = false;
+      if (ok) return;
+      if (m && /fortgesetzt/.test(m.textContent)) m.textContent = '';
+      document.getElementById('al-pw').focus();
+      if (typeof window.pkMaybeAutoUnlock === 'function') window.pkMaybeAutoUnlock();
+    });
+    return;
+  }
   setTimeout(function () { document.getElementById('al-pw').focus(); }, 50);
 }

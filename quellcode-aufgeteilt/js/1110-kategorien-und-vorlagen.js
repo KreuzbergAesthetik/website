@@ -128,10 +128,11 @@ function renderUnterlagen() {
   fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
   var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = 'block'; box.innerHTML = '';
+  var offen = mk('div'), erl = mk('div');
   var row = function (cls, ic, t, sub, btn) {
-    var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); box.appendChild(r); return r;
+    var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;
   };
-  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '') + (/^(Per E-Mail|Senden|Unterschreiben)$/.test(txt) ? ' ak-go' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu|akte legen/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
   var unReset = function (keys) {
     var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
@@ -141,16 +142,14 @@ function renderUnterlagen() {
   };
   /* Pakete */
   pakete().forEach(function (pk) {
-    var c = mk('div', 'un-pk'); c.appendChild(mk('b', '', pk.name));
+    var c = mk('div', 'un-pk'), cm = mk('div', 'un-main'); cm.appendChild(mk('b', '', pk.name));
     var names = (pk.forms || []).map(function (k) { return pkForm(k)[1]; }).concat((pk.tpls || []).map(function (id) { var t = tplById(id); return t ? t.name + ' (vor Ort)' : ''; }).filter(Boolean));
-    c.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket'));
+    cm.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket')); c.appendChild(cm);
     var ts = (pk.forms || []).map(function (k) { return formSt(p, k).sent || 0; }), last = Math.max.apply(null, ts.concat([0]));
-    var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;';
-    rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); }));
-    rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); if (last) rr.appendChild(unReset(pk.forms || [])); c.appendChild(rr); box.appendChild(c);
+    var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; flex:none;';
+    if (last) { cm.appendChild(mk('div', 'un-s', 'gesendet ' + dm(last))); rr.appendChild(unReset(pk.forms || [])); } rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); })); c.appendChild(rr); box.appendChild(c);
   });
   /* Online-Formulare */
-  box.appendChild(mk('div', 'un-grp', 'Online vor dem Termin'));
   PK_FORMS.forEach(function (f) {
     var st = formSt(p, f[0]), got = st.got || 0, sent = st.sent || 0, anm = formSt(p, 'anmeldung');
     if (f[0] === 'anamnese') {
@@ -173,10 +172,9 @@ function renderUnterlagen() {
   var req = templates.filter(function (t) { return t.neu; });
   events.forEach(function (e) { if (eventBelongs(e, p) && e.date >= today) tplsForEvent(e).forEach(function (t) { if (req.indexOf(t) < 0) req.push(t); }); });
   templates.forEach(function (t) { if (req.indexOf(t) < 0 && tplDoc(p, t)) req.push(t); });
-  box.appendChild(mk('div', 'un-grp', 'In der Praxis unterschreiben'));
   req.forEach(function (t) {
     var st = tplState(p, t), d = st.d, btn;
-    if (st.s === 'fehlt') btn = bt('Hinzufügen', false, function () { addTplsTo(p, [t], null); });
+    if (st.s === 'fehlt') btn = bt('In Akte legen', false, function () { addTplsTo(p, [t], null); });
     else if (st.s === 'offen') btn = bt('Unterschreiben', true, function () { openSign(p, d); });
     else btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben' : 'vorhanden');
     var wd = t.web ? KA_DOCS.filter(function (x) { return x.id === t.web; })[0] : null, wsub = '';
@@ -185,19 +183,20 @@ function renderUnterlagen() {
     if (wd) { wrap = mk('span'); wrap.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; var lb = mk('button', 'btn btn-secondary un-btn'); lb.type = 'button'; lb.title = 'Link senden'; lb.setAttribute('aria-label', 'Link senden'); lb.innerHTML = tvSvg('mail'); lb.firstChild.style.cssText = 'width:16px;height:16px;vertical-align:middle;'; lb.onclick = function (ev) { ev.stopPropagation(); docSend(ev, p, wd); }; wrap.appendChild(lb); wrap.appendChild(btn); }
     row(st.s === 'ok' ? 'ok' : st.s === 'offen' ? 'wait' : '', st.s === 'ok' ? '✓' : st.s === 'offen' ? '✎' : '–', t.name, (st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : 'noch nicht in der Akte') + wsub, wrap);
   });
-  var ds = mk('select', 'form-control'); ds.style.cssText = 'margin-top:10px; font-size:13px;';
-  var d0 = mk('option', '', 'Hinweisblatt oder Aufklärung als Link senden …'); d0.value = ''; ds.appendChild(d0);
-  KA_DOCS.forEach(function (d) { var o = mk('option', '', (d.typ === 'info' ? 'Hinweis: ' : 'Aufklärung: ') + d.name.replace(/^(Nachsorge|Aufklärung) /, '')); o.value = d.id; ds.appendChild(o); });
-  ds.onchange = function () { var d = KA_DOCS.filter(function (x) { return x.id === ds.value; })[0]; if (d) docSend({ stopPropagation: function () {}, currentTarget: ds }, p, d); ds.value = ''; };
-  box.appendChild(ds);
-  var rest = templates.filter(function (t) { return req.indexOf(t) < 0; });
-  if (rest.length) {
-    var sel = mk('select', 'form-control'); sel.style.cssText = 'margin-top:10px; font-size:13px;';
-    var o0 = mk('option', '', '+ Weitere Vorlage hinzufügen …'); o0.value = ''; sel.appendChild(o0);
-    rest.forEach(function (t) { var o = mk('option', '', t.name); o.value = String(t.id); sel.appendChild(o); });
-    sel.onchange = function () { var t = templates.filter(function (x) { return String(x.id) === sel.value; })[0]; if (t) addTplsTo(p, [t], null, renderUnterlagen); };
-    box.appendChild(sel);
+  if (offen.children.length) { box.appendChild(mk('div', 'un-grp', 'Offen')); box.appendChild(offen); }
+  if (erl.children.length) {
+    var eh = mk('button', 'un-grp un-fold'); eh.type = 'button'; var zu = offen.children.length > 0;
+    var setE = function () { eh.textContent = 'Erledigt (' + erl.children.length + ') ' + (zu ? '▸' : '▾'); erl.style.display = zu ? 'none' : 'block'; };
+    eh.onclick = function () { zu = !zu; setE(); }; setE(); box.appendChild(eh); box.appendChild(erl);
   }
+}
+/* Menü "Hinzufügen": Links zu Hinweisblättern/Aufklärungen und weitere Vorlagen */
+function untAddMenu(ev) {
+  var p = curP; if (!p) return;
+  var items = [];
+  templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]); });
+  KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { docSend({ stopPropagation: function () {}, currentTarget: ev.currentTarget }, p, d); }]); });
+  tlMenu(ev, items);
 }
 /* Pakete verwalten (Praxis, Nachrichten) */
 var pkIdx = -1;

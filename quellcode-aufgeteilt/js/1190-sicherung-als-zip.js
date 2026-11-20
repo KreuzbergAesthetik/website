@@ -95,6 +95,7 @@ async function restoreZips(zips, inp) {
       var map = await readZipBlob(zips[i]);
       if (!map['info.json']) throw new Error('Keine Sicherung: ' + zips[i].name);
       var info = JSON.parse(await map['info.json'].text());
+      if (info && info.format === 'ka-videosicherung-teil') throw new Error('Das ist eine Videosicherung. Bitte unter Sicherung bei „Videos“ auf „Videos laden“ tippen');
       if (!info || info.format !== 'ka-sicherung-teil') throw new Error('Ungültige Teilinformation');
       parts.push({ map: map, info: info, file: zips[i] });
     }

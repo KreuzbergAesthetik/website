@@ -10,5 +10,15 @@
       </div>
       <div style="font-size:13px; color:#64748b; margin-top:16px;"><b>Sichern</b> speichert den aktuellen Stand. <b>Laden</b> liest eine Sicherung wieder ein, bei mehreren Teilen bitte alle Teile gemeinsam wählen. Einzelne Formulare, Rechnungen oder Patienten liest der Knopf <b>Import</b> unter der Patientenliste ein.</div>
     </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Videos</span></div>
+      <div id="vbk-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
+      <div style="font-size:13px; color:#64748b; margin-bottom:16px;">Videos liegen nur auf diesem Gerät und sind weder in der normalen Sicherung noch im Geräte-Abgleich. Hier lassen sie sich getrennt sichern: als ZIP-Datei, die immer mit einem eigenen Passwort verschlüsselt wird. <b>Laden</b> bringt sie auf diesem oder einem anderen Gerät zurück in die jeweilige Akte.</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-save" onclick="vbkExport()">Videos sichern</button>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('vbk-file').click()">Videos laden</button>
+        <input type="file" id="vbk-file" accept=".zip,application/zip" multiple style="display:none" onchange="vbkImport(this)">
+      </div>
+    </div>
   </div>
 

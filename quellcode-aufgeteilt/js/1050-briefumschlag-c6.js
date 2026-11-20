@@ -434,6 +434,7 @@ async function deletePatient() {
   var name = nameKey(p), n = events.filter(function (e) { return eventBelongs(e, p); }).length;
   if (!await kaConfirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
   (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });
+  (p.videos || []).forEach(function (x) { vDel(x.id); });
   patients = patients.filter(function (x) { return x !== p; });
   events = events.filter(function (e) { return !eventBelongs(e, p); });
   stammEdit = false; curP = null;

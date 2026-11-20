@@ -10,3 +10,30 @@
 #img-bar .btn, #cmp-bar .btn { color:#fff !important; border-color:rgba(255,255,255,.85) !important; background:transparent !important; }
 #img-bar .btn:hover, #cmp-bar .btn:hover { background:rgba(255,255,255,.14) !important; }
 #img-cmp-btn.on { background:#fff !important; color:var(--pf-navy) !important; border-color:#fff !important; }
+/* Aktionsknöpfe der Akte nach Praxisfarben: auslösende Aktion (Senden, Unterschreiben) grün, sonst navy als Umriss, Import grau */
+.ak-act { border-radius:999px; box-shadow:none; background:#fff; color:var(--pf-navy); border:1px solid var(--pf-navy); }
+.ak-act.hl { background:#fff; border-color:var(--pf-navy); }
+.ak-act.ak-go { background:var(--pf-green); color:#fff; border-color:var(--pf-green); }
+.ak-act.ak-grey { color:#64748b; border-color:#c3cedf; }
+.ak-act.ak-datei, .ak-act.ak-rec { color:var(--pf-navy); }
+/* Symbole in Menüs (Patientenliste) nach Praxisfarben: navy */
+.pt-pop .pt-pop-i[class*="ib-"] { --ic:var(--pf-navy); }
+.pt-pop .pt-pop-i { border-radius:999px; padding-left:18px; }
+.pt-ib.ib-cal, .pt-ib.ib-book, .pt-ib.ib-mail, .pt-ib.ib-euro, .pt-ib.ib-pill { color:var(--pf-navy); }
+/* Zeilenaktionen der Patientenliste: Punkte-Knopf blendet die Symbole (ohne Schrift) entlang der Zeile ein, nur für diese Zeile */
+#tab-patienten .pt-rz.quick-on .pt-quick { opacity:1; pointer-events:auto; } #tab-patienten .pt-quick .pt-ib { box-shadow:none !important; }
+@media (max-width:699px) {
+  #tab-patienten .pt-rz { position:relative; }
+  #tab-patienten .pt-quick .ib-mail, #tab-patienten .pt-quick .ib-pill { display:none; }
+  #tab-patienten .pt-quick { display:flex; position:absolute; left:auto; right:38px; top:50%; transform:translateY(-50%); width:146px; align-items:center; justify-content:space-between; gap:0; padding:3px; background:rgba(255,255,255,.35); box-shadow:0 2px 10px rgba(1,34,101,.10); border-radius:999px; z-index:3; opacity:0; pointer-events:none; transition:opacity .15s; }
+  #tab-patienten .pt-quick .pt-ib { width:30px !important; height:30px !important; } #tab-patienten .pt-quick .pt-ib svg { width:17px; height:17px; }
+}
+@media (min-width:700px) { #tab-patienten .pt-quick { left:0; right:58px; justify-content:space-evenly; } }
+/* Weichere Knöpfe: sanfter, breiter Schatten statt harter Kante, hellerer Rand, kurze Übergänge */
+.pt-ib, .fab, .a-cat, .plus-btn, .iv-b:not(.iv-back):not(.iv-del), .tv-fbtn:not(.tv-fdel), .tv-acts .tv-tool, .inv-flt, .pt-pop .pt-pop-i { box-shadow:0 2px 10px rgba(1,34,101,.13); border-color:#dbe3f0; }
+.fab, .a-cat, .plus-btn { box-shadow:0 3px 14px rgba(1,34,101,.16); }
+.pt-ib, .fab, .a-cat, .plus-btn, .iv-b, .tv-fbtn, .tv-acts .tv-tool, .ak-act, .inv-flt, .pt-pop .pt-pop-i, .btn { transition:background-color .18s ease, box-shadow .18s ease, border-color .18s ease, transform .12s ease; }
+.pt-ib:active, .fab:active, .a-cat:active, .plus-btn:active, .iv-b:active, .tv-fbtn:active, .ak-act:active, .pt-pop .pt-pop-i:active { transform:scale(.96); }
+/* Was die Symbolleiste überdeckt, bleibt dahinter blass sichtbar */
+#tab-patienten .pt-rz.quick-on .pt-info, #tab-patienten .pt-rz:hover .pt-info { opacity:.28 !important; }
+#tab-patienten .pt-quick .pt-ib { background:rgba(255,255,255,.85) !important; }

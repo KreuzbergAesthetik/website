@@ -45,6 +45,21 @@ function hdAdd(k) {
   else if (k === 'rec') openInvoice(null);
 }
 function recentAdd(id) { try { var l = JSON.parse(kaGet('ka_recent') || '[]').filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_recent', JSON.stringify(l.slice(0, 12))); } catch (x) {} }
+/* Treffer unter „Anlagen“: Bild öffnet direkt in der Bildansicht, PDF und andere Dateien öffnen bzw. laden direkt. Die Akte steht dahinter (Reiter Anlagen). */
+function gsOpenFile(p, f) {
+  lastSearchAdd(p.id); viewAkte(p);
+  setTimeout(function () {
+    try { setAkTab('anl'); } catch (e) {}
+    var imgs = (p.bilder || []).filter(function (x) { return !x.hiddenFromView; }), i = imgs.indexOf(f);
+    if (i >= 0) { showGallery(p, imgs, i); return; }
+    var pdf = /\.pdf$/i.test(f.name || ''), w = pdf ? window.open('', '_blank') : null;
+    fileURL(f).then(function (u) {
+      if (!u) { if (w) w.close(); alert('Die Datei liegt nicht auf diesem Gerät.'); return; }
+      if (w) { w.location.href = u; return; }
+      var a = document.createElement('a'); a.href = u; a.download = f.name || 'Datei'; document.body.appendChild(a); a.click(); a.remove();
+    });
+  }, 60);
+}
 /* Suche: nur Patienten, die letzten fünf Treffer merkt sich die App */
 function lastSearch() { try { var l = JSON.parse(kaGet('ka_lastsearch') || '[]'); return Array.isArray(l) ? l : []; } catch (x) { return []; } }
 function lastSearchAdd(id) { try { var l = lastSearch().filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_lastsearch', JSON.stringify(l.slice(0, 5))); } catch (x) {} }
@@ -142,7 +157,7 @@ function gsRun(hint) {
   /* Anlagen: Dateinamen der Akten */
   var fl = [];
   patients.forEach(function (p) { (p.dokumente || []).concat(p.bilder || []).forEach(function (f) { if (f && !f.hiddenFromView && has(f.name)) fl.push({ p: p, f: f }); }); });
-  if (fl.length) { sect('Anlagen'); fl.slice(0, 4).forEach(function (x) { gsRow(box, x.f.name, dnP(x.p), function () { lastSearchAdd(x.p.id); viewAkte(x.p); setTimeout(function () { try { setAkTab('anl'); } catch (e) {} }, 60); }); }); }
+  if (fl.length) { sect('Anlagen'); fl.slice(0, 4).forEach(function (x) { gsRow(box, x.f.name, dnP(x.p), function () { gsOpenFile(x.p, x.f); }); }); }
   /* Leistungen: Name oder GOÄ-Nummer */
   var ks = (settings.katalog || []).map(function (k, i) { return { k: k, i: i }; }).filter(function (x) { return has(x.k.name, x.k.goae, (x.k.goaePos || []).map(function (g) { return g.nr; }).join(' ')); });
   if (ks.length) { sect('Leistungen'); ks.slice(0, 4).forEach(function (x) { gsRow(box, x.k.name, nf(+x.k.price || 0) + ' €', function () { openLeist(x.i); }); }); }

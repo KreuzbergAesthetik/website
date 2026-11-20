@@ -1,4 +1,13 @@
 <!-- MODAL: VORLAGE -->
+<div id="modal-dock" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Schnellzugriffe der Akte</strong><button type="button" class="close-btn" onclick="closeModal('modal-dock')">&times;</button></div>
+    <div style="font-size:13px; color:#475569; margin-bottom:10px;">Wähle bis zu drei Aktionen. Sie schweben als runde, durchsichtige Knöpfe am Rand der Akte. Alles andere bleibt unter „…“. <b id="dk-n"></b></div>
+    <div id="dk-list"></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-dock')">Abbrechen</button><button type="button" class="btn btn-save" onclick="aDockSave()">Speichern</button></div>
+  </div>
+</div>
+
 <div id="modal-tpl" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><strong>Vorlage bearbeiten</strong><button type="button" class="close-btn" onclick="closeModal('modal-tpl')">&times;</button></div>

@@ -244,7 +244,8 @@ textarea.form-control { font-size:15px; }
 .un-st.ok { background:#dcfce7; color:#15803d; } .un-st.wait { background:#fef3c7; color:#b45309; }
 .un-main { flex:1; min-width:0; } .un-t { font-weight:600; overflow-wrap:anywhere; } .un-s { font-size:12px; color:#64748b; margin-top:1px; }
 .un-btn { flex:none; padding:6px 10px; font-size:13px; white-space:nowrap; }
-.un-pk { border:1px solid #dbe2ea; border-left:5px solid #16a34a; border-radius:12px; padding:12px; margin-bottom:8px; } .un-pk b { display:block; }
+.un-pk { display:flex; align-items:center; gap:10px; background:var(--pf-inlay,#f2f5fc); border:1px solid var(--pf-line,#dbe3f0); border-left:4px solid #16a34a; border-radius:12px; padding:8px 10px; margin-bottom:6px; } .un-pk b { display:block; }
+.un-fold { display:block; width:100%; text-align:left; background:none; border:0; cursor:pointer; padding:0; }
 .md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
 .md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:var(--pf-navy); border-color:#0f172a; color:#fff; }
 .md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .seg#inv-payseg { display:flex; width:100%; margin-bottom:16px; } #inv-payseg button { flex:1 1 auto; min-width:0; padding:9px 4px; font-size:12.5px; white-space:nowrap; } #inv-paybox { margin-bottom:6px; }
@@ -1071,7 +1072,7 @@ body { padding-bottom:84px; }
   #tab-patienten .pt-l .pt-dr { margin:0; }
   #tab-patienten .pt-ha { font-size:0; }
 }
-.pt-pop { position:fixed; z-index:46; display:none; flex-direction:column; gap:6px; }
+.pt-pop { position:fixed; z-index:46; display:none; flex-direction:column; gap:10px; }
 .pt-pop.on { display:flex; }
 .pt-pop .pt-pop-i { display:flex; align-items:center; gap:12px; min-width:190px; height:44px; padding:0 18px 0 14px; background:#fff; border:1px solid #c3cedf; border-radius:12px; box-shadow:0 3px 10px rgba(15,23,42,.34); font:700 14px/1 inherit; color:#0f172a; cursor:pointer; text-align:left; }
 .pt-pop .pt-pop-i svg { width:22px; height:22px; flex:none; }
@@ -1404,6 +1405,66 @@ header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf
 #img-bar .btn, #cmp-bar .btn { color:#fff !important; border-color:rgba(255,255,255,.85) !important; background:transparent !important; }
 #img-bar .btn:hover, #cmp-bar .btn:hover { background:rgba(255,255,255,.14) !important; }
 #img-cmp-btn.on { background:#fff !important; color:var(--pf-navy) !important; border-color:#fff !important; }
+/* Aktionsknöpfe der Akte nach Praxisfarben: auslösende Aktion (Senden, Unterschreiben) grün, sonst navy als Umriss, Import grau */
+.ak-act { border-radius:999px; box-shadow:none; background:#fff; color:var(--pf-navy); border:1px solid var(--pf-navy); }
+.ak-act.hl { background:#fff; border-color:var(--pf-navy); }
+.ak-act.ak-go { background:var(--pf-green); color:#fff; border-color:var(--pf-green); }
+.ak-act.ak-grey { color:#64748b; border-color:#c3cedf; }
+.ak-act.ak-datei, .ak-act.ak-rec { color:var(--pf-navy); }
+/* Symbole in Menüs (Patientenliste) nach Praxisfarben: navy */
+.pt-pop .pt-pop-i[class*="ib-"] { --ic:var(--pf-navy); }
+.pt-pop .pt-pop-i { border-radius:999px; padding-left:18px; }
+.pt-ib.ib-cal, .pt-ib.ib-book, .pt-ib.ib-mail, .pt-ib.ib-euro, .pt-ib.ib-pill { color:var(--pf-navy); }
+/* Zeilenaktionen der Patientenliste: Punkte-Knopf blendet die Symbole (ohne Schrift) entlang der Zeile ein, nur für diese Zeile */
+#tab-patienten .pt-rz.quick-on .pt-quick { opacity:1; pointer-events:auto; } #tab-patienten .pt-quick .pt-ib { box-shadow:none !important; }
+@media (max-width:699px) {
+  #tab-patienten .pt-rz { position:relative; }
+  #tab-patienten .pt-quick .ib-mail, #tab-patienten .pt-quick .ib-pill { display:none; }
+  #tab-patienten .pt-quick { display:flex; position:absolute; left:auto; right:38px; top:50%; transform:translateY(-50%); width:146px; align-items:center; justify-content:space-between; gap:0; padding:3px; background:rgba(255,255,255,.35); box-shadow:0 2px 10px rgba(1,34,101,.10); border-radius:999px; z-index:3; opacity:0; pointer-events:none; transition:opacity .15s; }
+  #tab-patienten .pt-quick .pt-ib { width:30px !important; height:30px !important; } #tab-patienten .pt-quick .pt-ib svg { width:17px; height:17px; }
+}
+@media (min-width:700px) { #tab-patienten .pt-quick { left:0; right:58px; justify-content:space-evenly; } }
+/* Weichere Knöpfe: sanfter, breiter Schatten statt harter Kante, hellerer Rand, kurze Übergänge */
+.pt-ib, .fab, .a-cat, .plus-btn, .iv-b:not(.iv-back):not(.iv-del), .tv-fbtn:not(.tv-fdel), .tv-acts .tv-tool, .inv-flt, .pt-pop .pt-pop-i { box-shadow:0 2px 10px rgba(1,34,101,.13); border-color:#dbe3f0; }
+.fab, .a-cat, .plus-btn { box-shadow:0 3px 14px rgba(1,34,101,.16); }
+.pt-ib, .fab, .a-cat, .plus-btn, .iv-b, .tv-fbtn, .tv-acts .tv-tool, .ak-act, .inv-flt, .pt-pop .pt-pop-i, .btn { transition:background-color .18s ease, box-shadow .18s ease, border-color .18s ease, transform .12s ease; }
+.pt-ib:active, .fab:active, .a-cat:active, .plus-btn:active, .iv-b:active, .tv-fbtn:active, .ak-act:active, .pt-pop .pt-pop-i:active { transform:scale(.96); }
+/* Was die Symbolleiste überdeckt, bleibt dahinter blass sichtbar */
+#tab-patienten .pt-rz.quick-on .pt-info, #tab-patienten .pt-rz:hover .pt-info { opacity:.28 !important; }
+#tab-patienten .pt-quick .pt-ib { background:rgba(255,255,255,.85) !important; }
+/* Videos in der Akte */
+.vid-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; margin-top:6px; }
+.vid-tile { display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:10px; text-align:left; background:var(--pf-inlay); border:1px solid var(--pf-line); border-radius:12px; color:var(--pf-navy); cursor:pointer; font-family:inherit; min-width:0; }
+.vid-tile svg { width:34px; height:34px; margin-bottom:4px; }
+.vid-t { font-weight:600; font-size:13px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#0d1b3d; }
+.vid-s { font-size:11.5px; color:#64748b; }
+.vid-tile.vid-miss { opacity:.6; } .vid-tile.vid-hid { opacity:.5; border-style:dashed; }
+.vid-view { position:fixed; inset:0; z-index:70; background:rgba(1,16,48,.92); display:none; flex-direction:column; }
+.vid-bar { display:flex; align-items:center; gap:10px; padding:10px 14px; color:#fff; }
+.vid-cap { flex:1; min-width:0; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vid-x { width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.5); background:transparent; color:#fff; font-size:22px; cursor:pointer; }
+.vid-stage { flex:1; display:flex; align-items:center; justify-content:center; color:#e2e8f0; padding:12px; text-align:center; min-height:0; }
+.vid-stage video { max-width:100%; max-height:100%; border-radius:8px; background:#000; }
+/* Schnellzugriffe der Akte: dauerhaft schwebend, rund, durchsichtig */
+.a-fab-tog { display:none !important; }
+.a-fab .a-cat, .a-fab .plus-btn, .a-fab.out .a-cat, .a-fab.out .plus-btn, .a-fab:not(.out) .a-cat, .a-fab:not(.out) .plus-btn { transform:none !important; border-radius:50% !important; width:42px !important; height:42px !important; background:rgba(255,255,255,.55) !important; border:1px solid rgba(1,34,101,.28) !important; color:var(--pf-navy) !important; box-shadow:0 2px 12px rgba(1,34,101,.14) !important; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
+.a-fab .a-cat > *, .a-fab .plus-btn > *, .a-fab:not(.out) .a-cat > *, .a-fab:not(.out) .plus-btn > * { opacity:1 !important; }
+.a-fab .a-cat svg, .a-fab .plus-btn svg { color:var(--pf-navy) !important; }
+.am-edit { display:block; width:100%; margin-top:8px; padding:9px; border:1px dashed var(--pf-navy); border-radius:999px; background:transparent; color:var(--pf-navy); font:600 13px inherit; cursor:pointer; }
+.dk-row { display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid #eef1f7; font-size:14px; cursor:pointer; }
+.dk-row input { width:18px; height:18px; accent-color:var(--pf-green); } .dk-ic svg { width:20px; height:20px; color:var(--pf-navy); vertical-align:middle; }
+/* Zeitleiste: Symbole der Schnellzugriffe in der Zeile */
+.tl-item { position:relative; }
+.tl-quick { position:absolute; top:4px; right:34px; display:flex; gap:6px; padding:3px; background:rgba(255,255,255,.7); border-radius:999px; box-shadow:0 2px 10px rgba(1,34,101,.12); opacity:0; pointer-events:none; transition:opacity .15s; z-index:3; }
+.tl-qb { width:30px; height:30px; padding:0; border-radius:50%; border:1px solid var(--pf-navy); background:rgba(255,255,255,.85); color:var(--pf-navy); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+.tl-qb svg { width:16px; height:16px; }
+.tl-item.quick-on .tl-quick { opacity:1; pointer-events:auto; }
+@media (hover:hover) and (pointer:fine) { .tl-item:hover .tl-quick, .tl-item:focus-within .tl-quick { opacity:1; pointer-events:auto; } }
+/* Mehr-Menü: ohne seitliche Streifen, alles in Praxis-Navy */
+.nav-section, .nav-section[data-ni] { --sec:var(--pf-navy); border-left:1px solid #dbe3f0; }
+.nav-section > .nav-group { background:var(--pf-inlay); color:var(--pf-navy); }
+.nav-section[open] > .nav-group { border-bottom:1px solid var(--pf-line); }
+.nav-section .nav-items > button svg { stroke:var(--pf-navy); }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1544,6 +1605,7 @@ function alPrepare() {
 }
 function alLockNow() {
   if (!alGet()) return;
+  alSessClear();
   document.querySelectorAll('.modal-overlay.active').forEach(function (m) { m.dataset.dirty = ''; });
   document.documentElement.classList.add('locked');
   document.getElementById('al-pw').value = ''; document.getElementById('al-msg').textContent = ''; alPrepare();
@@ -1605,19 +1667,70 @@ async function alUnlock(ev) {
   if (!KA.booted) kaBoot(false);
   try { var rjr = typeof restoreJournalStartup === 'function' ? await restoreJournalStartup() : ''; if (rjr === 'reload') { location.reload(); return; } }
   catch (e) { msg.textContent = 'Die unterbrochene Wiederherstellung konnte nicht sicher abgeschlossen werden. ' + (e && e.message ? e.message : ''); return; }
-  document.documentElement.classList.remove('locked'); alArm();
+  document.documentElement.classList.remove('locked'); alArm(); alSessSave();
   c = alGet(); if (c && c.enc && c.sweep) kaFilesToEnc().catch(function () {});
 }
 function alArm() {
   clearTimeout(alTimer); var c = alGet(); if (!c || document.documentElement.classList.contains('locked')) return;
+  alSessTouch();
   if (+c.min > 0) alTimer = setTimeout(alLockNow, c.min * 60000);
 }
 ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { document.addEventListener(t, alArm, { passive: true, capture: true }); });
 document.addEventListener('visibilitychange', function () {
   var c = alGet(); if (!c || !KA.booted) return;
-  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); }
+  if (document.hidden) { alHiddenAt = Date.now(); if (+c.min === 0) alLockNow(); else if (!document.documentElement.classList.contains('locked')) alSessSave(); }
   else if (alHiddenAt && Date.now() - alHiddenAt >= c.min * 60000) alLockNow();
 });
+/* Sitzung merken: Nach dem Entsperren bleibt der Datenschlüssel bis 20 Minuten nach der letzten Nutzung auf diesem Gerät hinterlegt,
+   damit ein Neuladen oder Wiederöffnen der App nicht jedes Mal das Passwort verlangt. Hinterlegt wird nur der nicht exportierbare
+   Schlüssel (CryptoKey) im IndexedDB dieses Geräts, nie das Passwort. "App sperren", die automatische Sperre und das Abschalten
+   im Menü Sicherheit löschen ihn sofort. Abschaltbar über c.sess = false. */
+var AL_SESS_MIN = 20, alSessLast = 0;
+function alSessOn() { var c = alGet(); return !!(c && c.enc && c.sess !== false && window.indexedDB); }
+function alSessTx(mode, fn) {
+  return new Promise(function (res, rej) {
+    var rq = indexedDB.open('ka-sitzung', 1);
+    rq.onupgradeneeded = function () { rq.result.createObjectStore('s'); };
+    rq.onerror = function () { rej(rq.error); };
+    rq.onsuccess = function () {
+      var db = rq.result, out;
+      try {
+        var tx = db.transaction('s', mode), q = fn(tx.objectStore('s'));
+        if (q) q.onsuccess = function () { out = q.result; };
+        tx.oncomplete = function () { db.close(); res(out); };
+        tx.onerror = tx.onabort = function () { db.close(); rej(tx.error); };
+      } catch (x) { db.close(); rej(x); }
+    };
+  });
+}
+function alSessSave() {
+  if (!KA.key || !alSessOn()) return Promise.resolve(false);
+  alSessLast = Date.now();
+  return alSessTx('readwrite', function (s) { return s.put({ key: KA.key, exp: Date.now() + AL_SESS_MIN * 60000 }, 'k'); }).then(function () { return true; }).catch(function () { return false; });
+}
+function alSessClear() { alSessLast = 0; if (!window.indexedDB) return Promise.resolve(); return alSessTx('readwrite', function (s) { return s.delete('k'); }).catch(function () {}); }
+function alSessTouch() { if (alSessLast && Date.now() - alSessLast > 60000) alSessSave(); }
+async function alSessResume() {
+  var r = null, now = Date.now(), c = alGet(), msg = document.getElementById('al-msg');
+  try { r = await alSessTx('readonly', function (s) { return s.get('k'); }); } catch (e) { return false; }
+  if (!r || !r.key || !(r.exp > now) || r.exp > now + (AL_SESS_MIN + 1) * 60000 || !c || !c.enc) { await alSessClear(); return false; }
+  try { KA.key = r.key; if (!KA.enc) { await rjEarlyCore(); await kaLoadAll(); await kaIdle(); } }
+  catch (e) { KA.key = null; await alSessClear(); return false; }
+  if (!KA.booted) kaBoot(false);
+  try { var rjr = typeof restoreJournalStartup === 'function' ? await restoreJournalStartup() : ''; if (rjr === 'reload') { location.reload(); return true; } }
+  catch (e) { if (msg) msg.textContent = 'Die unterbrochene Wiederherstellung konnte nicht sicher abgeschlossen werden. ' + (e && e.message ? e.message : ''); return true; }
+  if (msg) msg.textContent = '';
+  document.documentElement.classList.remove('locked'); alArm(); alSessSave();
+  if (c.sweep) kaFilesToEnc().catch(function () {});
+  return true;
+}
+function alSessSet(on) {
+  var c = alGet(); if (!c) return;
+  if (on) delete c.sess; else c.sess = false;
+  alPut(c);
+  if (on && !document.documentElement.classList.contains('locked')) alSessSave(); else alSessClear();
+}
+window.addEventListener('pagehide', function () { if (KA.key && alSessLast && !document.documentElement.classList.contains('locked')) alSessSave(); });
 function alUi() {
   var c = alGet();
   document.getElementById('al-info').textContent = c && c.enc
@@ -1675,7 +1788,7 @@ async function alEncryptAll() {
     alPut({ enc: true, salt: salt, wrap: await alWrap(cur, raw, salt), min: c.min, sweep: true });
     progSet(10, 'Daten werden verschlüsselt ...'); await kaLoadAll(); await kaIdle();
     await kaFilesToEnc(function (i, n) { progSet(15 + 80 * i / Math.max(1, n), 'Datei ' + i + ' von ' + n); });
-    progSet(100, 'Fertig. Die Daten sind jetzt verschlüsselt.'); document.getElementById('pg-close').style.display = ''; alUi();
+    progSet(100, 'Fertig. Die Daten sind jetzt verschlüsselt.'); document.getElementById('pg-close').style.display = ''; alUi(); alSessSave();
   } catch (e) { progClose(true); alert('Das Verschlüsseln wurde unterbrochen: ' + (e && e.message ? e.message : e) + '\n\nDie Daten sind nicht verloren. Beim nächsten Entsperren wird der Rest nachgeholt.'); }
 }
 async function alDecryptAll() {
@@ -1695,6 +1808,18 @@ function kaBoot(lockAfter) {
 function kaStart() {
   document.documentElement.classList.add('locked');
   alPrepare();
+  if (alSessOn()) {
+    window.alResuming = true;
+    var m = document.getElementById('al-msg'); if (m) m.textContent = 'Sitzung wird fortgesetzt …';
+    alSessResume().catch(function () { return false; }).then(function (ok) {
+      window.alResuming = false;
+      if (ok) return;
+      if (m && /fortgesetzt/.test(m.textContent)) m.textContent = '';
+      document.getElementById('al-pw').focus();
+      if (typeof window.pkMaybeAutoUnlock === 'function') window.pkMaybeAutoUnlock();
+    });
+    return;
+  }
   setTimeout(function () { document.getElementById('al-pw').focus(); }, 50);
 }
 </script>
@@ -2013,6 +2138,16 @@ function kaStart() {
       </div>
       <div style="font-size:13px; color:#64748b; margin-top:16px;"><b>Sichern</b> speichert den aktuellen Stand. <b>Laden</b> liest eine Sicherung wieder ein, bei mehreren Teilen bitte alle Teile gemeinsam wählen. Einzelne Formulare, Rechnungen oder Patienten liest der Knopf <b>Import</b> unter der Patientenliste ein.</div>
     </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Videos</span></div>
+      <div id="vbk-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
+      <div style="font-size:13px; color:#64748b; margin-bottom:16px;">Videos liegen nur auf diesem Gerät und sind weder in der normalen Sicherung noch im Geräte-Abgleich. Hier lassen sie sich getrennt sichern: als ZIP-Datei, die immer mit einem eigenen Passwort verschlüsselt wird. <b>Laden</b> bringt sie auf diesem oder einem anderen Gerät zurück in die jeweilige Akte.</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-save" onclick="vbkExport()">Videos sichern</button>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('vbk-file').click()">Videos laden</button>
+        <input type="file" id="vbk-file" accept=".zip,application/zip" multiple style="display:none" onchange="vbkImport(this)">
+      </div>
+    </div>
   </div>
 
   <!-- TAB: GERÄTE-ABGLEICH -->
@@ -2222,6 +2357,7 @@ function kaStart() {
   <div class="card a-side">
     <input type="file" id="a-img-in" accept="image/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addImages(this)">
     <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'dokumente')">
+    <input type="file" id="a-vid-in" accept="video/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addVideos(this)">
     <input type="file" id="a-tpl-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'templates')">
     <div id="a-head"></div>
   </div>
@@ -2251,7 +2387,7 @@ function kaStart() {
   </div>
   <div id="at-anl" style="display:none;">
   <div id="a-unt-block" class="card" style="display:none;">
-    <div class="card-header" style="margin-bottom:12px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><button type="button" class="ak-act ak-grey" onclick="document.getElementById('akt-form-file').click()" title="Ausgefülltes Formular (PDF) einlesen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>Import</span></button><input type="file" id="akt-form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)"></div>
+    <div class="card-header" style="margin-bottom:12px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><span style="display:inline-flex; gap:8px; align-items:center;"><button type="button" class="ak-act" id="a-unt-add" onclick="untAddMenu(event)" title="Unterlage hinzufügen oder Link senden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>Hinzufügen</span></button><button type="button" class="ak-act ak-grey" onclick="document.getElementById('akt-form-file').click()" title="Ausgefülltes Formular (PDF) einlesen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>Import</span></button></span><input type="file" id="akt-form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)"></div>
     <div id="a-unt"></div>
   </div>
 
@@ -2260,6 +2396,7 @@ function kaStart() {
       <div class="ak-h" style="margin:0; border:none; padding:0;">Bilder und Dateien</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
         <button type="button" id="md-addf" class="ak-act ak-datei" onclick="zuNext = null; document.getElementById('a-img-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span>Foto</span></button>
+        <button type="button" id="md-addv" class="ak-act ak-datei" title="Video hinzufügen (nur auf diesem Gerät)" onclick="document.getElementById('a-vid-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><span>Video</span></button>
         <button type="button" id="md-addd" class="ak-act ak-datei" onclick="zuNext = null; document.getElementById('a-doc-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 12v5M9.5 14.5h5"/></svg><span>Datei</span></button>
       </div>
     </div>
@@ -2596,6 +2733,15 @@ function kaStart() {
 </div>
 
 <!-- MODAL: VORLAGE -->
+<div id="modal-dock" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header"><strong>Schnellzugriffe der Akte</strong><button type="button" class="close-btn" onclick="closeModal('modal-dock')">&times;</button></div>
+    <div style="font-size:13px; color:#475569; margin-bottom:10px;">Wähle bis zu drei Aktionen. Sie schweben als runde, durchsichtige Knöpfe am Rand der Akte. Alles andere bleibt unter „…“. <b id="dk-n"></b></div>
+    <div id="dk-list"></div>
+    <div class="foot-bar"><button type="button" class="btn btn-cancel" onclick="closeModal('modal-dock')">Abbrechen</button><button type="button" class="btn btn-save" onclick="aDockSave()">Speichern</button></div>
+  </div>
+</div>
+
 <div id="modal-tpl" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><strong>Vorlage bearbeiten</strong><button type="button" class="close-btn" onclick="closeModal('modal-tpl')">&times;</button></div>
@@ -2961,7 +3107,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-b';
+var KA_V = '2026-11-21-l';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3489,7 +3635,7 @@ function renderPatients() {
     ib('plus', 'Alle Aktionen', function (ev) { ptAMenu(ev, p); }, 'Alle Aktionen');
     var more = mk('button', 'pt-ib ib-more'); more.type = 'button'; more.title = 'Aktionen'; more.setAttribute('aria-label', 'Aktionen für ' + full); more.setAttribute('aria-haspopup', 'true');
     more.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
-    more.onclick = function (ev) { ev.stopPropagation(); ptPop(more, popItems); };
+    more.onclick = function (ev) { ev.stopPropagation(); var z = more.closest('.pt-rz'); if (!z) { ptPop(more, popItems); return; } var on = !z.classList.contains('quick-on'); [].forEach.call(document.querySelectorAll('.pt-rz.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) z.classList.add('quick-on'); more.setAttribute('aria-expanded', on ? 'true' : 'false'); };
     /* Mit der Maus: Beim Überfahren der Zeile erscheinen die Aktionen direkt als Knopfreihe */
     var quick = mk('div', 'pt-quick');
     popItems.forEach(function (it) { var qb = mk('button', 'pt-ib ib-' + it.k + (it.cls ? ' ' + it.cls : '')); qb.type = 'button'; qb.title = it.lb; qb.setAttribute('aria-label', it.lb); qb.innerHTML = tvSvg(it.k); qb.onclick = function (ev) { ev.stopPropagation(); it.fn(ev); }; quick.appendChild(qb); });
@@ -3588,6 +3734,21 @@ function hdAdd(k) {
   else if (k === 'rec') openInvoice(null);
 }
 function recentAdd(id) { try { var l = JSON.parse(kaGet('ka_recent') || '[]').filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_recent', JSON.stringify(l.slice(0, 12))); } catch (x) {} }
+/* Treffer unter „Anlagen“: Bild öffnet direkt in der Bildansicht, PDF und andere Dateien öffnen bzw. laden direkt. Die Akte steht dahinter (Reiter Anlagen). */
+function gsOpenFile(p, f) {
+  lastSearchAdd(p.id); viewAkte(p);
+  setTimeout(function () {
+    try { setAkTab('anl'); } catch (e) {}
+    var imgs = (p.bilder || []).filter(function (x) { return !x.hiddenFromView; }), i = imgs.indexOf(f);
+    if (i >= 0) { showGallery(p, imgs, i); return; }
+    var pdf = /\.pdf$/i.test(f.name || ''), w = pdf ? window.open('', '_blank') : null;
+    fileURL(f).then(function (u) {
+      if (!u) { if (w) w.close(); alert('Die Datei liegt nicht auf diesem Gerät.'); return; }
+      if (w) { w.location.href = u; return; }
+      var a = document.createElement('a'); a.href = u; a.download = f.name || 'Datei'; document.body.appendChild(a); a.click(); a.remove();
+    });
+  }, 60);
+}
 /* Suche: nur Patienten, die letzten fünf Treffer merkt sich die App */
 function lastSearch() { try { var l = JSON.parse(kaGet('ka_lastsearch') || '[]'); return Array.isArray(l) ? l : []; } catch (x) { return []; } }
 function lastSearchAdd(id) { try { var l = lastSearch().filter(function (x) { return x !== id; }); l.unshift(id); kaSet('ka_lastsearch', JSON.stringify(l.slice(0, 5))); } catch (x) {} }
@@ -3685,7 +3846,7 @@ function gsRun(hint) {
   /* Anlagen: Dateinamen der Akten */
   var fl = [];
   patients.forEach(function (p) { (p.dokumente || []).concat(p.bilder || []).forEach(function (f) { if (f && !f.hiddenFromView && has(f.name)) fl.push({ p: p, f: f }); }); });
-  if (fl.length) { sect('Anlagen'); fl.slice(0, 4).forEach(function (x) { gsRow(box, x.f.name, dnP(x.p), function () { lastSearchAdd(x.p.id); viewAkte(x.p); setTimeout(function () { try { setAkTab('anl'); } catch (e) {} }, 60); }); }); }
+  if (fl.length) { sect('Anlagen'); fl.slice(0, 4).forEach(function (x) { gsRow(box, x.f.name, dnP(x.p), function () { gsOpenFile(x.p, x.f); }); }); }
   /* Leistungen: Name oder GOÄ-Nummer */
   var ks = (settings.katalog || []).map(function (k, i) { return { k: k, i: i }; }).filter(function (x) { return has(x.k.name, x.k.goae, (x.k.goaePos || []).map(function (g) { return g.nr; }).join(' ')); });
   if (ks.length) { sect('Leistungen'); ks.slice(0, 4).forEach(function (x) { gsRow(box, x.k.name, nf(+x.k.price || 0) + ' €', function () { openLeist(x.i); }); }); }
@@ -6424,6 +6585,7 @@ async function deletePatient() {
   var name = nameKey(p), n = events.filter(function (e) { return eventBelongs(e, p); }).length;
   if (!await kaConfirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
   (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });
+  (p.videos || []).forEach(function (x) { vDel(x.id); });
   patients = patients.filter(function (x) { return x !== p; });
   events = events.filter(function (e) { return !eventBelongs(e, p); });
   stammEdit = false; curP = null;
@@ -6568,7 +6730,7 @@ function mgMerge(keep, other, pick) {
     if (b && !a) keep[k] = b; else if (a && b && a.toLowerCase().indexOf(b.toLowerCase()) < 0) keep[k] = a + '\n' + b;
   });
   var med = (keep.medikation = keep.medikation || []); (other.medikation || []).forEach(function (m) { if (med.indexOf(m) < 0) med.push(m); });
-  ['doku', 'log', 'audit', 'bilder', 'dokumente', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
+  ['doku', 'log', 'audit', 'bilder', 'dokumente', 'videos', 'best'].forEach(function (k) { if ((other[k] || []).length) keep[k] = (keep[k] || []).concat(other[k]); });
   if (other.code) { if (!keep.code) keep.code = other.code; else if (other.code !== keep.code) keep.codes2 = (keep.codes2 || []).concat([other.code]); }
   (other.codes2 || []).forEach(function (c) { keep.codes2 = (keep.codes2 || []).concat([c]); });
   Object.keys(other).forEach(function (k) { if (keep[k] === undefined && other[k] !== undefined && k !== 'id' && k !== 'nr') keep[k] = other[k]; });
@@ -6732,7 +6894,23 @@ function tlMenu(ev, items) {
 function tlPlus(sh, items) {
   var b = mk('button', 'tl-plus'); b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'; b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   sh.actions = items;
-  b.onclick = function (ev) { tlMenu(ev, sh.actions); }; sh.row.appendChild(b);
+  var q = mk('div', 'tl-quick');
+  dockIds().forEach(function (id) {
+    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
+    var qb = mk('button', 'tl-qb'); qb.type = 'button'; qb.title = d.t; qb.setAttribute('aria-label', d.t); qb.innerHTML = tvSvg(d.ic);
+    qb.onclick = function (ev) { ev.stopPropagation(); sh.row.classList.remove('quick-on'); aAct(d.act); }; q.appendChild(qb);
+  });
+  var mb = mk('button', 'tl-qb'); mb.type = 'button'; mb.title = 'Weitere Aktionen dieses Eintrags'; mb.setAttribute('aria-label', mb.title);
+  mb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+  mb.onclick = function (ev) { sh.row.classList.remove('quick-on'); tlMenu(ev, sh.actions); }; q.appendChild(mb);
+  sh.row.appendChild(q);
+  /* Maus: Überfahren zeigt die Symbole; Touch: Antippen des Pfeils blendet sie ein und aus */
+  b.onclick = function (ev) {
+    if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) { tlMenu(ev, sh.actions); return; }
+    ev.stopPropagation(); var on = !sh.row.classList.contains('quick-on');
+    [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) sh.row.classList.add('quick-on');
+  };
+  sh.row.appendChild(b);
 }
 function attItems(key) { return [['Bilder hinzufügen', function () { zuNext = key; document.getElementById('a-img-in').click(); }], ['Dokument hinzufügen', function () { zuNext = key; document.getElementById('a-doc-in').click(); }]]; }
 function attMove(key) {
@@ -6961,6 +7139,93 @@ function addImages(inp) {
     auditFilesAdded(p, ok, 'Bilder');
     persist(); if (curP === p) renderVerlauf();
     if (ok.length < files.length) alert((files.length - ok.length) + ' Bild(er) konnten nicht gespeichert werden.');
+  });
+}
+/* Videos: nur auf diesem Gerät, verschlüsselt in einem eigenen Speicher (ka-videos), höchstens 100 MB je Video.
+   Sie sind bewusst nicht in der Sicherung (ZIP) und nicht im Geräte-Abgleich. Die Akte führt nur die Angaben (p.videos: id, ts, name, size, type). */
+var VID_MAX = 100 * 1048576, vdb = null, vUrlCache = {};
+function vOpen() {
+  return new Promise(function (res) {
+    if (vdb) { res(vdb); return; }
+    try { var rq = indexedDB.open('ka-videos', 1); rq.onupgradeneeded = function () { rq.result.createObjectStore('v', { keyPath: 'id' }); }; rq.onsuccess = function () { vdb = rq.result; res(vdb); }; rq.onerror = function () { res(null); }; }
+    catch (x) { res(null); }
+  });
+}
+function vTx(mode, fn) {
+  return vOpen().then(function (db) {
+    if (!db) return null;
+    return new Promise(function (res) {
+      var tx = db.transaction('v', mode), out = null;
+      try { out = fn(tx.objectStore('v')); } catch (x) { res(null); return; }
+      tx.oncomplete = function () { res(out && out.result !== undefined ? out.result : true); };
+      tx.onerror = tx.onabort = function () { res(null); };
+    });
+  });
+}
+function vPut(id, name, blob) {
+  if (!KA.enc || !KA.key) return Promise.resolve(false);
+  return blob.arrayBuffer().then(async function (ab) {
+    var e = await kaEncBytes(new Uint8Array(ab)), m = await kaEncBytes(new TextEncoder().encode(JSON.stringify({ name: name, type: blob.type || '' })));
+    return vTx('readwrite', function (st) { return st.put({ id: id, enc: e.buffer, emeta: m.buffer }); });
+  }).then(function (r) { return r !== null; }).catch(function () { return false; });
+}
+function vGet(id) { return vTx('readonly', function (st) { return st.get(id); }).then(function (r) { return r && r !== true ? fRec(r).catch(function () { return null; }) : null; }); }
+function vHas(id) { return vTx('readonly', function (st) { return st.count(id); }).then(function (n) { return n === 1; }); }
+function vDel(id) { if (vUrlCache[id]) { URL.revokeObjectURL(vUrlCache[id]); delete vUrlCache[id]; } return vTx('readwrite', function (st) { return st.delete(id); }); }
+function vURL(rec) { if (vUrlCache[rec.id]) return Promise.resolve(vUrlCache[rec.id]); return vGet(rec.id).then(function (f) { return f ? (vUrlCache[rec.id] = URL.createObjectURL(f.blob)) : null; }); }
+function fmtMB(n) { return n >= 1048576 ? (n / 1048576).toFixed(n >= 10485760 ? 0 : 1).replace('.', ',') + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+async function addVideos(inp) {
+  var files = [].slice.call(inp.files || []); inp.value = '';
+  if (!files.length || !curP) return;
+  var p = curP, gross = files.filter(function (f) { return f.size > VID_MAX; }), ok0 = files.filter(function (f) { return f.size <= VID_MAX && (/^video\//.test(f.type) || /\.(mp4|mov|m4v|webm|3gp)$/i.test(f.name)); });
+  if (gross.length) alert(gross.length + ' Video(s) über 100 MB werden nicht übernommen. Bitte kürzen oder verkleinern.');
+  if (!ok0.length) return;
+  var seen = false; try { seen = localStorage.getItem('ka_vid_hinweis') === '1'; } catch (x) {}
+  if (!seen) {
+    if (!await kaConfirm('Videos bleiben nur auf diesem Gerät.\n\nSie werden verschlüsselt gespeichert, sind aber nicht in der Sicherung (ZIP) und nicht im Geräte-Abgleich enthalten. Geht das Gerät verloren oder wird die App gelöscht, sind die Videos weg.\n\nVideos hinzufügen?', { ok: 'Hinzufügen', danger: false })) return;
+    try { localStorage.setItem('ka_vid_hinweis', '1'); } catch (x) {}
+  }
+  alert(ok0.length === 1 ? 'Video wird verschlüsselt gespeichert …' : ok0.length + ' Videos werden verschlüsselt gespeichert …');
+  var base = Date.now(), recs = [];
+  for (var i = 0; i < ok0.length; i++) {
+    var f = ok0[i], id = newId();
+    if (await vPut(id, f.name, f)) recs.push({ id: id, ts: base + i, name: f.name, size: f.size, type: f.type || '' });
+  }
+  if (recs.length) { p.videos = (p.videos || []).concat(recs); auditFilesAdded(p, recs, 'Videos'); persist(); }
+  if (curP === p) { try { renderMedien(); } catch (x) {} }
+  alert(recs.length === ok0.length ? (recs.length === 1 ? 'Video gespeichert.' : recs.length + ' Videos gespeichert.') : (ok0.length - recs.length) + ' Video(s) konnten nicht gespeichert werden (Speicher voll?).');
+}
+function medVideos(p, list) {
+  var c = mk('div', 'md-item'), h = mk('div', 'md-gh');
+  h.appendChild(mk('div', 'md-day', 'Videos · nur auf diesem Gerät')); c.appendChild(h);
+  var g = mk('div', 'vid-grid');
+  list.forEach(function (v) {
+    var b = mk('button', 'vid-tile'); b.type = 'button'; b.title = v.name || 'Video';
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".12"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg>';
+    var t = mk('span', 'vid-t', v.name || 'Video'), sub = mk('span', 'vid-s', fmtDT(tsOf(v)) + (v.size ? ' · ' + fmtMB(v.size) : ''));
+    b.appendChild(t); b.appendChild(sub);
+    if (v.hiddenFromView) b.classList.add('vid-hid');
+    vHas(v.id).then(function (has) { if (!has) { b.classList.add('vid-miss'); sub.textContent = fmtDT(tsOf(v)) + ' · liegt auf einem anderen Gerät'; } });
+    b.onclick = function () { openVideo(p, v); };
+    g.appendChild(b);
+  });
+  c.appendChild(g); return c;
+}
+function openVideo(p, v) {
+  var ov = document.getElementById('vid-view');
+  if (!ov) { ov = mk('div', 'vid-view'); ov.id = 'vid-view'; document.body.appendChild(ov); }
+  ov.innerHTML = ''; ov.style.display = 'flex';
+  var bar = mk('div', 'vid-bar'), close = function () { var vv = ov.querySelector('video'); if (vv) { vv.pause(); vv.removeAttribute('src'); vv.load(); } ov.style.display = 'none'; ov.innerHTML = ''; };
+  var hb = mk('button', 'btn btn-secondary btn-sm', v.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden'); hb.type = 'button';
+  hb.onclick = function () { setRecordHidden(p, v, !v.hiddenFromView, 'Videos', v.name || v.id); close(); try { renderMedien(); } catch (x) {} };
+  var xb = mk('button', 'vid-x', '×'); xb.type = 'button'; xb.title = 'Schließen'; xb.setAttribute('aria-label', 'Schließen'); xb.onclick = close;
+  bar.appendChild(hb); bar.appendChild(mk('div', 'vid-cap', (v.name || 'Video') + ' · ' + fmtDT(tsOf(v)))); bar.appendChild(xb); ov.appendChild(bar);
+  var stage = mk('div', 'vid-stage', 'Video wird entschlüsselt …'); ov.appendChild(stage);
+  ov.onclick = function (ev) { if (ev.target === ov) close(); };
+  vURL(v).then(function (u) {
+    if (ov.style.display === 'none') return;
+    if (!u) { stage.textContent = 'Dieses Video liegt nur auf dem Gerät, auf dem es aufgenommen oder hinzugefügt wurde.'; return; }
+    stage.textContent = ''; var vid = document.createElement('video'); vid.controls = true; vid.playsInline = true; vid.preload = 'metadata'; vid.src = u; stage.appendChild(vid);
   });
 }
 function addDocs(inp, key) {
@@ -7836,10 +8101,11 @@ function renderUnterlagen() {
   fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
   var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = 'block'; box.innerHTML = '';
+  var offen = mk('div'), erl = mk('div');
   var row = function (cls, ic, t, sub, btn) {
-    var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); box.appendChild(r); return r;
+    var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;
   };
-  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
+  var bt = function (txt, dark, fn) { var b = mk('button', 'ak-act' + (dark ? ' hl' : '') + (/^(Per E-Mail|Senden|Unterschreiben)$/.test(txt) ? ' ak-go' : '')); b.type = 'button'; b.title = txt; b.innerHTML = tvSvg(/hinzu|akte legen/i.test(txt) ? 'plus' : /unterschr/i.test(txt) ? 'pen' : 'mail') + '<span>' + txt.replace(/^Per /, '') + '</span>'; b.onclick = fn; return b; };
   var dm = function (ts) { return fmtD(iso(new Date(ts))); };
   var unReset = function (keys) {
     var b = mk('button', 'btn btn-secondary un-btn'); b.type = 'button'; b.title = 'Als nicht gesendet zurücksetzen'; b.setAttribute('aria-label', 'Als nicht gesendet zurücksetzen');
@@ -7849,16 +8115,14 @@ function renderUnterlagen() {
   };
   /* Pakete */
   pakete().forEach(function (pk) {
-    var c = mk('div', 'un-pk'); c.appendChild(mk('b', '', pk.name));
+    var c = mk('div', 'un-pk'), cm = mk('div', 'un-main'); cm.appendChild(mk('b', '', pk.name));
     var names = (pk.forms || []).map(function (k) { return pkForm(k)[1]; }).concat((pk.tpls || []).map(function (id) { var t = tplById(id); return t ? t.name + ' (vor Ort)' : ''; }).filter(Boolean));
-    c.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket'));
+    cm.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket')); c.appendChild(cm);
     var ts = (pk.forms || []).map(function (k) { return formSt(p, k).sent || 0; }), last = Math.max.apply(null, ts.concat([0]));
-    var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;';
-    rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); }));
-    rr.appendChild(mk('span', 'un-s', last ? 'gesendet ' + dm(last) : 'noch nicht gesendet')); if (last) rr.appendChild(unReset(pk.forms || [])); c.appendChild(rr); box.appendChild(c);
+    var rr = mk('div'); rr.style.cssText = 'display:flex; gap:8px; align-items:center; flex:none;';
+    if (last) { cm.appendChild(mk('div', 'un-s', 'gesendet ' + dm(last))); rr.appendChild(unReset(pk.forms || [])); } rr.appendChild(bt('Per E-Mail', true, function () { pkSend(p, pk, 'mail'); })); c.appendChild(rr); box.appendChild(c);
   });
   /* Online-Formulare */
-  box.appendChild(mk('div', 'un-grp', 'Online vor dem Termin'));
   PK_FORMS.forEach(function (f) {
     var st = formSt(p, f[0]), got = st.got || 0, sent = st.sent || 0, anm = formSt(p, 'anmeldung');
     if (f[0] === 'anamnese') {
@@ -7881,10 +8145,9 @@ function renderUnterlagen() {
   var req = templates.filter(function (t) { return t.neu; });
   events.forEach(function (e) { if (eventBelongs(e, p) && e.date >= today) tplsForEvent(e).forEach(function (t) { if (req.indexOf(t) < 0) req.push(t); }); });
   templates.forEach(function (t) { if (req.indexOf(t) < 0 && tplDoc(p, t)) req.push(t); });
-  box.appendChild(mk('div', 'un-grp', 'In der Praxis unterschreiben'));
   req.forEach(function (t) {
     var st = tplState(p, t), d = st.d, btn;
-    if (st.s === 'fehlt') btn = bt('Hinzufügen', false, function () { addTplsTo(p, [t], null); });
+    if (st.s === 'fehlt') btn = bt('In Akte legen', false, function () { addTplsTo(p, [t], null); });
     else if (st.s === 'offen') btn = bt('Unterschreiben', true, function () { openSign(p, d); });
     else btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben' : 'vorhanden');
     var wd = t.web ? KA_DOCS.filter(function (x) { return x.id === t.web; })[0] : null, wsub = '';
@@ -7893,19 +8156,20 @@ function renderUnterlagen() {
     if (wd) { wrap = mk('span'); wrap.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; var lb = mk('button', 'btn btn-secondary un-btn'); lb.type = 'button'; lb.title = 'Link senden'; lb.setAttribute('aria-label', 'Link senden'); lb.innerHTML = tvSvg('mail'); lb.firstChild.style.cssText = 'width:16px;height:16px;vertical-align:middle;'; lb.onclick = function (ev) { ev.stopPropagation(); docSend(ev, p, wd); }; wrap.appendChild(lb); wrap.appendChild(btn); }
     row(st.s === 'ok' ? 'ok' : st.s === 'offen' ? 'wait' : '', st.s === 'ok' ? '✓' : st.s === 'offen' ? '✎' : '–', t.name, (st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : 'noch nicht in der Akte') + wsub, wrap);
   });
-  var ds = mk('select', 'form-control'); ds.style.cssText = 'margin-top:10px; font-size:13px;';
-  var d0 = mk('option', '', 'Hinweisblatt oder Aufklärung als Link senden …'); d0.value = ''; ds.appendChild(d0);
-  KA_DOCS.forEach(function (d) { var o = mk('option', '', (d.typ === 'info' ? 'Hinweis: ' : 'Aufklärung: ') + d.name.replace(/^(Nachsorge|Aufklärung) /, '')); o.value = d.id; ds.appendChild(o); });
-  ds.onchange = function () { var d = KA_DOCS.filter(function (x) { return x.id === ds.value; })[0]; if (d) docSend({ stopPropagation: function () {}, currentTarget: ds }, p, d); ds.value = ''; };
-  box.appendChild(ds);
-  var rest = templates.filter(function (t) { return req.indexOf(t) < 0; });
-  if (rest.length) {
-    var sel = mk('select', 'form-control'); sel.style.cssText = 'margin-top:10px; font-size:13px;';
-    var o0 = mk('option', '', '+ Weitere Vorlage hinzufügen …'); o0.value = ''; sel.appendChild(o0);
-    rest.forEach(function (t) { var o = mk('option', '', t.name); o.value = String(t.id); sel.appendChild(o); });
-    sel.onchange = function () { var t = templates.filter(function (x) { return String(x.id) === sel.value; })[0]; if (t) addTplsTo(p, [t], null, renderUnterlagen); };
-    box.appendChild(sel);
+  if (offen.children.length) { box.appendChild(mk('div', 'un-grp', 'Offen')); box.appendChild(offen); }
+  if (erl.children.length) {
+    var eh = mk('button', 'un-grp un-fold'); eh.type = 'button'; var zu = offen.children.length > 0;
+    var setE = function () { eh.textContent = 'Erledigt (' + erl.children.length + ') ' + (zu ? '▸' : '▾'); erl.style.display = zu ? 'none' : 'block'; };
+    eh.onclick = function () { zu = !zu; setE(); }; setE(); box.appendChild(eh); box.appendChild(erl);
   }
+}
+/* Menü "Hinzufügen": Links zu Hinweisblättern/Aufklärungen und weitere Vorlagen */
+function untAddMenu(ev) {
+  var p = curP; if (!p) return;
+  var items = [];
+  templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]); });
+  KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { docSend({ stopPropagation: function () {}, currentTarget: ev.currentTarget }, p, d); }]); });
+  tlMenu(ev, items);
 }
 /* Pakete verwalten (Praxis, Nachrichten) */
 var pkIdx = -1;
@@ -8401,10 +8665,10 @@ function medDocRow(p, dd) {
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
   akTabs();
-  var nb = (curP.bilder || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
+  var nb = (curP.bilder || []).filter(recordVisible).length + (curP.videos || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
   document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dateien (' + nd + ')';
   document.getElementById('md-bild').className = medFilter === 'bild' ? 'on' : ''; document.getElementById('md-dok').className = medFilter === 'dok' ? 'on' : '';
-  document.getElementById('md-addf').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addd').style.display = medFilter === 'dok' ? '' : 'none';
+  document.getElementById('md-addf').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addv').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addd').style.display = medFilter === 'dok' ? '' : 'none';
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
   var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
   var kats = []; (curP.dokumente || []).filter(recordVisible).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });
@@ -8420,7 +8684,9 @@ function renderMedien() {
   });
   items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = '';
-  if (!items.length) { box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
+  var vids = medFilter === 'bild' ? (curP.videos || []).filter(function (v) { return recordVisible(v) && (!q || String(v.name || '').toLowerCase().indexOf(q) >= 0); }).sort(function (a, b) { return tsOf(b) - tsOf(a); }) : [];
+  if (vids.length) box.appendChild(medVideos(curP, vids));
+  if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
   items.slice(0, medLimit).forEach(function (it) {
     var g = it.g, d = new Date(it.k);
     var c = mk('div', 'md-item'), zl = g.zu ? mk('div', 'md-zu', zuLabel(g.p, g.zu)) : null;
@@ -8497,13 +8763,39 @@ var AM_GROUPS = [
 /* Symbolleiste der Akte. Breit (Querformat, Desktop): die fünf Grundaktionen. Als Streifen am Rand (hochkant): alle Aktionen der Reihe nach, so viele wie die Bildschirmhöhe hergibt; der Rest steckt unter „Alle Aktionen“ (…). */
 var AM_DOCK = [{ t: 'Dokumentation', ic: 'book', act: 'doku', c: 'd0', b: 1 }, { t: 'Termin', ic: 'cal', act: 'termin', c: 'd1' }, { t: 'Rechnung', ic: 'euro', act: 'rechnung', c: 'd2' }, { t: 'Rezept erstellen', ic: 'pill', act: 'rezept', c: 'd3', hm: 1, b: 1 }, { t: 'E-Mail schreiben', ic: 'mail', act: 'mail', c: 'd4', b: 1 }, { t: 'Foto hinzufügen', ic: 'img', act: 'bild', c: 'd6', b: 1 }, { t: 'Datei hinzufügen', ic: 'form', act: 'dokument', c: 'd7', hm: 1, b: 1 },
   { t: 'Notiz', ic: 'pen', act: 'notiz', c: 'd0' }, { t: 'Produkt', ic: 'box', act: 'produkt', c: 'd0' }, { t: 'Medikament hinzufügen', ic: 'pill', act: 'med', c: 'd3' }, { t: 'Anamnese E-Mail', ic: 'mail', act: 'anammail', c: 'd4' }, { t: 'Anamnese-Link', ic: 'link', act: 'anamlink', c: 'd4' }, { t: 'Briefumschlag C6 (PDF)', ic: 'form', act: 'umschlag', c: 'd4' }, { t: 'Dateien zuordnen', ic: 'auto', act: 'auto', c: 'd7' }];
-(function () {
+/* Schnellzugriffe: höchstens drei runde, durchsichtige Knöpfe, schweben dauerhaft am Rand. Die Auswahl legt Praxis in settings.akteDock ab (Aktions-Kennungen aus AM_DOCK). */
+var DOCK_DEF = ['doku', 'termin', 'rechnung'];
+function dockIds() {
+  var ok = AM_DOCK.map(function (d) { return d.act; }), l = (settings.akteDock || DOCK_DEF).filter(function (a, i, arr) { return ok.indexOf(a) >= 0 && arr.indexOf(a) === i; }).slice(0, 3);
+  return l.length ? l : DOCK_DEF.slice();
+}
+function aDockBuild() {
   var box = document.getElementById('a-cats'); if (!box) return;
-  AM_DOCK.forEach(function (d) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c + (d.hm ? ' hm' : '') + (d.b ? '' : ' xk'); b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
-    b.onclick = function (ev) { if (d.act) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); } else toggleAMenu(ev, d.g); }; box.appendChild(b);
+  box.innerHTML = '';
+  dockIds().forEach(function (id) {
+    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'a-cat ' + d.c; b.title = d.t; b.setAttribute('aria-label', d.t); b.innerHTML = tvSvg(d.ic);
+    b.onclick = function (ev) { ev.stopPropagation(); document.getElementById('a-menu').style.display = 'none'; aAct(d.act); }; box.appendChild(b);
   });
-})();
+}
+aDockBuild();
+function aDockEdit() {
+  document.getElementById('a-menu').style.display = 'none';
+  var cur = dockIds(), box = document.getElementById('dk-list'); box.innerHTML = '';
+  var upd = function () { var n = box.querySelectorAll('input:checked').length; [].forEach.call(box.querySelectorAll('input'), function (c) { c.disabled = !c.checked && n >= 3; }); document.getElementById('dk-n').textContent = n + ' von 3'; };
+  AM_DOCK.forEach(function (d) {
+    var lab = document.createElement('label'); lab.className = 'dk-row';
+    var c = document.createElement('input'); c.type = 'checkbox'; c.value = d.act; c.checked = cur.indexOf(d.act) >= 0; c.onchange = upd;
+    var ic = document.createElement('span'); ic.className = 'dk-ic'; ic.innerHTML = tvSvg(d.ic);
+    lab.appendChild(c); lab.appendChild(ic); lab.appendChild(document.createTextNode(d.t)); box.appendChild(lab);
+  });
+  upd(); openModal('modal-dock');
+}
+function aDockSave() {
+  var l = [].map.call(document.querySelectorAll('#dk-list input:checked'), function (c) { return c.value; }).slice(0, 3);
+  if (!l.length) { alert('Bitte mindestens eine Aktion wählen.'); return; }
+  settings.akteDock = l; persist(); aDockBuild(); try { renderVerlauf(); } catch (x) {} closeModal('modal-dock');
+}
 function aFabFit() {
   var f = document.querySelector('.a-fab'); if (!f || !document.body.classList.contains('akte-open')) return;
   var bs = [].slice.call(f.querySelectorAll('.a-cats .a-cat'));
@@ -8518,11 +8810,9 @@ function aFabFit() {
 window.addEventListener('resize', function () { try { aFabFit(); } catch (x) {} });
 /* Hochkant: Die Akte-Aktionen liegen als farbige Streifen am rechten Rand. Antippen, nach links Herausziehen oder der Pfeil klappen sie aus. */
 var aFabMq = window.matchMedia('(max-width:699px), (orientation:portrait)');
-function aFabOut(on) {
-  var f = document.querySelector('.a-fab'); if (!f) return;
-  var v = on === undefined ? !f.classList.contains('out') : !!on; f.classList.toggle('out', v);
-  var t = f.querySelector('.a-fab-tog'); if (t) t.setAttribute('aria-expanded', v ? 'true' : 'false');
-}
+/* Die Schnellzugriffe bleiben dauerhaft sichtbar (kein Ein- und Ausklappen mehr) */
+function aFabOut() { var f = document.querySelector('.a-fab'); if (f) f.classList.add('out'); }
+aFabOut();
 (function () {
   var f = document.querySelector('.a-fab'), sx = null; if (!f) return;
   f.addEventListener('click', function (e) { if (!aFabMq.matches || f.classList.contains('out') || e.target.closest('.a-fab-tog')) return; e.stopPropagation(); e.preventDefault(); aFabOut(true); }, true);
@@ -8550,6 +8840,7 @@ function toggleAMenu(ev, gi) {
     });
     m.appendChild(gr);
   });
+  if (gi === undefined) { var ed = document.createElement('button'); ed.type = 'button'; ed.className = 'am-edit'; ed.textContent = 'Schnellzugriffe anpassen …'; ed.onclick = function (e2) { e2.stopPropagation(); aDockEdit(); }; m.appendChild(ed); }
   m.style.display = 'block';
 }
 document.addEventListener('click', function (ev) {
@@ -10188,6 +10479,7 @@ async function restoreZips(zips, inp) {
       var map = await readZipBlob(zips[i]);
       if (!map['info.json']) throw new Error('Keine Sicherung: ' + zips[i].name);
       var info = JSON.parse(await map['info.json'].text());
+      if (info && info.format === 'ka-videosicherung-teil') throw new Error('Das ist eine Videosicherung. Bitte unter Sicherung bei „Videos“ auf „Videos laden“ tippen');
       if (!info || info.format !== 'ka-sicherung-teil') throw new Error('Ungültige Teilinformation');
       parts.push({ map: map, info: info, file: zips[i] });
     }
@@ -10411,12 +10703,153 @@ fixImported();
 restoreLast();
 /* ===== Geräte-Abgleich ===== */
 function renderSicherung() {
+  vbkState();
   var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
   var el = document.getElementById('sk-state'); if (!el) return;
   if (!lb) { el.textContent = 'Noch keine Sicherung auf diesem Gerät'; el.style.color = '#b91c1c'; return; }
   var d = new Date(lb), days = Math.round((new Date(iso(new Date())) - new Date(iso(d))) / 86400000);
   el.textContent = 'Letzte Sicherung: ' + (days === 0 ? 'heute' : days === 1 ? 'gestern' : 'vor ' + days + ' Tagen') + ' um ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' Uhr';
   el.style.color = days >= 2 ? '#92400e' : '#15803d';
+}
+/* Videos getrennt sichern und laden. Format: ZIP-Teile (je bis 400 MB) mit info.json (Salz, Prüfwert, Teil x von y),
+   videos/<id>.enc (AES-GCM, Schlüssel aus dem Passwort mit PBKDF2) und im ersten Teil videos.json.enc (Liste mit Patient, Name, Typ, Größe, Datum, SHA-256). */
+var vbkParts = [];
+function vbkList() {
+  var out = [];
+  patients.forEach(function (p) { (p.videos || []).forEach(function (v) { out.push({ p: p, v: v }); }); });
+  return out;
+}
+function vbkState() {
+  var el = document.getElementById('vbk-state'); if (!el) return;
+  var l = vbkList(); el.textContent = 'Videos werden geprüft …'; el.style.color = '#475569';
+  Promise.all(l.map(function (x) { return vHas(x.v.id); })).then(function (h) {
+    var n = 0, mb = 0; h.forEach(function (ok, i) { if (ok) { n++; mb += l[i].v.size || 0; } });
+    var last = null; try { last = localStorage.getItem('ka_lastvideobackup'); } catch (x) {}
+    el.textContent = n ? n + (n === 1 ? ' Video' : ' Videos') + ' auf diesem Gerät (' + fmtMB(mb) + ')' + (last ? ' · zuletzt gesichert am ' + fmtDT(Date.parse(last)) : ' · noch nie gesichert') : 'Keine Videos auf diesem Gerät';
+    el.style.color = n && !last ? '#92400e' : '#475569';
+  });
+}
+async function vbkPassword(neu) {
+  var pw = await kaPrompt(neu ? 'Passwort für die Videosicherung (mindestens 12 Zeichen). Ohne dieses Passwort lässt sie sich nicht mehr öffnen.' : 'Passwort der Videosicherung:', '', { password: true, ok: 'Weiter' });
+  if (pw == null) return null;
+  if (!neu) return pw;
+  if (pw.length < 12) { alert('Das Passwort braucht mindestens 12 Zeichen.'); return null; }
+  var pw2 = await kaPrompt('Passwort wiederholen:', '', { password: true, ok: 'Weiter' });
+  if (pw2 == null) return null;
+  if (pw2 !== pw) { alert('Die beiden Passwörter stimmen nicht überein.'); return null; }
+  return pw;
+}
+async function vbkExport() {
+  var all = vbkList(), have = [];
+  for (var i = 0; i < all.length; i++) if (await vHas(all[i].v.id)) have.push(all[i]);
+  if (!have.length) { alert('Auf diesem Gerät liegen keine Videos.'); return; }
+  var pw = await vbkPassword(true); if (!pw) return;
+  progOpen('Videos werden gesichert');
+  try {
+    var salt = crypto.getRandomValues(new Uint8Array(16)), key = await bkKey(pw, salt, BK_ITER), sid = newId(), parts = [new ZipPart()], meta = [], now = new Date();
+    for (var k = 0; k < have.length; k++) {
+      var x = have[k], f = await vGet(x.v.id); if (!f) continue;
+      progSet(k / have.length * 92, 'Video ' + (k + 1) + ' von ' + have.length + ' wird verschlüsselt');
+      var raw = new Uint8Array(await f.blob.arrayBuffer()), hash = await sha256Hex(raw), e = await encEntry(key, raw), eb = new Blob([e]), crc = (crcBytes(e, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0;
+      raw = null;
+      var part = parts[parts.length - 1];
+      if (part.ents.length && part.off + eb.size > BK_PART) { part = new ZipPart(); parts.push(part); }
+      part.add('videos/' + x.v.id + '.enc', eb, crc);
+      meta.push({ id: x.v.id, pid: x.p.id, patient: nameKey(x.p), name: x.v.name || f.name || '', type: x.v.type || f.type || '', size: x.v.size || f.blob.size, ts: tsOf(x.v), sha256: hash, teil: parts.length });
+      await new Promise(function (r) { setTimeout(r, 0); });
+    }
+    if (!meta.length) throw new Error('Keine Videos lesbar');
+    var jb = await encEntry(key, new TextEncoder().encode(JSON.stringify({ format: 'ka-videosicherung', version: 1, id: sid, exportiert: now.toISOString(), videos: meta })));
+    parts[0].add('videos.json.enc', new Blob([jb]), (crcBytes(jb, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0);
+    var pruef = toB64(await encEntry(key, new TextEncoder().encode('ka-ok')));
+    var blobs = parts.map(function (pt, idx) {
+      var info = new TextEncoder().encode(JSON.stringify({ format: 'ka-videosicherung-teil', sicherung: sid, teil: idx + 1, von: parts.length, exportiert: now.toISOString(), verschluesselt: true, iter: BK_ITER, salt: toB64(salt), pruefung: pruef }));
+      pt.add('info.json', new Blob([info]), (crcBytes(info, 0xFFFFFFFF) ^ 0xFFFFFFFF) >>> 0);
+      return pt.finish();
+    });
+    vbkParts = blobs;
+    progSet(100, 'Fertig. Bitte jetzt alle Teile speichern.');
+    var base = 'kreuzberg-aesthetik-videos-' + iso(now), box = document.getElementById('pg-parts'), got = 0, total = blobs.length;
+    box.innerHTML = ''; bkOpen = total;
+    blobs.forEach(function (bl, idx) {
+      var nm = base + (total > 1 ? '-teil-' + (idx + 1) + '-von-' + total : '') + '-verschluesselt.zip';
+      var row = mk('div'); row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9;';
+      row.appendChild(mk('span', '', (total > 1 ? 'Teil ' + (idx + 1) + ' von ' + total + ' · ' : '') + fmtMB(bl.size)));
+      var b = mk('button', 'btn btn-save btn-sm', 'Speichern'); b.type = 'button';
+      b.onclick = function () {
+        var a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = nm; document.body.appendChild(a); a.click(); a.remove();
+        if (!b.getAttribute('data-ok')) { b.setAttribute('data-ok', '1'); b.textContent = 'Gespeichert ✓'; got++; bkOpen = total - got; }
+        if (got === total) { try { localStorage.setItem('ka_lastvideobackup', new Date().toISOString()); } catch (x) {} vbkState(); document.getElementById('pg-status').textContent = 'Alle Teile wurden gespeichert.'; }
+      };
+      row.appendChild(b); box.appendChild(row);
+    });
+    document.getElementById('pg-close').style.display = '';
+    return blobs;
+  } catch (x) {
+    progClose(true);
+    alert('Die Videosicherung konnte nicht erstellt werden. (' + (x && x.message ? x.message : 'unbekannter Fehler') + ')');
+    return null;
+  }
+}
+async function vbkImport(inp, pwGiven) {
+  var files = [].slice.call(inp.files || []).filter(function (f) { return /\.zip$/i.test(f.name) || f.type === 'application/zip'; }); inp.value = '';
+  if (!files.length) return null;
+  var maps = [], infos = [];
+  try {
+    for (var i = 0; i < files.length; i++) {
+      var m = await readZip(files[i]); if (!m['info.json']) throw new Error('„' + files[i].name + '“ ist keine Videosicherung.');
+      var inf = JSON.parse(await m['info.json'].text()); if (!inf || inf.format !== 'ka-videosicherung-teil') throw new Error('„' + files[i].name + '“ ist keine Videosicherung (für die normale Sicherung bitte oben „Laden“ nehmen).');
+      maps.push(m); infos.push(inf);
+    }
+  } catch (x) { alert(x && x.message ? x.message : 'Die Datei konnte nicht gelesen werden.'); return null; }
+  var sid = infos[0].sicherung, von = infos[0].von;
+  if (infos.some(function (x) { return x.sicherung !== sid; })) { alert('Die gewählten Teile gehören zu verschiedenen Videosicherungen.'); return null; }
+  var teile = {}; infos.forEach(function (x) { teile[x.teil] = 1; });
+  var fehlt = []; for (var t = 1; t <= von; t++) if (!teile[t]) fehlt.push(t);
+  if (fehlt.length) { alert('Es fehlen Teile: ' + fehlt.join(', ') + ' von ' + von + '. Bitte alle Teile gemeinsam wählen.'); return null; }
+  var iter = +infos[0].iter;
+  if (!Number.isInteger(iter) || iter < 100000 || iter > 2000000) { alert('Ungültige Videosicherung.'); return null; }
+  var pw = pwGiven || await vbkPassword(false); if (!pw) return null;
+  var key;
+  try { key = await bkKey(pw, fromB64(infos[0].salt), iter); var ok = new TextDecoder().decode(await decEntry(key, fromB64(infos[0].pruefung))); if (ok !== 'ka-ok') throw new Error(); }
+  catch (x) { alert('Das Passwort stimmt nicht.'); return null; }
+  progOpen('Videos werden geladen');
+  var res = { neu: 0, schon: 0, ohneAkte: 0, fehler: 0 };
+  try {
+    var first = maps[infos.findIndex(function (x) { return x.teil === 1; })], jb = first && first['videos.json.enc'];
+    if (!jb) throw new Error('Das Verzeichnis der Videos fehlt.');
+    var list = JSON.parse(new TextDecoder().decode(await decEntry(key, new Uint8Array(await jb.arrayBuffer())))).videos || [];
+    var touched = {};
+    for (var k = 0; k < list.length; k++) {
+      var v = list[k]; progSet(k / Math.max(1, list.length) * 95, 'Video ' + (k + 1) + ' von ' + list.length);
+      var p = patById(v.pid);
+      if (!p) { res.ohneAkte++; continue; }
+      if (await vHas(v.id)) { res.schon++; }
+      else {
+        var src = null; maps.forEach(function (mm) { if (mm['videos/' + v.id + '.enc']) src = mm['videos/' + v.id + '.enc']; });
+        try {
+          if (!src) throw new Error('fehlt');
+          var raw = await decEntry(key, new Uint8Array(await src.arrayBuffer()));
+          if (await sha256Hex(raw) !== v.sha256) throw new Error('Prüfsumme');
+          if (!await vPut(v.id, v.name, new Blob([raw], { type: v.type || '' }))) throw new Error('Speichern');
+          res.neu++;
+        } catch (x) { res.fehler++; continue; }
+      }
+      if (!(p.videos || []).some(function (r) { return r.id === v.id; })) {
+        var rec = { id: v.id, ts: v.ts, name: v.name, size: v.size, type: v.type };
+        p.videos = (p.videos || []).concat([rec]); auditFilesAdded(p, [rec], 'Videos'); touched[p.id] = 1;
+      }
+      await new Promise(function (r) { setTimeout(r, 0); });
+    }
+    if (Object.keys(touched).length) persist();
+    progSet(100, 'Fertig.'); document.getElementById('pg-close').style.display = '';
+    var txt = res.neu + ' Video(s) geladen' + (res.schon ? ', ' + res.schon + ' waren schon da' : '') + (res.ohneAkte ? ', ' + res.ohneAkte + ' ohne passende Akte auf diesem Gerät (zuerst die normale Sicherung laden oder abgleichen)' : '') + (res.fehler ? ', ' + res.fehler + ' fehlerhaft' : '') + '.';
+    document.getElementById('pg-status').textContent = txt;
+    vbkState(); try { if (curP) renderMedien(); } catch (x) {}
+    return res;
+  } catch (x) {
+    progClose(true); alert('Die Videos konnten nicht geladen werden. (' + (x && x.message ? x.message : 'unbekannter Fehler') + ')'); return null;
+  }
 }
 function calCopy() { var u = KS.calUrl(); copyText(u, function () { alert('Adresse kopiert.'); }, async function () { await kaPrompt('Adresse zum Kopieren:', u, { readonly: true, ok: 'Schließen', single: true }); }); }
 async function calOffAsk() { if (await kaConfirm('Kalender ausschalten? Die Adresse wird ungültig, und der Kalender in Google verschwindet nach der nächsten Aktualisierung.')) KS.calOff(); }
