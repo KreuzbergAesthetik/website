@@ -242,7 +242,10 @@ function tlMenu(ev, items) {
   items.forEach(function (it) { var b = mk('button', '', it[0]); b.type = 'button'; b.onclick = function () { m.style.display = 'none'; it[1](); }; m.appendChild(b); });
   var r = ev.currentTarget.getBoundingClientRect(); m.style.right = 'auto'; m.style.width = 'max-content'; m.style.display = 'block'; m.style.position = 'fixed';
   m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, window.innerWidth - m.offsetWidth - 8)) + 'px';
+  /* Lange Menüs (z. B. Vorlagen und Links) scrollen in sich selbst, nicht die Seite dahinter */
+  m.style.overflowY = 'auto'; m.style.overscrollBehavior = 'contain'; m.style.touchAction = 'pan-y'; m.style.webkitOverflowScrolling = 'touch'; m.style.maxHeight = (window.innerHeight - 16) + 'px'; m.scrollTop = 0;
   var top = r.bottom + 4; if (top + m.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - m.offsetHeight - 4);
+  if (top + m.offsetHeight > window.innerHeight - 8) top = Math.max(8, window.innerHeight - 8 - m.offsetHeight);
   m.style.top = top + 'px'; m.style.right = 'auto';
 }
 function tlPlus(sh, items) {
