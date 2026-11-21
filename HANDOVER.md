@@ -169,3 +169,9 @@ Offene Punkte stehen in HANDOVER.md Abschnitt 0 (Serverpasswort nach dem IONOS-U
 ## Sitzung merken und Videos (2026-11-21-e/f)
 - Sitzung merken: nach dem Entsperren liegt der nicht exportierbare Datenschlüssel bis 20 Minuten nach der letzten Nutzung in IndexedDB `ka-sitzung`; „App sperren“, Ablauf und Abschalten (Menü Sicherheit) löschen ihn. Tests, die einen gesperrten Neustart brauchen, müssen `alSessSet(false)` aufrufen.
 - Videos: nur auf dem Gerät (IndexedDB `ka-videos`, verschlüsselt, höchstens 100 MB), Angaben in `p.videos`; nicht in der normalen Sicherung und nicht im Abgleich. Eigene verschlüsselte Videosicherung unter Sicherung → Videos (`vbkExport`/`vbkImport`).
+
+
+## PDF bearbeiten und Vorlagenfelder (2026-11-21-q, `pdfedit.js`)
+- `pdfEdit(p, rec)`: Arbeitsdokument bearbeiten (Stift, Textmarker, Text, Haken, Kreuz, Radierer, Rückgängig). Erstes Speichern legt die vorige Fassung als ausgeblendetes Dokument an (`vonDok`, `rec.annoBase`), Einträge liegen in `rec.anno` und bleiben bearbeitbar, bis neu unterschrieben wird (`rec.annoSig`). Jede Speicherung im Änderungsprotokoll.
+- `tplFields(t)`: Felder der Vorlage (`t.fields`: k, p, x, y, s, txt, w); vorbelegt aus der Akte, fester Text, freies Feld (bleibt leer, im Editor als Platzhalter). `fillStampPdf` nutzt `t.fields`, sonst die alten festen Positionen `FILL_POS` (werden beim ersten Öffnen der Felder übernommen).
+- Zweite Unterschrift (Arzt): `t.sig2` (x, y; Seite und Breite wie `t.sig`), `rec.sig2`.

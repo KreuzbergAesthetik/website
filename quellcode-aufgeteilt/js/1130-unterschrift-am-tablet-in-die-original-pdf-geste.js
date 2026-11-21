@@ -47,12 +47,27 @@ var FILL_POS = {
   foot: [['name', 0.128, 0.956], ['datum', 0.112, 0.975]],
   last: [['name+dob', 0.722, 0.059, 7.5]]
 };
-function fillStampPdf(srcBlob, d) {
+function fieldVal(f, d) {
+  switch (f.k) {
+    case 'name': return d.name; case 'vorname': return d.vorname; case 'nachname': return d.nachname; case 'anrede': return d.anrede; case 'dob': return d.dob; case 'datum': return d.datum;
+    case 'adresse': return d.adresse; case 'arzt': return settings.inhaber || ''; case 'namedob': return [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
+    case 'fest': return f.txt || ''; default: return '';
+  }
+}
+function fillStampPdf(srcBlob, d, fields) {
   return loadPdfLib().then(function (L) {
     return srcBlob.arrayBuffer().then(function (buf) {
       return L.PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false }).then(function (doc) {
         return doc.embedFont(L.StandardFonts.Helvetica).then(function (font) {
           var pages = doc.getPages();
+          if (fields && fields.length) {
+            /* Eingerichtete Felder der Vorlage: Position = linke obere Ecke als Anteil der Seite, Größe in Punkt; freie Felder bleiben leer */
+            fields.forEach(function (f) {
+              var pg = pages[f.p]; if (!pg) return; var v = fieldVal(f, d); if (!v) return; var sz = pg.getSize(), fs = f.s || 11;
+              pg.drawText(pdfText(v), { x: sz.width * f.x, y: sz.height * (1 - f.y) - fs * 0.8, size: fs, font: font, color: L.rgb(0.1, 0.1, 0.1) });
+            });
+            return doc.save();
+          }
           function put(pg, key, fx, fy, fz) {
             var sz = pg.getSize(), txt = key === 'name' ? d.name : key === 'dob' ? d.dob : key === 'datum' ? d.datum : [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
             if (!txt) return;
@@ -137,6 +152,7 @@ function testSig() {
     .catch(function () { if (win) win.close(); alert('Der Testlauf hat nicht geklappt. Ist die Datei pdf-lib.min.js hochgeladen und bist Du online?'); });
 }
 var tpCur = null;
+function tpFieldsInfo() { var e = document.getElementById('tp-finfo'); if (!e || !tpCur) return; var n = (tpCur.fields || []).length; e.textContent = n ? n + (n === 1 ? ' Feld eingerichtet' : ' Felder eingerichtet') : (tpCur.fill ? 'Feste Positionen des Praxisbogens' : 'Name, Datum, fester Text oder freie Felder an beliebiger Stelle'); }
 function openTpl(id) {
   tpCur = templates.filter(function (t) { return t.id === id; })[0]; if (!tpCur) return;
   document.getElementById('tp-name').value = tpCur.name;
@@ -146,7 +162,7 @@ function openTpl(id) {
   document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on);
   var s2 = tpCur.sig2 && tpCur.sig2.on ? tpCur.sig2 : { x: 0.52, y: sg.y }; document.getElementById('tp-sig2').checked = !!(tpCur.sig2 && tpCur.sig2.on); document.getElementById('tp-x2').value = Math.round(s2.x * 100); document.getElementById('tp-y2').value = Math.round(s2.y * 100);
   document.getElementById('tp-pg').value = sg.page; document.getElementById('tp-x').value = Math.round(sg.x * 100); document.getElementById('tp-y').value = Math.round(sg.y * 100); document.getElementById('tp-w').value = Math.round(sg.w * 100);
-  updateSigPrev();
+  updateSigPrev(); tpFieldsInfo();
   var ls = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(id) >= 0; }).map(function (k) { return k.name; });
   document.getElementById('tp-leist').textContent = ls.length ? 'Verknüpft mit: ' + ls.join(', ') : 'Noch mit keiner Leistung verknüpft (im Reiter Leistungen bei der jeweiligen Leistung auswählen).';
   openModal('modal-tpl');

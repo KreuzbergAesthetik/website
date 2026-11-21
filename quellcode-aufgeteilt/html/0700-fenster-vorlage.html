@@ -15,6 +15,7 @@
     <div class="form-group"><label>Kategorie</label><select id="tp-kat" class="form-control"></select></div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-neu"> Bei jedem neuen Patienten vorschlagen</label>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="tp-fill"> Patientendaten automatisch eintragen (Name, Geburtsdatum, Datum)</label>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0;"><button type="button" class="btn btn-secondary btn-sm" onclick="tplFields(tpCur)">Felder einrichten …</button><span id="tp-finfo" style="font-size:12px; color:#64748b;"></span></div>
     <div id="tp-leist" style="font-size:12px; color:#64748b; margin:8px 0;"></div>
     <div class="ak-h">Unterschriftsfeld</div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-sig" onchange="updateSigPrev()"> Unterschrift am Tablet erforderlich</label>

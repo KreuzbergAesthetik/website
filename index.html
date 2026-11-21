@@ -1465,11 +1465,34 @@ header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf
 .nav-section > .nav-group { background:var(--pf-inlay); color:var(--pf-navy); }
 .nav-section[open] > .nav-group { border-bottom:1px solid var(--pf-line); }
 .nav-section .nav-items > button svg { stroke:var(--pf-navy); }
+/* PDF-Editor und Vorlagenfelder (pdfedit.js) */
+body.pe-open { overflow:hidden; }
+.pe-ov { position:fixed; inset:0; z-index:80; background:#e9edf5; display:flex; flex-direction:column; }
+.pe-bar { background:#fff; border-bottom:1px solid var(--pf-line); padding:8px 10px; display:flex; flex-direction:column; gap:6px; box-shadow:0 2px 10px rgba(1,34,101,.08); }
+.pe-title { font-weight:700; color:var(--pf-navy); font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pe-tools, .pe-props { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.pe-props:empty { display:none; }
+.pe-tb { width:38px; height:38px; border-radius:50%; border:1px solid var(--pf-line); background:#fff; color:var(--pf-navy); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font:700 16px inherit; padding:0; }
+.pe-tb svg { width:19px; height:19px; } .pe-tb.on { background:var(--pf-navy); color:#fff; border-color:var(--pf-navy); }
+.pe-col { width:24px; height:24px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px #cbd5e1; cursor:pointer; padding:0; } .pe-col.on { box-shadow:0 0 0 2px var(--pf-navy); }
+.pe-cols { display:inline-flex; gap:6px; align-items:center; padding:0 4px; }
+.pe-sel { height:36px; border:1px solid var(--pf-line); border-radius:999px; padding:0 10px; background:#fff; color:var(--pf-navy); font:inherit; font-size:13px; }
+.pe-in { height:36px; max-width:260px; border-radius:999px; }
+.pe-sp { flex:1; }
+.pe-hint { font-size:12.5px; color:#475569; }
+.pe-del { width:34px; height:34px; border-radius:50%; border:1px solid #dc2626; background:#fff; color:#dc2626; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0; margin-right:6px; }
+.pe-del svg { width:17px; height:17px; }
+.pe-scroll { flex:1; overflow:auto; padding:12px; display:flex; flex-direction:column; align-items:center; gap:14px; -webkit-overflow-scrolling:touch; }
+.pe-page { position:relative; background:#fff; box-shadow:0 2px 12px rgba(1,34,101,.15); flex:none; }
+.pe-cv, .pe-ovc { position:absolute; inset:0; width:100%; height:100%; }
+.pe-pno { position:absolute; right:6px; bottom:-18px; font-size:11px; color:#64748b; }
+.pe-load { padding:40px; color:#64748b; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
 <script src="sync.js"></script>
 <script src="extcal.js"></script>
+<script src="pdfedit.js"></script>
 <script>try { document.documentElement.classList.add('locked'); } catch (e) {}</script>
 </head>
 <body>
@@ -2745,6 +2768,7 @@ function kaStart() {
     <div class="form-group"><label>Kategorie</label><select id="tp-kat" class="form-control"></select></div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-neu"> Bei jedem neuen Patienten vorschlagen</label>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="tp-fill"> Patientendaten automatisch eintragen (Name, Geburtsdatum, Datum)</label>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0;"><button type="button" class="btn btn-secondary btn-sm" onclick="tplFields(tpCur)">Felder einrichten …</button><span id="tp-finfo" style="font-size:12px; color:#64748b;"></span></div>
     <div id="tp-leist" style="font-size:12px; color:#64748b; margin:8px 0;"></div>
     <div class="ak-h">Unterschriftsfeld</div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-sig" onchange="updateSigPrev()"> Unterschrift am Tablet erforderlich</label>
@@ -3108,7 +3132,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-p';
+var KA_V = '2026-11-21-q';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -8003,9 +8027,10 @@ function tplsForEvent(e) {
 function addTplTo(p, t, zu, i, datum) {
   var id = newId();
   return fileBlob(t).then(function (bl) {
-    if (bl && t.fill && /pdf/i.test(bl.type || 'pdf')) {
+    if (bl && (t.fill || (t.fields && t.fields.length)) && /pdf/i.test(bl.type || 'pdf')) {
       var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
-      return fillStampPdf(bl, { name: [p.vorname, p.nachname].filter(Boolean).join(' '), dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) }).catch(function () { return bl; });
+      return fillStampPdf(bl, { name: [p.vorname, p.nachname].filter(Boolean).join(' '), vorname: p.vorname || '', nachname: p.nachname || '', anrede: p.anrede || '', adresse: String(p.adresse || '').replace(/\s*\n\s*/g, ', ').trim(),
+        dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) }, t.fields).catch(function () { return bl; });
     }
     return bl;
   }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
@@ -8152,6 +8177,8 @@ function renderUnterlagen() {
     else if (st.s === 'offen') btn = bt('Unterschreiben', true, function () { openSign(p, d); });
     else if (st.s === 'offen2') btn = bt('Als Arzt unterschreiben', true, function () { openSign(p, d, true); });
     else btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben' : 'vorhanden');
+    if (d) { var eb = mk('button', 'btn btn-secondary un-btn'); eb.type = 'button'; eb.title = 'Bearbeiten (Stift, Text, Markieren)'; eb.setAttribute('aria-label', eb.title); eb.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg>'; eb.onclick = function () { pdfEdit(p, d); };
+      var bw2 = mk('span'); bw2.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; bw2.appendChild(eb); bw2.appendChild(btn); btn = bw2; }
     var wd = t.web ? KA_DOCS.filter(function (x) { return x.id === t.web; })[0] : null, wsub = '';
     if (wd) { var ws = bestLast(p, 'doc:' + wd.id, 'sent'), wg = bestLast(p, 'doc:' + wd.id, 'got'); wsub = wg ? ' · online gelesen ' + dm(wg) : ws ? ' · Link gesendet ' + dm(ws) : ''; }
     var wrap = btn;
@@ -8323,12 +8350,27 @@ var FILL_POS = {
   foot: [['name', 0.128, 0.956], ['datum', 0.112, 0.975]],
   last: [['name+dob', 0.722, 0.059, 7.5]]
 };
-function fillStampPdf(srcBlob, d) {
+function fieldVal(f, d) {
+  switch (f.k) {
+    case 'name': return d.name; case 'vorname': return d.vorname; case 'nachname': return d.nachname; case 'anrede': return d.anrede; case 'dob': return d.dob; case 'datum': return d.datum;
+    case 'adresse': return d.adresse; case 'arzt': return settings.inhaber || ''; case 'namedob': return [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
+    case 'fest': return f.txt || ''; default: return '';
+  }
+}
+function fillStampPdf(srcBlob, d, fields) {
   return loadPdfLib().then(function (L) {
     return srcBlob.arrayBuffer().then(function (buf) {
       return L.PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false }).then(function (doc) {
         return doc.embedFont(L.StandardFonts.Helvetica).then(function (font) {
           var pages = doc.getPages();
+          if (fields && fields.length) {
+            /* Eingerichtete Felder der Vorlage: Position = linke obere Ecke als Anteil der Seite, Größe in Punkt; freie Felder bleiben leer */
+            fields.forEach(function (f) {
+              var pg = pages[f.p]; if (!pg) return; var v = fieldVal(f, d); if (!v) return; var sz = pg.getSize(), fs = f.s || 11;
+              pg.drawText(pdfText(v), { x: sz.width * f.x, y: sz.height * (1 - f.y) - fs * 0.8, size: fs, font: font, color: L.rgb(0.1, 0.1, 0.1) });
+            });
+            return doc.save();
+          }
           function put(pg, key, fx, fy, fz) {
             var sz = pg.getSize(), txt = key === 'name' ? d.name : key === 'dob' ? d.dob : key === 'datum' ? d.datum : [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
             if (!txt) return;
@@ -8413,6 +8455,7 @@ function testSig() {
     .catch(function () { if (win) win.close(); alert('Der Testlauf hat nicht geklappt. Ist die Datei pdf-lib.min.js hochgeladen und bist Du online?'); });
 }
 var tpCur = null;
+function tpFieldsInfo() { var e = document.getElementById('tp-finfo'); if (!e || !tpCur) return; var n = (tpCur.fields || []).length; e.textContent = n ? n + (n === 1 ? ' Feld eingerichtet' : ' Felder eingerichtet') : (tpCur.fill ? 'Feste Positionen des Praxisbogens' : 'Name, Datum, fester Text oder freie Felder an beliebiger Stelle'); }
 function openTpl(id) {
   tpCur = templates.filter(function (t) { return t.id === id; })[0]; if (!tpCur) return;
   document.getElementById('tp-name').value = tpCur.name;
@@ -8422,7 +8465,7 @@ function openTpl(id) {
   document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on);
   var s2 = tpCur.sig2 && tpCur.sig2.on ? tpCur.sig2 : { x: 0.52, y: sg.y }; document.getElementById('tp-sig2').checked = !!(tpCur.sig2 && tpCur.sig2.on); document.getElementById('tp-x2').value = Math.round(s2.x * 100); document.getElementById('tp-y2').value = Math.round(s2.y * 100);
   document.getElementById('tp-pg').value = sg.page; document.getElementById('tp-x').value = Math.round(sg.x * 100); document.getElementById('tp-y').value = Math.round(sg.y * 100); document.getElementById('tp-w').value = Math.round(sg.w * 100);
-  updateSigPrev();
+  updateSigPrev(); tpFieldsInfo();
   var ls = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(id) >= 0; }).map(function (k) { return k.name; });
   document.getElementById('tp-leist').textContent = ls.length ? 'Verknüpft mit: ' + ls.join(', ') : 'Noch mit keiner Leistung verknüpft (im Reiter Leistungen bei der jeweiligen Leistung auswählen).';
   openModal('modal-tpl');
@@ -8634,7 +8677,7 @@ async function pdfThumb(dd, w) {
   } finally { doc.destroy(); }
 }
 function docThumb(dd, ic) {
-  var key = dd.id + '|' + (dd.sig ? dd.sig.ts : '');
+  var key = dd.id + '|' + (dd.sig ? dd.sig.ts : '') + '|' + (dd.sig2 ? dd.sig2.ts : '') + '|' + (dd.ets || '');
   if (THC[key]) { setTh(ic, THC[key]); return; }
   if (/\.(png|jpe?g|webp|gif)$/i.test(dd.name || '')) fileURL(dd).then(function (u) { if (u) setTh(ic, u); });
   else if (/\.pdf$/i.test(dd.name || '')) THQ = THQ.then(function () { return pdfThumb(dd); }).then(function (u) { if (u) { THC[key] = u; setTh(ic, u); } }).catch(function () {});
@@ -8645,7 +8688,8 @@ function docPreview(dd) {
   var open = mk('a', 'btn btn-secondary btn-sm', 'Öffnen'); open.target = '_blank'; open.rel = 'noopener'; open.style.textDecoration = 'none';
   var x = mk('button', 'btn btn-cancel btn-sm', 'Schließen'); x.type = 'button';
   var close = function () { o.remove(); }; x.onclick = close; o.onclick = function (ev) { if (ev.target === o) close(); };
-  bar.appendChild(t); bar.appendChild(open); bar.appendChild(x); box.appendChild(bar); box.appendChild(img); o.appendChild(box); document.body.appendChild(o);
+  var ed = mk('button', 'btn btn-secondary btn-sm', 'Bearbeiten'); ed.type = 'button'; ed.onclick = function () { close(); if (curP) pdfEdit(curP, dd); };
+  bar.appendChild(t); if (/\.pdf$/i.test(dd.name || '') || dd.tid) bar.appendChild(ed); bar.appendChild(open); bar.appendChild(x); box.appendChild(bar); box.appendChild(img); o.appendChild(box); document.body.appendChild(o);
   fileURL(dd).then(function (u) { if (u) { open.href = u; if (!/\.pdf$/i.test(dd.name || '')) img.src = u; } });
   if (/\.pdf$/i.test(dd.name || '')) { img.alt = 'Wird geladen …'; pdfThumb(dd, 900).then(function (u) { if (u) img.src = u; }).catch(function () { img.alt = 'Keine Vorschau möglich.'; }); }
 }
@@ -8668,6 +8712,7 @@ function medDocRow(p, dd) {
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }
       openRx(null, lg);
     }]] : []).concat([
+    ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }],
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Umbenennen', async function () {
       var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
