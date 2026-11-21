@@ -10,7 +10,7 @@
   'use strict';
   var COLORS = [['#0b1f5c', 'Navy'], ['#111111', 'Schwarz'], ['#c0262d', 'Rot'], ['#1d4ed8', 'Blau'], ['#15803d', 'Grün']];
   var TF_KINDS = [['name', 'Name (Vor- und Nachname)'], ['vorname', 'Vorname'], ['nachname', 'Nachname'], ['anrede', 'Anrede'], ['dob', 'Geburtsdatum'], ['namedob', 'Name, geb. Datum'],
-    ['datum', 'Datum (heute oder Termin)'], ['adresse', 'Anschrift (eine Zeile)'], ['arzt', 'Arzt (Praxisinhaber)'], ['fest', 'Fester Text'], ['frei', 'Freies Textfeld (in der Akte ausfüllen)']];
+    ['datum', 'Datum (heute oder Termin)'], ['adresse', 'Anschrift (eine Zeile)'], ['arzt', 'Arzt (Praxisinhaber)'], ['fest', 'Fester Text'], ['frei', 'Freies Textfeld (in der Akte ausfüllen)'], ['kasten', 'Kästchen (in der Akte antippen = Haken)']];
   var PE = null, TF = null;
 
   function h(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
@@ -65,6 +65,10 @@
       c.save(); c.setLineDash([6, 4]); c.strokeStyle = 'rgba(1,34,101,.55)'; c.lineWidth = 1.5; c.strokeRect(f.x * Wp, f.y * Hp, w, fs * 1.35);
       c.fillStyle = 'rgba(1,34,101,.55)'; c.font = Math.round(fs * 0.8) + 'px sans-serif'; c.fillText(f.txt || 'Freies Feld', f.x * Wp + 4, f.y * Hp + fs); c.restore();
     });
+    (PE.boxes || []).forEach(function (f) {
+      if (f.p !== pg.i || f.r) return;
+      var sz = (f.s || 12) / pg.W * Wp; c.save(); c.setLineDash([4, 3]); c.strokeStyle = 'rgba(1,34,101,.5)'; c.lineWidth = 1.2; c.strokeRect(f.x * Wp, f.y * Hp, sz, sz); c.restore();
+    });
     PE.items.forEach(function (it) {
       if (it.p !== pg.i) return;
       c.save(); c.strokeStyle = c.fillStyle = it.c; c.globalAlpha = it.a || 1; c.lineCap = 'round'; c.lineJoin = 'round';
@@ -104,12 +108,25 @@
       return f.x >= fd.x && f.x <= fd.x + (fd.w || 0.3) && f.y >= fd.y && f.y <= fd.y + hh;
     })[0] || null;
   }
+  function hitBox(pg, f) {
+    var tolx = 6 / pg.W, toly = 6 / pg.H;
+    return (PE.boxes || []).filter(function (b) { var sx = (b.s || 12) / pg.W, sy = (b.s || 12) / pg.H; return b.p === pg.i && f.x >= b.x - tolx && f.x <= b.x + sx + tolx && f.y >= b.y - toly && f.y <= b.y + sy + toly; })[0] || null;
+  }
+  function toggleBox(pg, b) {
+    var k = -1; PE.items.forEach(function (it, i) { if (it.fid === b.id && it.t === 'mark') k = i; });
+    peSnap();
+    if (k >= 0) PE.items.splice(k, 1);
+    else PE.items.push({ t: 'mark', p: pg.i, x: b.x + (b.s || 12) / 2 / pg.W, y: b.y + (b.s || 12) / 2 / pg.H, s: (b.s || 12) * 1.05 / pg.W, sym: 'check', c: PE.color, fid: b.id });
+    peDraw(pg);
+  }
   function peBind(pg) {
     var ov = pg.ov, cur = null;
     ov.addEventListener('pointerdown', async function (ev) {
       var tool = PE.tool; if (tool === 'hand' && ev.pointerType !== 'pen') return;
       if (tool === 'hand') tool = 'pen';
       ev.preventDefault(); var f = frac(ov, ev), tol = 10 / f.r.width;
+      var bx = tool === 'pen' || tool === 'marker' ? null : hitBox(pg, f);
+      if (bx) { toggleBox(pg, bx); return; }
       if (tool === 'pen' || tool === 'marker') {
         peSnap(); try { ov.setPointerCapture(ev.pointerId); } catch (x) {}
         cur = tool === 'pen' ? { t: 'ink', p: pg.i, pts: [[f.x, f.y]], c: PE.color, w: PE.width / pg.W, a: 1 } : { t: 'ink', p: pg.i, pts: [[f.x, f.y]], c: '#facc15', w: 12 / pg.W, a: 0.35 };
@@ -136,6 +153,9 @@
       cur.pts.push([Math.round(f.x * 10000) / 10000, Math.round(f.y * 10000) / 10000]); peDraw(pg);
     });
     ['pointerup', 'pointercancel'].forEach(function (n) { ov.addEventListener(n, function () { cur = null; }); });
+    ov.addEventListener('click', function (ev) {
+      if (PE.tool !== 'hand') return; var f = frac(ov, ev), bx = hitBox(pg, f); if (bx) toggleBox(pg, bx);
+    });
   }
   function peTool(t) {
     PE.tool = t;
@@ -199,7 +219,8 @@
     var head = new Uint8Array(await base.slice(0, 5).arrayBuffer()); if (String.fromCharCode.apply(null, head) !== '%PDF-') { alert('Bearbeiten geht nur bei PDF-Dateien.'); return; }
     var t = typeof tplFor === 'function' ? tplFor(rec) : null;
     PE = { p: p, rec: rec, base: base, hadBase: cont, items: cont ? JSON.parse(JSON.stringify(rec.anno)) : [], undo: [], tool: 'pen', color: COLORS[0][0], width: 2, size: 11, dirty: false,
-      free: t && Array.isArray(t.fields) ? t.fields.filter(function (f) { return f.k === 'frei'; }) : [] };
+      free: t && Array.isArray(t.fields) ? t.fields.filter(function (f) { return f.k === 'frei'; }) : [],
+      boxes: t && Array.isArray(t.fields) ? t.fields.filter(function (f) { return f.k === 'kasten'; }) : [] };
     var ui = shell(rec.name || 'Dokument'); PE.ui = ui;
     var tools = ui.tools;
     [['hand', 'Blättern (Finger scrollt, Stift schreibt)'], ['pen', 'Stift'], ['marker', 'Textmarker'], ['text', 'Text (antippen; vorhandenen Text antippen zum Ändern)'], ['check', 'Haken'], ['cross', 'Kreuz'], ['erase', 'Radierer']].forEach(function (x) {
@@ -231,6 +252,12 @@
     var c = pg.ov.getContext('2d'), Wp = pg.ov.width, Hp = pg.ov.height; c.clearRect(0, 0, Wp, Hp);
     TF.fields.forEach(function (f) {
       if (f.p !== pg.i) return;
+      if (f.k === 'kasten') {
+        var ks = (f.s || 12) / pg.W * Wp, kx = f.x * Wp, ky = f.y * Hp, sel2 = TF.sel === f;
+        c.fillStyle = 'rgba(21,128,61,.10)'; c.fillRect(kx, ky, ks, ks); c.setLineDash(f.r ? [] : [4, 3]); c.strokeStyle = sel2 ? '#c0262d' : 'rgba(21,128,61,.9)'; c.lineWidth = sel2 ? 2.5 : 1.6; c.strokeRect(kx, ky, ks, ks); c.setLineDash([]);
+        c.strokeStyle = 'rgba(21,128,61,.9)'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(kx + ks * 0.2, ky + ks * 0.55); c.lineTo(kx + ks * 0.42, ky + ks * 0.78); c.lineTo(kx + ks * 0.82, ky + ks * 0.25); c.stroke();
+        return;
+      }
       var fs = (f.s || 11) / pg.W * Wp, label = fieldShown(f); c.font = fs + 'px Helvetica, Arial, sans-serif';
       var w = f.k === 'frei' ? (f.w || 0.3) * Wp : c.measureText(label).width + 6, x = f.x * Wp, y = f.y * Hp, sel = TF.sel === f;
       c.fillStyle = f.k === 'frei' ? 'rgba(1,34,101,.06)' : 'rgba(21,128,61,.10)'; c.fillRect(x - 2, y, w, fs * 1.3);
@@ -242,6 +269,7 @@
   function tfHit(pg, f) {
     for (var k = TF.fields.length - 1; k >= 0; k--) {
       var fd = TF.fields[k]; if (fd.p !== pg.i) continue;
+      if (fd.k === 'kasten') { var sx = (fd.s || 12) / pg.W, sy = (fd.s || 12) / pg.H; if (f.x >= fd.x - 0.015 && f.x <= fd.x + sx + 0.015 && f.y >= fd.y - 0.01 && f.y <= fd.y + sy + 0.01) return fd; continue; }
       var hh = (fd.s || 11) * 1.3 / pg.H, ww = fd.k === 'frei' ? (fd.w || 0.3) : Math.max(0.08, fieldShown(fd).length * (fd.s || 11) * 0.55 / pg.W);
       if (f.x >= fd.x - 0.01 && f.x <= fd.x + ww && f.y >= fd.y - 0.005 && f.y <= fd.y + hh) return fd;
     }
@@ -252,7 +280,10 @@
     if (TF.placing) { box.appendChild(h('span', 'pe-hint', 'Jetzt auf die Stelle im Dokument tippen, an der „' + kindLabel(TF.kind) + '“ stehen soll.')); return; }
     var f = TF.sel; if (!f) { box.appendChild(h('span', 'pe-hint', TF.fields.length ? 'Feld antippen zum Ändern, ziehen zum Verschieben.' : 'Noch keine Felder. Art wählen und „+ Feld“ tippen.')); return; }
     var ks = h('select', 'pe-sel'); TF_KINDS.forEach(function (k) { var o = h('option', '', k[1]); o.value = k[0]; if (k[0] === f.k) o.selected = true; ks.appendChild(o); });
-    ks.onchange = function () { f.k = ks.value; tfRedraw(); }; box.appendChild(ks);
+    ks.onchange = function () { f.k = ks.value; if (f.k === 'kasten' && !f.s) f.s = 12; tfRedraw(); }; box.appendChild(ks);
+    if (f.k === 'kasten') {
+      var rl = h('label', 'pe-hint'); rl.style.cssText = 'display:inline-flex; gap:6px; align-items:center;'; var rc = document.createElement('input'); rc.type = 'checkbox'; rc.checked = !!f.r; rc.onchange = function () { f.r = rc.checked; TF.dirty = true; tfRedraw(); }; rl.appendChild(rc); rl.appendChild(document.createTextNode('Rahmen mitdrucken (wenn im PDF noch kein Kästchen steht)')); box.appendChild(rl);
+    }
     if (f.k === 'fest' || f.k === 'frei') {
       var ti = h('input', 'form-control pe-in'); ti.type = 'text'; ti.value = f.txt || ''; ti.placeholder = f.k === 'fest' ? 'Text, der immer eingetragen wird' : 'Beschriftung, z. B. Präparat';
       ti.oninput = function () { f.txt = ti.value; TF.pages.forEach(tfDraw); }; box.appendChild(ti);
@@ -275,7 +306,8 @@
       var f = frac(ov, ev);
       if (TF.placing) {
         ev.preventDefault(); TF.placing = false;
-        var nf = { id: newId(), k: TF.kind, p: pg.i, x: f.x, y: f.y, s: 11 };
+        var nf = { id: newId(), k: TF.kind, p: pg.i, x: f.x, y: f.y, s: TF.kind === 'kasten' ? 12 : 11 };
+        if (nf.k === 'kasten') { nf.x = Math.max(0, f.x - 6 / pg.W); nf.y = Math.max(0, f.y - 6 / pg.H); }
         if (nf.k === 'frei') nf.w = 0.3;
         if (nf.k === 'fest' || nf.k === 'frei') { var v = await kaPrompt(nf.k === 'fest' ? 'Fester Text:' : 'Beschriftung des freien Feldes (nur zur Orientierung, wird nicht gedruckt):', '', { ok: 'Übernehmen' }); if (v == null) { tfRedraw(); return; } nf.txt = String(v); }
         TF.fields.push(nf); TF.sel = nf; TF.dirty = true; tfRedraw(); return;
@@ -315,7 +347,7 @@
     cancel.onclick = async function () { if (TF.dirty && !await kaConfirm('Änderungen an den Feldern verwerfen?')) return; ui.close(); TF = null; };
     var save = h('button', 'btn btn-save btn-sm', 'Speichern'); save.type = 'button';
     save.onclick = function () {
-      t.fields = TF.fields.map(function (f) { var o = { id: f.id, k: f.k, p: f.p, x: Math.round(f.x * 10000) / 10000, y: Math.round(f.y * 10000) / 10000, s: f.s || 11 }; if (f.k === 'fest' || f.k === 'frei') o.txt = f.txt || ''; if (f.k === 'frei') o.w = f.w || 0.3; return o; });
+      t.fields = TF.fields.map(function (f) { var o = { id: f.id, k: f.k, p: f.p, x: Math.round(f.x * 10000) / 10000, y: Math.round(f.y * 10000) / 10000, s: f.s || 11 }; if (f.k === 'fest' || f.k === 'frei') o.txt = f.txt || ''; if (f.k === 'frei') o.w = f.w || 0.3; if (f.k === 'kasten' && f.r) o.r = 1; return o; });
       if (t.fields.length) t.fill = 1;
       persist(); try { renderTemplates(); } catch (x) {} var cb = document.getElementById('tp-fill'); if (cb && t.fill) cb.checked = true;
       try { if (typeof tpFieldsInfo === 'function') tpFieldsInfo(); } catch (x) {}

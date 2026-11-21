@@ -63,7 +63,9 @@ function fillStampPdf(srcBlob, d, fields) {
           if (fields && fields.length) {
             /* Eingerichtete Felder der Vorlage: Position = linke obere Ecke als Anteil der Seite, Größe in Punkt; freie Felder bleiben leer */
             fields.forEach(function (f) {
-              var pg = pages[f.p]; if (!pg) return; var v = fieldVal(f, d); if (!v) return; var sz = pg.getSize(), fs = f.s || 11;
+              var pg = pages[f.p]; if (!pg) return;
+              if (f.k === 'kasten') { if (f.r) { var ks = f.s || 12, szk = pg.getSize(); pg.drawRectangle({ x: szk.width * f.x, y: szk.height * (1 - f.y) - ks, width: ks, height: ks, borderColor: L.rgb(0.1, 0.1, 0.1), borderWidth: 0.9 }); } return; }
+              var v = fieldVal(f, d); if (!v) return; var sz = pg.getSize(), fs = f.s || 11;
               pg.drawText(pdfText(v), { x: sz.width * f.x, y: sz.height * (1 - f.y) - fs * 0.8, size: fs, font: font, color: L.rgb(0.1, 0.1, 0.1) });
             });
             return doc.save();

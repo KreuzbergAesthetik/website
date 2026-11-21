@@ -175,3 +175,5 @@ Offene Punkte stehen in HANDOVER.md Abschnitt 0 (Serverpasswort nach dem IONOS-U
 - `pdfEdit(p, rec)`: Arbeitsdokument bearbeiten (Stift, Textmarker, Text, Haken, Kreuz, Radierer, Rückgängig). Erstes Speichern legt die vorige Fassung als ausgeblendetes Dokument an (`vonDok`, `rec.annoBase`), Einträge liegen in `rec.anno` und bleiben bearbeitbar, bis neu unterschrieben wird (`rec.annoSig`). Jede Speicherung im Änderungsprotokoll.
 - `tplFields(t)`: Felder der Vorlage (`t.fields`: k, p, x, y, s, txt, w); vorbelegt aus der Akte, fester Text, freies Feld (bleibt leer, im Editor als Platzhalter). `fillStampPdf` nutzt `t.fields`, sonst die alten festen Positionen `FILL_POS` (werden beim ersten Öffnen der Felder übernommen).
 - Zweite Unterschrift (Arzt): `t.sig2` (x, y; Seite und Breite wie `t.sig`), `rec.sig2`.
+
+- Kästchen (2026-11-21-r): Feldart `kasten` in `t.fields` (x, y, s, optional `r` = Rahmen mitdrucken). Im Editor setzt ein Tippen mit jedem Werkzeug außer Stift/Textmarker einen Haken (Eintrag `mark` mit `fid`), nochmal Tippen nimmt ihn weg; Blättern-Werkzeug: Fingertipp.

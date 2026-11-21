@@ -3132,7 +3132,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-q';
+var KA_V = '2026-11-21-r';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -8366,7 +8366,9 @@ function fillStampPdf(srcBlob, d, fields) {
           if (fields && fields.length) {
             /* Eingerichtete Felder der Vorlage: Position = linke obere Ecke als Anteil der Seite, Größe in Punkt; freie Felder bleiben leer */
             fields.forEach(function (f) {
-              var pg = pages[f.p]; if (!pg) return; var v = fieldVal(f, d); if (!v) return; var sz = pg.getSize(), fs = f.s || 11;
+              var pg = pages[f.p]; if (!pg) return;
+              if (f.k === 'kasten') { if (f.r) { var ks = f.s || 12, szk = pg.getSize(); pg.drawRectangle({ x: szk.width * f.x, y: szk.height * (1 - f.y) - ks, width: ks, height: ks, borderColor: L.rgb(0.1, 0.1, 0.1), borderWidth: 0.9 }); } return; }
+              var v = fieldVal(f, d); if (!v) return; var sz = pg.getSize(), fs = f.s || 11;
               pg.drawText(pdfText(v), { x: sz.width * f.x, y: sz.height * (1 - f.y) - fs * 0.8, size: fs, font: font, color: L.rgb(0.1, 0.1, 0.1) });
             });
             return doc.save();
