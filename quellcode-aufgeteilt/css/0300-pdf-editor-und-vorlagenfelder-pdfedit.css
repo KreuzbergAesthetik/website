@@ -20,3 +20,5 @@ body.pe-open { overflow:hidden; }
 .pe-cv, .pe-ovc { position:absolute; inset:0; width:100%; height:100%; }
 .pe-pno { position:absolute; right:6px; bottom:-18px; font-size:11px; color:#64748b; }
 .pe-load { padding:40px; color:#64748b; }
+#modal-sign { z-index:95; }
+.pe-hintbar { background:#fef3c7; color:#92400e; padding:6px 10px; font-size:13px; border-radius:10px; }

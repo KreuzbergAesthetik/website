@@ -43,10 +43,13 @@ function refreshFiles() {
 function mediaGrid(p, list) {
   var g = mk('div', 'media');
   list.forEach(function (b, i) {
-    var im = document.createElement('img'); im.alt = b.name || ''; im.loading = 'lazy';
+    var w = mk('div', 'mi'), im = document.createElement('img'); im.alt = b.name || ''; im.loading = 'lazy'; im.draggable = true;
     fileURL(b).then(function (u) { if (u) im.src = u; });
     im.onclick = function () { showGallery(p, list, i); };
-    g.appendChild(im);
+    im.addEventListener('dragstart', function (ev) { try { ev.dataTransfer.setData('text/x-ka-bild', String(b.id)); ev.dataTransfer.effectAllowed = 'copy'; } catch (x) {} });
+    w.appendChild(im);
+    if ((p.bilder || []).indexOf(b) >= 0 && window.cmpAdd) { var cb = mk('button', 'mi-cmp', '⇄'); cb.type = 'button'; cb.title = 'Zum Bildvergleich hinzufügen'; cb.setAttribute('aria-label', cb.title); cb.onclick = function (ev) { ev.stopPropagation(); cmpAdd(p, b); }; w.appendChild(cb); }
+    g.appendChild(w);
   });
   return g;
 }
@@ -94,36 +97,7 @@ function galCompare() {
   if (gal.cmpA === r) { gal.cmpA = null; galShow(); return; }
   var a = gal.cmpA; gal.cmpA = null; galShow(); openCompare(a, r);
 }
-var cmp = null;
-function openCompare(a, b) {
-  cmp = tsOf(a) <= tsOf(b) ? { v: a, n: b, mode: 'slider', pos: 50 } : { v: b, n: a, mode: 'slider', pos: 50 };
-  cmpRender(); openModal('modal-cmp');
-}
-function cmpSwap() { if (!cmp) return; var t = cmp.v; cmp.v = cmp.n; cmp.n = t; cmpRender(); }
-function cmpMode() { if (!cmp) return; cmp.mode = cmp.mode === 'slider' ? 'side' : 'slider'; cmpRender(); }
-function cmpRender() {
-  var st = document.getElementById('cmp-stage'); if (!st || !cmp) return; st.innerHTML = '';
-  document.getElementById('cmp-mode').textContent = cmp.mode === 'slider' ? 'Nebeneinander' : 'Überblenden';
-  var lab = function (r, t) { var d = new Date(tsOf(r)); return t + ' · ' + fmtD(iso(d)); };
-  var img = function (r) { var i = document.createElement('img'); i.alt = r.name || ''; fileURL(r).then(function (u) { if (u) i.src = u; }); return i; };
-  if (cmp.mode === 'side') {
-    st.className = 'cmp-stage cmp-side';
-    [[cmp.v, 'Vorher'], [cmp.n, 'Nachher']].forEach(function (x) { var f = mk('figure', 'cmp-fig'); f.appendChild(img(x[0])); f.appendChild(mk('figcaption', '', lab(x[0], x[1]))); st.appendChild(f); });
-    return;
-  }
-  st.className = 'cmp-stage cmp-over';
-  var wrap = mk('div', 'cmp-wrap'), a = img(cmp.v), b = img(cmp.n), line = mk('div', 'cmp-line'), knob = mk('div', 'cmp-knob', '\u2194');
-  a.className = 'cmp-a'; b.className = 'cmp-b'; line.appendChild(knob);
-  var set = function (pct) { pct = Math.max(0, Math.min(100, pct)); cmp.pos = pct; b.style.clipPath = 'inset(0 0 0 ' + pct + '%)'; line.style.left = pct + '%'; };
-  var move = function (ev) { var r = wrap.getBoundingClientRect(); set((ev.clientX - r.left) / r.width * 100); };
-  wrap.addEventListener('pointerdown', function (ev) { wrap.setPointerCapture(ev.pointerId); move(ev); wrap._drag = true; });
-  wrap.addEventListener('pointermove', function (ev) { if (wrap._drag) move(ev); });
-  ['pointerup', 'pointercancel'].forEach(function (t) { wrap.addEventListener(t, function () { wrap._drag = false; }); });
-  wrap.tabIndex = 0; wrap.addEventListener('keydown', function (ev) { if (ev.key === 'ArrowLeft') set(cmp.pos - 5); else if (ev.key === 'ArrowRight') set(cmp.pos + 5); });
-  wrap.appendChild(a); wrap.appendChild(b); wrap.appendChild(line); set(cmp.pos);
-  var l1 = mk('span', 'cmp-tag cmp-tag-l', lab(cmp.v, 'Vorher')), l2 = mk('span', 'cmp-tag cmp-tag-r', lab(cmp.n, 'Nachher'));
-  wrap.appendChild(l1); wrap.appendChild(l2); st.appendChild(wrap);
-}
+function openCompare(a, b) { cmpPair((gal && gal.p) || curP, a, b); }
 function galStep(n) { if (!gal) return; gal.i = (gal.i + n + gal.list.length) % gal.list.length; galShow(); }
 function galDelete() {
   if (!gal) return;
@@ -214,7 +188,7 @@ function medDocRow(p, dd) {
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }
       openRx(null, lg);
     }]] : []).concat([
-    ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }],
+    ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }]].concat(dd.sig ? [['Unterschrift prüfen', function () { sigInfo(dd); }]] : []).concat([
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Umbenennen', async function () {
       var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
@@ -222,12 +196,14 @@ function medDocRow(p, dd) {
       var before = auditFileState(dd); dd.name = v; auditFileChange(p, dd, before); persist(); refreshFiles(); renderMedien();
     }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
+    ['Logbuch (PDF)', function () { logbuchOpen(p, dd); }],
     [dd.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden', function () { fileHide(p, dd); }]
-  ])));
+  ]))));
   return r;
 }
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
+  try { if (window.cmpRender) cmpRender(curP); } catch (x) {}
   akTabs();
   var nb = (curP.bilder || []).filter(recordVisible).length + (curP.videos || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
   document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dateien (' + nd + ')';

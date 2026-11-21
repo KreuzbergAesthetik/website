@@ -175,3 +175,13 @@ Offene Punkte stehen in HANDOVER.md Abschnitt 0 (Serverpasswort nach dem IONOS-U
 - `pdfEdit(p, rec)`: Arbeitsdokument bearbeiten (Stift, Textmarker, Text, Haken, Kreuz, Radierer, Rückgängig). Erstes Speichern legt die vorige Fassung als ausgeblendetes Dokument an (`vonDok`, `rec.annoBase`), Einträge liegen in `rec.anno` und bleiben bearbeitbar, bis neu unterschrieben wird (`rec.annoSig`). Jede Speicherung im Änderungsprotokoll.
 - `tplFields(t)`: Felder der Vorlage (`t.fields`: k, p, x, y, s, txt, w); vorbelegt aus der Akte, fester Text, freies Feld (bleibt leer, im Editor als Platzhalter). `fillStampPdf` nutzt `t.fields`, sonst die alten festen Positionen `FILL_POS` (werden beim ersten Öffnen der Felder übernommen).
 - Zweite Unterschrift (Arzt): `t.sig2` (x, y; Seite und Breite wie `t.sig`), `rec.sig2`.
+
+- Kästchen (2026-11-21-r): Feldart `kasten` in `t.fields` (x, y, s, optional `r` = Rahmen mitdrucken). Im Editor setzt ein Tippen mit jedem Werkzeug außer Stift/Textmarker einen Haken (Eintrag `mark` mit `fid`), nochmal Tippen nimmt ihn weg; Blättern-Werkzeug: Fingertipp.
+
+## Unterschrift im Dokument, Nachweis, Logbuch (2026-11-21-u)
+- Unterschreiben (`openSign`): Hat die Vorlage ein festes Feld (`t.sig` ohne `free`), wird dort gestempelt (alt). Sonst öffnet der Editor das Unterschriftsfenster (`openSignPad`), danach tippt man ins Dokument (Werkzeuge P/A im Editor, `pdfedit.js`). Vorlagenoption "frei im Dokument platzieren" (`t.sig.free`).
+- Nachweis je Unterschrift (`sigRecord`): Zeit, Name, SHA-256 der unterschriebenen Datei und der Fassung davor, Schreibdauer, Punkte. `sigCheck` prüft die Datei gegen die letzte Prüfsumme (Menü "Unterschrift prüfen"). Einfache elektronische Unterschrift, keine qualifizierte Signatur.
+- Logbuch (PDF) je Dokument: `logbuchQueue/logbuchOpen` in `pdfedit.js`, liegt im Dateispeicher (`rec.logId`, nicht als eigenes Dokument), wird bei jeder Änderung neu geschrieben, Menü "Logbuch (PDF)". Bewusst nicht an das Dokument angehängt, damit die Prüfsumme der unterschriebenen Datei stabil bleibt.
+
+## Bildvergleich in der Akte (2026-11-21-v, `vergleich.js`)
+- Bereich `#md-cmp` im Reiter Anlagen → Bilder: bis zu drei Plätze (A, B, C), Bilder per Ziehen oder Symbol ⇄ am Bild (`cmpAdd`), aus der Bildansicht `cmpPair`. Übereinander (Teilen mit Kante(n) oder Überblenden mit Deckkraft je Bild, jedes Bild einzeln skalier- und verschiebbar) oder Nebeneinander (gemeinsamer Zoom und Verschieben). Der frühere Vergleich als Vollbild-Fenster (`modal-cmp`) entfällt. Bilder und Dateien stehen im Reiter Anlagen jetzt vor den Unterlagen.
