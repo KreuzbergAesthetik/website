@@ -176,12 +176,14 @@ function renderUnterlagen() {
     var st = tplState(p, t), d = st.d, btn;
     if (st.s === 'fehlt') btn = bt('In Akte legen', false, function () { addTplsTo(p, [t], null); });
     else if (st.s === 'offen') btn = bt('Unterschreiben', true, function () { openSign(p, d); });
+    else if (st.s === 'offen2') btn = bt('Als Arzt unterschreiben', true, function () { openSign(p, d, true); });
     else btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben' : 'vorhanden');
     var wd = t.web ? KA_DOCS.filter(function (x) { return x.id === t.web; })[0] : null, wsub = '';
     if (wd) { var ws = bestLast(p, 'doc:' + wd.id, 'sent'), wg = bestLast(p, 'doc:' + wd.id, 'got'); wsub = wg ? ' · online gelesen ' + dm(wg) : ws ? ' · Link gesendet ' + dm(ws) : ''; }
     var wrap = btn;
     if (wd) { wrap = mk('span'); wrap.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; var lb = mk('button', 'btn btn-secondary un-btn'); lb.type = 'button'; lb.title = 'Link senden'; lb.setAttribute('aria-label', 'Link senden'); lb.innerHTML = tvSvg('mail'); lb.firstChild.style.cssText = 'width:16px;height:16px;vertical-align:middle;'; lb.onclick = function (ev) { ev.stopPropagation(); docSend(ev, p, wd); }; wrap.appendChild(lb); wrap.appendChild(btn); }
-    row(st.s === 'ok' ? 'ok' : st.s === 'offen' ? 'wait' : '', st.s === 'ok' ? '✓' : st.s === 'offen' ? '✎' : '–', t.name, (st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : 'noch nicht in der Akte') + wsub, wrap);
+    var offenS = st.s === 'offen' || st.s === 'offen2';
+    row(st.s === 'ok' ? 'ok' : offenS ? 'wait' : '', st.s === 'ok' ? '✓' : offenS ? '✎' : '–', t.name, (st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) + (d.sig2 ? ' · Arzt ' + dm(d.sig2.ts) : '') : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : st.s === 'offen2' ? 'Patient hat unterschrieben · Unterschrift des Arztes fehlt' : 'noch nicht in der Akte') + wsub, wrap);
   });
   if (offen.children.length) { box.appendChild(mk('div', 'un-grp', 'Offen')); box.appendChild(offen); }
   if (erl.children.length) {

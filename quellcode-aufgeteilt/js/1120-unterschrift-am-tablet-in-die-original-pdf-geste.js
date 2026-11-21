@@ -14,8 +14,13 @@ function tplFor(rec) { return templates.filter(function (t) { return t.id === re
 function tplState(p, t) {
   var d = tplDoc(p, t);
   if (!d) return { d: null, s: 'fehlt' };
-  return (t.sig && t.sig.on && !d.sig) ? { d: d, s: 'offen' } : { d: d, s: 'ok' };
+  if (t.sig && t.sig.on && !d.sig) return { d: d, s: 'offen' };
+  if (t.sig && t.sig.on && t.sig2 && t.sig2.on && !d.sig2) return { d: d, s: 'offen2' };
+  return { d: d, s: 'ok' };
 }
+/* Zweite Unterschrift (Arzt): gleiche Seite und Breite wie das erste Feld, eigene Position */
+function sigCfg2(rec) { var t = tplFor(rec), c = sigCfg(rec); return t && t.sig2 && t.sig2.on ? { page: c.page, w: c.w, x: t.sig2.x, y: t.sig2.y } : null; }
+function needSig2(rec) { var t = tplFor(rec); return !!(rec.sig && !rec.sig2 && t && t.sig && t.sig.on && t.sig2 && t.sig2.on); }
 function sigCfg(rec) { var t = tplFor(rec); return t && t.sig && t.sig.on ? t.sig : DEF_SIG; }
 function signable(dd) { return /\.pdf$/i.test(dd.name) && !dd.sig && [KATS[0], KATS[1], KATS[2]].indexOf(katOf(dd)) >= 0; }
 function pdfText(t) { return String(t).replace(/[^\x20-\x7E\u00A0-\u00FF]/g, '?'); }
@@ -85,18 +90,20 @@ function sgPng() {
   t.getContext('2d').drawImage(cv, x0, y0, x1 - x0, y1 - y0, 0, 0, t.width, t.height);
   return new Promise(function (res) { t.toBlob(res, 'image/png'); });
 }
-function openSign(p, rec) {
-  sgTarget = { p: p, rec: rec }; sgSetup(); sgClear();
-  document.getElementById('sg-info').textContent = nameKey(p) + ' unterschreibt: ' + rec.name;
+function openSign(p, rec, arzt) {
+  sgTarget = { p: p, rec: rec, arzt: !!arzt }; sgSetup(); sgClear();
+  document.getElementById('sg-info').textContent = (arzt ? (settings.inhaber || 'Der Arzt') : nameKey(p)) + ' unterschreibt: ' + rec.name;
   openModal('modal-sign');
 }
 function applySign() {
   if (!sgInk || !sgBox) { alert('Bitte zuerst im Feld unterschreiben.'); return; }
   var t = sgTarget, btn = document.getElementById('sg-ok'), now = new Date(); btn.disabled = true;
-  var label = 'Unterschrieben am ' + pad(now.getDate()) + '.' + pad(now.getMonth() + 1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' Uhr von ' + nameKey(t.p);
+  var who = t.arzt ? (settings.inhaber || 'Arzt') : nameKey(t.p), cfg = t.arzt ? sigCfg2(t.rec) : sigCfg(t.rec);
+  if (!cfg) { btn.disabled = false; alert('Für diese Vorlage ist kein Feld für die Unterschrift des Arztes eingerichtet.'); return; }
+  var label = 'Unterschrieben am ' + pad(now.getDate()) + '.' + pad(now.getMonth() + 1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' Uhr von ' + who;
   Promise.all([sgPng(), fileBlob(t.rec)]).then(function (r) {
     if (!r[1]) throw new Error('file');
-    return stampPdf(r[1], sigCfg(t.rec), r[0], label);
+    return stampPdf(r[1], cfg, r[0], label);
   }).then(function (out) {
     if (urlCache[t.rec.id]) { URL.revokeObjectURL(urlCache[t.rec.id]); delete urlCache[t.rec.id]; }
     return fPut(t.rec.id, t.rec.name, out);
@@ -104,7 +111,7 @@ function applySign() {
     btn.disabled = false;
     if (!ok) { alert('Die unterschriebene Datei konnte nicht gespeichert werden.'); return; }
     var before = auditFileState(t.rec);
-    t.rec.sig = { ts: now.getTime(), name: nameKey(t.p) };
+    if (t.arzt) t.rec.sig2 = { ts: now.getTime(), name: who }; else t.rec.sig = { ts: now.getTime(), name: nameKey(t.p) };
     auditFileChange(t.p, t.rec, before, 'Dokumente');
     closeModal('modal-sign'); refreshFiles();
   }).catch(function () { btn.disabled = false; alert('Die Unterschrift konnte nicht in die PDF eingefügt werden. Die Datei bleibt unverändert. (Ist die Datei pdf-lib.min.js hochgeladen und bist Du online?)'); });
@@ -115,7 +122,11 @@ function updateSigPrev() {
   var w = +document.getElementById('tp-w').value, x = +document.getElementById('tp-x').value, y = +document.getElementById('tp-y').value;
   document.getElementById('tp-wv').textContent = w + ' %'; document.getElementById('tp-xv').textContent = x + ' %'; document.getElementById('tp-yv').textContent = y + ' %';
   var b = document.getElementById('tp-box'); b.style.left = x + '%'; b.style.top = y + '%'; b.style.width = w + '%'; b.style.height = (w / 3.5 / 1.414) + '%';
+  var on2 = on && document.getElementById('tp-sig2').checked; document.getElementById('tp-sig2cfg').style.display = on2 ? 'block' : 'none';
+  var x2 = +document.getElementById('tp-x2').value, y2 = +document.getElementById('tp-y2').value; document.getElementById('tp-x2v').textContent = x2 + ' %'; document.getElementById('tp-y2v').textContent = y2 + ' %';
+  var b2 = document.getElementById('tp-box2'); b2.style.display = on2 ? 'block' : 'none'; b2.style.left = x2 + '%'; b2.style.top = y2 + '%'; b2.style.width = w + '%'; b2.style.height = (w / 3.5 / 1.414) + '%';
 }
+function sig2FromForm() { return { on: true, x: +document.getElementById('tp-x2').value / 100, y: +document.getElementById('tp-y2').value / 100 }; }
 function sigFromForm() { return { on: true, page: Math.max(0, parseInt(document.getElementById('tp-pg').value, 10) || 0), x: +document.getElementById('tp-x').value / 100, y: +document.getElementById('tp-y').value / 100, w: +document.getElementById('tp-w').value / 100 }; }
 function testSig() {
   var c = document.createElement('canvas'); c.width = 700; c.height = 200; var g = c.getContext('2d');
@@ -133,6 +144,7 @@ function openTpl(id) {
   document.getElementById('tp-neu').checked = !!tpCur.neu; document.getElementById('tp-fill').checked = !!tpCur.fill;
   var sg = tpCur.sig && tpCur.sig.on ? tpCur.sig : DEF_SIG;
   document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on);
+  var s2 = tpCur.sig2 && tpCur.sig2.on ? tpCur.sig2 : { x: 0.52, y: sg.y }; document.getElementById('tp-sig2').checked = !!(tpCur.sig2 && tpCur.sig2.on); document.getElementById('tp-x2').value = Math.round(s2.x * 100); document.getElementById('tp-y2').value = Math.round(s2.y * 100);
   document.getElementById('tp-pg').value = sg.page; document.getElementById('tp-x').value = Math.round(sg.x * 100); document.getElementById('tp-y').value = Math.round(sg.y * 100); document.getElementById('tp-w').value = Math.round(sg.w * 100);
   updateSigPrev();
   var ls = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(id) >= 0; }).map(function (k) { return k.name; });
@@ -143,6 +155,7 @@ function saveTpl() {
   var name = document.getElementById('tp-name').value.trim(); if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
   tpCur.name = name; tpCur.kat = document.getElementById('tp-kat').value; tpCur.neu = document.getElementById('tp-neu').checked; if (document.getElementById('tp-fill').checked) tpCur.fill = 1; else delete tpCur.fill;
   if (document.getElementById('tp-sig').checked) tpCur.sig = sigFromForm(); else delete tpCur.sig;
+  if (tpCur.sig && document.getElementById('tp-sig2').checked) tpCur.sig2 = sig2FromForm(); else delete tpCur.sig2;
   persist(); renderTemplates(); closeModal('modal-tpl');
 }
 async function deleteTpl() {

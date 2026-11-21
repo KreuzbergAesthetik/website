@@ -1993,10 +1993,6 @@ function kaStart() {
         </table>
       </div>
       <div id="ls-empty" style="color:#94a3b8; font-size:13px; padding:10px 0;">Noch keine Leistungen angelegt</div>
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px;">
-        <select id="ls-per" class="form-control" style="width:auto;" onchange="lsPage = 1; renderLeist()" aria-label="Pro Seite"><option value="10">10 / Seite</option><option value="25" selected>25 / Seite</option><option value="50">50 / Seite</option><option value="0">Alle</option></select>
-        <div id="ls-pager" class="seg"></div>
-      </div>
       <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Diese Leistungen erscheinen im Termin und in der Rechnung. Wählst Du dort eine Leistung, füllen sich Preis und Dauer automatisch.</div>
     </div>
     <div class="card" style="margin-top:16px;">
@@ -2762,7 +2758,12 @@ function kaStart() {
         <div class="form-group"><label>Von links <span id="tp-xv"></span></label><input type="range" id="tp-x" min="0" max="85" value="55" oninput="updateSigPrev()"></div>
         <div class="form-group"><label>Von oben <span id="tp-yv"></span></label><input type="range" id="tp-y" min="0" max="95" value="86" oninput="updateSigPrev()"></div>
       </div>
-      <div id="tp-prev" style="position:relative; width:150px; aspect-ratio:1/1.414; background:#fff; border:1px solid #94a3b8; margin:6px 0;"><div id="tp-box" style="position:absolute; border:2px solid #16a34a; background:#16a34a33;"></div></div>
+      <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin:6px 0;"><input type="checkbox" id="tp-sig2" onchange="updateSigPrev()"> Auch Unterschrift des Arztes (zweites Feld, gleiche Seite und Breite)</label>
+      <div id="tp-sig2cfg" style="display:none;"><div class="grid-2">
+        <div class="form-group"><label>Arzt: von links <span id="tp-x2v"></span></label><input type="range" id="tp-x2" min="0" max="85" value="52" oninput="updateSigPrev()"></div>
+        <div class="form-group"><label>Arzt: von oben <span id="tp-y2v"></span></label><input type="range" id="tp-y2" min="0" max="95" value="52" oninput="updateSigPrev()"></div>
+      </div></div>
+      <div id="tp-prev" style="position:relative; width:150px; aspect-ratio:1/1.414; background:#fff; border:1px solid #94a3b8; margin:6px 0;"><div id="tp-box" style="position:absolute; border:2px solid #16a34a; background:#16a34a33;"></div><div id="tp-box2" style="position:absolute; border:2px solid #012265; background:#01226533; display:none;"></div></div>
       <button type="button" class="btn btn-secondary" onclick="testSig()">Testlauf mit Probe-Unterschrift</button>
     </div>
     <div style="margin-top:10px;"><button type="button" class="btn btn-secondary" id="tp-view" onclick="viewTpl()">Vorlage ansehen</button></div>
@@ -3107,7 +3108,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-n';
+var KA_V = '2026-11-21-p';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -4214,7 +4215,7 @@ function renderHome() {
     if (hasAllergy(p) || miss.length) {
       ex = mk('div', 'hm-chips');
       if (hasAllergy(p)) ex.appendChild(mk('span', 'badge hm-allergy', 'Allergie: ' + p.allergien));
-      var ml = miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' · Unterschrift' : ''); });
+      var ml = miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' · Unterschrift' : tplState(p, t).s === 'offen2' ? ' · Unterschrift Arzt' : ''); });
       if (ml.length > 2) { var c3 = mk('span', 'badge badge-amber', 'Offen: ' + ml.length + ' Unterlagen'); c3.title = ml.join('\n'); ex.appendChild(c3); }
       else ml.forEach(function (t) { var c2 = mk('span', 'badge badge-amber', 'Offen: ' + t); c2.title = t; ex.appendChild(c2); });
     }
@@ -4760,8 +4761,7 @@ function renderLeist() {
   var list = all.filter(function (k) { return (!q || k.name.toLowerCase().indexOf(q) >= 0) && (!fs.value || k.kat === fs.value); });
   var key = { id: function (k) { return k.id; }, name: function (k) { return k.name.toLowerCase(); }, kat: function (k) { var c = lkatOf(k); return c ? c.name.toLowerCase() : 'zzz'; }, price: function (k) { return k.price; }, dauer: function (k) { return k.dauer || 0; } }[lsSort.k];
   list.sort(function (a, b) { var x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * lsSort.dir; });
-  var per = parseInt(document.getElementById('ls-per').value, 10) || list.length || 1, pages = Math.max(1, Math.ceil(list.length / per)); if (lsPage > pages) lsPage = pages;
-  list.slice((lsPage - 1) * per, lsPage * per).forEach(function (k) {
+  list.forEach(function (k) {
     var i = all.indexOf(k), row = tb.insertRow(), c = [0, 1, 2, 3, 4, 5].map(function () { return row.insertCell(); });
     c[0].textContent = k.id; c[0].style.color = '#64748b';
     var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c[1].appendChild(b);
@@ -4769,8 +4769,6 @@ function renderLeist() {
     c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %'; c[5].textContent = k.dauer ? k.dauer + ' min' : '-';
   });
   if (all.length && !list.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 6; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
-  var pg = document.getElementById('ls-pager'); pg.innerHTML = ''; pg.style.display = pages > 1 ? 'inline-flex' : 'none';
-  for (var p = 1; p <= pages; p++) (function (p) { var b = mk('button', '', String(p)); b.type = 'button'; b.className = p === lsPage ? 'on' : ''; b.onclick = function () { lsPage = p; renderLeist(); }; pg.appendChild(b); })(p);
 }
 var LS_I = { copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>' };
 function lsAct(k, title, fn, cls) { var b = mk('button', 'tv-ib' + (cls ? ' ' + cls : '')); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.style.cssText = 'width:32px; height:30px; margin-right:4px;' + (cls === 'del' ? 'border-color:transparent; background:none; color:#dc2626;' : ''); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">' + LS_I[k] + '</svg>'; b.onclick = fn; return b; }
@@ -8152,12 +8150,14 @@ function renderUnterlagen() {
     var st = tplState(p, t), d = st.d, btn;
     if (st.s === 'fehlt') btn = bt('In Akte legen', false, function () { addTplsTo(p, [t], null); });
     else if (st.s === 'offen') btn = bt('Unterschreiben', true, function () { openSign(p, d); });
+    else if (st.s === 'offen2') btn = bt('Als Arzt unterschreiben', true, function () { openSign(p, d, true); });
     else btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben' : 'vorhanden');
     var wd = t.web ? KA_DOCS.filter(function (x) { return x.id === t.web; })[0] : null, wsub = '';
     if (wd) { var ws = bestLast(p, 'doc:' + wd.id, 'sent'), wg = bestLast(p, 'doc:' + wd.id, 'got'); wsub = wg ? ' · online gelesen ' + dm(wg) : ws ? ' · Link gesendet ' + dm(ws) : ''; }
     var wrap = btn;
     if (wd) { wrap = mk('span'); wrap.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; var lb = mk('button', 'btn btn-secondary un-btn'); lb.type = 'button'; lb.title = 'Link senden'; lb.setAttribute('aria-label', 'Link senden'); lb.innerHTML = tvSvg('mail'); lb.firstChild.style.cssText = 'width:16px;height:16px;vertical-align:middle;'; lb.onclick = function (ev) { ev.stopPropagation(); docSend(ev, p, wd); }; wrap.appendChild(lb); wrap.appendChild(btn); }
-    row(st.s === 'ok' ? 'ok' : st.s === 'offen' ? 'wait' : '', st.s === 'ok' ? '✓' : st.s === 'offen' ? '✎' : '–', t.name, (st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : 'noch nicht in der Akte') + wsub, wrap);
+    var offenS = st.s === 'offen' || st.s === 'offen2';
+    row(st.s === 'ok' ? 'ok' : offenS ? 'wait' : '', st.s === 'ok' ? '✓' : offenS ? '✎' : '–', t.name, (st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) + (d.sig2 ? ' · Arzt ' + dm(d.sig2.ts) : '') : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : st.s === 'offen2' ? 'Patient hat unterschrieben · Unterschrift des Arztes fehlt' : 'noch nicht in der Akte') + wsub, wrap);
   });
   if (offen.children.length) { box.appendChild(mk('div', 'un-grp', 'Offen')); box.appendChild(offen); }
   if (erl.children.length) {
@@ -8290,8 +8290,13 @@ function tplFor(rec) { return templates.filter(function (t) { return t.id === re
 function tplState(p, t) {
   var d = tplDoc(p, t);
   if (!d) return { d: null, s: 'fehlt' };
-  return (t.sig && t.sig.on && !d.sig) ? { d: d, s: 'offen' } : { d: d, s: 'ok' };
+  if (t.sig && t.sig.on && !d.sig) return { d: d, s: 'offen' };
+  if (t.sig && t.sig.on && t.sig2 && t.sig2.on && !d.sig2) return { d: d, s: 'offen2' };
+  return { d: d, s: 'ok' };
 }
+/* Zweite Unterschrift (Arzt): gleiche Seite und Breite wie das erste Feld, eigene Position */
+function sigCfg2(rec) { var t = tplFor(rec), c = sigCfg(rec); return t && t.sig2 && t.sig2.on ? { page: c.page, w: c.w, x: t.sig2.x, y: t.sig2.y } : null; }
+function needSig2(rec) { var t = tplFor(rec); return !!(rec.sig && !rec.sig2 && t && t.sig && t.sig.on && t.sig2 && t.sig2.on); }
 function sigCfg(rec) { var t = tplFor(rec); return t && t.sig && t.sig.on ? t.sig : DEF_SIG; }
 function signable(dd) { return /\.pdf$/i.test(dd.name) && !dd.sig && [KATS[0], KATS[1], KATS[2]].indexOf(katOf(dd)) >= 0; }
 function pdfText(t) { return String(t).replace(/[^\x20-\x7E\u00A0-\u00FF]/g, '?'); }
@@ -8361,18 +8366,20 @@ function sgPng() {
   t.getContext('2d').drawImage(cv, x0, y0, x1 - x0, y1 - y0, 0, 0, t.width, t.height);
   return new Promise(function (res) { t.toBlob(res, 'image/png'); });
 }
-function openSign(p, rec) {
-  sgTarget = { p: p, rec: rec }; sgSetup(); sgClear();
-  document.getElementById('sg-info').textContent = nameKey(p) + ' unterschreibt: ' + rec.name;
+function openSign(p, rec, arzt) {
+  sgTarget = { p: p, rec: rec, arzt: !!arzt }; sgSetup(); sgClear();
+  document.getElementById('sg-info').textContent = (arzt ? (settings.inhaber || 'Der Arzt') : nameKey(p)) + ' unterschreibt: ' + rec.name;
   openModal('modal-sign');
 }
 function applySign() {
   if (!sgInk || !sgBox) { alert('Bitte zuerst im Feld unterschreiben.'); return; }
   var t = sgTarget, btn = document.getElementById('sg-ok'), now = new Date(); btn.disabled = true;
-  var label = 'Unterschrieben am ' + pad(now.getDate()) + '.' + pad(now.getMonth() + 1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' Uhr von ' + nameKey(t.p);
+  var who = t.arzt ? (settings.inhaber || 'Arzt') : nameKey(t.p), cfg = t.arzt ? sigCfg2(t.rec) : sigCfg(t.rec);
+  if (!cfg) { btn.disabled = false; alert('Für diese Vorlage ist kein Feld für die Unterschrift des Arztes eingerichtet.'); return; }
+  var label = 'Unterschrieben am ' + pad(now.getDate()) + '.' + pad(now.getMonth() + 1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' Uhr von ' + who;
   Promise.all([sgPng(), fileBlob(t.rec)]).then(function (r) {
     if (!r[1]) throw new Error('file');
-    return stampPdf(r[1], sigCfg(t.rec), r[0], label);
+    return stampPdf(r[1], cfg, r[0], label);
   }).then(function (out) {
     if (urlCache[t.rec.id]) { URL.revokeObjectURL(urlCache[t.rec.id]); delete urlCache[t.rec.id]; }
     return fPut(t.rec.id, t.rec.name, out);
@@ -8380,7 +8387,7 @@ function applySign() {
     btn.disabled = false;
     if (!ok) { alert('Die unterschriebene Datei konnte nicht gespeichert werden.'); return; }
     var before = auditFileState(t.rec);
-    t.rec.sig = { ts: now.getTime(), name: nameKey(t.p) };
+    if (t.arzt) t.rec.sig2 = { ts: now.getTime(), name: who }; else t.rec.sig = { ts: now.getTime(), name: nameKey(t.p) };
     auditFileChange(t.p, t.rec, before, 'Dokumente');
     closeModal('modal-sign'); refreshFiles();
   }).catch(function () { btn.disabled = false; alert('Die Unterschrift konnte nicht in die PDF eingefügt werden. Die Datei bleibt unverändert. (Ist die Datei pdf-lib.min.js hochgeladen und bist Du online?)'); });
@@ -8391,7 +8398,11 @@ function updateSigPrev() {
   var w = +document.getElementById('tp-w').value, x = +document.getElementById('tp-x').value, y = +document.getElementById('tp-y').value;
   document.getElementById('tp-wv').textContent = w + ' %'; document.getElementById('tp-xv').textContent = x + ' %'; document.getElementById('tp-yv').textContent = y + ' %';
   var b = document.getElementById('tp-box'); b.style.left = x + '%'; b.style.top = y + '%'; b.style.width = w + '%'; b.style.height = (w / 3.5 / 1.414) + '%';
+  var on2 = on && document.getElementById('tp-sig2').checked; document.getElementById('tp-sig2cfg').style.display = on2 ? 'block' : 'none';
+  var x2 = +document.getElementById('tp-x2').value, y2 = +document.getElementById('tp-y2').value; document.getElementById('tp-x2v').textContent = x2 + ' %'; document.getElementById('tp-y2v').textContent = y2 + ' %';
+  var b2 = document.getElementById('tp-box2'); b2.style.display = on2 ? 'block' : 'none'; b2.style.left = x2 + '%'; b2.style.top = y2 + '%'; b2.style.width = w + '%'; b2.style.height = (w / 3.5 / 1.414) + '%';
 }
+function sig2FromForm() { return { on: true, x: +document.getElementById('tp-x2').value / 100, y: +document.getElementById('tp-y2').value / 100 }; }
 function sigFromForm() { return { on: true, page: Math.max(0, parseInt(document.getElementById('tp-pg').value, 10) || 0), x: +document.getElementById('tp-x').value / 100, y: +document.getElementById('tp-y').value / 100, w: +document.getElementById('tp-w').value / 100 }; }
 function testSig() {
   var c = document.createElement('canvas'); c.width = 700; c.height = 200; var g = c.getContext('2d');
@@ -8409,6 +8420,7 @@ function openTpl(id) {
   document.getElementById('tp-neu').checked = !!tpCur.neu; document.getElementById('tp-fill').checked = !!tpCur.fill;
   var sg = tpCur.sig && tpCur.sig.on ? tpCur.sig : DEF_SIG;
   document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on);
+  var s2 = tpCur.sig2 && tpCur.sig2.on ? tpCur.sig2 : { x: 0.52, y: sg.y }; document.getElementById('tp-sig2').checked = !!(tpCur.sig2 && tpCur.sig2.on); document.getElementById('tp-x2').value = Math.round(s2.x * 100); document.getElementById('tp-y2').value = Math.round(s2.y * 100);
   document.getElementById('tp-pg').value = sg.page; document.getElementById('tp-x').value = Math.round(sg.x * 100); document.getElementById('tp-y').value = Math.round(sg.y * 100); document.getElementById('tp-w').value = Math.round(sg.w * 100);
   updateSigPrev();
   var ls = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(id) >= 0; }).map(function (k) { return k.name; });
@@ -8419,6 +8431,7 @@ function saveTpl() {
   var name = document.getElementById('tp-name').value.trim(); if (!name) { alert('Bitte eine Bezeichnung eingeben.'); return; }
   tpCur.name = name; tpCur.kat = document.getElementById('tp-kat').value; tpCur.neu = document.getElementById('tp-neu').checked; if (document.getElementById('tp-fill').checked) tpCur.fill = 1; else delete tpCur.fill;
   if (document.getElementById('tp-sig').checked) tpCur.sig = sigFromForm(); else delete tpCur.sig;
+  if (tpCur.sig && document.getElementById('tp-sig2').checked) tpCur.sig2 = sig2FromForm(); else delete tpCur.sig2;
   persist(); renderTemplates(); closeModal('modal-tpl');
 }
 async function deleteTpl() {
@@ -8648,7 +8661,7 @@ function medDocRow(p, dd) {
   l2.appendChild(pill);
   if (dd.hiddenFromView) l2.appendChild(restoreVisibilityButton(function () { fileHide(p, dd); }));
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
-  if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); }
+  if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
   l2.appendChild(medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];

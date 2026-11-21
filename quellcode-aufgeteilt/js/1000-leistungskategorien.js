@@ -125,8 +125,7 @@ function renderLeist() {
   var list = all.filter(function (k) { return (!q || k.name.toLowerCase().indexOf(q) >= 0) && (!fs.value || k.kat === fs.value); });
   var key = { id: function (k) { return k.id; }, name: function (k) { return k.name.toLowerCase(); }, kat: function (k) { var c = lkatOf(k); return c ? c.name.toLowerCase() : 'zzz'; }, price: function (k) { return k.price; }, dauer: function (k) { return k.dauer || 0; } }[lsSort.k];
   list.sort(function (a, b) { var x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * lsSort.dir; });
-  var per = parseInt(document.getElementById('ls-per').value, 10) || list.length || 1, pages = Math.max(1, Math.ceil(list.length / per)); if (lsPage > pages) lsPage = pages;
-  list.slice((lsPage - 1) * per, lsPage * per).forEach(function (k) {
+  list.forEach(function (k) {
     var i = all.indexOf(k), row = tb.insertRow(), c = [0, 1, 2, 3, 4, 5].map(function () { return row.insertCell(); });
     c[0].textContent = k.id; c[0].style.color = '#64748b';
     var b = mk('button', 'pn', k.name); b.type = 'button'; b.onclick = function () { openLeist(i); }; c[1].appendChild(b);
@@ -134,8 +133,6 @@ function renderLeist() {
     c[3].textContent = eur(k.price); c[4].textContent = k.rate + ' %'; c[5].textContent = k.dauer ? k.dauer + ' min' : '-';
   });
   if (all.length && !list.length) { var er = tb.insertRow(), ec = er.insertCell(); ec.colSpan = 6; ec.textContent = 'Keine Leistung gefunden'; ec.style.color = '#94a3b8'; }
-  var pg = document.getElementById('ls-pager'); pg.innerHTML = ''; pg.style.display = pages > 1 ? 'inline-flex' : 'none';
-  for (var p = 1; p <= pages; p++) (function (p) { var b = mk('button', '', String(p)); b.type = 'button'; b.className = p === lsPage ? 'on' : ''; b.onclick = function () { lsPage = p; renderLeist(); }; pg.appendChild(b); })(p);
 }
 var LS_I = { copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>' };
 function lsAct(k, title, fn, cls) { var b = mk('button', 'tv-ib' + (cls ? ' ' + cls : '')); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.style.cssText = 'width:32px; height:30px; margin-right:4px;' + (cls === 'del' ? 'border-color:transparent; background:none; color:#dc2626;' : ''); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">' + LS_I[k] + '</svg>'; b.onclick = fn; return b; }

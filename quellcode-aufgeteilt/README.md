@@ -9,7 +9,7 @@ node werkzeuge/code-aufteilen.mjs --pruefen  # prüfen, ob die Kopie aktuell ist
 ```
 
 Die Teile sind verlustfrei: In der Reihenfolge aus `teile.json` aneinandergehängt ergeben sie exakt `index.html`
-(SHA-256 `3f8c4046f7cf62b5…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
+(SHA-256 `3f6bb1b5b83bb388…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
 
 - `css/`: Gestaltung, nach Themen (25 Teile)
 - `js/`: Programmlogik, nach Funktionsbereichen (35 Teile)
@@ -59,91 +59,91 @@ Bereits vorher eigenständige Dateien (nicht kopiert): `dialoge.js` (Hinweise, R
 | `html/0360-seite-start.html` | seite START | 1870 | 47 |
 | `html/0370-seite-patienten.html` | seite PATIENTEN | 1917 | 28 |
 | `html/0380-seite-rechnungen.html` | seite RECHNUNGEN | 1945 | 30 |
-| `html/0390-seite-leistungen.html` | seite LEISTUNGEN | 1975 | 33 |
-| `html/0400-seite-dokumente.html` | seite DOKUMENTE | 2008 | 19 |
-| `html/0410-seite-zahlungen.html` | seite ZAHLUNGEN | 2027 | 22 |
-| `html/0420-seite-praxisdaten.html` | seite PRAXISDATEN | 2049 | 47 |
-| `html/0430-seite-nachrichtenvorlagen.html` | seite NACHRICHTENVORLAGEN | 2096 | 15 |
-| `html/0440-seite-webformulare.html` | seite WEBFORMULARE | 2111 | 18 |
-| `html/0450-seite-sicherung.html` | seite SICHERUNG | 2129 | 24 |
-| `html/0460-seite-geraete-abgleich.html` | seite GERÄTE-ABGLEICH | 2153 | 48 |
-| `html/0470-seite-textbausteine.html` | seite TEXTBAUSTEINE | 2201 | 9 |
-| `html/0480-seite-todos.html` | seite TODOS | 2210 | 16 |
-| `html/0490-seite-statistik.html` | seite STATISTIK | 2226 | 34 |
-| `html/0500-seite-lager.html` | seite LAGER | 2260 | 20 |
-| `html/0510-fenster-neuer-patient.html` | fenster NEUER PATIENT | 2280 | 25 |
-| `html/0520-fenster-neuer-termin.html` | fenster NEUER TERMIN | 2305 | 43 |
-| `html/0530-fenster-patientenakte.html` | fenster PATIENTENAKTE | 2348 | 73 |
-| `html/0540-schwebender-aktionsknopf-der-akte-eigene-ebene-v.html` | Schwebender Aktionsknopf der Akte (eigene Ebene, verschiebt das Layout nicht) | 2421 | 10 |
-| `html/0550-fenster-termin-ansehen.html` | fenster TERMIN ANSEHEN | 2431 | 7 |
-| `html/0560-fenster-rechnungen-importieren.html` | fenster RECHNUNGEN IMPORTIEREN | 2438 | 17 |
-| `html/0570-fenster-dokumentation-zu-termin.html` | fenster DOKUMENTATION ZU TERMIN | 2455 | 10 |
-| `html/0580-fenster-rezept.html` | fenster REZEPT | 2465 | 23 |
-| `html/0590-fenster-rechnung-erstellen.html` | fenster RECHNUNG ERSTELLEN | 2488 | 54 |
-| `html/0600-fenster-leistungskategorie.html` | fenster LEISTUNGSKATEGORIE | 2542 | 27 |
-| `html/0610-fenster-leistung.html` | fenster LEISTUNG | 2569 | 31 |
-| `html/0620-fenster-altsystem-import.html` | fenster ALTSYSTEM-IMPORT | 2600 | 20 |
-| `html/0630-fenster-unterschrift.html` | fenster UNTERSCHRIFT | 2620 | 15 |
-| `html/0640-fenster-ausgabe.html` | fenster AUSGABE | 2635 | 18 |
-| `html/0650-fenster-nachrichtenvorlage.html` | fenster NACHRICHTENVORLAGE | 2653 | 37 |
-| `html/0660-fenster-platzhalter.html` | fenster PLATZHALTER | 2690 | 15 |
-| `html/0670-fenster-anrede.html` | fenster ANREDE | 2705 | 16 |
-| `html/0680-fenster-textbaustein.html` | fenster TEXTBAUSTEIN | 2721 | 14 |
-| `html/0690-fenster-vorlage.html` | fenster VORLAGE | 2735 | 43 |
-| `html/0700-fenster-rechnungen-pruefen.html` | fenster RECHNUNGEN PRÜFEN | 2778 | 9 |
-| `html/0710-fenster-rechnung-ansehen.html` | fenster RECHNUNG ANSEHEN | 2787 | 18 |
-| `html/0720-fenster-zahlung.html` | fenster ZAHLUNG | 2805 | 15 |
-| `html/0730-fenster-sicherung.html` | fenster SICHERUNG | 2820 | 15 |
-| `html/0740-fenster-fortschritt.html` | fenster FORTSCHRITT | 2835 | 11 |
-| `html/0750-fenster-sicherung-entschluesseln.html` | fenster SICHERUNG ENTSCHLÜSSELN | 2846 | 10 |
-| `html/0760-fenster-dokumentation.html` | fenster DOKUMENTATION | 2856 | 12 |
-| `html/0770-fenster-todo.html` | fenster TODO | 2868 | 19 |
-| `html/0780-fenster-webformular-texte.html` | fenster WEBFORMULAR-TEXTE | 2887 | 14 |
-| `html/0790-fenster-webformular-felder.html` | fenster WEBFORMULAR-FELDER | 2901 | 12 |
-| `html/0800-fenster-webformular-visuell-bearbeiten.html` | fenster WEBFORMULAR VISUELL BEARBEITEN | 2913 | 12 |
-| `html/0810-fenster-produkt.html` | fenster PRODUKT | 2925 | 48 |
-| `html/0820-fenster-ausbuchen.html` | fenster AUSBUCHEN | 2973 | 13 |
-| `html/0830-fenster-wareneingang.html` | fenster WARENEINGANG | 2986 | 20 |
-| `html/0840-fenster-produkt-verwenden.html` | fenster PRODUKT VERWENDEN | 3006 | 16 |
-| `html/0850-fenster-akten-zusammenlegen.html` | fenster AKTEN ZUSAMMENLEGEN | 3022 | 12 |
-| `html/0860-fenster-datum-und-uhrzeit.html` | fenster DATUM UND UHRZEIT | 3034 | 9 |
-| `html/0870-fenster-produktbuchung-bearbeiten.html` | fenster PRODUKTBUCHUNG BEARBEITEN | 3043 | 19 |
-| `html/0880-fenster-e-mail.html` | fenster E-MAIL | 3062 | 14 |
-| `html/0890-fenster-bild-gross.html` | fenster BILD GROSS | 3076 | 12 |
-| `html/0900-fenster-bildvergleich.html` | fenster BILDVERGLEICH | 3088 | 10 |
-| `html/0910-fenster-zuordnen.html` | fenster ZUORDNEN | 3098 | 10 |
-| `js/0920-app-grundlagen-und-navigation.js` | app-grundlagen-und-navigation | 3108 | 224 |
-| `js/0930-hinweise-an-patienten.js` | Hinweise an Patienten | 3332 | 358 |
-| `js/0940-globale-suche-im-kopfbereich.js` | Globale Suche im Kopfbereich | 3690 | 167 |
-| `js/0950-kalender.js` | Kalender | 3857 | 301 |
-| `js/0960-startseite.js` | Startseite | 4158 | 280 |
-| `js/0970-patienten-termine-doku.js` | Patienten, Termine, Doku | 4438 | 84 |
-| `js/0980-dateispeicher.js` | Dateispeicher  | 4522 | 60 |
-| `js/0990-rechnungen.js` | Rechnungen | 4582 | 54 |
-| `js/1000-leistungskategorien.js` | Leistungskategorien  | 4636 | 148 |
-| `js/1010-goae.js` | GOÄ | 4784 | 801 |
-| `js/1020-alle-tabellen.js` | Alle Tabellen | 5585 | 239 |
-| `js/1030-pdf-erzeugung.js` | PDF-Erzeugung  | 5824 | 48 |
-| `js/1040-qr-code-erzeugung.js` | QR-Code-Erzeugung  | 5872 | 280 |
-| `js/1050-briefumschlag-c6.js` | Briefumschlag C6  | 6152 | 495 |
-| `js/1060-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 6647 | 604 |
-| `js/1070-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 7251 | 263 |
-| `js/1080-statistik.js` | Statistik | 7514 | 74 |
-| `js/1090-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 7588 | 108 |
-| `js/1100-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 7696 | 281 |
-| `js/1110-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 7977 | 300 |
-| `js/1120-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 8277 | 166 |
-| `js/1130-medien.js` | Medien | 8443 | 460 |
-| `js/1140-webformulare.js` | Webformulare | 8903 | 278 |
-| `js/1150-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 9181 | 198 |
-| `js/1160-produktlager.js` | Produktlager | 9379 | 549 |
-| `js/1170-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 9928 | 242 |
-| `js/1180-sicherung.js` | Sicherung  | 10170 | 219 |
-| `js/1190-sicherung-als-zip.js` | Sicherung als ZIP | 10389 | 319 |
-| `js/1200-geraete-abgleich.js` | Geräte-Abgleich | 10708 | 210 |
-| `js/1210-eingangskorb.js` | Eingangskorb | 10918 | 97 |
-| `html/1220-oberflaeche-rahmen.html` | oberflaeche-rahmen | 11015 | 1 |
-| `js/1230-app-start.js` | app-start | 11016 | 0 |
-| `html/1240-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 11016 | 7 |
-| `js/1250-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 11023 | 12 |
-| `html/1260-dokument-ende.html` | dokument-ende | 11035 | 2 |
+| `html/0390-seite-leistungen.html` | seite LEISTUNGEN | 1975 | 29 |
+| `html/0400-seite-dokumente.html` | seite DOKUMENTE | 2004 | 19 |
+| `html/0410-seite-zahlungen.html` | seite ZAHLUNGEN | 2023 | 22 |
+| `html/0420-seite-praxisdaten.html` | seite PRAXISDATEN | 2045 | 47 |
+| `html/0430-seite-nachrichtenvorlagen.html` | seite NACHRICHTENVORLAGEN | 2092 | 15 |
+| `html/0440-seite-webformulare.html` | seite WEBFORMULARE | 2107 | 18 |
+| `html/0450-seite-sicherung.html` | seite SICHERUNG | 2125 | 24 |
+| `html/0460-seite-geraete-abgleich.html` | seite GERÄTE-ABGLEICH | 2149 | 48 |
+| `html/0470-seite-textbausteine.html` | seite TEXTBAUSTEINE | 2197 | 9 |
+| `html/0480-seite-todos.html` | seite TODOS | 2206 | 16 |
+| `html/0490-seite-statistik.html` | seite STATISTIK | 2222 | 34 |
+| `html/0500-seite-lager.html` | seite LAGER | 2256 | 20 |
+| `html/0510-fenster-neuer-patient.html` | fenster NEUER PATIENT | 2276 | 25 |
+| `html/0520-fenster-neuer-termin.html` | fenster NEUER TERMIN | 2301 | 43 |
+| `html/0530-fenster-patientenakte.html` | fenster PATIENTENAKTE | 2344 | 73 |
+| `html/0540-schwebender-aktionsknopf-der-akte-eigene-ebene-v.html` | Schwebender Aktionsknopf der Akte (eigene Ebene, verschiebt das Layout nicht) | 2417 | 10 |
+| `html/0550-fenster-termin-ansehen.html` | fenster TERMIN ANSEHEN | 2427 | 7 |
+| `html/0560-fenster-rechnungen-importieren.html` | fenster RECHNUNGEN IMPORTIEREN | 2434 | 17 |
+| `html/0570-fenster-dokumentation-zu-termin.html` | fenster DOKUMENTATION ZU TERMIN | 2451 | 10 |
+| `html/0580-fenster-rezept.html` | fenster REZEPT | 2461 | 23 |
+| `html/0590-fenster-rechnung-erstellen.html` | fenster RECHNUNG ERSTELLEN | 2484 | 54 |
+| `html/0600-fenster-leistungskategorie.html` | fenster LEISTUNGSKATEGORIE | 2538 | 27 |
+| `html/0610-fenster-leistung.html` | fenster LEISTUNG | 2565 | 31 |
+| `html/0620-fenster-altsystem-import.html` | fenster ALTSYSTEM-IMPORT | 2596 | 20 |
+| `html/0630-fenster-unterschrift.html` | fenster UNTERSCHRIFT | 2616 | 15 |
+| `html/0640-fenster-ausgabe.html` | fenster AUSGABE | 2631 | 18 |
+| `html/0650-fenster-nachrichtenvorlage.html` | fenster NACHRICHTENVORLAGE | 2649 | 37 |
+| `html/0660-fenster-platzhalter.html` | fenster PLATZHALTER | 2686 | 15 |
+| `html/0670-fenster-anrede.html` | fenster ANREDE | 2701 | 16 |
+| `html/0680-fenster-textbaustein.html` | fenster TEXTBAUSTEIN | 2717 | 14 |
+| `html/0690-fenster-vorlage.html` | fenster VORLAGE | 2731 | 48 |
+| `html/0700-fenster-rechnungen-pruefen.html` | fenster RECHNUNGEN PRÜFEN | 2779 | 9 |
+| `html/0710-fenster-rechnung-ansehen.html` | fenster RECHNUNG ANSEHEN | 2788 | 18 |
+| `html/0720-fenster-zahlung.html` | fenster ZAHLUNG | 2806 | 15 |
+| `html/0730-fenster-sicherung.html` | fenster SICHERUNG | 2821 | 15 |
+| `html/0740-fenster-fortschritt.html` | fenster FORTSCHRITT | 2836 | 11 |
+| `html/0750-fenster-sicherung-entschluesseln.html` | fenster SICHERUNG ENTSCHLÜSSELN | 2847 | 10 |
+| `html/0760-fenster-dokumentation.html` | fenster DOKUMENTATION | 2857 | 12 |
+| `html/0770-fenster-todo.html` | fenster TODO | 2869 | 19 |
+| `html/0780-fenster-webformular-texte.html` | fenster WEBFORMULAR-TEXTE | 2888 | 14 |
+| `html/0790-fenster-webformular-felder.html` | fenster WEBFORMULAR-FELDER | 2902 | 12 |
+| `html/0800-fenster-webformular-visuell-bearbeiten.html` | fenster WEBFORMULAR VISUELL BEARBEITEN | 2914 | 12 |
+| `html/0810-fenster-produkt.html` | fenster PRODUKT | 2926 | 48 |
+| `html/0820-fenster-ausbuchen.html` | fenster AUSBUCHEN | 2974 | 13 |
+| `html/0830-fenster-wareneingang.html` | fenster WARENEINGANG | 2987 | 20 |
+| `html/0840-fenster-produkt-verwenden.html` | fenster PRODUKT VERWENDEN | 3007 | 16 |
+| `html/0850-fenster-akten-zusammenlegen.html` | fenster AKTEN ZUSAMMENLEGEN | 3023 | 12 |
+| `html/0860-fenster-datum-und-uhrzeit.html` | fenster DATUM UND UHRZEIT | 3035 | 9 |
+| `html/0870-fenster-produktbuchung-bearbeiten.html` | fenster PRODUKTBUCHUNG BEARBEITEN | 3044 | 19 |
+| `html/0880-fenster-e-mail.html` | fenster E-MAIL | 3063 | 14 |
+| `html/0890-fenster-bild-gross.html` | fenster BILD GROSS | 3077 | 12 |
+| `html/0900-fenster-bildvergleich.html` | fenster BILDVERGLEICH | 3089 | 10 |
+| `html/0910-fenster-zuordnen.html` | fenster ZUORDNEN | 3099 | 10 |
+| `js/0920-app-grundlagen-und-navigation.js` | app-grundlagen-und-navigation | 3109 | 224 |
+| `js/0930-hinweise-an-patienten.js` | Hinweise an Patienten | 3333 | 358 |
+| `js/0940-globale-suche-im-kopfbereich.js` | Globale Suche im Kopfbereich | 3691 | 167 |
+| `js/0950-kalender.js` | Kalender | 3858 | 301 |
+| `js/0960-startseite.js` | Startseite | 4159 | 280 |
+| `js/0970-patienten-termine-doku.js` | Patienten, Termine, Doku | 4439 | 84 |
+| `js/0980-dateispeicher.js` | Dateispeicher  | 4523 | 60 |
+| `js/0990-rechnungen.js` | Rechnungen | 4583 | 54 |
+| `js/1000-leistungskategorien.js` | Leistungskategorien  | 4637 | 145 |
+| `js/1010-goae.js` | GOÄ | 4782 | 801 |
+| `js/1020-alle-tabellen.js` | Alle Tabellen | 5583 | 239 |
+| `js/1030-pdf-erzeugung.js` | PDF-Erzeugung  | 5822 | 48 |
+| `js/1040-qr-code-erzeugung.js` | QR-Code-Erzeugung  | 5870 | 280 |
+| `js/1050-briefumschlag-c6.js` | Briefumschlag C6  | 6150 | 495 |
+| `js/1060-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 6645 | 604 |
+| `js/1070-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 7249 | 263 |
+| `js/1080-statistik.js` | Statistik | 7512 | 74 |
+| `js/1090-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 7586 | 108 |
+| `js/1100-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 7694 | 281 |
+| `js/1110-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 7975 | 302 |
+| `js/1120-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 8277 | 179 |
+| `js/1130-medien.js` | Medien | 8456 | 460 |
+| `js/1140-webformulare.js` | Webformulare | 8916 | 278 |
+| `js/1150-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 9194 | 198 |
+| `js/1160-produktlager.js` | Produktlager | 9392 | 549 |
+| `js/1170-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 9941 | 242 |
+| `js/1180-sicherung.js` | Sicherung  | 10183 | 219 |
+| `js/1190-sicherung-als-zip.js` | Sicherung als ZIP | 10402 | 319 |
+| `js/1200-geraete-abgleich.js` | Geräte-Abgleich | 10721 | 210 |
+| `js/1210-eingangskorb.js` | Eingangskorb | 10931 | 97 |
+| `html/1220-oberflaeche-rahmen.html` | oberflaeche-rahmen | 11028 | 1 |
+| `js/1230-app-start.js` | app-start | 11029 | 0 |
+| `html/1240-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 11029 | 7 |
+| `js/1250-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 11036 | 12 |
+| `html/1260-dokument-ende.html` | dokument-ende | 11048 | 2 |

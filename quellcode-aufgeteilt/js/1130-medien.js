@@ -206,7 +206,7 @@ function medDocRow(p, dd) {
   l2.appendChild(pill);
   if (dd.hiddenFromView) l2.appendChild(restoreVisibilityButton(function () { fileHide(p, dd); }));
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
-  if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); }
+  if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
   l2.appendChild(medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
