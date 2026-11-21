@@ -1,0 +1,29 @@
+/* Bildvergleich (vergleich.js) */
+.media .mi { position:relative; }
+.mi-cmp { position:absolute; right:4px; bottom:4px; width:26px; height:26px; padding:0; border-radius:50%; border:1px solid var(--pf-navy); background:rgba(255,255,255,.88); color:var(--pf-navy); font:700 13px inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.vg-area { background:var(--pf-inlay); border:1px solid var(--pf-line); border-radius:14px; padding:8px 10px 10px; margin:8px 0 12px; }
+.vg-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.vg-title { background:none; border:0; font:700 14px inherit; color:var(--pf-navy); cursor:pointer; padding:4px 0; }
+.vg-tray { display:flex; gap:8px; align-items:stretch; flex-wrap:wrap; margin-top:6px; }
+.vg-slot { position:relative; flex:1 1 120px; min-width:110px; max-width:220px; min-height:74px; border:1.5px dashed #9fb0d0; border-radius:12px; background:#fff; display:flex; align-items:center; justify-content:center; padding:6px; gap:8px; }
+.vg-slot.on { border-style:solid; border-color:var(--pf-line); } .vg-slot.drop { border-color:var(--pf-green); background:#f0faf3; }
+.vg-sl { position:absolute; left:6px; top:4px; font:800 11px inherit; color:var(--pf-navy); }
+.vg-th { width:58px; height:58px; object-fit:cover; border-radius:8px; margin-left:10px; } .vg-sd { font-size:12px; color:#475569; }
+.vg-empty { font-size:11.5px; color:#64748b; text-align:center; padding:0 6px; }
+.vg-x { position:absolute; right:4px; top:3px; width:22px; height:22px; padding:0; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#475569; font:700 14px inherit; cursor:pointer; line-height:1; }
+.vg-plus { align-self:center; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); border-radius:999px; padding:7px 12px; font:600 12.5px inherit; cursor:pointer; }
+.vg-hint { font-size:12.5px; color:#64748b; margin-top:6px; }
+.vg-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:10px 0 8px; }
+.vg-seg button { padding:6px 12px; font-size:12.5px; }
+.vg-stage { position:relative; width:100%; max-width:760px; margin:0 auto; aspect-ratio:3/4; background:#0b1530; border-radius:12px; overflow:hidden; user-select:none; -webkit-user-select:none; }
+.vg-layer { position:absolute; inset:0; overflow:hidden; } .vg-img { width:100%; height:100%; object-fit:contain; pointer-events:none; transform-origin:center; will-change:transform; }
+.vg-hd { position:absolute; top:0; bottom:0; width:30px; margin-left:-15px; cursor:ew-resize; touch-action:none; z-index:3; }
+.vg-hd::before { content:''; position:absolute; left:14px; top:0; bottom:0; width:2px; background:#fff; box-shadow:0 0 0 1px rgba(1,34,101,.35); }
+.vg-kn { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:34px; height:34px; border-radius:50%; background:#fff; color:var(--pf-navy); display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.35); }
+.vg-tag { position:absolute; bottom:8px; font-size:11.5px; background:rgba(11,21,48,.7); color:#fff; padding:3px 8px; border-radius:999px; z-index:2; pointer-events:none; }
+.vg-tag-l { left:8px; } .vg-tag-r { right:8px; } .vg-tag-m { left:50%; transform:translateX(-50%); }
+.vg-ctl { max-width:760px; margin:8px auto 0; display:flex; flex-direction:column; gap:6px; }
+.vg-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:13px; color:#334155; } .vg-row input[type=range] { flex:1; min-width:140px; accent-color:var(--pf-navy); }
+.vg-chip { width:30px; height:30px; border-radius:50%; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); font:700 12px inherit; cursor:pointer; padding:0; } .vg-chip.on { background:var(--pf-navy); color:#fff; }
+.vg-side { display:grid; gap:8px; } .vg-n2 { grid-template-columns:1fr 1fr; } .vg-n3 { grid-template-columns:1fr 1fr 1fr; }
+.vg-fig { margin:0; } .vg-pane { position:relative; aspect-ratio:3/4; background:#0b1530; border-radius:10px; overflow:hidden; } .vg-fig figcaption { font-size:12px; color:#475569; text-align:center; margin-top:4px; }

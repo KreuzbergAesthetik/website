@@ -56,6 +56,7 @@ Wichtige Dateien:
 - `sync.js`: Ende-zu-Ende-verschlüsselter Geräte-Abgleich und Postfach.
 - `extcal.js`: Einbindung externer privater Kalender.
 - `pdfedit.js`: PDF-Editor für Arbeitsdokumente der Akte und Felder der PDF-Vorlagen.
+- `vergleich.js`: Bildvergleich (bis zu drei Bilder, übereinander oder nebeneinander) im Reiter Anlagen.
 - `forms.js`, `ftexte.js`, `forms.css`: Webformulare und deren Anpassung.
 - `anmeldung.html`, `anamnese.html`, `erinnerung.html`, `aufklaerung.html`: patientenseitige Formulare/Seiten.
 - `formular-empfang-wordpress.txt`: Server-Komponente als WordPress/WPCode-Snippet.
