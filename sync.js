@@ -55,12 +55,14 @@ var KS = (function () {
   /* ---------- Server ---------- */
   async function api(a, fields, file) {
     var c = fields && fields._c || cfg(); if (!c) throw new Error('Der Abgleich ist nicht eingerichtet.');
+    /* Der Zugangsschlüssel muss 64 Hexzeichen haben, sonst lehnt der Server mit "Ungültige Anfrage" ab. Dann klar sagen, was zu tun ist. */
+    if (!/^[0-9a-f]{64}$/i.test(String(c.tok == null ? '' : c.tok))) { var eb = new Error('Der Zugangsschlüssel dieses Geräts ist beschädigt (Länge ' + String(c.tok == null ? '' : c.tok).length + ' statt 64). Bitte unter Abgleich auf „Trennen“ tippen und danach „Mit vorhandenem verbinden“ mit dem Abgleich-Passwort wählen. Die Daten auf diesem Gerät bleiben dabei erhalten.'); eb.badKey = true; throw eb; }
     var fd = new FormData(); fd.append('a', a); fd.append('t', c.tok);
     Object.keys(fields || {}).forEach(function (k) { if (k !== '_c') fd.append(k, fields[k]); });
     if (file) fd.append('d', new Blob([file], { type: 'application/octet-stream' }), 'd.bin');
     var r; try { r = await fetch(EP, { method: 'POST', body: fd, cache: 'no-store' }); } catch (x) { var e0 = new Error('Keine Verbindung zum Server.'); e0.offline = true; throw e0; }
     var j = null; try { j = await r.json(); } catch (x) {}
-    if (!j || !j.ok) { var e = new Error(j && j.error ? j.error : 'Der Server hat nicht geantwortet (' + r.status + ').'); e.status = r.status; e.rev = j && j.rev; throw e; }
+    if (!j || !j.ok) { var e = new Error(r.status === 400 && j && /Ungültige Anfrage/.test(j.error || '') ? 'Der Server hat die Anfrage abgelehnt (Ungültige Anfrage, ' + String(c.tok).length + ' Zeichen Schlüssel). Bitte die App neu laden. Wenn es bleibt: Abgleich „Trennen“ und neu verbinden.' : (j && j.error ? j.error : 'Der Server hat nicht geantwortet (' + r.status + ').')); e.status = r.status; e.rev = j && j.rev; throw e; }
     return j;
   }
   async function getObj(name, c) { var j = await api('get', { n: name, _c: c }); return unb64(j.d); }
