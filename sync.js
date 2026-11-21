@@ -372,6 +372,24 @@ var KS = (function () {
   }
   async function extFetch(url) { var j = await api('calget', { u: url }); return j.ics; }
   async function txtset(obj, felder) { var c = cfg(); if (!c) throw new Error('Der Geräte-Abgleich ist nicht eingerichtet.'); var f = { k: JSON.stringify(obj || {}), _c: c }; if (felder) f.f = JSON.stringify(felder); await api('txtset', f); }
+  /* Verbindung prüfen: drei Testanfragen (mit dem Schlüssel dieses Geräts, mit einem Zufallsschlüssel, ohne Schlüssel) zeigen, ob Gerät, Netz oder Server das Problem sind. Es werden keine Daten übertragen. */
+  async function diagnose() {
+    var c = cfg(), out = [], rnd = hex(crypto.getRandomValues(new Uint8Array(32)));
+    out.push('App ' + (window.KA_V || '') + ' · ' + (navigator.onLine ? 'online' : 'offline') + ' · Schlüssel: ' + (c ? String(c.tok).length + ' Zeichen' : 'nicht eingerichtet'));
+    async function probe(label, tok) {
+      var fd = new FormData(); fd.append('a', 'status'); fd.append('t', tok); var t0 = Date.now();
+      try {
+        var r = await fetch(EP, { method: 'POST', body: fd, cache: 'no-store' }), j = null; try { j = await r.clone().json(); } catch (x) {}
+        var hd = ['server', 'cf-cache-status', 'x-cache', 'age', 'via'].map(function (k) { var v = r.headers.get(k); return v ? k + ': ' + v : ''; }).filter(Boolean).join(', ');
+        out.push(label + ': HTTP ' + r.status + ' · ' + (j && j.error ? j.error : j && j.ok ? 'in Ordnung' : 'keine lesbare Antwort') + (hd ? ' · ' + hd : '') + ' · ' + (Date.now() - t0) + ' ms');
+      } catch (e) { out.push(label + ': keine Verbindung (' + err(e) + ')'); }
+    }
+    if (c) await probe('Mit Schlüssel dieses Geräts', c.tok);
+    await probe('Mit Zufallsschlüssel', rnd);
+    await probe('Ohne Schlüssel', '');
+    out.push('Erwartet bei intaktem Server: Zufallsschlüssel = 404 „nichts eingerichtet“, ohne Schlüssel = 400 „Ungültige Anfrage“.');
+    await kaConfirm(out.join('\n\n'), { ok: 'Schließen', single: true });
+  }
   function setMode(m) { settings.syncMode = (m === 'auto' || m === 'manuell') ? m : 'taeglich'; persist(); ui(); if (settings.syncMode === 'auto') run(false); }
-  return { setMode: setMode, mode: syncMode, extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  return { diagnose: diagnose, setMode: setMode, mode: syncMode, extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();
