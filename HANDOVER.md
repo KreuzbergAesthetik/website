@@ -185,3 +185,6 @@ Offene Punkte stehen in HANDOVER.md Abschnitt 0 (Serverpasswort nach dem IONOS-U
 
 ## Bildvergleich in der Akte (2026-11-21-v, `vergleich.js`)
 - Bereich `#md-cmp` im Reiter Anlagen → Bilder: bis zu drei Plätze (A, B, C), Bilder per Ziehen oder Symbol ⇄ am Bild (`cmpAdd`), aus der Bildansicht `cmpPair`. Übereinander (Teilen mit Kante(n) oder Überblenden mit Deckkraft je Bild, jedes Bild einzeln skalier- und verschiebbar) oder Nebeneinander (gemeinsamer Zoom und Verschieben). Der frühere Vergleich als Vollbild-Fenster (`modal-cmp`) entfällt. Bilder und Dateien stehen im Reiter Anlagen jetzt vor den Unterlagen.
+
+## Abgleich-Modus (2026-11-21-x)
+- `settings.syncMode`: `taeglich` (Standard: automatischer Abgleich und Postfach höchstens einmal pro Tag beim Öffnen), `manuell` (nur über Knopf), `auto` (wie früher, 6 s nach jeder Änderung). Auswahl im Abgleich-Bereich (`KS.setMode`), `base.conn` = letzte erfolgreiche Verbindung. Zielbild des Praxisinhabers: Tablet als Hauptgerät, Server nur als verschlüsseltes Postfach, einmal täglich abrufen und sichern; direkter Abgleich im lokalen Netz (WebRTC) ist später ein eigenes Vorhaben. Geräte, die weiterhin ständig am Server hängen: Kalender-Feed (`settings.calOn`) und privater Kalender (`settings.extUrl`), wenn eingeschaltet.

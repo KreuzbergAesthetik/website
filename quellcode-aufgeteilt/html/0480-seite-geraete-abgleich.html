@@ -12,10 +12,12 @@
       </div>
       <div class="sy-on" style="display:none">
         <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
-        <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:14px;"></div>
+        <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:6px;"></div>
+        <div class="sy-conn" style="font-size:12.5px; color:#64748b; margin-bottom:10px;"></div>
+        <div class="form-group" style="max-width:420px;"><label>Wann soll abgeglichen werden?</label><select class="form-control sy-mode" onchange="KS.setMode(this.value)"><option value="taeglich">Einmal täglich beim Öffnen (empfohlen)</option><option value="manuell">Nur wenn ich es starte</option><option value="auto">Sofort nach jeder Änderung</option></select></div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
         <div id="sy-baks"></div>
-        <div style="font-size:13px; color:#64748b;">Der Abgleich läuft automatisch beim Öffnen der App, beim Zurückkehren zur App und etwa 6 Sekunden nach jeder Änderung. Offline arbeitest Du normal weiter, der Abgleich holt sich nach, was fehlt. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
+        <div style="font-size:13px; color:#64748b;">Je nach Einstellung läuft der Abgleich nur einmal täglich beim Öffnen der App, nur auf Antippen oder sofort nach jeder Änderung. Dabei wird auch das Postfach abgerufen. Dazwischen arbeitet die App ohne Verbindung zum Server, offline arbeitest Du normal weiter. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
       </div>
     </div>
     <div class="card" id="ext-box" style="margin-top:16px;">
