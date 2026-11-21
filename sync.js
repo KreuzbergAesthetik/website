@@ -25,6 +25,11 @@ var KS = (function () {
     h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
   }
+  /* Wann darf der Abgleich von selbst laufen? 'taeglich' (Standard): höchstens einmal pro Tag beim Öffnen; 'manuell': nur auf Antippen; 'auto': wie früher nach jeder Änderung. */
+  function syncMode() { var m = settings && settings.syncMode; return m === 'auto' || m === 'manuell' ? m : 'taeglich'; }
+  function lastConn() { var b = get('ka_sync_base') || {}; return b.conn || b.last || 0; }
+  function autoOk() { var m = syncMode(); if (m === 'auto') return true; if (m === 'manuell') return false; var t = lastConn(); return !t || new Date(t).toDateString() !== new Date().toDateString(); }
+  function markConn() { var b = base(); b.conn = Date.now(); setBase(b); }
   function stateHash() { return h53(JSON.stringify(collect())); }
   function nameOf(id) { return 'f_' + String(id).replace(/[^A-Za-z0-9_-]/g, '_'); }
   function err(e) { return e && e.message ? e.message : String(e); }
@@ -159,7 +164,9 @@ var KS = (function () {
 
   /* ---------- Ablauf ---------- */
   async function run(manual) {
-    var c = cfg(); if (!c || S.busy) return; if (!navigator.onLine) { S.err = 'Offline'; ui(); return; }
+    var c = cfg(); if (!c || S.busy) return;
+    if (!manual && !autoOk()) { ui(); return; }
+    if (!navigator.onLine) { S.err = 'Offline'; ui(); return; }
     S.busy = true; S.err = ''; S.msg = ''; ui();
     try {
       var st = await api('status'), b = base(), hasCore = st.objs.some(function (o) { return o.n === 'core'; });
@@ -181,7 +188,7 @@ var KS = (function () {
       else if (e.status === 404 && /nichts eingerichtet/.test(err(e))) S.err = 'Das Abgleich-Passwort wurde geändert. Bitte hier auf „Trennen“ tippen und mit dem neuen Passwort verbinden.';
       else S.err = err(e);
     } finally {
-      S.busy = false; S.msg = ''; ui();
+      S.busy = false; S.msg = ''; if (!S.err) { try { markConn(); } catch (x) {} } ui();
       var sig = inboxSig();
       if (!sig) S.autoInbox = '';
       else if (!S.err && !modalOpen() && S.autoInbox !== sig) { S.autoInbox = sig; setTimeout(function () { abrufen(true); }, 0); }
@@ -191,7 +198,7 @@ var KS = (function () {
     if (settings.calOn && !S.applying) { clearTimeout(S.calT); S.calT = setTimeout(calPush, 15000); }
     if (S.applying) return; var c = cfg(); if (!c) return;
     var b = base(); if (!b.dirty) { b.dirty = true; setBase(b); }
-    clearTimeout(S.timer); S.timer = setTimeout(function () { run(false); }, 6000); ui();
+    clearTimeout(S.timer); if (syncMode() === 'auto') S.timer = setTimeout(function () { run(false); }, 6000); ui();
   }
 
   /* ---------- Einrichten ---------- */
@@ -326,7 +333,7 @@ var KS = (function () {
       }
       st = await api('status'); S.inbox = st.inbox || [];
     } catch (e) { if (auto) S.err = 'Postfach: ' + err(e); else alert('Abrufen nicht möglich: ' + err(e)); }
-    finally { S.busy = false; if (auto) S.autoInbox = inboxSig(); ui(); }
+    finally { S.busy = false; if (auto) S.autoInbox = inboxSig(); if (!S.err) { try { markConn(); } catch (x) {} } ui(); }
   }
 
   /* ---------- Anzeige ---------- */
@@ -347,7 +354,9 @@ var KS = (function () {
     box.querySelector('.sy-on').style.display = c ? '' : 'none';
     if (c) {
       var st = box.querySelector('.sy-state');
-      st.textContent = S.busy ? (S.msg || 'Gleiche ab …') : S.err ? S.err : b.dirty ? 'Änderungen warten auf den Abgleich' : 'Alles abgeglichen (' + ago(b.last) + ')';
+      st.textContent = S.busy ? (S.msg || 'Gleiche ab …') : S.err ? S.err : b.dirty ? 'Änderungen warten auf den Abgleich' + (syncMode() === 'auto' ? '' : ' (nächster Abgleich: ' + (syncMode() === 'manuell' ? 'wenn Du ihn startest' : 'morgen beim Öffnen oder auf Antippen') + ')') : 'Alles abgeglichen (' + ago(b.last) + ')';
+      var cn = box.querySelector('.sy-conn'); if (cn) cn.textContent = 'Zuletzt mit dem Server verbunden: ' + (lastConn() ? ago(lastConn()) : 'noch nie');
+      var ms = box.querySelector('.sy-mode'); if (ms && ms.value !== syncMode()) ms.value = syncMode();
       st.className = 'sy-state' + (S.err ? ' bad' : b.dirty || S.busy ? ' wait' : ' good');
       box.querySelector('.sy-inbox').textContent = n ? n + ' Formular(e) im Postfach' : 'Postfach leer';
     }
@@ -363,5 +372,24 @@ var KS = (function () {
   }
   async function extFetch(url) { var j = await api('calget', { u: url }); return j.ics; }
   async function txtset(obj, felder) { var c = cfg(); if (!c) throw new Error('Der Geräte-Abgleich ist nicht eingerichtet.'); var f = { k: JSON.stringify(obj || {}), _c: c }; if (felder) f.f = JSON.stringify(felder); await api('txtset', f); }
-  return { extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  /* Verbindung prüfen: drei Testanfragen (mit dem Schlüssel dieses Geräts, mit einem Zufallsschlüssel, ohne Schlüssel) zeigen, ob Gerät, Netz oder Server das Problem sind. Es werden keine Daten übertragen. */
+  async function diagnose() {
+    var c = cfg(), out = [], rnd = hex(crypto.getRandomValues(new Uint8Array(32)));
+    out.push('App ' + (window.KA_V || '') + ' · ' + (navigator.onLine ? 'online' : 'offline') + ' · Schlüssel: ' + (c ? String(c.tok).length + ' Zeichen' : 'nicht eingerichtet'));
+    async function probe(label, tok) {
+      var fd = new FormData(); fd.append('a', 'status'); fd.append('t', tok); var t0 = Date.now();
+      try {
+        var r = await fetch(EP, { method: 'POST', body: fd, cache: 'no-store' }), j = null; try { j = await r.clone().json(); } catch (x) {}
+        var hd = ['server', 'cf-cache-status', 'x-cache', 'age', 'via'].map(function (k) { var v = r.headers.get(k); return v ? k + ': ' + v : ''; }).filter(Boolean).join(', ');
+        out.push(label + ': HTTP ' + r.status + ' · ' + (j && j.error ? j.error : j && j.ok ? 'in Ordnung' : 'keine lesbare Antwort') + (hd ? ' · ' + hd : '') + ' · ' + (Date.now() - t0) + ' ms');
+      } catch (e) { out.push(label + ': keine Verbindung (' + err(e) + ')'); }
+    }
+    if (c) await probe('Mit Schlüssel dieses Geräts', c.tok);
+    await probe('Mit Zufallsschlüssel', rnd);
+    await probe('Ohne Schlüssel', '');
+    out.push('Erwartet bei intaktem Server: Zufallsschlüssel = 404 „nichts eingerichtet“, ohne Schlüssel = 400 „Ungültige Anfrage“.');
+    await kaConfirm(out.join('\n\n'), { ok: 'Schließen', single: true });
+  }
+  function setMode(m) { settings.syncMode = (m === 'auto' || m === 'manuell') ? m : 'taeglich'; persist(); ui(); if (settings.syncMode === 'auto') run(false); }
+  return { diagnose: diagnose, setMode: setMode, mode: syncMode, extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();
