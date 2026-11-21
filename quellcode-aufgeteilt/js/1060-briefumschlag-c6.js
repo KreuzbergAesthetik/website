@@ -188,9 +188,11 @@ function auditFileState(r) {
     'Unterschrift: ' + (r.sig && r.sig.ts ? fmtDT(r.sig.ts) : 'keine')].join('\n');
 }
 function auditFileChange(p, r, before, area) {
+  try { if (window.logbuchQueue && (p.dokumente || []).indexOf(r) >= 0) logbuchQueue(p, [r]); } catch (x) {}
   auditOne(p, area || ((p.bilder || []).indexOf(r) >= 0 ? 'Bilder' : 'Dokumente'), 'Datei: ' + (r.name || r.id), before, auditFileState(r));
 }
 function auditFilesAdded(p, list, area) {
+  try { if (window.logbuchQueue && area === 'Dokumente') logbuchQueue(p, list); } catch (x) {}
   auditPush(p, area, (list || []).map(function (r) { return { field: 'Hinzugefügt: ' + (r.name || r.id), from: '', to: auditFileState(r) }; }));
 }
 
@@ -433,7 +435,7 @@ async function deletePatient() {
   if (aufb.bis && aufb.bis > Date.now()) { alert('Diese Akte enthält medizinische Dokumentation (' + aufb.was.join(', ') + '). Sie muss bis ' + new Date(aufb.bis).toLocaleDateString('de-DE') + ' aufbewahrt werden (10 Jahre nach der letzten Behandlung, § 630f BGB) und kann bis dahin nicht gelöscht werden.'); return; }
   var name = nameKey(p), n = events.filter(function (e) { return eventBelongs(e, p); }).length;
   if (!await kaConfirm('Patient "' + name + '" mit Akte und ' + n + ' Termin(en) endgültig löschen? Das lässt sich nur mit einer Sicherung rückgängig machen.')) return;
-  (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); });
+  (p.bilder || []).concat(p.dokumente || []).forEach(function (x) { fDel(x.id); if (x.logId) fDel(x.logId); });
   (p.videos || []).forEach(function (x) { vDel(x.id); });
   patients = patients.filter(function (x) { return x !== p; });
   events = events.filter(function (e) { return !eventBelongs(e, p); });

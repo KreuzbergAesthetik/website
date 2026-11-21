@@ -177,3 +177,8 @@ Offene Punkte stehen in HANDOVER.md Abschnitt 0 (Serverpasswort nach dem IONOS-U
 - Zweite Unterschrift (Arzt): `t.sig2` (x, y; Seite und Breite wie `t.sig`), `rec.sig2`.
 
 - Kästchen (2026-11-21-r): Feldart `kasten` in `t.fields` (x, y, s, optional `r` = Rahmen mitdrucken). Im Editor setzt ein Tippen mit jedem Werkzeug außer Stift/Textmarker einen Haken (Eintrag `mark` mit `fid`), nochmal Tippen nimmt ihn weg; Blättern-Werkzeug: Fingertipp.
+
+## Unterschrift im Dokument, Nachweis, Logbuch (2026-11-21-u)
+- Unterschreiben (`openSign`): Hat die Vorlage ein festes Feld (`t.sig` ohne `free`), wird dort gestempelt (alt). Sonst öffnet der Editor das Unterschriftsfenster (`openSignPad`), danach tippt man ins Dokument (Werkzeuge P/A im Editor, `pdfedit.js`). Vorlagenoption "frei im Dokument platzieren" (`t.sig.free`).
+- Nachweis je Unterschrift (`sigRecord`): Zeit, Name, SHA-256 der unterschriebenen Datei und der Fassung davor, Schreibdauer, Punkte. `sigCheck` prüft die Datei gegen die letzte Prüfsumme (Menü "Unterschrift prüfen"). Einfache elektronische Unterschrift, keine qualifizierte Signatur.
+- Logbuch (PDF) je Dokument: `logbuchQueue/logbuchOpen` in `pdfedit.js`, liegt im Dateispeicher (`rec.logId`, nicht als eigenes Dokument), wird bei jeder Änderung neu geschrieben, Menü "Logbuch (PDF)". Bewusst nicht an das Dokument angehängt, damit die Prüfsumme der unterschriebenen Datei stabil bleibt.

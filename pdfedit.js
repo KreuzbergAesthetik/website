@@ -24,6 +24,7 @@
     cross: '<path d="M6 6l12 12M18 6L6 18"/>',
     erase: '<path d="M20 20H8l-5-5 10-10 8 8-6 6"/><path d="M7 11l6 6"/>',
     undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
+    sign: '<path d="M3 16c3-7 5-9 7-7s0 6 3 3 3-4 5-1"/><path d="M3 21h18"/>',
     plus: '<path d="M12 5v14M5 12h14"/>'
   };
   function svg(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + IC[k] + '</svg>'; }
@@ -80,6 +81,8 @@
       } else if (it.t === 'text') {
         var fs = it.s * Wp; c.font = fs + 'px Helvetica, Arial, sans-serif'; c.textBaseline = 'alphabetic';
         String(it.txt).split('\n').forEach(function (ln, k) { c.fillText(ln, it.x * Wp, it.y * Hp + fs * 0.8 + k * fs * 1.2); });
+      } else if (it.t === 'sig') {
+        var im = sigImg(it, pg); if (im && im.width) { var wpx = it.w * Wp, hpx = wpx * im.height / im.width; c.drawImage(im, it.x * Wp - wpx / 2, it.y * Hp - hpx / 2, wpx, hpx); c.setLineDash([5, 4]); c.strokeStyle = 'rgba(21,128,61,.6)'; c.lineWidth = 1; c.strokeRect(it.x * Wp - wpx / 2, it.y * Hp - hpx / 2, wpx, hpx); }
       } else if (it.t === 'mark') {
         var m = it.s * Wp, x0 = it.x * Wp, y0 = it.y * Hp; c.lineWidth = Math.max(2, m * 0.14); c.beginPath();
         if (it.sym === 'check') { c.moveTo(x0 - m * 0.45, y0); c.lineTo(x0 - m * 0.12, y0 + m * 0.35); c.lineTo(x0 + m * 0.5, y0 - m * 0.4); }
@@ -89,6 +92,11 @@
       c.restore();
     });
   }
+  function sigImg(it, pg) {
+    PE.imgs = PE.imgs || {}; var im = PE.imgs[it.url];
+    if (!im) { im = new Image(); im.onload = function () { if (PE && pg) peDraw(pg); }; im.src = it.url; PE.imgs[it.url] = im; }
+    return im.complete ? im : null;
+  }
   function peRedraw() { (PE.pages || []).forEach(peDraw); }
   function peSnap() { PE.undo.push(JSON.stringify(PE.items)); if (PE.undo.length > 60) PE.undo.shift(); PE.dirty = true; }
   function textBox(it, pg) { var lines = String(it.txt).split('\n'), fs = it.s; var w = Math.max.apply(null, lines.map(function (l) { return l.length; })) * fs * 0.55; return { x0: it.x, y0: it.y, x1: it.x + w, y1: it.y + lines.length * fs * 1.2 * pg.W / pg.H }; }
@@ -97,6 +105,7 @@
       var it = PE.items[k]; if (it.p !== pg.i) continue;
       if (it.t === 'ink') { var r2 = Math.pow(tol + it.w / 2, 2); if (it.pts.some(function (q) { var dx = q[0] - f.x, dy = (q[1] - f.y) * pg.H / pg.W; return dx * dx + dy * dy <= r2; })) return k; }
       else if (it.t === 'text') { var b = textBox(it, pg); if (f.x >= b.x0 - tol && f.x <= b.x1 + tol && f.y >= b.y0 - tol && f.y <= b.y1 + tol) return k; }
+      else if (it.t === 'sig') { var im2 = sigImg(it, pg), hh = im2 && im2.width ? it.w * im2.height / im2.width * pg.W / pg.H : 0.06; if (Math.abs(f.x - it.x) <= it.w / 2 + tol && Math.abs(f.y - it.y) <= hh / 2 + tol) return k; }
       else if (it.t === 'mark') { if (Math.abs(f.x - it.x) <= it.s * 0.6 + tol && Math.abs(f.y - it.y) * pg.H / pg.W <= it.s * 0.6 + tol) return k; }
     }
     return -1;
@@ -107,6 +116,20 @@
       var hh = (fd.s || 11) * 1.35 / pg.H;
       return f.x >= fd.x && f.x <= fd.x + (fd.w || 0.3) && f.y >= fd.y && f.y <= fd.y + hh;
     })[0] || null;
+  }
+  function peSignStart(who) {
+    var rec = PE.rec, p = PE.p, name = who === 'arzt' ? (settings.inhaber || 'Arzt') : nameKey(p);
+    openSignPad(name + ' unterschreibt: ' + (rec.name || 'Dokument'), function (blob, mt) {
+      var fr = new FileReader(); fr.onload = function () {
+        PE.pending = { who: who, url: fr.result, mt: mt || {} }; peTool('sigplace');
+        PE.ui.hint.textContent = 'Jetzt in das Dokument tippen, wo die Unterschrift von ' + name + ' stehen soll.'; PE.ui.hint.style.display = 'block';
+      }; fr.readAsDataURL(blob);
+    });
+  }
+  function placeSig(pg, f) {
+    var pd = PE.pending; if (!pd) return;
+    peSnap(); PE.items.push({ t: 'sig', p: pg.i, x: f.x, y: f.y, w: 0.26, who: pd.who, url: pd.url, mt: pd.mt, ts: Date.now() });
+    PE.pending = null; PE.ui.hint.style.display = 'none'; peTool('hand'); peDraw(pg);
   }
   function hitBox(pg, f) {
     var tolx = 6 / pg.W, toly = 6 / pg.H;
@@ -122,6 +145,7 @@
   function peBind(pg) {
     var ov = pg.ov, cur = null;
     ov.addEventListener('pointerdown', async function (ev) {
+      if (PE.tool === 'sigplace' && PE.pending) { ev.preventDefault(); placeSig(pg, frac(ov, ev)); return; }
       var tool = PE.tool; if (tool === 'hand' && ev.pointerType !== 'pen') return;
       if (tool === 'hand') tool = 'pen';
       ev.preventDefault(); var f = frac(ov, ev), tol = 10 / f.r.width;
@@ -164,7 +188,8 @@
   }
   async function peBuild() {
     var L = await loadPdfLib(), doc = await L.PDFDocument.load(await PE.base.arrayBuffer(), { ignoreEncryption: true, updateMetadata: false });
-    var font = await doc.embedFont(L.StandardFonts.Helvetica), pages = doc.getPages();
+    var font = await doc.embedFont(L.StandardFonts.Helvetica), pages = doc.getPages(), sigEmbeds = {};
+    for (var si = 0; si < PE.items.length; si++) { var sit = PE.items[si]; if (sit.t === 'sig' && !sigEmbeds[sit.url]) sigEmbeds[sit.url] = await doc.embedPng(await (await fetch(sit.url)).arrayBuffer()); }
     PE.items.forEach(function (it) {
       var pg = pages[it.p]; if (!pg) return; var sz = pg.getSize(), W = sz.width, H = sz.height, col = hexRgb(L, it.c);
       if (it.t === 'ink') {
@@ -174,6 +199,11 @@
       } else if (it.t === 'text') {
         var fs = it.s * W;
         String(it.txt).split('\n').forEach(function (ln, k) { pg.drawText(txt(ln), { x: it.x * W, y: H - it.y * H - fs * 0.8 - k * fs * 1.2, size: fs, font: font, color: col }); });
+      } else if (it.t === 'sig') {
+        var img = sigEmbeds[it.url]; if (!img) return;
+        var wp = it.w * W, hp = wp * img.height / img.width, nm = it.who === 'arzt' ? (settings.inhaber || 'Arzt') : nameKey(PE.p);
+        pg.drawImage(img, { x: it.x * W - wp / 2, y: H - it.y * H - hp / 2, width: wp, height: hp });
+        pg.drawText(txt('Unterschrieben am ' + fmtDT(it.ts) + ' Uhr von ' + nm), { x: it.x * W - wp / 2, y: H - it.y * H - hp / 2 - 8, size: 6.5, font: font, color: L.rgb(0.3, 0.3, 0.3) });
       } else if (it.t === 'mark') {
         var m = it.s * W, x0 = it.x * W, y0 = it.y * H, p;
         p = it.sym === 'check' ? 'M ' + (x0 - m * 0.45) + ' ' + y0 + ' L ' + (x0 - m * 0.12) + ' ' + (y0 + m * 0.35) + ' L ' + (x0 + m * 0.5) + ' ' + (y0 - m * 0.4)
@@ -184,14 +214,14 @@
     return new Blob([await doc.save()], { type: 'application/pdf' });
   }
   function summary(items) {
-    var n = { ink: 0, text: 0, mark: 0 }; (items || []).forEach(function (it) { n[it.t] = (n[it.t] || 0) + 1; });
+    var n = { ink: 0, text: 0, mark: 0, sig: 0 }; (items || []).forEach(function (it) { n[it.t] = (n[it.t] || 0) + 1; });
     var texts = (items || []).filter(function (it) { return it.t === 'text'; }).map(function (it) { return '„' + String(it.txt).replace(/\s+/g, ' ').slice(0, 60) + '“'; });
     return n.ink + ' Striche, ' + n.mark + ' Haken/Kreuze, ' + n.text + ' Texte' + (texts.length ? ': ' + texts.join(', ') : '');
   }
   async function peSave() {
     var p = PE.p, rec = PE.rec, sb = PE.ui.save; sb.disabled = true;
     try {
-      var out = await peBuild();
+      var out = await peBuild(), hashVor = await sha256Hex(await fileBlob(rec)) , sigs = PE.items.filter(function (it) { return it.t === 'sig' && !it.done; });
       if (!PE.hadBase) {
         var now = new Date(), stamp = fmtDT(now.getTime()), vid = newId(), vname = String(rec.name || 'Dokument').replace(/\.pdf$/i, '') + ' (Fassung vor Bearbeitung ' + stamp + ').pdf';
         if (!await fPut(vid, vname, PE.base)) throw new Error('Die vorige Fassung konnte nicht gesichert werden.');
@@ -201,15 +231,21 @@
       }
       if (!await fPut(rec.id, rec.name, out)) throw new Error('Das bearbeitete Dokument konnte nicht gespeichert werden.');
       if (typeof urlCache !== 'undefined' && urlCache[rec.id]) { URL.revokeObjectURL(urlCache[rec.id]); delete urlCache[rec.id]; }
-      var before = summary(rec.anno);
-      rec.anno = JSON.parse(JSON.stringify(PE.items)); rec.annoSig = sigKey(rec); rec.ets = Date.now();
-      auditOne(p, 'Dokumente', 'Bearbeitet: ' + (rec.name || rec.id), before, summary(rec.anno));
-      persist(); PE.dirty = false;
+      var before = summary(rec.anno), saveTs = Date.now();
+      for (var qi = 0; qi < sigs.length; qi++) {
+        var sg = sigs[qi], nm = sg.who === 'arzt' ? (settings.inhaber || 'Arzt') : nameKey(p);
+        await sigRecord(rec, sg.who, nm, hashVor, out, sg.ts, sg.mt);
+        auditOne(p, 'Dokumente', 'Unterschrift (' + (sg.who === 'arzt' ? 'Arzt' : 'Patient') + '): ' + (rec.name || rec.id), '', nm + ', ' + fmtDT(sg.ts) + ' · Prüfsumme ' + String(rec.sig2 && sg.who === 'arzt' ? rec.sig2.hash : rec.sig.hash).slice(0, 12));
+      }
+      var plain = PE.items.filter(function (it) { return it.t !== 'sig'; });
+      rec.anno = sigs.length ? [] : JSON.parse(JSON.stringify(PE.items)); rec.annoSig = sigs.length ? null : sigKey(rec); rec.ets = saveTs;
+      auditOne(p, 'Dokumente', 'Bearbeitet: ' + (rec.name || rec.id), before, summary(plain));
+      persist(); PE.dirty = false; if (window.logbuchQueue) logbuchQueue(p, [rec]);
       try { refreshFiles(); } catch (x) {} try { renderMedien(); } catch (x) {} try { renderUnterlagen(); } catch (x) {}
       PE.ui.close(); PE = null; alert('Gespeichert.');
     } catch (e) { sb.disabled = false; alert('Speichern hat nicht geklappt: ' + (e && e.message ? e.message : e)); }
   }
-  window.pdfEdit = async function (p, rec) {
+  window.pdfEdit = async function (p, rec, opt) {
     if (!p || !rec) return;
     var cont = !!(rec.annoBase && Array.isArray(rec.anno) && rec.annoSig === sigKey(rec)), base = null;
     if (cont) { base = await fileBlob({ id: rec.annoBase }); if (!base) cont = false; }
@@ -222,9 +258,12 @@
       free: t && Array.isArray(t.fields) ? t.fields.filter(function (f) { return f.k === 'frei'; }) : [],
       boxes: t && Array.isArray(t.fields) ? t.fields.filter(function (f) { return f.k === 'kasten'; }) : [] };
     var ui = shell(rec.name || 'Dokument'); PE.ui = ui;
-    var tools = ui.tools;
+    var tools = ui.tools; ui.hint = h('div', 'pe-hintbar'); ui.hint.style.display = 'none'; ui.bar.appendChild(ui.hint);
     [['hand', 'Blättern (Finger scrollt, Stift schreibt)'], ['pen', 'Stift'], ['marker', 'Textmarker'], ['text', 'Text (antippen; vorhandenen Text antippen zum Ändern)'], ['check', 'Haken'], ['cross', 'Kreuz'], ['erase', 'Radierer']].forEach(function (x) {
       var b = btn('pe-tb', svg(x[0] === 'marker' ? 'mark' : x[0]), x[1], function () { peTool(x[0]); }); b.dataset.tool = x[0]; tools.appendChild(b);
+    });
+    [['patient', 'Unterschrift Patient: unterschreiben, dann ins Dokument tippen', 'P'], ['arzt', 'Unterschrift Arzt: unterschreiben, dann ins Dokument tippen', 'A']].forEach(function (x) {
+      var b = btn('pe-tb pe-sg', svg('sign') + '<small>' + x[2] + '</small>', x[1], function () { peSignStart(x[0]); }); tools.appendChild(b);
     });
     var cols = h('span', 'pe-cols');
     COLORS.forEach(function (c) { var b = btn('pe-col', '', c[1], function () { PE.color = c[0]; [].forEach.call(cols.children, function (x) { x.classList.toggle('on', x === b); }); }); b.style.background = c[0]; if (c[0] === PE.color) b.classList.add('on'); cols.appendChild(b); });
@@ -241,6 +280,7 @@
     try {
       ui.scroll.innerHTML = ''; PE.pages = await renderPages(base, ui.scroll);
       PE.pages.forEach(peBind); peTool('pen'); peRedraw();
+      if (opt && opt.sign) peSignStart(opt.sign);
     } catch (e) { ui.scroll.innerHTML = ''; ui.scroll.appendChild(h('div', 'pe-load', 'Das PDF konnte nicht angezeigt werden.')); }
   };
   window.pdfEditState = function () { return PE; };
@@ -364,4 +404,121 @@
   };
   window.tplFieldsState = function () { return TF; };
   window.TF_KINDS = TF_KINDS;
+})();
+
+/* ---------- Logbuch zu jedem Dokument (PDF) ----------
+   Wird automatisch erstellt und bei jeder Änderung des Dokuments neu geschrieben (Anlegen, Bearbeiten, Unterschrift, Umbenennen, Ausblenden, Zuordnen).
+   Inhalt: Dokumentdaten mit Prüfsumme (SHA-256), Unterschriften mit Nachweis, frühere Fassungen und das Änderungsprotokoll der Akte zu diesem Dokument.
+   Das Logbuch liegt im Dateispeicher (rec.logId), nicht als eigenes Dokument in der Akte. */
+(function () {
+  'use strict';
+  var queue = {}, timer = null;
+  function wrapText(font, size, text, maxW) {
+    var out = [], paras = String(text == null ? '' : text).split('\n');
+    paras.forEach(function (para) {
+      var words = para.split(/\s+/), line = '';
+      words.forEach(function (w) {
+        while (font.widthOfTextAtSize(w, size) > maxW && w.length > 1) {
+          var cut = w.length; while (cut > 1 && font.widthOfTextAtSize(w.slice(0, cut), size) > maxW) cut--;
+          if (line) { out.push(line); line = ''; }
+          out.push(w.slice(0, cut)); w = w.slice(cut);
+        }
+        var t = line ? line + ' ' + w : w;
+        if (font.widthOfTextAtSize(t, size) <= maxW) line = t; else { if (line) out.push(line); line = w; }
+      });
+      out.push(line);
+    });
+    return out;
+  }
+  function entriesFor(p, rec, names) {
+    var id = String(rec.id), res = [];
+    (p.audit || []).forEach(function (e) {
+      (e.changes || []).forEach(function (c) {
+        var hit = String(c.field || '').split(': ').slice(1).join(': ') ; 
+        var mine = names.indexOf(hit) >= 0 || String(c.from || '').indexOf('ID: ' + id) >= 0 || String(c.to || '').indexOf('ID: ' + id) >= 0;
+        if (mine && /^(Datei|Hinzugefügt|Bearbeitet|Sichtbarkeit|Unterschrift)/.test(c.field || '')) res.push({ ts: e.ts, area: e.area, field: c.field, from: c.from, to: c.to });
+      });
+    });
+    return res.sort(function (a, b) { return a.ts - b.ts; });
+  }
+  async function build(p, rec) {
+    var L = await loadPdfLib(), doc = await L.PDFDocument.create(), font = await doc.embedFont(L.StandardFonts.Helvetica), bold = await doc.embedFont(L.StandardFonts.HelveticaBold), mono = await doc.embedFont(L.StandardFonts.Courier);
+    var W = 595, H = 842, M = 48, page = null, y = 0, pages = [];
+    function np() { page = doc.addPage([W, H]); pages.push(page); y = H - M; }
+    function need(h) { if (!page || y - h < M + 20) np(); }
+    function line(t, o) { o = o || {}; var f = o.bold ? bold : (o.mono ? mono : font), sz = o.size || 9.5; wrapText(f, sz, pdfText(t), W - 2 * M - (o.indent || 0)).forEach(function (ln) { need(sz + 4); page.drawText(ln, { x: M + (o.indent || 0), y: y - sz, size: sz, font: f, color: o.gray ? L.rgb(0.35, 0.35, 0.35) : L.rgb(0.08, 0.08, 0.1) }); y -= sz + (o.gap == null ? 3.5 : o.gap); }); }
+    function head(t) { need(26); y -= 8; page.drawRectangle({ x: M, y: y - 16, width: W - 2 * M, height: 17, color: L.rgb(0.95, 0.96, 0.99) }); page.drawText(pdfText(t), { x: M + 6, y: y - 12, size: 10.5, font: bold, color: L.rgb(0.004, 0.133, 0.396) }); y -= 24; }
+    var blob = await fileBlob(rec), hash = blob ? await sha256Hex(blob) : '(Datei nicht vorhanden)';
+    var now = new Date(), vers = (p.dokumente || []).filter(function (d) { return d.vonDok === rec.id; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
+    var names = [rec.name]; (p.audit || []).forEach(function (e) { (e.changes || []).forEach(function (c) { var m = /Name: (.*)/.exec(String(c.from || '')) || /Name: (.*)/.exec(String(c.to || '')); if (m && String(c.from + c.to).indexOf('ID: ' + rec.id) >= 0 && names.indexOf(m[1]) < 0) names.push(m[1]); }); });
+    np();
+    page.drawText('Logbuch zum Dokument', { x: M, y: y - 16, size: 18, font: bold, color: L.rgb(0.004, 0.133, 0.396) }); y -= 30;
+    line((PRAXIS && PRAXIS.kopf ? PRAXIS.kopf : 'Kreuzberg Ästhetik') + (PRAXIS && PRAXIS.strasse ? ' · ' + PRAXIS.strasse + ', ' + PRAXIS.ort : ''), { gray: true });
+    head('Dokument');
+    line('Name: ' + rec.name, { bold: true });
+    line('Patient: ' + nameKey(p) + (p.dob ? ' · geb. ' + p.dob : '') + (p.nr ? ' · Akte #' + p.nr : ''));
+    line('Kategorie: ' + (rec.kat || '') + ' · Zuordnung: ' + (rec.zu || 'frei') + (rec.tid ? ' · aus Vorlage' : ''));
+    line('Angelegt: ' + fmtDT(tsOf(rec)) + (rec.ets ? ' · zuletzt bearbeitet: ' + fmtDT(rec.ets) : ''));
+    line('Dokument-ID: ' + rec.id + ' · Größe: ' + (blob ? (blob.size >= 1048576 ? (blob.size / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(blob.size / 1024)) + ' KB') : '-'));
+    line('Prüfsumme der aktuellen Datei (SHA-256):');
+    line(hash, { mono: true, size: 8.5, indent: 8 });
+    head('Unterschriften');
+    var any = false;
+    [['Patient', rec.sig], ['Arzt', rec.sig2]].forEach(function (x) {
+      var q = x[1]; if (!q) return; any = true;
+      line(x[0] + ': ' + q.name + ' · ' + fmtDT(q.ts) + ' Uhr', { bold: true });
+      if (q.hash) {
+        line('Prüfsumme der Datei nach der Unterschrift:', { gray: true, size: 8.5, indent: 8 }); line(q.hash, { mono: true, size: 8, indent: 8 });
+        if (q.hashVor) { line('Prüfsumme der Fassung davor:', { gray: true, size: 8.5, indent: 8 }); line(q.hashVor, { mono: true, size: 8, indent: 8 }); }
+        line('Geschrieben in ' + (Math.round((q.dauer || 0) / 100) / 10) + ' Sekunden mit ' + (q.punkte || 0) + ' erfassten Punkten (Tablet).', { size: 8.5, indent: 8, gray: true });
+      } else line('Ältere Unterschrift ohne gespeicherte Prüfsumme.', { size: 8.5, indent: 8, gray: true });
+    });
+    if (!any) line('Keine Unterschrift vorhanden.');
+    var l = rec.sig2 && rec.sig2.hash ? rec.sig2 : rec.sig && rec.sig.hash ? rec.sig : null;
+    if (l) line('Stand: ' + (l.hash === hash ? 'Die Datei ist seit der letzten Unterschrift unverändert.' : 'Die Datei wurde nach der letzten Unterschrift verändert (siehe Protokoll).'), { bold: true });
+    if (vers.length) {
+      head('Frühere Fassungen in der Akte (ausgeblendet)');
+      for (var i = 0; i < vers.length; i++) { var vb = await fileBlob(vers[i]), vh = vb ? await sha256Hex(vb) : '-'; line(fmtDT(tsOf(vers[i])) + ' · ' + vers[i].name); line(vh, { mono: true, size: 8, indent: 8 }); }
+    }
+    head('Protokoll');
+    var ev = entriesFor(p, rec, names);
+    if (!ev.length) line('Noch keine Einträge.');
+    ev.forEach(function (e) {
+      line(fmtDT(e.ts) + ' · ' + e.area, { bold: true, size: 9 });
+      line(e.field, { indent: 8 });
+      if (e.to && !/^ID: /.test(e.to)) line('→ ' + String(e.to).replace(/\n/g, ' · '), { indent: 8, size: 8.5, gray: true });
+      else if (e.to) line('→ ' + String(e.to).replace(/\n/g, ' · '), { indent: 8, size: 8, gray: true });
+      y -= 2;
+    });
+    need(60); y -= 10;
+    line('Dieses Logbuch wird von der Praxis-App automatisch erstellt (zuletzt am ' + fmtDT(now.getTime()) + ' Uhr) und bei jeder Änderung des Dokuments neu geschrieben.', { gray: true, size: 8 });
+    line('Die Unterschriften sind einfache elektronische Unterschriften (Tablet) mit Nachweisprotokoll, keine qualifizierten Signaturen.', { gray: true, size: 8 });
+    pages.forEach(function (pg, k) { pg.drawText('Seite ' + (k + 1) + ' von ' + pages.length + ' · ' + pdfText(rec.name), { x: M, y: 24, size: 7.5, font: font, color: L.rgb(0.5, 0.5, 0.5) }); });
+    doc.setTitle('Logbuch zu ' + rec.name);
+    return new Blob([await doc.save()], { type: 'application/pdf' });
+  }
+  async function write(p, rec) {
+    if (!rec || rec.hiddenFromView && rec.vonDok) return false;
+    var blob = await build(p, rec), id = rec.logId || newId();
+    if (!await fPut(id, 'Logbuch - ' + rec.name + '.pdf', blob)) return false;
+    if (urlCache[id]) { URL.revokeObjectURL(urlCache[id]); delete urlCache[id]; }
+    if (rec.logId !== id) { rec.logId = id; persist(); }
+    return true;
+  }
+  async function flush() {
+    timer = null; var q = queue; queue = {};
+    var ids = Object.keys(q);
+    for (var i = 0; i < ids.length; i++) { try { await write(q[ids[i]].p, q[ids[i]].rec); } catch (e) {} }
+  }
+  window.logbuchQueue = function (p, list) {
+    (list || []).forEach(function (r) { if (r && r.id && (p.dokumente || []).indexOf(r) >= 0) queue[r.id] = { p: p, rec: r }; });
+    if (Object.keys(queue).length && !timer) timer = setTimeout(flush, 900);
+  };
+  window.logbuchNow = async function (p, rec) { await write(p, rec); };
+  window.logbuchOpen = async function (p, rec) {
+    var w = window.open('', '_blank');
+    try { await write(p, rec); var u = await fileURL({ id: rec.logId }); if (u && w) w.location.href = u; else { if (w) w.close(); alert('Das Logbuch konnte nicht erstellt werden.'); } }
+    catch (e) { if (w) w.close(); alert('Das Logbuch konnte nicht erstellt werden.'); }
+  };
+  window.logbuchFlush = flush;
 })();

@@ -44,7 +44,7 @@ async function biOne(file, o) {
   var p = r.patient, name = nameKey(p), old = patients.filter(function (x) { return nameKey(x).toLowerCase() === name.toLowerCase(); })[0];
   if (old) {
     if (o.dup === 'skip') return { skip: true, text: name + ': übersprungen (gibt es schon)' };
-    p.id = old.id; (old.bilder || []).concat(old.dokumente || []).forEach(function (x) { fDel(x.id); });
+    p.id = old.id; (old.bilder || []).concat(old.dokumente || []).forEach(function (x) { fDel(x.id); if (x.logId) fDel(x.logId); });
     patients = patients.filter(function (x) { return x !== old; }); events = events.filter(function (e) { return !eventBelongs(e, old); });
   }
   if (!o.mail) p.log = p.log.filter(function (l) { return l.type !== 'mail'; });
@@ -133,7 +133,7 @@ async function doImportPatienten(d, files, q) {
     var p = { anrede: T(src.anrede), vorname: T(src.vorname).trim(), nachname: T(src.nachname).trim(), dob: T(src.dob), phone: T(src.phone), email: T(src.email), adresse: T(src.adresse), allergien: T(src.allergien), notizen: T(src.notizen), medikation: [], doku: [], log: [], bilder: [], dokumente: [], erstellt: tsParse(src.erstellt) };
     if (old) {
       p.id = old.id;
-      (old.bilder || []).concat(old.dokumente || []).forEach(function (x) { fDel(x.id); });
+      (old.bilder || []).concat(old.dokumente || []).forEach(function (x) { fDel(x.id); if (x.logId) fDel(x.logId); });
       patients = patients.filter(function (x) { return x !== old; });
       events = events.filter(function (e) { return !eventBelongs(e, old); });
     }

@@ -214,7 +214,7 @@ function medDocRow(p, dd) {
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }
       openRx(null, lg);
     }]] : []).concat([
-    ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }],
+    ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }]].concat(dd.sig ? [['Unterschrift prüfen', function () { sigInfo(dd); }]] : []).concat([
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Umbenennen', async function () {
       var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
@@ -222,8 +222,9 @@ function medDocRow(p, dd) {
       var before = auditFileState(dd); dd.name = v; auditFileChange(p, dd, before); persist(); refreshFiles(); renderMedien();
     }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
+    ['Logbuch (PDF)', function () { logbuchOpen(p, dd); }],
     [dd.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden', function () { fileHide(p, dd); }]
-  ])));
+  ]))));
   return r;
 }
 function renderMedien() {

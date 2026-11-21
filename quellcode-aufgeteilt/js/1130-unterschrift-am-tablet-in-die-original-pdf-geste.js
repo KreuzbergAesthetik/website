@@ -1,6 +1,6 @@
 /* ===== Unterschrift am Tablet, in die Original-PDF gestempelt ===== */
 var DEF_SIG = { page: 0, x: 0.55, y: 0.86, w: 0.30 };
-var sgCtx = null, sgDraw = null, sgInk = false, sgBox = null, sgTarget = null;
+var sgCtx = null, sgDraw = null, sgInk = false, sgBox = null, sgTarget = null, sgMeta = { n: 0, t0: 0, t1: 0 };
 function loadPdfLib() {
   return new Promise(function (res, rej) {
     if (window.PDFLib) { res(window.PDFLib); return; }
@@ -19,7 +19,7 @@ function tplState(p, t) {
   return { d: d, s: 'ok' };
 }
 /* Zweite Unterschrift (Arzt): gleiche Seite und Breite wie das erste Feld, eigene Position */
-function sigCfg2(rec) { var t = tplFor(rec), c = sigCfg(rec); return t && t.sig2 && t.sig2.on ? { page: c.page, w: c.w, x: t.sig2.x, y: t.sig2.y } : null; }
+function sigCfg2(rec) { var t = tplFor(rec), c = sigCfg(rec); return t && t.sig2 && t.sig2.on && !t.sig2.free ? { page: c.page, w: c.w, x: t.sig2.x, y: t.sig2.y } : null; }
 function needSig2(rec) { var t = tplFor(rec); return !!(rec.sig && !rec.sig2 && t && t.sig && t.sig.on && t.sig2 && t.sig2.on); }
 function sigCfg(rec) { var t = tplFor(rec); return t && t.sig && t.sig.on ? t.sig : DEF_SIG; }
 function signable(dd) { return /\.pdf$/i.test(dd.name) && !dd.sig && [KATS[0], KATS[1], KATS[2]].indexOf(katOf(dd)) >= 0; }
@@ -96,39 +96,68 @@ function sgSetup() {
   ['pointerup', 'pointercancel'].forEach(function (n) { cv.addEventListener(n, function () { sgDraw = null; }); });
 }
 function sgDot(a, b) {
+  var nw = Date.now(); sgMeta.n++; if (!sgMeta.t0) sgMeta.t0 = nw; sgMeta.t1 = nw;
   sgCtx.strokeStyle = '#111'; sgCtx.lineCap = 'round'; sgCtx.lineJoin = 'round'; sgCtx.lineWidth = 3 + b.p * 5;
   sgCtx.beginPath(); sgCtx.moveTo(a.x, a.y); sgCtx.lineTo(b.x + 0.01, b.y + 0.01); sgCtx.stroke();
   sgBox.x0 = Math.min(sgBox.x0, b.x); sgBox.y0 = Math.min(sgBox.y0, b.y); sgBox.x1 = Math.max(sgBox.x1, b.x); sgBox.y1 = Math.max(sgBox.y1, b.y);
 }
-function sgClear() { var cv = document.getElementById('sg-cv'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); sgInk = false; sgBox = null; sgDraw = null; }
+function sgClear() { var cv = document.getElementById('sg-cv'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); sgInk = false; sgBox = null; sgDraw = null; sgMeta = { n: 0, t0: 0, t1: 0 }; }
 function sgPng() {
   var cv = document.getElementById('sg-cv'), pad = 12, x0 = Math.max(0, sgBox.x0 - pad), y0 = Math.max(0, sgBox.y0 - pad), x1 = Math.min(cv.width, sgBox.x1 + pad), y1 = Math.min(cv.height, sgBox.y1 + pad);
   var t = document.createElement('canvas'); t.width = Math.max(1, Math.round(x1 - x0)); t.height = Math.max(1, Math.round(y1 - y0));
   t.getContext('2d').drawImage(cv, x0, y0, x1 - x0, y1 - y0, 0, 0, t.width, t.height);
   return new Promise(function (res) { t.toBlob(res, 'image/png'); });
 }
+/* Feste Unterschriftsfelder gibt es nur, wenn die Vorlage eines eingerichtet hat. Sonst (auch bei "frei im Dokument") unterschreibt man im Fenster und tippt in das Dokument, wo die Unterschrift stehen soll. */
+function sigFixed(rec, arzt) { var t = tplFor(rec); return !!(t && t.sig && t.sig.on && !t.sig.free && (!arzt || (t.sig2 && t.sig2.on && !t.sig2.free))); }
 function openSign(p, rec, arzt) {
+  if (!sigFixed(rec, arzt) && typeof pdfEdit === 'function' && (rec.tid || /\.pdf$/i.test(rec.name || ''))) { pdfEdit(p, rec, { sign: arzt ? 'arzt' : 'patient' }); return; }
   sgTarget = { p: p, rec: rec, arzt: !!arzt }; sgSetup(); sgClear();
   document.getElementById('sg-info').textContent = (arzt ? (settings.inhaber || 'Der Arzt') : nameKey(p)) + ' unterschreibt: ' + rec.name;
   openModal('modal-sign');
 }
+/* Nachweis zu jeder Unterschrift: Zeitpunkt, Name, Prüfsumme der unterschriebenen Datei und der Fassung davor, Schreibdauer und Zahl der Punkte.
+   Das ist eine einfache elektronische Signatur mit Nachweisprotokoll, keine qualifizierte Signatur (siehe Hinweis in der Hilfe/HANDOVER). */
+function sigMeta() { return { dauer: sgMeta.t1 && sgMeta.t0 ? sgMeta.t1 - sgMeta.t0 : 0, punkte: sgMeta.n }; }
+async function sigRecord(rec, who, name, hashVor, finalBlob, ts, meta) {
+  var hash = await sha256Hex(finalBlob);
+  var o = { ts: ts, name: name, hash: hash, hashVor: hashVor || '', dauer: (meta && meta.dauer) || 0, punkte: (meta && meta.punkte) || 0 };
+  if (who === 'arzt') rec.sig2 = o; else rec.sig = o;
+  return o;
+}
+async function sigCheck(rec) {
+  var l = rec.sig2 && rec.sig2.hash ? rec.sig2 : rec.sig && rec.sig.hash ? rec.sig : null;
+  if (!l) return { st: 'ohne', txt: 'Zu dieser Unterschrift wurde noch keine Prüfsumme gespeichert (ältere Unterschrift).' };
+  var b = await fileBlob(rec); if (!b) return { st: 'fehlt', txt: 'Die Datei liegt nicht auf diesem Gerät.' };
+  var now = await sha256Hex(b), ok = now === l.hash;
+  return { st: ok ? 'ok' : 'geaendert', txt: ok ? 'Die Datei ist seit der letzten Unterschrift (' + fmtDT(l.ts) + ', ' + l.name + ') unverändert.' : 'Die Datei wurde nach der letzten Unterschrift (' + fmtDT(l.ts) + ', ' + l.name + ') verändert. Änderungen stehen im Änderungsprotokoll der Akte.' };
+}
+async function sigInfo(rec) {
+  var r = await sigCheck(rec), z = [];
+  [['Patient', rec.sig], ['Arzt', rec.sig2]].forEach(function (x) { var q = x[1]; if (q) z.push(x[0] + ': ' + q.name + ', ' + fmtDT(q.ts) + (q.hash ? ' · Prüfsumme ' + String(q.hash).slice(0, 12) + (q.dauer ? ' · geschrieben in ' + Math.round(q.dauer / 100) / 10 + ' s, ' + q.punkte + ' Punkte' : '') : '')); });
+  await kaConfirm(z.join('\n') + '\n\n' + r.txt + '\n\nHinweis: Das ist eine einfache elektronische Unterschrift mit Nachweisprotokoll, keine qualifizierte Signatur.', { ok: 'Schließen', single: true });
+}
+function openSignPad(title, cb) { sgTarget = { cb: cb }; sgSetup(); sgClear(); document.getElementById('sg-info').textContent = title; openModal('modal-sign'); }
 function applySign() {
   if (!sgInk || !sgBox) { alert('Bitte zuerst im Feld unterschreiben.'); return; }
+  if (sgTarget && sgTarget.cb) { var cb = sgTarget.cb; var mt = sigMeta(); sgPng().then(function (b) { closeModal('modal-sign'); cb(b, mt); }); return; }
   var t = sgTarget, btn = document.getElementById('sg-ok'), now = new Date(); btn.disabled = true;
   var who = t.arzt ? (settings.inhaber || 'Arzt') : nameKey(t.p), cfg = t.arzt ? sigCfg2(t.rec) : sigCfg(t.rec);
   if (!cfg) { btn.disabled = false; alert('Für diese Vorlage ist kein Feld für die Unterschrift des Arztes eingerichtet.'); return; }
   var label = 'Unterschrieben am ' + pad(now.getDate()) + '.' + pad(now.getMonth() + 1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' Uhr von ' + who;
   Promise.all([sgPng(), fileBlob(t.rec)]).then(function (r) {
     if (!r[1]) throw new Error('file');
-    return stampPdf(r[1], cfg, r[0], label);
+    t.hashVor = null; return sha256Hex(r[1]).then(function (hv) { t.hashVor = hv; return stampPdf(r[1], cfg, r[0], label); });
   }).then(function (out) {
+    t.finalBlob = out;
     if (urlCache[t.rec.id]) { URL.revokeObjectURL(urlCache[t.rec.id]); delete urlCache[t.rec.id]; }
     return fPut(t.rec.id, t.rec.name, out);
   }).then(function (ok) {
     btn.disabled = false;
     if (!ok) { alert('Die unterschriebene Datei konnte nicht gespeichert werden.'); return; }
     var before = auditFileState(t.rec);
-    if (t.arzt) t.rec.sig2 = { ts: now.getTime(), name: who }; else t.rec.sig = { ts: now.getTime(), name: nameKey(t.p) };
+    var mt0 = sigMeta();
+    sigRecord(t.rec, t.arzt ? 'arzt' : 'patient', t.arzt ? who : nameKey(t.p), t.hashVor, t.finalBlob, now.getTime(), mt0).then(function () { persist(); try { renderUnterlagen(); } catch (x) {} });
     auditFileChange(t.p, t.rec, before, 'Dokumente');
     closeModal('modal-sign'); refreshFiles();
   }).catch(function () { btn.disabled = false; alert('Die Unterschrift konnte nicht in die PDF eingefügt werden. Die Datei bleibt unverändert. (Ist die Datei pdf-lib.min.js hochgeladen und bist Du online?)'); });
@@ -136,15 +165,16 @@ function applySign() {
 /* Einstellungen der Vorlage */
 function updateSigPrev() {
   var on = document.getElementById('tp-sig').checked; document.getElementById('tp-sigcfg').style.display = on ? 'block' : 'none';
+  var fr = on && document.getElementById('tp-sigfree').checked; document.getElementById('tp-sigpos').style.display = fr ? 'none' : 'block';
   var w = +document.getElementById('tp-w').value, x = +document.getElementById('tp-x').value, y = +document.getElementById('tp-y').value;
   document.getElementById('tp-wv').textContent = w + ' %'; document.getElementById('tp-xv').textContent = x + ' %'; document.getElementById('tp-yv').textContent = y + ' %';
   var b = document.getElementById('tp-box'); b.style.left = x + '%'; b.style.top = y + '%'; b.style.width = w + '%'; b.style.height = (w / 3.5 / 1.414) + '%';
-  var on2 = on && document.getElementById('tp-sig2').checked; document.getElementById('tp-sig2cfg').style.display = on2 ? 'block' : 'none';
+  var on2 = on && !fr && document.getElementById('tp-sig2').checked; document.getElementById('tp-sig2cfg').style.display = on2 ? 'block' : 'none';
   var x2 = +document.getElementById('tp-x2').value, y2 = +document.getElementById('tp-y2').value; document.getElementById('tp-x2v').textContent = x2 + ' %'; document.getElementById('tp-y2v').textContent = y2 + ' %';
   var b2 = document.getElementById('tp-box2'); b2.style.display = on2 ? 'block' : 'none'; b2.style.left = x2 + '%'; b2.style.top = y2 + '%'; b2.style.width = w + '%'; b2.style.height = (w / 3.5 / 1.414) + '%';
 }
-function sig2FromForm() { return { on: true, x: +document.getElementById('tp-x2').value / 100, y: +document.getElementById('tp-y2').value / 100 }; }
-function sigFromForm() { return { on: true, page: Math.max(0, parseInt(document.getElementById('tp-pg').value, 10) || 0), x: +document.getElementById('tp-x').value / 100, y: +document.getElementById('tp-y').value / 100, w: +document.getElementById('tp-w').value / 100 }; }
+function sig2FromForm() { if (document.getElementById('tp-sigfree').checked) return { on: true, free: true }; return { on: true, x: +document.getElementById('tp-x2').value / 100, y: +document.getElementById('tp-y2').value / 100 }; }
+function sigFromForm() { return { on: true, free: document.getElementById('tp-sigfree').checked || undefined, page: Math.max(0, parseInt(document.getElementById('tp-pg').value, 10) || 0), x: +document.getElementById('tp-x').value / 100, y: +document.getElementById('tp-y').value / 100, w: +document.getElementById('tp-w').value / 100 }; }
 function testSig() {
   var c = document.createElement('canvas'); c.width = 700; c.height = 200; var g = c.getContext('2d');
   g.strokeStyle = '#111'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(30, 140); g.bezierCurveTo(120, 20, 180, 20, 230, 120); g.bezierCurveTo(260, 180, 320, 60, 400, 100); g.bezierCurveTo(470, 140, 520, 60, 640, 90); g.stroke();
@@ -161,8 +191,8 @@ function openTpl(id) {
   var sel = document.getElementById('tp-kat'); fillKatSelect(sel, false); sel.value = katOf(tpCur);
   document.getElementById('tp-neu').checked = !!tpCur.neu; document.getElementById('tp-fill').checked = !!tpCur.fill;
   var sg = tpCur.sig && tpCur.sig.on ? tpCur.sig : DEF_SIG;
-  document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on);
-  var s2 = tpCur.sig2 && tpCur.sig2.on ? tpCur.sig2 : { x: 0.52, y: sg.y }; document.getElementById('tp-sig2').checked = !!(tpCur.sig2 && tpCur.sig2.on); document.getElementById('tp-x2').value = Math.round(s2.x * 100); document.getElementById('tp-y2').value = Math.round(s2.y * 100);
+  document.getElementById('tp-sig').checked = !!(tpCur.sig && tpCur.sig.on); document.getElementById('tp-sigfree').checked = !!(tpCur.sig && tpCur.sig.free);
+  var s2 = tpCur.sig2 && tpCur.sig2.on && !tpCur.sig2.free ? tpCur.sig2 : { x: 0.52, y: sg.y }; document.getElementById('tp-sig2').checked = !!(tpCur.sig2 && tpCur.sig2.on); document.getElementById('tp-x2').value = Math.round(s2.x * 100); document.getElementById('tp-y2').value = Math.round(s2.y * 100);
   document.getElementById('tp-pg').value = sg.page; document.getElementById('tp-x').value = Math.round(sg.x * 100); document.getElementById('tp-y').value = Math.round(sg.y * 100); document.getElementById('tp-w').value = Math.round(sg.w * 100);
   updateSigPrev(); tpFieldsInfo();
   var ls = (settings.katalog || []).filter(function (k) { return (k.vorlagen || []).indexOf(id) >= 0; }).map(function (k) { return k.name; });
