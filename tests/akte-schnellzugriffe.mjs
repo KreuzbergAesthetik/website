@@ -33,12 +33,12 @@ try {
     out.gespeichert = JSON.stringify(settings.akteDock) === JSON.stringify(AM_DOCK.map(d => d.act).filter(a => wunsch.includes(a))) && knoepfe().length === 3;
     out.alleAktionenOffen = !!document.querySelector('.a-fab .plus-btn');
     // Zeitleiste: Symbole in der Zeile
-    const q = document.querySelector('.tl-item .tl-quick');
+    const q = document.querySelector('.tl-plus').closest('.tl-item').querySelector('.tl-quick');
     out.zeilenSymbole = !!q && q.querySelectorAll('.tl-qb').length === 4 && getComputedStyle(q).opacity === '0';
     document.querySelector('.tl-item .tl-plus').click(); await wait(200);
-    out.antippen = document.querySelector('.tl-item').classList.contains('quick-on') && getComputedStyle(q).opacity === '1';
+    out.antippen = document.querySelector('.tl-plus').closest('.tl-item').classList.contains('quick-on') && getComputedStyle(q).opacity === '1';
     document.querySelector('.tl-item .tl-plus').click(); await wait(100);
-    out.zu = !document.querySelector('.tl-item').classList.contains('quick-on');
+    out.zu = !document.querySelector('.tl-plus').closest('.tl-item').classList.contains('quick-on');
     return out;
   });
   for (const k of Object.keys(r)) assert.equal(r[k], true, 'Schnellzugriffe: ' + k + ' ' + JSON.stringify(r));

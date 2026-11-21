@@ -7,7 +7,7 @@ const html = read('index.html');
 const sw = read('sw.js');
 
 // 1) Alle relevanten JavaScript-Dateien müssen syntaktisch gültig sein.
-for (const file of ['dialoge.js','docs.js','sync.js','extcal.js','forms.js','ftexte.js','sw.js']) {
+for (const file of ['dialoge.js','docs.js','sync.js','extcal.js','pdfedit.js','forms.js','ftexte.js','sw.js']) {
   new vm.Script(read(file), { filename: file });
 }
 

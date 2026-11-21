@@ -15,6 +15,7 @@
     <div class="form-group"><label>Kategorie</label><select id="tp-kat" class="form-control"></select></div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-neu"> Bei jedem neuen Patienten vorschlagen</label>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin-top:6px;"><input type="checkbox" id="tp-fill"> Patientendaten automatisch eintragen (Name, Geburtsdatum, Datum)</label>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0;"><button type="button" class="btn btn-secondary btn-sm" onclick="tplFields(tpCur)">Felder einrichten …</button><span id="tp-finfo" style="font-size:12px; color:#64748b;"></span></div>
     <div id="tp-leist" style="font-size:12px; color:#64748b; margin:8px 0;"></div>
     <div class="ak-h">Unterschriftsfeld</div>
     <label class="tm-chk" style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="tp-sig" onchange="updateSigPrev()"> Unterschrift am Tablet erforderlich</label>
@@ -28,7 +29,12 @@
         <div class="form-group"><label>Von links <span id="tp-xv"></span></label><input type="range" id="tp-x" min="0" max="85" value="55" oninput="updateSigPrev()"></div>
         <div class="form-group"><label>Von oben <span id="tp-yv"></span></label><input type="range" id="tp-y" min="0" max="95" value="86" oninput="updateSigPrev()"></div>
       </div>
-      <div id="tp-prev" style="position:relative; width:150px; aspect-ratio:1/1.414; background:#fff; border:1px solid #94a3b8; margin:6px 0;"><div id="tp-box" style="position:absolute; border:2px solid #16a34a; background:#16a34a33;"></div></div>
+      <label class="tm-chk" style="display:flex; gap:8px; align-items:center; margin:6px 0;"><input type="checkbox" id="tp-sig2" onchange="updateSigPrev()"> Auch Unterschrift des Arztes (zweites Feld, gleiche Seite und Breite)</label>
+      <div id="tp-sig2cfg" style="display:none;"><div class="grid-2">
+        <div class="form-group"><label>Arzt: von links <span id="tp-x2v"></span></label><input type="range" id="tp-x2" min="0" max="85" value="52" oninput="updateSigPrev()"></div>
+        <div class="form-group"><label>Arzt: von oben <span id="tp-y2v"></span></label><input type="range" id="tp-y2" min="0" max="95" value="52" oninput="updateSigPrev()"></div>
+      </div></div>
+      <div id="tp-prev" style="position:relative; width:150px; aspect-ratio:1/1.414; background:#fff; border:1px solid #94a3b8; margin:6px 0;"><div id="tp-box" style="position:absolute; border:2px solid #16a34a; background:#16a34a33;"></div><div id="tp-box2" style="position:absolute; border:2px solid #012265; background:#01226533; display:none;"></div></div>
       <button type="button" class="btn btn-secondary" onclick="testSig()">Testlauf mit Probe-Unterschrift</button>
     </div>
     <div style="margin-top:10px;"><button type="button" class="btn btn-secondary" id="tp-view" onclick="viewTpl()">Vorlage ansehen</button></div>

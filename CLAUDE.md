@@ -55,6 +55,7 @@ Wichtige Dateien:
 - `dialoge.js`: interne Hinweise, Bestätigungen und Eingabedialoge.
 - `sync.js`: Ende-zu-Ende-verschlüsselter Geräte-Abgleich und Postfach.
 - `extcal.js`: Einbindung externer privater Kalender.
+- `pdfedit.js`: PDF-Editor für Arbeitsdokumente der Akte und Felder der PDF-Vorlagen.
 - `forms.js`, `ftexte.js`, `forms.css`: Webformulare und deren Anpassung.
 - `anmeldung.html`, `anamnese.html`, `erinnerung.html`, `aufklaerung.html`: patientenseitige Formulare/Seiten.
 - `formular-empfang-wordpress.txt`: Server-Komponente als WordPress/WPCode-Snippet.

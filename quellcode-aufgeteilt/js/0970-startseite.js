@@ -57,7 +57,7 @@ function renderHome() {
     if (hasAllergy(p) || miss.length) {
       ex = mk('div', 'hm-chips');
       if (hasAllergy(p)) ex.appendChild(mk('span', 'badge hm-allergy', 'Allergie: ' + p.allergien));
-      var ml = miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' · Unterschrift' : ''); });
+      var ml = miss.map(function (t) { return t.name + (tplState(p, t).s === 'offen' ? ' · Unterschrift' : tplState(p, t).s === 'offen2' ? ' · Unterschrift Arzt' : ''); });
       if (ml.length > 2) { var c3 = mk('span', 'badge badge-amber', 'Offen: ' + ml.length + ' Unterlagen'); c3.title = ml.join('\n'); ex.appendChild(c3); }
       else ml.forEach(function (t) { var c2 = mk('span', 'badge badge-amber', 'Offen: ' + t); c2.title = t; ex.appendChild(c2); });
     }

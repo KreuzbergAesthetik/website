@@ -179,7 +179,7 @@ async function pdfThumb(dd, w) {
   } finally { doc.destroy(); }
 }
 function docThumb(dd, ic) {
-  var key = dd.id + '|' + (dd.sig ? dd.sig.ts : '');
+  var key = dd.id + '|' + (dd.sig ? dd.sig.ts : '') + '|' + (dd.sig2 ? dd.sig2.ts : '') + '|' + (dd.ets || '');
   if (THC[key]) { setTh(ic, THC[key]); return; }
   if (/\.(png|jpe?g|webp|gif)$/i.test(dd.name || '')) fileURL(dd).then(function (u) { if (u) setTh(ic, u); });
   else if (/\.pdf$/i.test(dd.name || '')) THQ = THQ.then(function () { return pdfThumb(dd); }).then(function (u) { if (u) { THC[key] = u; setTh(ic, u); } }).catch(function () {});
@@ -190,7 +190,8 @@ function docPreview(dd) {
   var open = mk('a', 'btn btn-secondary btn-sm', 'Öffnen'); open.target = '_blank'; open.rel = 'noopener'; open.style.textDecoration = 'none';
   var x = mk('button', 'btn btn-cancel btn-sm', 'Schließen'); x.type = 'button';
   var close = function () { o.remove(); }; x.onclick = close; o.onclick = function (ev) { if (ev.target === o) close(); };
-  bar.appendChild(t); bar.appendChild(open); bar.appendChild(x); box.appendChild(bar); box.appendChild(img); o.appendChild(box); document.body.appendChild(o);
+  var ed = mk('button', 'btn btn-secondary btn-sm', 'Bearbeiten'); ed.type = 'button'; ed.onclick = function () { close(); if (curP) pdfEdit(curP, dd); };
+  bar.appendChild(t); if (/\.pdf$/i.test(dd.name || '') || dd.tid) bar.appendChild(ed); bar.appendChild(open); bar.appendChild(x); box.appendChild(bar); box.appendChild(img); o.appendChild(box); document.body.appendChild(o);
   fileURL(dd).then(function (u) { if (u) { open.href = u; if (!/\.pdf$/i.test(dd.name || '')) img.src = u; } });
   if (/\.pdf$/i.test(dd.name || '')) { img.alt = 'Wird geladen …'; pdfThumb(dd, 900).then(function (u) { if (u) img.src = u; }).catch(function () { img.alt = 'Keine Vorschau möglich.'; }); }
 }
@@ -206,13 +207,14 @@ function medDocRow(p, dd) {
   l2.appendChild(pill);
   if (dd.hiddenFromView) l2.appendChild(restoreVisibilityButton(function () { fileHide(p, dd); }));
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
-  if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); }
+  if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
   l2.appendChild(medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }
       openRx(null, lg);
     }]] : []).concat([
+    ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }],
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Umbenennen', async function () {
       var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;

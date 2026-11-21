@@ -29,9 +29,10 @@ function tplsForEvent(e) {
 function addTplTo(p, t, zu, i, datum) {
   var id = newId();
   return fileBlob(t).then(function (bl) {
-    if (bl && t.fill && /pdf/i.test(bl.type || 'pdf')) {
+    if (bl && (t.fill || (t.fields && t.fields.length)) && /pdf/i.test(bl.type || 'pdf')) {
       var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
-      return fillStampPdf(bl, { name: [p.vorname, p.nachname].filter(Boolean).join(' '), dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) }).catch(function () { return bl; });
+      return fillStampPdf(bl, { name: [p.vorname, p.nachname].filter(Boolean).join(' '), vorname: p.vorname || '', nachname: p.nachname || '', anrede: p.anrede || '', adresse: String(p.adresse || '').replace(/\s*\n\s*/g, ', ').trim(),
+        dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) }, t.fields).catch(function () { return bl; });
     }
     return bl;
   }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
@@ -176,12 +177,16 @@ function renderUnterlagen() {
     var st = tplState(p, t), d = st.d, btn;
     if (st.s === 'fehlt') btn = bt('In Akte legen', false, function () { addTplsTo(p, [t], null); });
     else if (st.s === 'offen') btn = bt('Unterschreiben', true, function () { openSign(p, d); });
+    else if (st.s === 'offen2') btn = bt('Als Arzt unterschreiben', true, function () { openSign(p, d, true); });
     else btn = mk('span', 'badge badge-green', d.sig ? 'unterschrieben' : 'vorhanden');
+    if (d) { var eb = mk('button', 'btn btn-secondary un-btn'); eb.type = 'button'; eb.title = 'Bearbeiten (Stift, Text, Markieren)'; eb.setAttribute('aria-label', eb.title); eb.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg>'; eb.onclick = function () { pdfEdit(p, d); };
+      var bw2 = mk('span'); bw2.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; bw2.appendChild(eb); bw2.appendChild(btn); btn = bw2; }
     var wd = t.web ? KA_DOCS.filter(function (x) { return x.id === t.web; })[0] : null, wsub = '';
     if (wd) { var ws = bestLast(p, 'doc:' + wd.id, 'sent'), wg = bestLast(p, 'doc:' + wd.id, 'got'); wsub = wg ? ' · online gelesen ' + dm(wg) : ws ? ' · Link gesendet ' + dm(ws) : ''; }
     var wrap = btn;
     if (wd) { wrap = mk('span'); wrap.style.cssText = 'display:inline-flex; gap:6px; align-items:center; flex:none;'; var lb = mk('button', 'btn btn-secondary un-btn'); lb.type = 'button'; lb.title = 'Link senden'; lb.setAttribute('aria-label', 'Link senden'); lb.innerHTML = tvSvg('mail'); lb.firstChild.style.cssText = 'width:16px;height:16px;vertical-align:middle;'; lb.onclick = function (ev) { ev.stopPropagation(); docSend(ev, p, wd); }; wrap.appendChild(lb); wrap.appendChild(btn); }
-    row(st.s === 'ok' ? 'ok' : st.s === 'offen' ? 'wait' : '', st.s === 'ok' ? '✓' : st.s === 'offen' ? '✎' : '–', t.name, (st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : 'noch nicht in der Akte') + wsub, wrap);
+    var offenS = st.s === 'offen' || st.s === 'offen2';
+    row(st.s === 'ok' ? 'ok' : offenS ? 'wait' : '', st.s === 'ok' ? '✓' : offenS ? '✎' : '–', t.name, (st.s === 'ok' ? (d.sig ? 'unterschrieben ' + dm(d.sig.ts) + (d.sig2 ? ' · Arzt ' + dm(d.sig2.ts) : '') : 'vom ' + dm(tsOf(d))) : st.s === 'offen' ? 'Unterschrift fehlt' : st.s === 'offen2' ? 'Patient hat unterschrieben · Unterschrift des Arztes fehlt' : 'noch nicht in der Akte') + wsub, wrap);
   });
   if (offen.children.length) { box.appendChild(mk('div', 'un-grp', 'Offen')); box.appendChild(offen); }
   if (erl.children.length) {
