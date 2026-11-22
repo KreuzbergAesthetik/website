@@ -9,7 +9,7 @@ node werkzeuge/code-aufteilen.mjs --pruefen  # prüfen, ob die Kopie aktuell ist
 ```
 
 Die Teile sind verlustfrei: In der Reihenfolge aus `teile.json` aneinandergehängt ergeben sie exakt `index.html`
-(SHA-256 `d0c4ec21ad2364b2…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
+(SHA-256 `0825108f548aa2ef…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
 
 - `css/`: Gestaltung, nach Themen (27 Teile)
 - `js/`: Programmlogik, nach Funktionsbereichen (35 Teile)

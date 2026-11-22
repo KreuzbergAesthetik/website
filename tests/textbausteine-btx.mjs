@@ -20,7 +20,7 @@ try {
     out.version = settings.tbVer === TB_VER && TB_VER >= 3;
     out.standard = t('BTX Standard') === 'Azzalure (140 SU*)\nSF 5-5-5-5-5-5 (30)\nZF 10-10-10-10-10 (50)\nKF 10-10-10 (60)';
     const regionen = ['oberes Gesichtsdrittel', 'unteres Gesichtsdrittel', 'Hals', 'Masseter', 'Hände', 'Füße', 'Achseln', 'Gesicht komplett'];
-    const std = 'Rötung, Schwellung, blaue Flecken, Blutung, Allergie, Entzündung, Infektion', kosten = 'Diese sind unter Umständen mit privaten Kosten bzw. Selbstzahlungen verbunden.';
+    const std = 'Rötung, Schwellung, blaue Flecken, Blutung, Allergie (allergische Reaktion bis hin zur Anaphylaxie), Entzündung, Infektion', kosten = 'Diese sind unter Umständen mit privaten Kosten bzw. Selbstzahlungen verbunden.';
     out.standardBaustein = t('Risiken BTX Standard').includes(std + ', herabhängendes Augenlid oder herabhängende Augenbraue, Narbe, Revision mit OP.') && t('Risiken BTX Standard').includes(kosten);
     out.regionen = regionen.every(n => (t('Risiken BTX ' + n) || '').includes(std) && t('Risiken BTX ' + n).includes('Revision mit OP') && t('Risiken BTX ' + n).includes(kosten));
     out.augeNurGesicht = ['oberes Gesichtsdrittel', 'unteres Gesichtsdrittel', 'Hals', 'Masseter', 'Gesicht komplett'].every(n => /herabhängendes Augenlid/.test(t('Risiken BTX ' + n))) && ['Hände', 'Füße', 'Achseln'].every(n => !/Augenlid/.test(t('Risiken BTX ' + n)));
