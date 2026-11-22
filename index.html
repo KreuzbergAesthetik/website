@@ -238,8 +238,9 @@ textarea.form-control { font-size:15px; }
 .a-menu { position:absolute; top:42px; right:30px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.18); z-index:20; min-width:230px; padding:6px; }
 .a-menu button { display:block; width:100%; text-align:left; background:none; border:none; padding:10px; font-size:14px; cursor:pointer; border-radius:6px; color:#0f172a; }
 .a-menu button:hover { background:#f1f5f9; }
+.a-menu .am-sub { display:block; font-size:11.5px; color:#64748b; margin-top:1px; white-space:normal; max-width:260px; }
 .un-grp { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:16px 0 4px; }
-.un-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid #eef2f6; } .un-grp + .un-row { border-top:none; }
+.un-row { display:flex; align-items:center; gap:10px; padding:10px 12px; margin:0 0 8px; background:#fff; border:1px solid var(--pf-line,#dbe3f0); border-radius:12px; } .md-forms { margin:0 0 14px; }
 .un-st { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex:none; background:#f1f5f9; color:#94a3b8; }
 .un-st.ok { background:#dcfce7; color:#15803d; } .un-st.wait { background:#fef3c7; color:#b45309; }
 .un-main { flex:1; min-width:0; } .un-t { font-weight:600; overflow-wrap:anywhere; } .un-s { font-size:12px; color:#64748b; margin-top:1px; }
@@ -251,15 +252,17 @@ textarea.form-control { font-size:15px; }
 .md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .seg#inv-payseg { display:flex; width:100%; margin-bottom:16px; } #inv-payseg button { flex:1 1 auto; min-width:0; padding:9px 4px; font-size:12.5px; white-space:nowrap; } #inv-paybox { margin-bottom:6px; }
 .md-seg { display:flex; margin:10px 0 2px; } .md-seg button { flex:1; }
 .md-mon { font-weight:800; font-size:15px; margin:18px 0 8px; } .md-mon:first-child { margin-top:10px; }
-.md-item { margin-bottom:10px; } .md-gh { display:flex; align-items:center; gap:6px; } .md-gt { font-size:12.5px; color:#64748b; } .md-zu { font-size:12px; color:#047857; margin:2px 0 4px; }
+.md-item { margin-bottom:14px; } .md-gh { display:flex; align-items:center; gap:6px; } .md-gt { font-size:12.5px; color:#64748b; } .md-zu { font-size:12px; color:#047857; margin:2px 0 4px; }
 .md-strip { grid-template-columns:repeat(auto-fill,minmax(62px,68px)) !important; margin:4px 0 6px !important; }
-.md-doc { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #eef2f6; min-width:0; }
+.md-doc { display:flex; align-items:center; gap:10px; padding:10px 12px; margin:0 0 8px; background:#fff; border:1px solid var(--pf-line,#dbe3f0); border-radius:12px; min-width:0; }
+#md-chips { margin-bottom:12px; }
+.md-date { font-size:12px; color:#64748b; white-space:nowrap; }
 .nav-ver { padding:8px 14px 4px; font-size:11px; color:#94a3b8; border-top:1px solid #eef2f6; margin-top:4px; }
 .dp-ov { position:fixed; inset:0; z-index:130; background:rgba(15,23,42,.72); display:flex; align-items:center; justify-content:center; padding:12px; } .dp-box { background:#fff; border-radius:12px; max-width:min(720px,100%); max-height:100%; display:flex; flex-direction:column; overflow:hidden; } .dp-bar { display:flex; gap:8px; align-items:center; padding:10px 12px; border-bottom:1px solid #e2e8f0; } .dp-t { flex:1; min-width:0; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .dp-img { display:block; max-width:100%; max-height:calc(100vh - 110px); object-fit:contain; margin:0 auto; background:#f1f5f9; }
 .md-ic.th { cursor:pointer; width:34px; height:44px; background-color:#fff; background-size:cover; background-position:top center; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 1px 2px rgba(15,23,42,.12); }
 .md-ic { flex:none; width:26px; height:30px; border-radius:5px; background:#fee2e2; color:#b91c1c; font-size:8px; font-weight:800; display:flex; align-items:center; justify-content:center; }
 .md-col { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:4px; } .md-l2 { display:flex; align-items:center; gap:6px; min-width:0; } .md-l2 .md-dots { margin-left:auto; } .md-l2 .md-sig { width:26px; height:26px; } .md-l2 .md-sig svg { width:15px; height:15px; } .md-l2 .md-pill { max-width:60%; }
-.md-nm { flex:0 0 auto; min-width:0; font-weight:600; color:#0f172a; font-size:14px; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.md-nm { flex:0 1 auto; min-width:0; font-weight:600; color:#0f172a; font-size:14px; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .md-pill { flex:0 1 auto; max-width:34%; border:none; background:#eef2f7; color:#475569; border-radius:999px; padding:3px 9px; font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .md-sig { flex:none; width:30px; height:30px; border-radius:8px; border:none; background:var(--pf-navy); color:#fff; display:inline-flex; align-items:center; justify-content:center; padding:0; cursor:pointer; } .md-sig svg { width:17px; height:17px; }
 .md-sig.on { background:#16a34a; cursor:default; }
@@ -2409,7 +2412,7 @@ function kaStart() {
   <div id="a-flagcard" class="card a-flagcard" style="display:none;"></div>
   <div class="card a-side">
     <input type="file" id="a-img-in" accept="image/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addImages(this)">
-    <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'dokumente')">
+    <input type="file" id="a-doc-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocsOrForm(this)">
     <input type="file" id="a-vid-in" accept="video/*" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addVideos(this)">
     <input type="file" id="a-tpl-in" multiple style="position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;" onchange="addDocs(this,'templates')">
     <div id="a-head"></div>
@@ -2443,9 +2446,7 @@ function kaStart() {
     <div class="card-header" style="margin-bottom:6px;">
       <div class="ak-h" style="margin:0; border:none; padding:0;">Bilder und Dateien</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button type="button" id="md-addf" class="ak-act ak-datei" onclick="zuNext = null; document.getElementById('a-img-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span>Foto</span></button>
-        <button type="button" id="md-addv" class="ak-act ak-datei" title="Video hinzufügen (nur auf diesem Gerät)" onclick="document.getElementById('a-vid-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><span>Video</span></button>
-        <button type="button" id="md-addd" class="ak-act ak-datei" onclick="zuNext = null; document.getElementById('a-doc-in').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 12v5M9.5 14.5h5"/></svg><span>Datei</span></button>
+        <button type="button" id="md-add" class="ak-act" onclick="medAddMenu(event)" title="Datei, Foto, Vorlage oder Formular hinzufügen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>Hinzufügen</span></button>
       </div>
     </div>
     <div class="cal-bar">
@@ -2454,11 +2455,11 @@ function kaStart() {
     <div class="seg md-seg" id="md-seg"><button type="button" id="md-bild" onclick="setMedFilter('bild')"></button><button type="button" id="md-dok" onclick="setMedFilter('dok')"></button></div>
     <div id="md-cmp" class="vg-area" style="display:none;"></div>
     <div id="md-chips" class="md-chips"></div>
-    <div id="md-list"></div>
-  </div>
-  <div id="a-unt-block" class="card" style="display:none;">
-    <div class="card-header" style="margin-bottom:12px;"><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><span style="display:inline-flex; gap:8px; align-items:center;"><button type="button" class="ak-act" id="a-unt-add" onclick="untAddMenu(event)" title="Unterlage hinzufügen oder Link senden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>Hinzufügen</span></button><button type="button" class="ak-act ak-grey" onclick="document.getElementById('akt-form-file').click()" title="Ausgefülltes Formular (PDF) einlesen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>Import</span></button></span><input type="file" id="akt-form-file" multiple accept=".pdf,.json,application/pdf" style="display:none" onchange="importPatienten(this)"></div>
+  <div id="a-unt-block" class="md-forms" style="display:none;">
+    <div class="card-header" style="margin-bottom:8px;"><div><div class="ak-h" style="margin:0; border:none; padding:0;">Formulare und Vorlagen</div><div style="font-size:12px; color:#64748b; margin-top:2px;">Stand und Versand – ausgefüllte Formulare erscheinen darunter als Dateien</div></div></div>
     <div id="a-unt"></div>
+  </div>
+    <div id="md-list"></div>
   </div>
 
   </div>
@@ -3161,7 +3162,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-22-g';
+var KA_V = '2026-11-22-k';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -5429,7 +5430,7 @@ function srchFloat(inputId, tabId) {
 }
 function srchInit() {
   
-  var ma = document.getElementById('md-addf'); if (ma) srchFold('md-filter', ma.parentNode, null);
+  var ma = document.getElementById('md-add'); if (ma) srchFold('md-filter', ma.parentNode, null);
 }
 var invAddReady = false;
 function invAddPos(text, price, rate) {
@@ -6953,7 +6954,7 @@ function tlMenu(ev, items) {
   if (!m) { m = mk('div', 'a-menu'); m.id = 'tl-menu'; document.body.appendChild(m); }
   if (m.style.display === 'block' && m._src === ev.currentTarget) { m.style.display = 'none'; return; }
   m.innerHTML = ''; m._src = ev.currentTarget;
-  items.forEach(function (it) { var b = mk('button', '', it[0]); b.type = 'button'; b.onclick = function () { m.style.display = 'none'; it[1](); }; m.appendChild(b); });
+  items.forEach(function (it) { var b = mk('button', '', it[0]); b.type = 'button'; if (it[2]) b.appendChild(mk('small', 'am-sub', it[2])); b.onclick = function () { m.style.display = 'none'; it[1](); }; m.appendChild(b); });
   var r = ev.currentTarget.getBoundingClientRect(); m.style.right = 'auto'; m.style.width = 'max-content'; m.style.display = 'block'; m.style.position = 'fixed';
   m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, window.innerWidth - m.offsetWidth - 8)) + 'px';
   /* Lange Menüs (z. B. Vorlagen und Links) scrollen in sich selbst, nicht die Seite dahinter */
@@ -8213,7 +8214,7 @@ function docSend(ev, p, d) {
 function renderUnterlagen() {
   fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
-  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = 'block'; box.innerHTML = '';
+  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none'; box.innerHTML = '';
   var offen = mk('div'), erl = mk('div');
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;
@@ -8281,6 +8282,30 @@ function renderUnterlagen() {
   }
 }
 /* Menü "Hinzufügen": Links zu Hinweisblättern/Aufklärungen und weitere Vorlagen */
+/* Ein Knopf für alles Hinzufügbare in Anlagen: Fotos, Videos, Dateien, Vorlagen, Formular-Links, Ausgefülltes einlesen */
+/* Datei hochladen: ist es ein ausgefülltes Formular der Praxis, wird gefragt, ob die Daten übernommen werden sollen */
+async function addDocsOrForm(inp) {
+  var fl = [].slice.call(inp.files || []);
+  if (fl.some(function (f) { return /\.(json|pdf)$/i.test(f.name) && !/^manifest\.json$/i.test(f.name); }) && !fl.some(function (f) { return /\.zip$/i.test(f.name); })) {
+    var es = []; try { es = await detectFormulare(fl); } catch (x) {}
+    if (es.length && await kaConfirm('Das ist ein ausgefülltes Formular.\n\nDie Daten daraus in die Patientenakte übernehmen?\n(Abbrechen = nur als Datei ablegen)', { ok: 'Daten übernehmen', cancel: 'Nur ablegen', danger: false })) { inp.value = ''; formularImport(es); return; }
+  }
+  return addDocs(inp, 'dokumente');
+}
+function medAddMenu(ev) {
+  var p = curP; if (!p) return;
+  var anker = ev.currentTarget, items = [], later = function (fn) { return function () { setTimeout(fn, 0); }; };
+  var sub = function (list) { return function () { setTimeout(function () { tlMenu({ stopPropagation: function () {}, currentTarget: anker }, list); }, 0); }; };
+  if (medFilter === 'bild') {
+    items.push(['Foto', function () { zuNext = null; document.getElementById('a-img-in').click(); }, 'Aufnehmen oder aus der Galerie wählen']);
+    items.push(['Video', function () { document.getElementById('a-vid-in').click(); }, 'Nur auf diesem Gerät gespeichert']);
+  }
+  items.push(['Datei hochladen', function () { zuNext = null; document.getElementById('a-doc-in').click(); }, 'PDF, Brief oder Foto vom Gerät; ausgefüllte Formulare werden erkannt']);
+  var tp = templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; });
+  if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben']);
+  items.push(['Link an Patient senden …', sub(KA_DOCS.map(function (d) { return [(d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]; })), 'Patient füllt Aufklärung oder Hinweis selbst online aus']);
+  tlMenu(ev, items);
+}
 function untAddMenu(ev) {
   var p = curP; if (!p) return;
   var anker = ev.currentTarget;   /* currentTarget ist nach dem Klick leer, deshalb jetzt merken */
@@ -8806,14 +8831,12 @@ function medDocRow(p, dd) {
   fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
   if (dd.hiddenFromView) { r.style.opacity = '0.65'; r.appendChild(fileHiddenBadge(dd)); }
   var col = mk('div', 'md-col'), l2 = mk('div', 'md-l2'); col.appendChild(a); col.appendChild(l2); r.appendChild(col);
-  var pill = mk('button', 'md-pill', katOf(dd)); pill.type = 'button'; pill.title = 'Kategorie ändern';
-  pill.onclick = function (ev) { tlMenu(ev, KATS.map(function (k) { return [k, function () { var before = auditFileState(dd); dd.kat = k; auditFileChange(p, dd, before); refreshFiles(); renderMedien(); }]; })); };
-  l2.appendChild(pill);
+  var dl = mk('span', 'md-date', fmtD(iso(new Date(tsOf(dd))))); l2.appendChild(dl);
   if (dd.hiddenFromView) l2.appendChild(restoreVisibilityButton(function () { fileHide(p, dd); }));
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
-  l2.appendChild(medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
+  var dots = medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }
       openRx(null, lg);
@@ -8826,10 +8849,12 @@ function medDocRow(p, dd) {
       var ex = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[0] || ''; if (ex && !/\.[A-Za-z0-9]{1,6}$/.test(v)) v += ex;
       var before = auditFileState(dd); dd.name = v; auditFileChange(p, dd, before); persist(); refreshFiles(); renderMedien();
     }],
+    ['Kategorie ändern …', function () { setTimeout(function () { tlMenu({ stopPropagation: function () {}, currentTarget: dots }, KATS.map(function (k) { return [k, function () { var before = auditFileState(dd); dd.kat = k; auditFileChange(p, dd, before); refreshFiles(); renderMedien(); }]; })); }, 0); }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
     ['Logbuch (PDF)', function () { logbuchOpen(p, dd); }],
     [dd.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden', function () { fileHide(p, dd); }]
-  ]))));
+  ])));
+  l2.appendChild(dots);
   return r;
 }
 function renderMedien() {
@@ -8839,7 +8864,7 @@ function renderMedien() {
   var nb = (curP.bilder || []).filter(recordVisible).length + (curP.videos || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
   document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dateien (' + nd + ')';
   document.getElementById('md-bild').className = medFilter === 'bild' ? 'on' : ''; document.getElementById('md-dok').className = medFilter === 'dok' ? 'on' : '';
-  document.getElementById('md-addf').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addv').style.display = medFilter === 'bild' ? '' : 'none'; document.getElementById('md-addd').style.display = medFilter === 'dok' ? '' : 'none';
+  var ub = document.getElementById('a-unt-block'); if (ub) ub.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none';
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
   var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
   var kats = []; (curP.dokumente || []).filter(recordVisible).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });

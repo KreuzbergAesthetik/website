@@ -239,7 +239,7 @@ function tlMenu(ev, items) {
   if (!m) { m = mk('div', 'a-menu'); m.id = 'tl-menu'; document.body.appendChild(m); }
   if (m.style.display === 'block' && m._src === ev.currentTarget) { m.style.display = 'none'; return; }
   m.innerHTML = ''; m._src = ev.currentTarget;
-  items.forEach(function (it) { var b = mk('button', '', it[0]); b.type = 'button'; b.onclick = function () { m.style.display = 'none'; it[1](); }; m.appendChild(b); });
+  items.forEach(function (it) { var b = mk('button', '', it[0]); b.type = 'button'; if (it[2]) b.appendChild(mk('small', 'am-sub', it[2])); b.onclick = function () { m.style.display = 'none'; it[1](); }; m.appendChild(b); });
   var r = ev.currentTarget.getBoundingClientRect(); m.style.right = 'auto'; m.style.width = 'max-content'; m.style.display = 'block'; m.style.position = 'fixed';
   m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, window.innerWidth - m.offsetWidth - 8)) + 'px';
   /* Lange Menüs (z. B. Vorlagen und Links) scrollen in sich selbst, nicht die Seite dahinter */
