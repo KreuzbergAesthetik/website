@@ -176,14 +176,12 @@ function medDocRow(p, dd) {
   fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
   if (dd.hiddenFromView) { r.style.opacity = '0.65'; r.appendChild(fileHiddenBadge(dd)); }
   var col = mk('div', 'md-col'), l2 = mk('div', 'md-l2'); col.appendChild(a); col.appendChild(l2); r.appendChild(col);
-  var pill = mk('button', 'md-pill', katOf(dd)); pill.type = 'button'; pill.title = 'Kategorie ändern';
-  pill.onclick = function (ev) { tlMenu(ev, KATS.map(function (k) { return [k, function () { var before = auditFileState(dd); dd.kat = k; auditFileChange(p, dd, before); refreshFiles(); renderMedien(); }]; })); };
-  l2.appendChild(pill);
+  var dl = mk('span', 'md-date', fmtD(iso(new Date(tsOf(dd))))); l2.appendChild(dl);
   if (dd.hiddenFromView) l2.appendChild(restoreVisibilityButton(function () { fileHide(p, dd); }));
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
-  l2.appendChild(medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
+  var dots = medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }
       openRx(null, lg);
@@ -196,10 +194,12 @@ function medDocRow(p, dd) {
       var ex = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[0] || ''; if (ex && !/\.[A-Za-z0-9]{1,6}$/.test(v)) v += ex;
       var before = auditFileState(dd); dd.name = v; auditFileChange(p, dd, before); persist(); refreshFiles(); renderMedien();
     }],
+    ['Kategorie ändern …', function () { setTimeout(function () { tlMenu({ stopPropagation: function () {}, currentTarget: dots }, KATS.map(function (k) { return [k, function () { var before = auditFileState(dd); dd.kat = k; auditFileChange(p, dd, before); refreshFiles(); renderMedien(); }]; })); }, 0); }],
     ['Datum ändern', function () { editGroupDate([dd]); renderMedien(); }],
     ['Logbuch (PDF)', function () { logbuchOpen(p, dd); }],
     [dd.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden', function () { fileHide(p, dd); }]
-  ]))));
+  ])));
+  l2.appendChild(dots);
   return r;
 }
 function renderMedien() {
