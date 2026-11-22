@@ -1,6 +1,6 @@
 {
   "quelle": "index.html",
-  "sha256": "3cb61512027b90c31f1074c861ef81966d299efa7cd8935ada186613a2924456",
+  "sha256": "9cb21ef6e611e1959be85578282010529c0e631346f91ed79a74ac439682093b",
   "hinweis": "Teile in dieser Reihenfolge aneinanderhängen = index.html",
   "teile": [
     {
@@ -785,111 +785,111 @@
       "art": "js",
       "titel": "Kategorien und Vorlagen",
       "ab_zeile": 8087,
-      "zeilen": 321
+      "zeilen": 329
     },
     {
       "datei": "js/1130-unterschrift-am-tablet-in-die-original-pdf-geste.js",
       "art": "js",
       "titel": "Unterschrift am Tablet, in die Original-PDF gestempelt",
-      "ab_zeile": 8408,
+      "ab_zeile": 8416,
       "zeilen": 240
     },
     {
       "datei": "js/1140-medien.js",
       "art": "js",
       "titel": "Medien",
-      "ab_zeile": 8648,
+      "ab_zeile": 8656,
       "zeilen": 438
     },
     {
       "datei": "js/1150-webformulare.js",
       "art": "js",
       "titel": "Webformulare",
-      "ab_zeile": 9086,
+      "ab_zeile": 9094,
       "zeilen": 278
     },
     {
       "datei": "js/1160-rechnungen-aus-pdf-importieren.js",
       "art": "js",
       "titel": "Rechnungen aus PDF importieren ",
-      "ab_zeile": 9364,
+      "ab_zeile": 9372,
       "zeilen": 198
     },
     {
       "datei": "js/1170-produktlager.js",
       "art": "js",
       "titel": "Produktlager",
-      "ab_zeile": 9562,
+      "ab_zeile": 9570,
       "zeilen": 549
     },
     {
       "datei": "js/1180-import-von-patienten-zips-aus-dem-altsystem.js",
       "art": "js",
       "titel": "Import von Patienten-ZIPs aus dem Altsystem ",
-      "ab_zeile": 10111,
+      "ab_zeile": 10119,
       "zeilen": 242
     },
     {
       "datei": "js/1190-sicherung.js",
       "art": "js",
       "titel": "Sicherung ",
-      "ab_zeile": 10353,
+      "ab_zeile": 10361,
       "zeilen": 219
     },
     {
       "datei": "js/1200-sicherung-als-zip.js",
       "art": "js",
       "titel": "Sicherung als ZIP",
-      "ab_zeile": 10572,
+      "ab_zeile": 10580,
       "zeilen": 319
     },
     {
       "datei": "js/1210-geraete-abgleich.js",
       "art": "js",
       "titel": "Geräte-Abgleich",
-      "ab_zeile": 10891,
+      "ab_zeile": 10899,
       "zeilen": 210
     },
     {
       "datei": "js/1220-eingangskorb.js",
       "art": "js",
       "titel": "Eingangskorb",
-      "ab_zeile": 11101,
+      "ab_zeile": 11109,
       "zeilen": 97
     },
     {
       "datei": "html/1230-oberflaeche-rahmen.html",
       "art": "html",
       "titel": "oberflaeche-rahmen",
-      "ab_zeile": 11198,
+      "ab_zeile": 11206,
       "zeilen": 1
     },
     {
       "datei": "js/1240-app-start.js",
       "art": "js",
       "titel": "app-start",
-      "ab_zeile": 11199,
+      "ab_zeile": 11207,
       "zeilen": 0
     },
     {
       "datei": "html/1250-oberflaeche-ks-bar.html",
       "art": "html",
       "titel": "oberflaeche-ks-bar",
-      "ab_zeile": 11199,
+      "ab_zeile": 11207,
       "zeilen": 7
     },
     {
       "datei": "js/1260-offline-speicher-mit-update-bestaetigung.js",
       "art": "js",
       "titel": "Offline-Speicher mit Update-Bestätigung",
-      "ab_zeile": 11206,
+      "ab_zeile": 11214,
       "zeilen": 12
     },
     {
       "datei": "html/1270-dokument-ende.html",
       "art": "html",
       "titel": "dokument-ende",
-      "ab_zeile": 11218,
+      "ab_zeile": 11226,
       "zeilen": 2
     }
   ]

@@ -197,6 +197,15 @@ function renderUnterlagen() {
 }
 /* Menü "Hinzufügen": Links zu Hinweisblättern/Aufklärungen und weitere Vorlagen */
 /* Ein Knopf für alles Hinzufügbare in Anlagen: Fotos, Videos, Dateien, Vorlagen, Formular-Links, Ausgefülltes einlesen */
+/* Datei hochladen: ist es ein ausgefülltes Formular der Praxis, wird gefragt, ob die Daten übernommen werden sollen */
+async function addDocsOrForm(inp) {
+  var fl = [].slice.call(inp.files || []);
+  if (fl.some(function (f) { return /\.(json|pdf)$/i.test(f.name) && !/^manifest\.json$/i.test(f.name); }) && !fl.some(function (f) { return /\.zip$/i.test(f.name); })) {
+    var es = []; try { es = await detectFormulare(fl); } catch (x) {}
+    if (es.length && await kaConfirm('Das ist ein ausgefülltes Formular.\n\nDie Daten daraus in die Patientenakte übernehmen?\n(Abbrechen = nur als Datei ablegen)', { ok: 'Daten übernehmen', cancel: 'Nur ablegen', danger: false })) { inp.value = ''; formularImport(es); return; }
+  }
+  return addDocs(inp, 'dokumente');
+}
 function medAddMenu(ev) {
   var p = curP; if (!p) return;
   var anker = ev.currentTarget, items = [], later = function (fn) { return function () { setTimeout(fn, 0); }; };
@@ -205,11 +214,10 @@ function medAddMenu(ev) {
     items.push(['Foto', function () { zuNext = null; document.getElementById('a-img-in').click(); }, 'Aufnehmen oder aus der Galerie wählen']);
     items.push(['Video', function () { document.getElementById('a-vid-in').click(); }, 'Nur auf diesem Gerät gespeichert']);
   }
-  items.push(['Datei hochladen', function () { zuNext = null; document.getElementById('a-doc-in').click(); }, 'PDF, Brief oder Dokument vom Gerät in die Akte']);
+  items.push(['Datei hochladen', function () { zuNext = null; document.getElementById('a-doc-in').click(); }, 'PDF, Brief oder Foto vom Gerät; ausgefüllte Formulare werden erkannt']);
   var tp = templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; });
   if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben']);
   items.push(['Link an Patient senden …', sub(KA_DOCS.map(function (d) { return [(d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]; })), 'Patient füllt Aufklärung oder Hinweis selbst online aus']);
-  items.push(['Ausgefülltes Formular einlesen', function () { document.getElementById('akt-form-file').click(); }, 'Vom Patienten ausgefülltes PDF zurück in die Akte holen']);
   tlMenu(ev, items);
 }
 function untAddMenu(ev) {

@@ -9,7 +9,7 @@ node werkzeuge/code-aufteilen.mjs --pruefen  # prüfen, ob die Kopie aktuell ist
 ```
 
 Die Teile sind verlustfrei: In der Reihenfolge aus `teile.json` aneinandergehängt ergeben sie exakt `index.html`
-(SHA-256 `3cb61512027b90c3…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
+(SHA-256 `9cb21ef6e611e195…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
 
 - `css/`: Gestaltung, nach Themen (27 Teile)
 - `js/`: Programmlogik, nach Funktionsbereichen (35 Teile)
@@ -132,19 +132,19 @@ Bereits vorher eigenständige Dateien (nicht kopiert): `dialoge.js` (Hinweise, R
 | `js/1090-statistik.js` | Statistik | 7600 | 74 |
 | `js/1100-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 7674 | 108 |
 | `js/1110-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 7782 | 305 |
-| `js/1120-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 8087 | 321 |
-| `js/1130-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 8408 | 240 |
-| `js/1140-medien.js` | Medien | 8648 | 438 |
-| `js/1150-webformulare.js` | Webformulare | 9086 | 278 |
-| `js/1160-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 9364 | 198 |
-| `js/1170-produktlager.js` | Produktlager | 9562 | 549 |
-| `js/1180-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 10111 | 242 |
-| `js/1190-sicherung.js` | Sicherung  | 10353 | 219 |
-| `js/1200-sicherung-als-zip.js` | Sicherung als ZIP | 10572 | 319 |
-| `js/1210-geraete-abgleich.js` | Geräte-Abgleich | 10891 | 210 |
-| `js/1220-eingangskorb.js` | Eingangskorb | 11101 | 97 |
-| `html/1230-oberflaeche-rahmen.html` | oberflaeche-rahmen | 11198 | 1 |
-| `js/1240-app-start.js` | app-start | 11199 | 0 |
-| `html/1250-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 11199 | 7 |
-| `js/1260-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 11206 | 12 |
-| `html/1270-dokument-ende.html` | dokument-ende | 11218 | 2 |
+| `js/1120-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 8087 | 329 |
+| `js/1130-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 8416 | 240 |
+| `js/1140-medien.js` | Medien | 8656 | 438 |
+| `js/1150-webformulare.js` | Webformulare | 9094 | 278 |
+| `js/1160-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 9372 | 198 |
+| `js/1170-produktlager.js` | Produktlager | 9570 | 549 |
+| `js/1180-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 10119 | 242 |
+| `js/1190-sicherung.js` | Sicherung  | 10361 | 219 |
+| `js/1200-sicherung-als-zip.js` | Sicherung als ZIP | 10580 | 319 |
+| `js/1210-geraete-abgleich.js` | Geräte-Abgleich | 10899 | 210 |
+| `js/1220-eingangskorb.js` | Eingangskorb | 11109 | 97 |
+| `html/1230-oberflaeche-rahmen.html` | oberflaeche-rahmen | 11206 | 1 |
+| `js/1240-app-start.js` | app-start | 11207 | 0 |
+| `html/1250-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 11207 | 7 |
+| `js/1260-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 11214 | 12 |
+| `html/1270-dokument-ende.html` | dokument-ende | 11226 | 2 |
