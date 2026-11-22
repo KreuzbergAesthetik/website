@@ -67,6 +67,21 @@ async function umschlagSave(p) {
   } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); }
 }
 
+/* Dokument aus der Akte senden: Teilen-Menü des Geräts, sonst Datei laden und Mail vorbereiten. Vermerk im Verlauf und im Änderungsprotokoll. */
+async function sendDokument(p, rec) {
+  var blob = await fileBlob(rec); if (!blob) { alert('Die Datei liegt nicht auf diesem Gerät.'); return false; }
+  var nm = String(rec.name || 'Dokument').replace(/\.pdf$/i, '') + '.pdf', file = new File([blob], nm, { type: 'application/pdf' });
+  var betreff = String(rec.name || 'Dokument') + ' - Kreuzberg Ästhetik', text = fillPlatzhalter('{AnredeInformell},\n\nanbei ' + (rec.name || 'das Dokument') + '.\n\nManuel - Kreuzberg Ästhetik', p);
+  var done = function (via) { p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: (rec.name || 'Dokument') + ' gesendet (' + via + ')' }]); auditOne(p, 'Dokumente', 'Gesendet: ' + (rec.name || rec.id), '', via + ' · ' + fmtDT(Date.now())); persist(); try { if (curP === p) renderVerlauf(); } catch (x) {} };
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: betreff, text: text }); done('Teilen-Menü'); return true; }
+    catch (x) { if (!x || x.name !== 'AbortError') alert('Das Teilen ist fehlgeschlagen. Bitte die Datei über „Öffnen“ speichern und von Hand anhängen.'); return false; }
+  }
+  var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = nm; document.body.appendChild(a); a.click(); a.remove();
+  if (p.email) window.location.href = 'mailto:' + encodeURIComponent(p.email) + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
+  if (await kaConfirm('Die PDF wurde heruntergeladen. Bitte im Mailprogramm anhängen und senden.\n\nAls gesendet vermerken?', { ok: 'Als gesendet vermerken', cancel: 'Nicht vermerken', danger: false })) { done('Mailprogramm'); return true; }
+  return false;
+}
 /* Rechnung als PDF über das Teilen-Menü des Geräts senden und als versendet vermerken */
 async function sendInvoice() {
   var inv = invCur(); if (!inv) return;

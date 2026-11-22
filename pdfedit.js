@@ -9,8 +9,9 @@
 (function () {
   'use strict';
   var COLORS = [['#0b1f5c', 'Navy'], ['#111111', 'Schwarz'], ['#c0262d', 'Rot'], ['#1d4ed8', 'Blau'], ['#15803d', 'Grün']];
-  var TF_KINDS = [['name', 'Name (Vor- und Nachname)'], ['vorname', 'Vorname'], ['nachname', 'Nachname'], ['anrede', 'Anrede'], ['dob', 'Geburtsdatum'], ['namedob', 'Name, geb. Datum'],
-    ['datum', 'Datum (heute oder Termin)'], ['adresse', 'Anschrift (eine Zeile)'], ['arzt', 'Arzt (Praxisinhaber)'], ['fest', 'Fester Text'], ['frei', 'Freies Textfeld (in der Akte ausfüllen)'], ['kasten', 'Kästchen (in der Akte antippen = Haken)']];
+  var TF_KINDS = [['name', 'Name (Vor- und Nachname)'], ['vorname', 'Vorname'], ['nachname', 'Nachname'], ['anrede', 'Anrede'], ['dob', 'Geburtsdatum'], ['namedob', 'Name, geb. Datum'], ['alter', 'Alter (Jahre)'], ['patnr', 'Akte-Nummer'],
+    ['datum', 'Datum (heute oder Termin)'], ['heute', 'Datum heute'], ['termin', 'Datum nächster Termin'], ['anamnese', 'Datum letzte Anamnese'], ['honorar', 'Datum Honorarvereinbarung'], ['ort', 'Ort (Praxis)'], ['ortdatum', 'Ort und Datum (z. B. Berlin, 22.11.2026)'],
+    ['behandlung', 'Behandlung (des Termins)'], ['tel', 'Telefon'], ['email', 'E-Mail'], ['allergien', 'Allergien'], ['adresse', 'Anschrift (eine Zeile)'], ['plzort', 'PLZ und Ort (Patient)'], ['arzt', 'Arzt (Praxisinhaber)'], ['fest', 'Fester Text'], ['frei', 'Freies Textfeld (in der Akte ausfüllen)'], ['kasten', 'Kästchen (in der Akte antippen = Haken)']];
   var PE = null, TF = null;
 
   function h(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
@@ -82,7 +83,7 @@
         var fs = it.s * Wp; c.font = fs + 'px Helvetica, Arial, sans-serif'; c.textBaseline = 'alphabetic';
         String(it.txt).split('\n').forEach(function (ln, k) { c.fillText(ln, it.x * Wp, it.y * Hp + fs * 0.8 + k * fs * 1.2); });
       } else if (it.t === 'sig') {
-        var im = sigImg(it, pg); if (im && im.width) { var wpx = it.w * Wp, hpx = wpx * im.height / im.width; c.drawImage(im, it.x * Wp - wpx / 2, it.y * Hp - hpx / 2, wpx, hpx); c.setLineDash([5, 4]); c.strokeStyle = 'rgba(21,128,61,.6)'; c.lineWidth = 1; c.strokeRect(it.x * Wp - wpx / 2, it.y * Hp - hpx / 2, wpx, hpx); }
+        var im = sigImg(it, pg); if (im && im.width) { var wpx = it.w * Wp, hpx = wpx * im.height / im.width; c.drawImage(im, it.x * Wp - wpx / 2, it.y * Hp - hpx / 2, wpx, hpx); c.setLineDash([5, 4]); c.strokeStyle = PE.selSig === it ? 'rgba(192,38,45,.9)' : 'rgba(21,128,61,.6)'; c.lineWidth = PE.selSig === it ? 2 : 1; c.strokeRect(it.x * Wp - wpx / 2, it.y * Hp - hpx / 2, wpx, hpx); }
       } else if (it.t === 'mark') {
         var m = it.s * Wp, x0 = it.x * Wp, y0 = it.y * Hp; c.lineWidth = Math.max(2, m * 0.14); c.beginPath();
         if (it.sym === 'check') { c.moveTo(x0 - m * 0.45, y0); c.lineTo(x0 - m * 0.12, y0 + m * 0.35); c.lineTo(x0 + m * 0.5, y0 - m * 0.4); }
@@ -128,8 +129,22 @@
   }
   function placeSig(pg, f) {
     var pd = PE.pending; if (!pd) return;
-    peSnap(); PE.items.push({ t: 'sig', p: pg.i, x: f.x, y: f.y, w: 0.26, who: pd.who, url: pd.url, mt: pd.mt, ts: Date.now() });
-    PE.pending = null; PE.ui.hint.style.display = 'none'; peTool('hand'); peDraw(pg);
+    peSnap(); PE.items.push({ t: 'sig', p: pg.i, x: f.x, y: f.y, w: 0.16, who: pd.who, url: pd.url, mt: pd.mt, ts: Date.now() });
+    PE.pending = null; PE.selSig = PE.items[PE.items.length - 1]; sigBar(); peTool('hand'); peRedraw();
+  }
+  /* Ausgewählte Unterschrift: Größe einstellen, neu platzieren oder entfernen */
+  function sigBar() {
+    var h0 = PE.ui.hint, it = PE.selSig; h0.innerHTML = '';
+    if (!it || PE.items.indexOf(it) < 0) { h0.style.display = 'none'; PE.selSig = null; return; }
+    h0.style.display = 'flex'; h0.style.cssText += ';align-items:center;gap:8px;flex-wrap:wrap;';
+    h0.appendChild(document.createTextNode('Unterschrift: Größe'));
+    var rg = h('input'); rg.type = 'range'; rg.min = 6; rg.max = 45; rg.value = Math.round(it.w * 100); rg.style.cssText = 'flex:1; min-width:120px;'; rg.oninput = function () { it.w = rg.value / 100; PE.dirty = true; peRedraw(); }; h0.appendChild(rg);
+    var nw = h('button', 'btn btn-secondary btn-sm', 'Neu platzieren'); nw.type = 'button'; nw.onclick = function () { PE.pending = { who: it.who, url: it.url, mt: it.mt }; PE.items.splice(PE.items.indexOf(it), 1); PE.selSig = null; peTool('sigplace'); h0.textContent = 'Jetzt in das Dokument tippen, wo die Unterschrift stehen soll.'; peRedraw(); }; h0.appendChild(nw);
+    var dl = h('button', 'btn btn-secondary btn-sm', 'Entfernen'); dl.type = 'button'; dl.onclick = function () { PE.items.splice(PE.items.indexOf(it), 1); PE.selSig = null; PE.dirty = true; sigBar(); peRedraw(); }; h0.appendChild(dl);
+  }
+  function hitSig(pg, f) {
+    for (var k = PE.items.length - 1; k >= 0; k--) { var it = PE.items[k]; if (it.t !== 'sig' || it.p !== pg.i) continue; var im = sigImg(it, pg), hh = im && im.width ? it.w * im.height / im.width * pg.W / pg.H : 0.05; if (Math.abs(f.x - it.x) <= it.w / 2 && Math.abs(f.y - it.y) <= hh / 2) return it; }
+    return null;
   }
   function hitBox(pg, f) {
     var tolx = 6 / pg.W, toly = 6 / pg.H;
@@ -146,6 +161,7 @@
     var ov = pg.ov, cur = null;
     ov.addEventListener('pointerdown', async function (ev) {
       if (PE.tool === 'sigplace' && PE.pending) { ev.preventDefault(); placeSig(pg, frac(ov, ev)); return; }
+      if (PE.tool !== 'pen' && PE.tool !== 'marker' && PE.tool !== 'erase' && PE.tool !== 'hand') { var hs = hitSig(pg, frac(ov, ev)); if (hs) { ev.preventDefault(); PE.selSig = hs; sigBar(); peRedraw(); return; } }
       var tool = PE.tool; if (tool === 'hand' && ev.pointerType !== 'pen') return;
       if (tool === 'hand') tool = 'pen';
       ev.preventDefault(); var f = frac(ov, ev), tol = 10 / f.r.width;
@@ -178,7 +194,7 @@
     });
     ['pointerup', 'pointercancel'].forEach(function (n) { ov.addEventListener(n, function () { cur = null; }); });
     ov.addEventListener('click', function (ev) {
-      if (PE.tool !== 'hand') return; var f = frac(ov, ev), bx = hitBox(pg, f); if (bx) toggleBox(pg, bx);
+      if (PE.tool !== 'hand') return; var hs = hitSig(pg, frac(ov, ev)); if (hs) { PE.selSig = hs; sigBar(); peRedraw(); return; } var f = frac(ov, ev), bx = hitBox(pg, f); if (bx) toggleBox(pg, bx);
     });
   }
   function peTool(t) {
@@ -218,8 +234,8 @@
     var texts = (items || []).filter(function (it) { return it.t === 'text'; }).map(function (it) { return '„' + String(it.txt).replace(/\s+/g, ' ').slice(0, 60) + '“'; });
     return n.ink + ' Striche, ' + n.mark + ' Haken/Kreuze, ' + n.text + ' Texte' + (texts.length ? ': ' + texts.join(', ') : '');
   }
-  async function peSave() {
-    var p = PE.p, rec = PE.rec, sb = PE.ui.save; sb.disabled = true;
+  async function peSave(sendAfter) {
+    var p = PE.p, rec = PE.rec, sb = PE.ui.save; sb.disabled = true; if (PE.ui.save2) PE.ui.save2.disabled = true;
     try {
       var out = await peBuild(), hashVor = await sha256Hex(await fileBlob(rec)) , sigs = PE.items.filter(function (it) { return it.t === 'sig' && !it.done; });
       if (!PE.hadBase) {
@@ -242,8 +258,9 @@
       auditOne(p, 'Dokumente', 'Bearbeitet: ' + (rec.name || rec.id), before, summary(plain));
       persist(); PE.dirty = false; if (window.logbuchQueue) logbuchQueue(p, [rec]);
       try { refreshFiles(); } catch (x) {} try { renderMedien(); } catch (x) {} try { renderUnterlagen(); } catch (x) {}
-      PE.ui.close(); PE = null; alert('Gespeichert.');
-    } catch (e) { sb.disabled = false; alert('Speichern hat nicht geklappt: ' + (e && e.message ? e.message : e)); }
+      PE.ui.close(); PE = null;
+      if (sendAfter && typeof sendDokument === 'function') { await sendDokument(p, rec); } else alert('Gespeichert.');
+    } catch (e) { sb.disabled = false; if (PE && PE.ui.save2) PE.ui.save2.disabled = false; alert('Speichern hat nicht geklappt: ' + (e && e.message ? e.message : e)); }
   }
   window.pdfEdit = async function (p, rec, opt) {
     if (!p || !rec) return;
@@ -274,8 +291,9 @@
     var sp = h('span', 'pe-sp'); tools.appendChild(sp);
     var cancel = h('button', 'btn btn-cancel btn-sm', 'Abbrechen'); cancel.type = 'button';
     cancel.onclick = async function () { if (PE && PE.dirty && !await kaConfirm('Änderungen verwerfen?')) return; ui.close(); PE = null; };
-    var save = h('button', 'btn btn-save btn-sm', 'Speichern'); save.type = 'button'; save.onclick = peSave; ui.save = save;
-    tools.appendChild(cancel); tools.appendChild(save);
+    var save = h('button', 'btn btn-save btn-sm', 'Speichern'); save.type = 'button'; save.onclick = function () { peSave(false); }; ui.save = save;
+    var save2 = h('button', 'btn btn-save btn-sm', 'Speichern und senden'); save2.type = 'button'; save2.onclick = function () { peSave(true); }; ui.save2 = save2;
+    tools.appendChild(cancel); tools.appendChild(save); tools.appendChild(save2);
     ui.scroll.appendChild(h('div', 'pe-load', 'Dokument wird geladen …'));
     try {
       ui.scroll.innerHTML = ''; PE.pages = await renderPages(base, ui.scroll);

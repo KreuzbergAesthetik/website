@@ -47,10 +47,23 @@ var FILL_POS = {
   foot: [['name', 0.128, 0.956], ['datum', 0.112, 0.975]],
   last: [['name+dob', 0.722, 0.059, 7.5]]
 };
+/* Zusätzliche Werte für Vorlagenfelder: Datum heute, nächster Termin, letzte Anamnese, Honorarvereinbarung, Ort der Praxis, Kontaktdaten, Allergien, Akte-Nr. */
+function dDe(v) { if (!v) return ''; var t = typeof v === 'number' ? new Date(v) : new Date(/^\d{4}-\d\d-\d\d/.test(String(v)) ? String(v).slice(0, 10) + 'T12:00:00' : v); if (isNaN(t)) return /^\d\d\.\d\d\.\d{4}$/.test(String(v)) ? String(v) : ''; return t.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+function fillExtra(p, eventDate) {
+  var today = iso(new Date()), nxt = events.filter(function (e) { return eventBelongs(e, p) && e.date >= today; }).sort(function (a, b) { return (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')); })[0];
+  var ev = eventDate ? events.filter(function (e) { return eventBelongs(e, p) && e.date === eventDate; })[0] : nxt, ai = anamInfo(p), ort = String(PRAXIS.ort || '').replace(/^\d{4,5}\s*/, '');
+  var geb = String(p.dob || '').match(/^(\d\d)\.(\d\d)\.(\d{4})$/), alter = '';
+  if (geb) { var n = new Date(), a = n.getFullYear() - +geb[3]; if (n.getMonth() + 1 < +geb[2] || (n.getMonth() + 1 === +geb[2] && n.getDate() < +geb[1])) a--; alter = String(a); }
+  var adr = String(p.adresse || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+  return { heute: dDe(new Date()), termin: nxt ? dDe(nxt.date) : '', anamnese: ai.ts ? dDe(ai.ts) : '', honorar: dDe(p.honorarVom), ort: ort, tel: p.phone || '', email: p.email || '', allergien: String(p.allergien || '').replace(/\s*\n\s*/g, ', '), patnr: p.nr ? String(p.nr) : '', behandlung: ev ? (ev.leistung || ev.behandlung || '') : '', plzort: adr.length > 1 ? adr[adr.length - 1] : '', alter: alter };
+}
 function fieldVal(f, d) {
+  var x = d.fillExtra || {}; for (var xk in x) if (d[xk] == null) d[xk] = x[xk];
   switch (f.k) {
     case 'name': return d.name; case 'vorname': return d.vorname; case 'nachname': return d.nachname; case 'anrede': return d.anrede; case 'dob': return d.dob; case 'datum': return d.datum;
-    case 'adresse': return d.adresse; case 'arzt': return settings.inhaber || ''; case 'namedob': return [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
+    case 'adresse': return d.adresse; case 'arzt': return settings.inhaber || '';
+    case 'heute': return d.heute; case 'termin': return d.termin; case 'anamnese': return d.anamnese; case 'honorar': return d.honorar; case 'ort': return d.ort; case 'ortdatum': return [d.ort, d.heute].filter(Boolean).join(', ');
+    case 'tel': return d.tel; case 'email': return d.email; case 'allergien': return d.allergien; case 'patnr': return d.patnr; case 'behandlung': return d.behandlung; case 'plzort': return d.plzort; case 'alter': return d.alter; case 'namedob': return [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
     case 'fest': return f.txt || ''; default: return '';
   }
 }

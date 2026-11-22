@@ -32,7 +32,7 @@ function addTplTo(p, t, zu, i, datum) {
     if (bl && (t.fill || (t.fields && t.fields.length)) && /pdf/i.test(bl.type || 'pdf')) {
       var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
       return fillStampPdf(bl, { name: [p.vorname, p.nachname].filter(Boolean).join(' '), vorname: p.vorname || '', nachname: p.nachname || '', anrede: p.anrede || '', adresse: String(p.adresse || '').replace(/\s*\n\s*/g, ', ').trim(),
-        dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) }, t.fields).catch(function () { return bl; });
+        dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }), fillExtra: fillExtra(p, datum) }, t.fields).catch(function () { return bl; });
     }
     return bl;
   }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
