@@ -6,7 +6,7 @@
 var KS = (function () {
   var EP = 'https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/abgleich';
   var STORES = ['events', 'patients', 'templates', 'invoices', 'settings', 'lager', 'ausgaben', 'todos', 'entw'];
-  var S = { busy: false, applying: false, timer: null, poll: null, inbox: [], err: '', msg: '', obj: [], rev: 0, started: false, autoInbox: '' };
+  var S = { skipped: [], busy: false, applying: false, timer: null, poll: null, inbox: [], err: '', msg: '', obj: [], rev: 0, started: false, autoInbox: '' };
   var enc = new TextEncoder(), dec = new TextDecoder();
 
   /* ---------- kleine Helfer ---------- */
@@ -115,7 +115,15 @@ var KS = (function () {
     var up = Object.keys(local).filter(function (n) { return !remote[n]; });
     for (var i = 0; i < up.length; i++) {
       progress('Lade Dateien hoch (' + (i + 1) + ' von ' + up.length + ') …');
-      var pk = await packFile(c, local[up[i]]); if (pk) await api('put', { n: up[i], _c: c }, pk);
+      var pk = await packFile(c, local[up[i]]);
+      if (pk) {
+        try { await api('put', { n: up[i], _c: c }, pk); }
+        catch (e) {
+          /* Zu große Datei: Der Server (PHP) wirft dann den ganzen Aufruf weg und meldet "Ungültige Anfrage". Datei überspringen, Rest abgleichen. */
+          if ((e.status === 400 || e.status === 413) && pk.length > 512 * 1024) { var rec = await fGet(local[up[i]]).catch(function () { return null; }); S.skipped.push((rec && rec.name || local[up[i]]) + ' (' + (Math.round(pk.length / 104857.6) / 10) + ' MB)'); }
+          else throw e;
+        }
+      }
     }
     progress('Lade Daten hoch …');
     var r = await api('put', { n: 'core', base: st.rev }, await packJson(c, collect()));
@@ -167,7 +175,7 @@ var KS = (function () {
     var c = cfg(); if (!c || S.busy) return;
     if (!manual && !autoOk()) { ui(); return; }
     if (!navigator.onLine) { S.err = 'Offline'; ui(); return; }
-    S.busy = true; S.err = ''; S.msg = ''; ui();
+    S.busy = true; S.err = ''; S.msg = ''; S.skipped = []; ui();
     try {
       var st = await api('status'), b = base(), hasCore = st.objs.some(function (o) { return o.n === 'core'; });
       if (b.dirty && b.h && stateHash() === b.h) { b.dirty = false; setBase(b); }   // nur angefasst, nichts geändert
@@ -183,6 +191,7 @@ var KS = (function () {
         }
       } else if (b.dirty) await push(c, st, b);
       else { b.last = Date.now(); setBase(b); }
+      if (S.skipped.length) S.err = S.skipped.length + (S.skipped.length === 1 ? ' Datei ist' : ' Dateien sind') + ' zu groß für den Server und wurden nicht abgeglichen: ' + S.skipped.slice(0, 3).join(', ') + (S.skipped.length > 3 ? ' …' : '') + '. Der Rest ist abgeglichen. Bitte die Datei verkleinern (zum Beispiel als kleineres PDF neu hinzufügen).';
     } catch (e) {
       if (e.status === 409) { S.err = 'Ein anderes Gerät war schneller. Beim nächsten Abgleich entscheidest Du.'; var bb = base(); bb.dirty = true; setBase(bb); }
       else if (e.status === 404 && /nichts eingerichtet/.test(err(e))) S.err = 'Das Abgleich-Passwort wurde geändert. Bitte hier auf „Trennen“ tippen und mit dem neuen Passwort verbinden.';
@@ -376,8 +385,8 @@ var KS = (function () {
   async function diagnose() {
     var c = cfg(), out = [], rnd = hex(crypto.getRandomValues(new Uint8Array(32)));
     out.push('App ' + (window.KA_V || '') + ' · ' + (navigator.onLine ? 'online' : 'offline') + ' · Schlüssel: ' + (c ? String(c.tok).length + ' Zeichen' : 'nicht eingerichtet'));
-    async function probe(label, tok) {
-      var fd = new FormData(); fd.append('a', 'status'); fd.append('t', tok); var t0 = Date.now();
+    async function probe(label, tok, file) {
+      var fd = new FormData(); fd.append('a', 'status'); fd.append('t', tok); if (file) fd.append('d', file, 'd.bin'); var t0 = Date.now();
       try {
         var r = await fetch(EP, { method: 'POST', body: fd, cache: 'no-store' }), j = null; try { j = await r.clone().json(); } catch (x) {}
         var hd = ['server', 'cf-cache-status', 'x-cache', 'age', 'via'].map(function (k) { var v = r.headers.get(k); return v ? k + ': ' + v : ''; }).filter(Boolean).join(', ');
@@ -387,7 +396,8 @@ var KS = (function () {
     if (c) await probe('Mit Schlüssel dieses Geräts', c.tok);
     await probe('Mit Zufallsschlüssel', rnd);
     await probe('Ohne Schlüssel', '');
-    out.push('Erwartet bei intaktem Server: Zufallsschlüssel = 404 „nichts eingerichtet“, ohne Schlüssel = 400 „Ungültige Anfrage“.');
+    if (c) for (var mb of [1, 2, 4, 8]) await probe('Upload-Test ' + mb + ' MB', c.tok, new Blob([new Uint8Array(mb * 1048576)]));
+    out.push('Erwartet bei intaktem Server: Zufallsschlüssel = 404 „nichts eingerichtet“, ohne Schlüssel = 400 „Ungültige Anfrage“. Beim Upload-Test bedeutet „Ungültige Anfrage“, dass der Server diese Größe nicht annimmt.');
     await kaConfirm(out.join('\n\n'), { ok: 'Schließen', single: true });
   }
   function setMode(m) { settings.syncMode = (m === 'auto' || m === 'manuell') ? m : 'taeglich'; persist(); ui(); if (settings.syncMode === 'auto') run(false); }
