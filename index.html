@@ -3161,7 +3161,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-21-z';
+var KA_V = '2026-11-22-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -7251,6 +7251,23 @@ async function addVideos(inp) {
   if (curP === p) { try { renderMedien(); } catch (x) {} }
   alert(recs.length === ok0.length ? (recs.length === 1 ? 'Video gespeichert.' : recs.length + ' Videos gespeichert.') : (ok0.length - recs.length) + ' Video(s) konnten nicht gespeichert werden (Speicher voll?).');
 }
+/* Video aus den Dateien in den Video-Bereich verschieben: bleibt nur auf diesem Gerät (verschlüsselt), nicht mehr in Sicherung und Abgleich */
+function isVideoDoc(d) { return /\.(mp4|mov|m4v|webm|3gp)$/i.test(d && d.name || ''); }
+async function moveToVideos(p, dd) {
+  var blob = await fileBlob(dd);
+  if (!blob) { alert('Die Datei liegt nicht auf diesem Gerät.'); return; }
+  if (blob.size > VID_MAX) { alert('Das Video ist größer als 100 MB und kann nicht in den Video-Bereich.'); return; }
+  if (!await kaConfirm('„' + dd.name + '“ (' + fmtMB(blob.size) + ') in den Video-Bereich dieser Akte verschieben?\n\nDas Video bleibt nur auf diesem Gerät, verschlüsselt. Es ist danach nicht mehr in der normalen Sicherung und nicht im Geräte-Abgleich. Bitte danach einmal „Videos sichern“ (Praxis, Sicherung).', { ok: 'Verschieben', danger: false })) return;
+  var id = newId(); if (!await vPut(id, dd.name, blob)) { alert('Das Video konnte nicht in den Video-Bereich gespeichert werden.'); return; }
+  var rec = { id: id, ts: tsOf(dd), name: dd.name, size: blob.size, type: blob.type || '' }; if (dd.zu) rec.zu = dd.zu;
+  var before = auditFileState(dd);
+  p.videos = (p.videos || []).concat([rec]); p.dokumente = (p.dokumente || []).filter(function (x) { return x !== dd; });
+  auditOne(p, 'Dokumente', 'Verschoben in Videos: ' + (dd.name || dd.id), before, 'Video, nur auf diesem Gerät (' + fmtMB(blob.size) + ')');
+  auditFilesAdded(p, [rec], 'Videos');
+  fDel(dd.id); if (dd.logId) fDel(dd.logId);
+  persist(); try { refreshFiles(); } catch (x) {} try { renderMedien(); } catch (x) {} try { renderUnterlagen(); } catch (x) {}
+  alert('Verschoben: ' + dd.name);
+}
 function medVideos(p, list) {
   var c = mk('div', 'md-item'), h = mk('div', 'md-gh');
   h.appendChild(mk('div', 'md-day', 'Videos · nur auf diesem Gerät')); c.appendChild(h);
@@ -8749,7 +8766,7 @@ function medDocRow(p, dd) {
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }
       openRx(null, lg);
     }]] : []).concat([
-    ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }]].concat(dd.sig ? [['Unterschrift prüfen', function () { sigInfo(dd); }]] : []).concat([
+    isVideoDoc(dd) ? ['In Videos verschieben (nur auf diesem Gerät)', function () { moveToVideos(p, dd); }] : ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }]].concat(dd.sig ? [['Unterschrift prüfen', function () { sigInfo(dd); }]] : []).concat([
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Umbenennen', async function () {
       var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;

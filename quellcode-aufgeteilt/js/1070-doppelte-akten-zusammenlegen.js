@@ -552,6 +552,23 @@ async function addVideos(inp) {
   if (curP === p) { try { renderMedien(); } catch (x) {} }
   alert(recs.length === ok0.length ? (recs.length === 1 ? 'Video gespeichert.' : recs.length + ' Videos gespeichert.') : (ok0.length - recs.length) + ' Video(s) konnten nicht gespeichert werden (Speicher voll?).');
 }
+/* Video aus den Dateien in den Video-Bereich verschieben: bleibt nur auf diesem Gerät (verschlüsselt), nicht mehr in Sicherung und Abgleich */
+function isVideoDoc(d) { return /\.(mp4|mov|m4v|webm|3gp)$/i.test(d && d.name || ''); }
+async function moveToVideos(p, dd) {
+  var blob = await fileBlob(dd);
+  if (!blob) { alert('Die Datei liegt nicht auf diesem Gerät.'); return; }
+  if (blob.size > VID_MAX) { alert('Das Video ist größer als 100 MB und kann nicht in den Video-Bereich.'); return; }
+  if (!await kaConfirm('„' + dd.name + '“ (' + fmtMB(blob.size) + ') in den Video-Bereich dieser Akte verschieben?\n\nDas Video bleibt nur auf diesem Gerät, verschlüsselt. Es ist danach nicht mehr in der normalen Sicherung und nicht im Geräte-Abgleich. Bitte danach einmal „Videos sichern“ (Praxis, Sicherung).', { ok: 'Verschieben', danger: false })) return;
+  var id = newId(); if (!await vPut(id, dd.name, blob)) { alert('Das Video konnte nicht in den Video-Bereich gespeichert werden.'); return; }
+  var rec = { id: id, ts: tsOf(dd), name: dd.name, size: blob.size, type: blob.type || '' }; if (dd.zu) rec.zu = dd.zu;
+  var before = auditFileState(dd);
+  p.videos = (p.videos || []).concat([rec]); p.dokumente = (p.dokumente || []).filter(function (x) { return x !== dd; });
+  auditOne(p, 'Dokumente', 'Verschoben in Videos: ' + (dd.name || dd.id), before, 'Video, nur auf diesem Gerät (' + fmtMB(blob.size) + ')');
+  auditFilesAdded(p, [rec], 'Videos');
+  fDel(dd.id); if (dd.logId) fDel(dd.logId);
+  persist(); try { refreshFiles(); } catch (x) {} try { renderMedien(); } catch (x) {} try { renderUnterlagen(); } catch (x) {}
+  alert('Verschoben: ' + dd.name);
+}
 function medVideos(p, list) {
   var c = mk('div', 'md-item'), h = mk('div', 'md-gh');
   h.appendChild(mk('div', 'md-day', 'Videos · nur auf diesem Gerät')); c.appendChild(h);

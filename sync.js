@@ -191,7 +191,7 @@ var KS = (function () {
         }
       } else if (b.dirty) await push(c, st, b);
       else { b.last = Date.now(); setBase(b); }
-      if (S.skipped.length) S.err = S.skipped.length + (S.skipped.length === 1 ? ' Datei ist' : ' Dateien sind') + ' zu groß für den Server und wurden nicht abgeglichen: ' + S.skipped.slice(0, 3).join(', ') + (S.skipped.length > 3 ? ' …' : '') + '. Der Rest ist abgeglichen. Bitte die Datei verkleinern (zum Beispiel als kleineres PDF neu hinzufügen).';
+      if (S.skipped.length) S.err = S.skipped.length + (S.skipped.length === 1 ? ' Datei ist' : ' Dateien sind') + ' zu groß für den Server und wurden nicht abgeglichen: ' + S.skipped.slice(0, 3).join(', ') + (S.skipped.length > 3 ? ' …' : '') + '. Der Rest ist abgeglichen. ' + (S.skipped.every(function (x) { return /\.(mp4|mov|m4v|webm|3gp) \(/i.test(x); }) ? 'Videos bitte im „…“-Menü der Datei mit „In Videos verschieben“ in den Video-Bereich legen, dort bleiben sie nur auf diesem Gerät.' : 'Bitte die Datei verkleinern.');
     } catch (e) {
       if (e.status === 409) { S.err = 'Ein anderes Gerät war schneller. Beim nächsten Abgleich entscheidest Du.'; var bb = base(); bb.dirty = true; setBase(bb); }
       else if (e.status === 404 && /nichts eingerichtet/.test(err(e))) S.err = 'Das Abgleich-Passwort wurde geändert. Bitte hier auf „Trennen“ tippen und mit dem neuen Passwort verbinden.';
