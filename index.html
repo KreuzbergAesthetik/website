@@ -3161,7 +3161,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-22-a';
+var KA_V = '2026-11-22-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -6269,6 +6269,21 @@ async function umschlagSave(p) {
   } catch (x) { alert('Die PDF konnte nicht erstellt werden.'); }
 }
 
+/* Dokument aus der Akte senden: Teilen-Menü des Geräts, sonst Datei laden und Mail vorbereiten. Vermerk im Verlauf und im Änderungsprotokoll. */
+async function sendDokument(p, rec) {
+  var blob = await fileBlob(rec); if (!blob) { alert('Die Datei liegt nicht auf diesem Gerät.'); return false; }
+  var nm = String(rec.name || 'Dokument').replace(/\.pdf$/i, '') + '.pdf', file = new File([blob], nm, { type: 'application/pdf' });
+  var betreff = String(rec.name || 'Dokument') + ' - Kreuzberg Ästhetik', text = fillPlatzhalter('{AnredeInformell},\n\nanbei ' + (rec.name || 'das Dokument') + '.\n\nManuel - Kreuzberg Ästhetik', p);
+  var done = function (via) { p.log = (p.log || []).concat([{ ts: Date.now(), type: 'mail', text: (rec.name || 'Dokument') + ' gesendet (' + via + ')' }]); auditOne(p, 'Dokumente', 'Gesendet: ' + (rec.name || rec.id), '', via + ' · ' + fmtDT(Date.now())); persist(); try { if (curP === p) renderVerlauf(); } catch (x) {} };
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: betreff, text: text }); done('Teilen-Menü'); return true; }
+    catch (x) { if (!x || x.name !== 'AbortError') alert('Das Teilen ist fehlgeschlagen. Bitte die Datei über „Öffnen“ speichern und von Hand anhängen.'); return false; }
+  }
+  var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = nm; document.body.appendChild(a); a.click(); a.remove();
+  if (p.email) window.location.href = 'mailto:' + encodeURIComponent(p.email) + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
+  if (await kaConfirm('Die PDF wurde heruntergeladen. Bitte im Mailprogramm anhängen und senden.\n\nAls gesendet vermerken?', { ok: 'Als gesendet vermerken', cancel: 'Nicht vermerken', danger: false })) { done('Mailprogramm'); return true; }
+  return false;
+}
 /* Rechnung als PDF über das Teilen-Menü des Geräts senden und als versendet vermerken */
 async function sendInvoice() {
   var inv = invCur(); if (!inv) return;
@@ -8078,7 +8093,7 @@ function addTplTo(p, t, zu, i, datum) {
     if (bl && (t.fill || (t.fields && t.fields.length)) && /pdf/i.test(bl.type || 'pdf')) {
       var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
       return fillStampPdf(bl, { name: [p.vorname, p.nachname].filter(Boolean).join(' '), vorname: p.vorname || '', nachname: p.nachname || '', anrede: p.anrede || '', adresse: String(p.adresse || '').replace(/\s*\n\s*/g, ', ').trim(),
-        dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) }, t.fields).catch(function () { return bl; });
+        dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }), fillExtra: fillExtra(p, datum) }, t.fields).catch(function () { return bl; });
     }
     return bl;
   }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
@@ -8398,10 +8413,23 @@ var FILL_POS = {
   foot: [['name', 0.128, 0.956], ['datum', 0.112, 0.975]],
   last: [['name+dob', 0.722, 0.059, 7.5]]
 };
+/* Zusätzliche Werte für Vorlagenfelder: Datum heute, nächster Termin, letzte Anamnese, Honorarvereinbarung, Ort der Praxis, Kontaktdaten, Allergien, Akte-Nr. */
+function dDe(v) { if (!v) return ''; var t = typeof v === 'number' ? new Date(v) : new Date(/^\d{4}-\d\d-\d\d/.test(String(v)) ? String(v).slice(0, 10) + 'T12:00:00' : v); if (isNaN(t)) return /^\d\d\.\d\d\.\d{4}$/.test(String(v)) ? String(v) : ''; return t.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+function fillExtra(p, eventDate) {
+  var today = iso(new Date()), nxt = events.filter(function (e) { return eventBelongs(e, p) && e.date >= today; }).sort(function (a, b) { return (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')); })[0];
+  var ev = eventDate ? events.filter(function (e) { return eventBelongs(e, p) && e.date === eventDate; })[0] : nxt, ai = anamInfo(p), ort = String(PRAXIS.ort || '').replace(/^\d{4,5}\s*/, '');
+  var geb = String(p.dob || '').match(/^(\d\d)\.(\d\d)\.(\d{4})$/), alter = '';
+  if (geb) { var n = new Date(), a = n.getFullYear() - +geb[3]; if (n.getMonth() + 1 < +geb[2] || (n.getMonth() + 1 === +geb[2] && n.getDate() < +geb[1])) a--; alter = String(a); }
+  var adr = String(p.adresse || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+  return { heute: dDe(new Date()), termin: nxt ? dDe(nxt.date) : '', anamnese: ai.ts ? dDe(ai.ts) : '', honorar: dDe(p.honorarVom), ort: ort, tel: p.phone || '', email: p.email || '', allergien: String(p.allergien || '').replace(/\s*\n\s*/g, ', '), patnr: p.nr ? String(p.nr) : '', behandlung: ev ? (ev.leistung || ev.behandlung || '') : '', plzort: adr.length > 1 ? adr[adr.length - 1] : '', alter: alter };
+}
 function fieldVal(f, d) {
+  var x = d.fillExtra || {}; for (var xk in x) if (d[xk] == null) d[xk] = x[xk];
   switch (f.k) {
     case 'name': return d.name; case 'vorname': return d.vorname; case 'nachname': return d.nachname; case 'anrede': return d.anrede; case 'dob': return d.dob; case 'datum': return d.datum;
-    case 'adresse': return d.adresse; case 'arzt': return settings.inhaber || ''; case 'namedob': return [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
+    case 'adresse': return d.adresse; case 'arzt': return settings.inhaber || '';
+    case 'heute': return d.heute; case 'termin': return d.termin; case 'anamnese': return d.anamnese; case 'honorar': return d.honorar; case 'ort': return d.ort; case 'ortdatum': return [d.ort, d.heute].filter(Boolean).join(', ');
+    case 'tel': return d.tel; case 'email': return d.email; case 'allergien': return d.allergien; case 'patnr': return d.patnr; case 'behandlung': return d.behandlung; case 'plzort': return d.plzort; case 'alter': return d.alter; case 'namedob': return [d.name, d.dob ? 'geb. ' + d.dob : ''].filter(Boolean).join(', ');
     case 'fest': return f.txt || ''; default: return '';
   }
 }
@@ -8767,6 +8795,7 @@ function medDocRow(p, dd) {
       openRx(null, lg);
     }]] : []).concat([
     isVideoDoc(dd) ? ['In Videos verschieben (nur auf diesem Gerät)', function () { moveToVideos(p, dd); }] : ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }]].concat(dd.sig ? [['Unterschrift prüfen', function () { sigInfo(dd); }]] : []).concat([
+    ['Senden (E-Mail, Teilen)', function () { sendDokument(p, dd); }],
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Umbenennen', async function () {
       var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;

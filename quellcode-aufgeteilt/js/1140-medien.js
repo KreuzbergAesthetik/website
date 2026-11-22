@@ -189,6 +189,7 @@ function medDocRow(p, dd) {
       openRx(null, lg);
     }]] : []).concat([
     isVideoDoc(dd) ? ['In Videos verschieben (nur auf diesem Gerät)', function () { moveToVideos(p, dd); }] : ['Bearbeiten (Stift, Text, Markieren)', function () { pdfEdit(p, dd); }]].concat(dd.sig ? [['Unterschrift prüfen', function () { sigInfo(dd); }]] : []).concat([
+    ['Senden (E-Mail, Teilen)', function () { sendDokument(p, dd); }],
     ['Zuordnen', function () { openZu(p, [dd]); }],
     ['Umbenennen', async function () {
       var v = await kaPrompt('Neuer Name der Datei:', dd.name || ''); if (v === null) return; v = v.trim(); if (!v) return;
