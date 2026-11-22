@@ -196,6 +196,22 @@ function renderUnterlagen() {
   }
 }
 /* Menü "Hinzufügen": Links zu Hinweisblättern/Aufklärungen und weitere Vorlagen */
+/* Ein Knopf für alles Hinzufügbare in Anlagen: Fotos, Videos, Dateien, Vorlagen, Formular-Links, Ausgefülltes einlesen */
+function medAddMenu(ev) {
+  var p = curP; if (!p) return;
+  var anker = ev.currentTarget, items = [], later = function (fn) { return function () { setTimeout(fn, 0); }; };
+  var sub = function (list) { return function () { setTimeout(function () { tlMenu({ stopPropagation: function () {}, currentTarget: anker }, list); }, 0); }; };
+  if (medFilter === 'bild') {
+    items.push(['Foto', function () { zuNext = null; document.getElementById('a-img-in').click(); }, 'Aufnehmen oder aus der Galerie wählen']);
+    items.push(['Video', function () { document.getElementById('a-vid-in').click(); }, 'Nur auf diesem Gerät gespeichert']);
+  }
+  items.push(['Datei hochladen', function () { zuNext = null; document.getElementById('a-doc-in').click(); }, 'PDF, Brief oder Dokument vom Gerät in die Akte']);
+  var tp = templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; });
+  if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben']);
+  items.push(['Link an Patient senden …', sub(KA_DOCS.map(function (d) { return [(d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]; })), 'Patient füllt Aufklärung oder Hinweis selbst online aus']);
+  items.push(['Ausgefülltes Formular einlesen', function () { document.getElementById('akt-form-file').click(); }, 'Vom Patienten ausgefülltes PDF zurück in die Akte holen']);
+  tlMenu(ev, items);
+}
 function untAddMenu(ev) {
   var p = curP; if (!p) return;
   var anker = ev.currentTarget;   /* currentTarget ist nach dem Klick leer, deshalb jetzt merken */

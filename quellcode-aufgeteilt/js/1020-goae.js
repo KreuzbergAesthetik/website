@@ -595,7 +595,7 @@ function srchFloat(inputId, tabId) {
 }
 function srchInit() {
   
-  var ma = document.getElementById('md-addf'); if (ma) srchFold('md-filter', ma.parentNode, null);
+  var ma = document.getElementById('md-add'); if (ma) srchFold('md-filter', ma.parentNode, null);
 }
 var invAddReady = false;
 function invAddPos(text, price, rate) {

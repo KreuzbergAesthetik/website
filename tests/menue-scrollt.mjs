@@ -17,7 +17,7 @@ try {
     const p = { id: 'ms1', nr: 1, anrede: 'Frau', vorname: 'Mia', nachname: 'Menü', medikation: [], log: [], doku: [], dokumente: [], bilder: [], erstellt: Date.now() };
     patients.length = 0; patients.push(p); FLC = null; persist(); viewAkte(p); setAkTab('anl'); await wait(400);
     const items = []; for (let i = 0; i < 60; i++) items.push(['Eintrag ' + i, () => {}]);
-    const b = document.getElementById('a-unt-add');
+    const b = document.getElementById('md-add');
     tlMenu({ stopPropagation() {}, currentTarget: b }, items); await wait(100);
     const m = document.getElementById('tl-menu'), r = m.getBoundingClientRect(), cs = getComputedStyle(m);
     out.imBild = r.top >= 0 && r.bottom <= innerHeight;
@@ -26,8 +26,9 @@ try {
     // Echtes Hinzufügen-Menü: Eintrag "Link senden" darf keinen Fehler auslösen (Anker des Menüs muss erhalten bleiben)
     const fehler = []; window.addEventListener('error', e => fehler.push(String(e.message)));
     document.getElementById('tl-menu').style.display = 'none'; b.click(); await wait(100);
-    const eintrag = [...document.querySelectorAll('#tl-menu button')].find(x => /^Link senden/.test(x.textContent));
-    out.linkEintrag = !!eintrag; if (eintrag) eintrag.click(); await wait(300);
+    const eintrag = [...document.querySelectorAll('#tl-menu button')].find(x => /^Link an Patient senden/.test(x.textContent));
+    out.linkEintrag = !!eintrag; if (eintrag) eintrag.click(); await wait(200);
+    const unter = document.querySelector('#tl-menu button'); out.linkUnter = !!unter; if (unter) unter.click(); await wait(300);
     out.keinFehler = fehler.length === 0 && getComputedStyle(document.getElementById('tl-menu')).display === 'block' && /E-Mail/.test(document.getElementById('tl-menu').textContent);
     return out;
   });

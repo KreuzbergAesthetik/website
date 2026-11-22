@@ -19,7 +19,7 @@ try {
     const p = { id: 'vd1', nr: 1, anrede: 'Frau', vorname: 'Vera', nachname: 'Video', medikation: [], log: [], doku: [], dokumente: [], bilder: [], erstellt: Date.now() };
     patients.length = 0; patients.push(p); FLC = null; persist();
     viewAkte(p); setAkTab('anl'); setMedFilter('bild'); await wait(300);
-    out.knopf = getComputedStyle(document.getElementById('md-addv')).display !== 'none';
+    out.knopf = (document.getElementById('md-add').click(), await wait(100), [...document.querySelectorAll('#tl-menu button')].some(x => /^Video/.test(x.textContent)));
     const inhalt = new Uint8Array(4096).map((_, i) => i % 251);
     const klein = new File([inhalt], 'beispiel.mp4', { type: 'video/mp4' });
     const gross = { name: 'zu-gross.mp4', type: 'video/mp4', size: 101 * 1048576 };
