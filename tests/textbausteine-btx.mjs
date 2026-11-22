@@ -20,9 +20,13 @@ try {
     out.version = settings.tbVer === TB_VER && TB_VER >= 3;
     out.standard = t('BTX Standard') === 'Azzalure (140 SU*)\nSF 5-5-5-5-5-5 (30)\nZF 10-10-10-10-10 (50)\nKF 10-10-10 (60)';
     const regionen = ['oberes Gesichtsdrittel', 'unteres Gesichtsdrittel', 'Hals', 'Masseter', 'Hände', 'Füße', 'Achseln', 'Gesicht komplett'];
-    out.regionen = regionen.every(n => /Risiken und Nebenwirkungen/.test(t('Risiken BTX ' + n) || '') && /Allgemein:/.test(t('Risiken BTX ' + n)));
-    out.einzeln = /hängende Augenlider/.test(t('Risiken BTX oberes Gesichtsdrittel')) && /Mundwinkel/.test(t('Risiken BTX unteres Gesichtsdrittel')) && /Schluckbeschwerden/.test(t('Risiken BTX Hals')) && /Kaukraft/.test(t('Risiken BTX Masseter')) && /Griffkraft/.test(t('Risiken BTX Hände')) && /Fußmuskulatur/.test(t('Risiken BTX Füße')) && /Schwitzen an anderen/.test(t('Risiken BTX Achseln'));
-    out.gesichtKomplett = /Augenlider/.test(t('Risiken BTX Gesicht komplett')) && /Mundwinkel/.test(t('Risiken BTX Gesicht komplett')) && /Schluckbeschwerden/.test(t('Risiken BTX Gesicht komplett'));
+    const std = 'Rötung, Schwellung, blaue Flecken, Blutung, Allergie, Entzündung, Infektion', kosten = 'Diese sind unter Umständen mit privaten Kosten bzw. Selbstzahlungen verbunden.';
+    out.standardBaustein = t('Risiken BTX Standard').includes(std + ', herabhängendes Augenlid oder herabhängende Augenbraue, Narbe, Revision mit OP.') && t('Risiken BTX Standard').includes(kosten);
+    out.regionen = regionen.every(n => (t('Risiken BTX ' + n) || '').includes(std) && t('Risiken BTX ' + n).includes('Revision mit OP') && t('Risiken BTX ' + n).includes(kosten));
+    out.augeNurGesicht = ['oberes Gesichtsdrittel', 'unteres Gesichtsdrittel', 'Hals', 'Masseter', 'Gesicht komplett'].every(n => /herabhängendes Augenlid/.test(t('Risiken BTX ' + n))) && ['Hände', 'Füße', 'Achseln'].every(n => !/Augenlid/.test(t('Risiken BTX ' + n)));
+    out.einzeln = /Brauenform/.test(t('Risiken BTX oberes Gesichtsdrittel')) && /Mundwinkel/.test(t('Risiken BTX unteres Gesichtsdrittel')) && /Schluckbeschwerden/.test(t('Risiken BTX Hals')) && /Kaukraft/.test(t('Risiken BTX Masseter')) && /Griffkraft/.test(t('Risiken BTX Hände')) && /Fußmuskulatur/.test(t('Risiken BTX Füße')) && /Schwitzen an anderen/.test(t('Risiken BTX Achseln'));
+    out.gesichtKomplett = /Brauenform/.test(t('Risiken BTX Gesicht komplett')) && /Mundwinkel/.test(t('Risiken BTX Gesicht komplett')) && /Schluckbeschwerden/.test(t('Risiken BTX Gesicht komplett'));
+    out.ergaenzungen = /Antikörper/.test(t('Risiken BTX Ergänzungen')) && /Gegenanzeigen/.test(t('Risiken BTX Ergänzungen'));
     out.keineDosierung = regionen.every(n => !/\d+-\d+/.test(t('Risiken BTX ' + n)));
     out.eigenerBleibt = t('BTX Masseter') === 'Eigener Text ___' && settings.textbausteine.filter(x => x.name === 'BTX Masseter').length === 1;
     const n = settings.textbausteine.length; tbDefaults(); out.einmalig = settings.textbausteine.length === n;
