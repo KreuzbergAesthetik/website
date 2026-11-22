@@ -128,7 +128,7 @@ function docSend(ev, p, d) {
 function renderUnterlagen() {
   fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
-  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = 'block'; box.innerHTML = '';
+  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none'; box.innerHTML = '';
   var offen = mk('div'), erl = mk('div');
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;

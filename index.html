@@ -240,7 +240,7 @@ textarea.form-control { font-size:15px; }
 .a-menu button:hover { background:#f1f5f9; }
 .a-menu .am-sub { display:block; font-size:11.5px; color:#64748b; margin-top:1px; white-space:normal; max-width:260px; }
 .un-grp { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:16px 0 4px; }
-.un-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid #eef2f6; } .un-grp + .un-row { border-top:none; }
+.un-row { display:flex; align-items:center; gap:10px; padding:10px 12px; margin:0 0 8px; background:#fff; border:1px solid var(--pf-line,#dbe3f0); border-radius:12px; } .md-forms { margin:0 0 14px; }
 .un-st { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex:none; background:#f1f5f9; color:#94a3b8; }
 .un-st.ok { background:#dcfce7; color:#15803d; } .un-st.wait { background:#fef3c7; color:#b45309; }
 .un-main { flex:1; min-width:0; } .un-t { font-weight:600; overflow-wrap:anywhere; } .un-s { font-size:12px; color:#64748b; margin-top:1px; }
@@ -2455,11 +2455,11 @@ function kaStart() {
     <div class="seg md-seg" id="md-seg"><button type="button" id="md-bild" onclick="setMedFilter('bild')"></button><button type="button" id="md-dok" onclick="setMedFilter('dok')"></button></div>
     <div id="md-cmp" class="vg-area" style="display:none;"></div>
     <div id="md-chips" class="md-chips"></div>
-    <div id="md-list"></div>
-  </div>
-  <div id="a-unt-block" class="card" style="display:none;">
-    <div class="card-header" style="margin-bottom:12px;"><div><div class="ak-h" style="margin:0; border:none; padding:0;">Unterlagen</div><div style="font-size:12px; color:#64748b; margin-top:2px;">Formulare dieses Patienten und ihr Stand</div></div></div>
+  <div id="a-unt-block" class="md-forms" style="display:none;">
+    <div class="card-header" style="margin-bottom:8px;"><div><div class="ak-h" style="margin:0; border:none; padding:0;">Formulare und Vorlagen</div><div style="font-size:12px; color:#64748b; margin-top:2px;">Stand und Versand – ausgefüllte Formulare erscheinen darunter als Dateien</div></div></div>
     <div id="a-unt"></div>
+  </div>
+    <div id="md-list"></div>
   </div>
 
   </div>
@@ -3162,7 +3162,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-22-j';
+var KA_V = '2026-11-22-k';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -8214,7 +8214,7 @@ function docSend(ev, p, d) {
 function renderUnterlagen() {
   fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
-  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = 'block'; box.innerHTML = '';
+  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none'; box.innerHTML = '';
   var offen = mk('div'), erl = mk('div');
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;
@@ -8864,6 +8864,7 @@ function renderMedien() {
   var nb = (curP.bilder || []).filter(recordVisible).length + (curP.videos || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
   document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dateien (' + nd + ')';
   document.getElementById('md-bild').className = medFilter === 'bild' ? 'on' : ''; document.getElementById('md-dok').className = medFilter === 'dok' ? 'on' : '';
+  var ub = document.getElementById('a-unt-block'); if (ub) ub.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none';
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
   var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
   var kats = []; (curP.dokumente || []).filter(recordVisible).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });
