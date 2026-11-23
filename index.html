@@ -1534,6 +1534,12 @@ body.pe-open { overflow:hidden; }
   .a-tile:not(.ed) ul { margin-right:-20px; }
   .tl-item.open .tl-body > .tl-first { margin-right:-30px !important; }
 }
+/* Fußleiste: aktiver Reiter als Pille hinter dem Symbol, Beschriftung fett in Navy */
+@media (max-width:700px) {
+  .bnav-it svg { position:relative; z-index:1; }
+  .bnav-it.on::before { top:8px; bottom:auto; left:50%; right:auto; width:58px; height:32px; margin-left:-29px; border-radius:16px; background:rgba(1,34,101,.11); }
+  .bnav-it.on { font-weight:800; }
+}
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3175,7 +3181,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-23-f';
+var KA_V = '2026-11-23-g';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
