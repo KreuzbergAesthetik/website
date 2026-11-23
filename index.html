@@ -1521,6 +1521,11 @@ body.pe-open { overflow:hidden; }
 .vg-chip { width:30px; height:30px; border-radius:50%; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); font:700 12px inherit; cursor:pointer; padding:0; } .vg-chip.on { background:var(--pf-navy); color:#fff; }
 .vg-side { display:grid; gap:8px; } .vg-n2 { grid-template-columns:1fr 1fr; } .vg-n3 { grid-template-columns:1fr 1fr 1fr; }
 .vg-fig { margin:0; } .vg-pane { position:relative; aspect-ratio:3/4; background:#0b1530; border-radius:10px; overflow:hidden; } .vg-fig figcaption { font-size:12px; color:#475569; text-align:center; margin-top:4px; }
+/* Akte: Kästen bis zum Rand, kleinere Abstände, Datum mit Luft zur Linie */
+.a-tile:not(.ed) ul { margin-right:-24px; }
+@media (max-width:640px) { .a-tile:not(.ed) ul { margin-right:-18px; } .a-tiles { gap:6px; } }
+.tl-item.open .tl-body > .tl-first { margin-right:-34px !important; }
+.tl-day.tl-all .tl-date { padding-right:16px; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3162,7 +3167,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-23-b';
+var KA_V = '2026-11-23-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -7050,7 +7055,7 @@ function tlRow(it) {
   var sh, line;
   if (it.t === 'termin') {
     var e = it.e;
-    sh = tlShell(it.k, 'Termin · ' + fmtTermin(e));
+    sh = tlShell(it.k, 'Termin');
     var tlb = sh.body.querySelector('.tl-label'); if (tlb) { tlb.style.cursor = 'pointer'; tlb.title = 'Termin im Kalender öffnen'; tlb.onclick = function (ev) { ev.stopPropagation(); showInCal(e); }; }
     sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));

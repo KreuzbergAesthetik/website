@@ -335,7 +335,7 @@ function tlRow(it) {
   var sh, line;
   if (it.t === 'termin') {
     var e = it.e;
-    sh = tlShell(it.k, 'Termin · ' + fmtTermin(e));
+    sh = tlShell(it.k, 'Termin');
     var tlb = sh.body.querySelector('.tl-label'); if (tlb) { tlb.style.cursor = 'pointer'; tlb.title = 'Termin im Kalender öffnen'; tlb.onclick = function (ev) { ev.stopPropagation(); showInCal(e); }; }
     sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));
