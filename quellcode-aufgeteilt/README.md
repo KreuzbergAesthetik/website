@@ -9,7 +9,7 @@ node werkzeuge/code-aufteilen.mjs --pruefen  # prüfen, ob die Kopie aktuell ist
 ```
 
 Die Teile sind verlustfrei: In der Reihenfolge aus `teile.json` aneinandergehängt ergeben sie exakt `index.html`
-(SHA-256 `02b596cca44b1daf…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
+(SHA-256 `7b3b39747150719d…`). Die Nummern im Dateinamen geben diese Reihenfolge an.
 
 - `css/`: Gestaltung, nach Themen (28 Teile)
 - `js/`: Programmlogik, nach Funktionsbereichen (35 Teile)
@@ -128,24 +128,24 @@ Bereits vorher eigenständige Dateien (nicht kopiert): `dialoge.js` (Hinweise, R
 | `js/1050-pdf-erzeugung.js` | PDF-Erzeugung  | 5889 | 48 |
 | `js/1060-qr-code-erzeugung.js` | QR-Code-Erzeugung  | 5937 | 280 |
 | `js/1070-briefumschlag-c6.js` | Briefumschlag C6  | 6217 | 512 |
-| `js/1080-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 6729 | 638 |
-| `js/1090-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 7367 | 263 |
-| `js/1100-statistik.js` | Statistik | 7630 | 74 |
-| `js/1110-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 7704 | 108 |
-| `js/1120-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 7812 | 305 |
-| `js/1130-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 8117 | 329 |
-| `js/1140-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 8446 | 240 |
-| `js/1150-medien.js` | Medien | 8686 | 439 |
-| `js/1160-webformulare.js` | Webformulare | 9125 | 278 |
-| `js/1170-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 9403 | 198 |
-| `js/1180-produktlager.js` | Produktlager | 9601 | 549 |
-| `js/1190-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 10150 | 242 |
-| `js/1200-sicherung.js` | Sicherung  | 10392 | 219 |
-| `js/1210-sicherung-als-zip.js` | Sicherung als ZIP | 10611 | 319 |
-| `js/1220-geraete-abgleich.js` | Geräte-Abgleich | 10930 | 210 |
-| `js/1230-eingangskorb.js` | Eingangskorb | 11140 | 97 |
-| `html/1240-oberflaeche-rahmen.html` | oberflaeche-rahmen | 11237 | 1 |
-| `js/1250-app-start.js` | app-start | 11238 | 0 |
-| `html/1260-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 11238 | 7 |
-| `js/1270-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 11245 | 12 |
-| `html/1280-dokument-ende.html` | dokument-ende | 11257 | 2 |
+| `js/1080-doppelte-akten-zusammenlegen.js` | Doppelte Akten zusammenlegen | 6729 | 643 |
+| `js/1090-dokumentation-eines-termins.js` | Dokumentation eines Termins  | 7372 | 263 |
+| `js/1100-statistik.js` | Statistik | 7635 | 74 |
+| `js/1110-zahlungen-und-ausgaben.js` | Zahlungen und Ausgaben | 7709 | 108 |
+| `js/1120-nachrichtenvorlagen-und-textbausteine.js` | Nachrichtenvorlagen und Textbausteine | 7817 | 305 |
+| `js/1130-kategorien-und-vorlagen.js` | Kategorien und Vorlagen | 8122 | 329 |
+| `js/1140-unterschrift-am-tablet-in-die-original-pdf-geste.js` | Unterschrift am Tablet, in die Original-PDF gestempelt | 8451 | 240 |
+| `js/1150-medien.js` | Medien | 8691 | 439 |
+| `js/1160-webformulare.js` | Webformulare | 9130 | 278 |
+| `js/1170-rechnungen-aus-pdf-importieren.js` | Rechnungen aus PDF importieren  | 9408 | 198 |
+| `js/1180-produktlager.js` | Produktlager | 9606 | 549 |
+| `js/1190-import-von-patienten-zips-aus-dem-altsystem.js` | Import von Patienten-ZIPs aus dem Altsystem  | 10155 | 242 |
+| `js/1200-sicherung.js` | Sicherung  | 10397 | 219 |
+| `js/1210-sicherung-als-zip.js` | Sicherung als ZIP | 10616 | 319 |
+| `js/1220-geraete-abgleich.js` | Geräte-Abgleich | 10935 | 210 |
+| `js/1230-eingangskorb.js` | Eingangskorb | 11145 | 97 |
+| `html/1240-oberflaeche-rahmen.html` | oberflaeche-rahmen | 11242 | 1 |
+| `js/1250-app-start.js` | app-start | 11243 | 0 |
+| `html/1260-oberflaeche-ks-bar.html` | oberflaeche-ks-bar | 11243 | 7 |
+| `js/1270-offline-speicher-mit-update-bestaetigung.js` | Offline-Speicher mit Update-Bestätigung | 11250 | 12 |
+| `html/1280-dokument-ende.html` | dokument-ende | 11262 | 2 |

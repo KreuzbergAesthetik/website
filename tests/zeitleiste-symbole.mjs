@@ -31,8 +31,21 @@ try {
   await page.hover('#a-verlauf .tl-item.tl-mail'); await page.click('#a-verlauf .tl-item.tl-mail .tl-qb[title="Erneut senden"]'); await page.waitForTimeout(300);
   const f = await page.evaluate(() => ({ an: document.getElementById('m-an').value, b: document.getElementById('m-betreff').value, t: document.getElementById('m-text').value }));
   assert.equal(f.an, 'zora@example.org'); assert.equal(f.b, 'Dein Termin'); assert.equal(f.t, 'Bis bald');
+  await page.evaluate(() => closeModal('modal-mail')); await page.waitForTimeout(200);
+  // Löschen nur bei Notiz und E-Mail, mit Rückfrage und Eintrag in der Änderungshistorie; Dokumentation und Termin nur ausblenden
+  const menu = async (sel) => { await page.hover(sel); await page.click(sel + ' .tl-qb[title="Weitere Aktionen dieses Eintrags"]'); await page.waitForTimeout(200); return page.evaluate(() => [...document.querySelectorAll('#tl-menu button')].map(b => b.textContent)); };
+  const mNotiz = await menu('#a-verlauf .tl-item.tl-notiz'); assert.ok(mNotiz.includes('Löschen'), 'Notiz-Menü: ' + mNotiz);
+  await page.keyboard.press('Escape'); await page.evaluate(() => { document.getElementById('tl-menu').style.display = 'none'; });
+  const mDoku = await menu('#a-verlauf .tl-item.tl-doku:not(.tl-termin)'); assert.ok(!mDoku.includes('Löschen'), 'Doku-Menü: ' + mDoku);
+  await page.evaluate(() => { document.getElementById('tl-menu').style.display = 'none'; window.kaConfirm = async () => false; });
+  await menu('#a-verlauf .tl-item.tl-notiz'); await page.click('#tl-menu button:has-text("Löschen")'); await page.waitForTimeout(200);
+  assert.equal(await page.evaluate(() => curP.log.filter(x => x.type === 'notiz').length), 1, 'Abbrechen darf nicht löschen');
+  await page.evaluate(() => { window.kaConfirm = async () => true; });
+  await menu('#a-verlauf .tl-item.tl-notiz'); await page.click('#tl-menu button:has-text("Löschen")'); await page.waitForTimeout(300);
+  const nach = await page.evaluate(() => ({ n: curP.log.filter(x => x.type === 'notiz').length, a: JSON.stringify(curP.audit || []).includes('Notiz gelöscht') }));
+  assert.equal(nach.n, 0, 'Notiz nicht gelöscht'); assert.ok(nach.a, 'Löschung nicht in der Änderungshistorie');
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
-  console.log('Zeitleiste-Symbole OK (Termin, Dokumentation, E-Mail erneut senden, Notiz)');
+  console.log('Zeitleiste-Symbole OK (Termin, Dokumentation, E-Mail erneut senden, Notiz, Löschen)');
 } finally {
   await browser.close();
 }

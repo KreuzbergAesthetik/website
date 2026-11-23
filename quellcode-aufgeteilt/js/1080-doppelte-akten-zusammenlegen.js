@@ -415,7 +415,12 @@ function tlRow(it) {
       if (it.t === 'mail') lgQuick = [['Erneut senden', 'mail', function () { mailResend(lg); }]];
       else if (it.t === 'rezept') { lgQuick = [lgEdit]; var rxd = rxDocOf(lg); if (rxd) lgQuick.push(['Senden (E-Mail, Teilen)', 'mail', function () { sendDokument(curP, rxd); }]); }
       else lgQuick = [lgEdit];
-      tlPlus(sh, [lgDate], lgQuick);
+      var lgDel = (it.t === 'notiz' || it.t === 'mail') ? [['Löschen', async function () {
+        if (!await kaConfirm('Diesen Eintrag endgültig löschen?\n\nDie Löschung wird in der Änderungshistorie vermerkt.', { ok: 'Löschen', danger: true })) return;
+        var txt = String(lg.text || '').slice(0, 300); curP.log = (curP.log || []).filter(function (x) { return x !== lg; });
+        auditOne(curP, 'Verlaufseintrag', it.t === 'mail' ? 'E-Mail-Eintrag gelöscht' : 'Notiz gelöscht', txt, ''); persist(); renderVerlauf(); renderHead();
+      }]] : [];
+      tlPlus(sh, [lgDate].concat(lgDel), lgQuick);
     }
   }
   var rec = it.e || it.d || it.l || it.inv || it.v;
