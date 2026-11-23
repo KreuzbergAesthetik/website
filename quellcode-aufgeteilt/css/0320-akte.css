@@ -7,7 +7,6 @@
   #modal-akte.akte-page { padding-left:8px; padding-right:8px; }
   #modal-akte .card.a-side { padding:10px 8px; }
   #modal-akte .a-pane { padding:10px 8px; }
-  #modal-akte .tl-item { padding:10px 38px 10px 8px; }
   #modal-akte .a-tile { padding-left:9px; }
   .a-tile:not(.ed) ul { margin-right:-20px; }
   .tl-item.open .tl-body > .tl-first { margin-right:-30px !important; }
