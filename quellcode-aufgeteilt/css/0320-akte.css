@@ -1,0 +1,14 @@
+/* Akte: Kästen bis zum Rand, kleinere Abstände, Datum mit Luft zur Linie */
+.a-tile:not(.ed) ul { margin-right:-24px; }
+@media (max-width:640px) { .a-tile:not(.ed) ul { margin-right:-18px; } .a-tiles { gap:6px; } }
+.tl-item.open .tl-body > .tl-first { margin-right:-34px !important; }
+.tl-day.tl-all .tl-date { padding-right:16px; }
+@media (max-width:520px) {
+  #modal-akte.akte-page { padding-left:8px; padding-right:8px; }
+  #modal-akte .card.a-side { padding:10px 8px; }
+  #modal-akte .a-pane { padding:10px 8px; }
+  #modal-akte .tl-item { padding:10px 38px 10px 8px; }
+  #modal-akte .a-tile { padding-left:9px; }
+  .a-tile:not(.ed) ul { margin-right:-20px; }
+  .tl-item.open .tl-body > .tl-first { margin-right:-30px !important; }
+}

@@ -1526,6 +1526,15 @@ body.pe-open { overflow:hidden; }
 @media (max-width:640px) { .a-tile:not(.ed) ul { margin-right:-18px; } .a-tiles { gap:6px; } }
 .tl-item.open .tl-body > .tl-first { margin-right:-34px !important; }
 .tl-day.tl-all .tl-date { padding-right:16px; }
+@media (max-width:520px) {
+  #modal-akte.akte-page { padding-left:8px; padding-right:8px; }
+  #modal-akte .card.a-side { padding:10px 8px; }
+  #modal-akte .a-pane { padding:10px 8px; }
+  #modal-akte .tl-item { padding:10px 38px 10px 8px; }
+  #modal-akte .a-tile { padding-left:9px; }
+  .a-tile:not(.ed) ul { margin-right:-20px; }
+  .tl-item.open .tl-body > .tl-first { margin-right:-30px !important; }
+}
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3167,7 +3176,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-23-c';
+var KA_V = '2026-11-23-d';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
