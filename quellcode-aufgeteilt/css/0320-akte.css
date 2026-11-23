@@ -15,5 +15,4 @@
 @media (max-width:700px) {
   .bnav-it svg { position:relative; z-index:1; }
   .bnav-it.on::before { top:8px; bottom:auto; left:50%; right:auto; width:58px; height:32px; margin-left:-29px; border-radius:16px; background:rgba(1,34,101,.11); }
-  .bnav-it.on { font-weight:800; }
 }
