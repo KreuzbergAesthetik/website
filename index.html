@@ -826,7 +826,7 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .ph-edit, .ra-pen { opacity:0; transition:opacity .15s; } .ph-edit:focus-visible, .ra-pen:focus-visible { opacity:1; }
 @media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen, div:hover > .ra-pen { opacity:1; } }
 /* Plus/Pfeil der Zeitstrahl-Einträge: mit der Maus erst beim Überfahren sichtbar (Touch: bleibt sichtbar) */
-@media (hover:hover) and (pointer:fine) { .tl-plus { opacity:0; transition:opacity .15s; } .tl-item:hover .tl-plus, .tl-plus:focus-visible, .tl-plus[aria-expanded=true] { opacity:1; } }
+@media (any-hover:hover) { .tl-plus { opacity:0; transition:opacity .15s; } .tl-item:hover .tl-plus, .tl-plus:focus-visible, .tl-plus[aria-expanded=true] { opacity:1; } }
 /* Zeilen-Buttons erst bei Hover (Maus) oder nach Tipp auf die Zeile zeigen; Platz und Anordnung bleiben gleich */
 #tab-patienten .pt-acts, #tab-zahlungen tbody .btn.btn-sm { opacity:0; pointer-events:none; transition:opacity .15s; }
 #tab-patienten .pt-wrap, #tab-zahlungen tbody td:has(> .btn.btn-sm) { position:relative; }
@@ -1462,7 +1462,7 @@ header nav .nav-btn.active, header nav .nav-btn.nav-main.active { color:var(--pf
 .tl-qb { width:30px; height:30px; padding:0; border-radius:50%; border:1px solid var(--pf-navy); background:rgba(255,255,255,.85); color:var(--pf-navy); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
 .tl-qb svg { width:16px; height:16px; }
 .tl-item.quick-on .tl-quick { opacity:1; pointer-events:auto; }
-@media (hover:hover) and (pointer:fine) { .tl-item:hover .tl-quick, .tl-item:focus-within .tl-quick { opacity:1; pointer-events:auto; } }
+@media (any-hover:hover) { .tl-item:hover .tl-quick, .tl-item:focus-within .tl-quick { opacity:1; pointer-events:auto; } }
 /* Mehr-Menü: ohne seitliche Streifen, alles in Praxis-Navy */
 .nav-section, .nav-section[data-ni] { --sec:var(--pf-navy); border-left:1px solid #dbe3f0; }
 .nav-section > .nav-group { background:var(--pf-inlay); color:var(--pf-navy); }
@@ -1521,6 +1521,26 @@ body.pe-open { overflow:hidden; }
 .vg-chip { width:30px; height:30px; border-radius:50%; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); font:700 12px inherit; cursor:pointer; padding:0; } .vg-chip.on { background:var(--pf-navy); color:#fff; }
 .vg-side { display:grid; gap:8px; } .vg-n2 { grid-template-columns:1fr 1fr; } .vg-n3 { grid-template-columns:1fr 1fr 1fr; }
 .vg-fig { margin:0; } .vg-pane { position:relative; aspect-ratio:3/4; background:#0b1530; border-radius:10px; overflow:hidden; } .vg-fig figcaption { font-size:12px; color:#475569; text-align:center; margin-top:4px; }
+/* Akte: Kästen bis zum Rand, kleinere Abstände, Datum mit Luft zur Linie */
+.a-tile:not(.ed) ul { margin-right:-24px; }
+@media (max-width:640px) { .a-tile:not(.ed) ul { margin-right:-18px; } .a-tiles { gap:6px; } }
+.tl-item.open .tl-body > .tl-first { margin-right:-34px !important; }
+.tl-day.tl-all .tl-date { padding-right:16px; }
+@media (max-width:520px) {
+  #modal-akte.akte-page { padding-left:8px; padding-right:8px; }
+  #modal-akte .card.a-side { padding:10px 8px; }
+  #modal-akte .a-pane { padding:10px 8px; }
+  #modal-akte .a-tile { padding-left:9px; }
+  .a-tile:not(.ed) ul { margin-right:-20px; }
+  .tl-item.open .tl-body > .tl-first { margin-right:-30px !important; }
+}
+/* Fußleiste: aktiver Reiter als Pille hinter dem Symbol, Beschriftung fett in Navy */
+@media (max-width:700px) {
+  .bnav-it svg { position:relative; z-index:1; }
+  .bnav-it::before { content:''; position:absolute; top:8px; left:50%; width:58px; height:32px; margin-left:-29px; border-radius:16px; background:rgba(1,34,101,.11); opacity:0; transform:scale(.6); transition:opacity .18s ease, transform .18s ease; pointer-events:none; }
+  .bnav-it.on::before { top:8px; bottom:auto; left:50%; right:auto; height:32px; border-radius:16px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
+  .bnav-it:active:not(.on)::before { opacity:1; transform:none; background:rgba(1,34,101,.07); }
+}
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -1903,7 +1923,7 @@ function kaStart() {
   <button type="button" class="bnav-it" id="bnav-patienten" data-tab="patienten" style="--bc:#3b82f6" onclick="switchTab('patienten')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/></svg><span class="bnav-l">Patienten</span></button>
   <button type="button" class="bnav-it" id="bnav-todos" data-tab="todos" style="--bc:#f97316" onclick="switchTab('todos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg><span class="bnav-l">To-Dos</span><span id="bnav-todo-badge" class="bnav-bd" style="display:none;"></span></button>
   <button type="button" class="bnav-it" id="bnav-rechnungen" data-tab="rechnungen" style="--bc:#22c55e" onclick="switchTab('rechnungen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="bnav-l">Rechnungen</span></button>
-  <button type="button" class="bnav-it" id="bnav-mehr" data-tab="mehr" style="--bc:#64748b" onclick="toggleNavMenu(event)" aria-haspopup="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span class="bnav-l">Mehr</span></button>
+  <button type="button" class="bnav-it" id="bnav-mehr" data-tab="mehr" style="--bc:#64748b" onclick="toggleNavMenu(event)" aria-haspopup="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg><span class="bnav-l">Mehr</span></button>
 </div>
 <div class="lg-float" id="lg-float" style="display:none;"><div class="lg-body" id="lg-body" style="display:none;"></div><button type="button" class="lg-btn" id="lg-btn" onclick="lgToggle()" aria-expanded="false" aria-controls="lg-body" title="Legende" aria-label="Legende der Punkte und Farben">ⓘ</button></div>
 <div class="fab-col" id="fab-col">
@@ -2177,6 +2197,15 @@ function kaStart() {
       </div>
       </div>
       <div id="wf-list"></div>
+    </div>
+  </div>
+
+  <!-- TAB: HANDY-VERBINDUNG (Test) -->
+  <div id="tab-verbindung" class="tab-content">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Handy-Verbindung (Test)</span></div>
+      <div style="font-size:13px; color:#64748b; margin-bottom:16px;">Prüft, ob sich Handy und Tablet direkt im WLAN verbinden können, ohne Server und ohne Internet. Dazu zeigt das Tablet einen QR-Code, das Handy scannt ihn und zeigt einen Antwort-Code, den das Tablet scannt. Gesendet werden nur zufällige Prüfdaten, keine Patientendaten. Beide Geräte müssen im selben WLAN sein (kein Gäste-WLAN).</div>
+      <button type="button" class="btn btn-save" onclick="kvOpen()">Verbindungstest starten</button>
     </div>
   </div>
 
@@ -3162,12 +3191,12 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-22-k';
+var KA_V = '2026-11-23-i';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
   ['#', 'Kommunikation & Vorlagen'], ['webformulare', 'Webformulare', 'renderWebf'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'],
-  ['#', 'Daten & Technik'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung'],
+  ['#', 'Daten & Technik'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung'], ['verbindung', 'Handy-Verbindung', 'renderVerbindung'],
   ['#', 'Geplant'], ['', 'Patientenstammdaten'], ['', 'Automationen']];
 var NAV_PINNED = ['rechnungen'];
 var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0] && x[0] !== '#'; }).map(function (x) { return x[0]; });
@@ -3205,6 +3234,7 @@ var NAV_ICON = {
   textbausteine: '<path d="M5 6h14M5 12h14M5 18h9"/>',
   abgleich: '<path d="M20 8a8 8 0 00-14-2M4 4v4h4M4 16a8 8 0 0014 2M20 20v-4h-4"/>',
   sicherung: '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>',
+  verbindung: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>',
   _: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/>'
 };
 function navIcon(id) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (NAV_ICON[id] || NAV_ICON._) + '</svg>'; }
@@ -6948,6 +6978,14 @@ function docBox(id, text, placeholder, label, onSave, onCancel, rerender) {
   }
   return dk;
 }
+/* E-Mail aus der Zeitleiste erneut senden: Empfänger, Betreff und Text aus dem Eintrag übernehmen, soweit vorhanden */
+function mailResend(lg) {
+  var t = String(lg.text || ''), an = (/(?:für|an) (\S+@\S+?)(?:\n|$)/.exec(t) || [])[1] || (curP && curP.email) || '', bm = /\nBetreff: ([^\n]*)(?:\nAnhänge: [^\n]*)?(?:\n([\s\S]*))?$/.exec(t);
+  openMail();
+  document.getElementById('m-an').value = an;
+  if (bm) { document.getElementById('m-betreff').value = bm[1] || ''; document.getElementById('m-text').value = bm[2] || ''; }
+  else { document.getElementById('m-text').value = t; }
+}
 function tlMenu(ev, items) {
   ev.stopPropagation();
   var m = document.getElementById('tl-menu');
@@ -6963,14 +7001,14 @@ function tlMenu(ev, items) {
   if (top + m.offsetHeight > window.innerHeight - 8) top = Math.max(8, window.innerHeight - 8 - m.offsetHeight);
   m.style.top = top + 'px'; m.style.right = 'auto';
 }
-function tlPlus(sh, items) {
+function tlPlus(sh, items, quick) {
   var b = mk('button', 'tl-plus'); b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'; b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   sh.actions = items;
   var q = mk('div', 'tl-quick');
-  dockIds().forEach(function (id) {
-    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
-    var qb = mk('button', 'tl-qb'); qb.type = 'button'; qb.title = d.t; qb.setAttribute('aria-label', d.t); qb.innerHTML = tvSvg(d.ic);
-    qb.onclick = function (ev) { ev.stopPropagation(); sh.row.classList.remove('quick-on'); aAct(d.act); }; q.appendChild(qb);
+  /* Symbole beim Überfahren gehören zum jeweiligen Eintrag: [Titel, Symbol, Funktion] */
+  (quick || []).forEach(function (d) {
+    var qb = mk('button', 'tl-qb'); qb.type = 'button'; qb.title = d[0]; qb.setAttribute('aria-label', d[0]); qb.innerHTML = tvSvg(d[1]);
+    qb.onclick = function (ev) { ev.stopPropagation(); sh.row.classList.remove('quick-on'); d[2](ev); }; q.appendChild(qb);
   });
   var mb = mk('button', 'tl-qb'); mb.type = 'button'; mb.title = 'Weitere Aktionen dieses Eintrags'; mb.setAttribute('aria-label', mb.title);
   mb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
@@ -6978,7 +7016,7 @@ function tlPlus(sh, items) {
   sh.row.appendChild(q);
   /* Maus: Überfahren zeigt die Symbole; Touch: Antippen des Pfeils blendet sie ein und aus */
   b.onclick = function (ev) {
-    if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) { tlMenu(ev, sh.actions); return; }
+    if (window.matchMedia('(any-hover:hover)').matches) { tlMenu(ev, sh.actions); return; }
     ev.stopPropagation(); var on = !sh.row.classList.contains('quick-on');
     [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) sh.row.classList.add('quick-on');
   };
@@ -7050,12 +7088,13 @@ function tlRow(it) {
   var sh, line;
   if (it.t === 'termin') {
     var e = it.e;
-    sh = tlShell(it.k, 'Termin · ' + fmtTermin(e));
+    sh = tlShell(it.k, 'Termin');
     var tlb = sh.body.querySelector('.tl-label'); if (tlb) { tlb.style.cursor = 'pointer'; tlb.title = 'Termin im Kalender öffnen'; tlb.onclick = function (ev) { ev.stopPropagation(); showInCal(e); }; }
     sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));
-    tlPlus(sh, [['Dokumentation', function () { openDok(e.id); }], ['Termin bearbeiten', function () { editTermin(e.id, true); }], ['Im Kalender anzeigen', function () { showInCal(e); }]]
-      .concat(attItems('e' + e.id), [['Produkt verwenden', function () { openVb(e.id); }], ['Rezept erstellen', function () { openRx('e' + e.id); }], ['Rechnung erstellen', function () { invFromEvent(e); }], ['E-Mail senden', function () { openMail(); }]], attMove('e' + e.id)));
+    tlPlus(sh, [['Termin bearbeiten', function () { editTermin(e.id, true); }]]
+      .concat([['Produkt verwenden', function () { openVb(e.id); }], ['E-Mail senden', function () { openMail(); }]], attItems('e' + e.id), attMove('e' + e.id)),
+      [['Im Kalender anzeigen', 'cal', function () { showInCal(e); }], ['Dokumentation', 'book', function () { openDok(e.id); }], ['Rechnung erstellen', 'euro', function () { invFromEvent(e); }], ['Rezept erstellen', 'rx', function () { openRx('e' + e.id); }]]);
   } else if (it.t === 'verbrauch') {
     var vb = it.v;
     sh = tlShell(it.k, 'Produkt');
@@ -7069,9 +7108,10 @@ function tlRow(it) {
     if (d.text) { dtb.style.color = '#0f172a'; dtb.textContent = d.text; } else { dtb.style.color = '#94a3b8'; dtb.textContent = 'Dokumentation hinzufügen'; }
     dtb.onclick = function () { openDokFree(d); }; sh.body.appendChild(dtb);
     sh.body.appendChild(attachBlock(curP, 'd' + d.ts));
-    tlPlus(sh, [['Mit Termin verknüpfen', function () { openDkPick(d); }], ['Datum und Uhrzeit ändern', function () {
+    tlPlus(sh, [['Datum und Uhrzeit ändern', function () {
       askDateTime(d.ts, function (t) { var oldTs = d.ts, oz = 'd' + d.ts, nz = 'd' + t; [curP.bilder, curP.dokumente].forEach(function (l) { (l || []).forEach(function (x) { if (x.zu === oz) x.zu = nz; }); }); d.ts = t; auditOne(curP, 'Dokumentation', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); });
-    }]].concat(attItems('d' + d.ts), attMove('d' + d.ts)));
+    }]].concat(attMove('d' + d.ts)),
+      [['Bearbeiten', 'pen', function () { openDokFree(d); }], ['Bild oder Datei anhängen', 'img', function (ev) { tlMenu(ev, attItems('d' + d.ts)); }], ['Mit Termin verknüpfen', 'link', function () { openDkPick(d); }]]);
   } else if (it.t === 'rechnung') {
     var iv = it.inv;
     sh = tlShell(it.k, 'Rechnung');
@@ -7079,6 +7119,8 @@ function tlRow(it) {
     line.style.cssText = 'font-weight:600; cursor:pointer;';
     line.onclick = function () { viewInvoice(iv.id); };
     sh.body.appendChild(line);
+    tlPlus(sh, [['Bearbeiten oder stornieren', function () { viewInvoice(iv.id); }]],
+      [['Ansehen', 'search', function () { viewInvoice(iv.id); }], ['Senden (E-Mail, Teilen)', 'mail', function () { viewInvoice(iv.id); sendInvoice(); }], ['Zahlung erfassen', 'euro', function () { viewInvoice(iv.id); openPay(); }]]);
   } else if (it.t === 'audit') {
     var au = it.a;
     sh = tlShell(it.k, 'Änderungshistorie');
@@ -7113,7 +7155,17 @@ function tlRow(it) {
     } else {
       var tx = mk('div', '', it.t === 'med' ? String(lg.text).replace(/^Medikament hinzugefügt:\s*/, '') : lg.text);
       tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
-      tlPlus(sh, [['Bearbeiten', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { var oldTs = lg.ts; lg.ts = t; auditOne(curP, 'Verlaufseintrag', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); }); }]]);
+      var lgDate = ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { var oldTs = lg.ts; lg.ts = t; auditOne(curP, 'Verlaufseintrag', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); }); }];
+      var lgEdit = ['Bearbeiten', 'pen', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], lgQuick = [];
+      if (it.t === 'mail') lgQuick = [['Erneut senden', 'mail', function () { mailResend(lg); }]];
+      else if (it.t === 'rezept') { lgQuick = [lgEdit]; var rxd = rxDocOf(lg); if (rxd) lgQuick.push(['Senden (E-Mail, Teilen)', 'mail', function () { sendDokument(curP, rxd); }]); }
+      else lgQuick = [lgEdit];
+      var lgDel = (it.t === 'notiz' || it.t === 'mail') ? [['Löschen', async function () {
+        if (!await kaConfirm('Diesen Eintrag endgültig löschen?\n\nDie Löschung wird in der Änderungshistorie vermerkt.', { ok: 'Löschen', danger: true })) return;
+        var txt = String(lg.text || '').slice(0, 300); curP.log = (curP.log || []).filter(function (x) { return x !== lg; });
+        auditOne(curP, 'Verlaufseintrag', it.t === 'mail' ? 'E-Mail-Eintrag gelöscht' : 'Notiz gelöscht', txt, ''); persist(); renderVerlauf(); renderHead();
+      }]] : [];
+      tlPlus(sh, [lgDate].concat(lgDel), lgQuick);
     }
   }
   var rec = it.e || it.d || it.l || it.inv || it.v;
@@ -10898,6 +10950,14 @@ function fixImported() {
 fixImported();
 restoreLast();
 /* ===== Geräte-Abgleich ===== */
+function renderVerbindung() {}
+/* Handy-Verbindung: Programmteile werden erst beim Öffnen geladen */
+function kvLoad(src) { return new Promise(function (res, rej) { var sc = document.createElement('script'); sc.src = src; sc.onload = res; sc.onerror = function () { rej(new Error(src)); }; document.head.appendChild(sc); }); }
+async function kvOpen() {
+  try { if (!window.qrcode) await kvLoad('lib-qrcode.js'); if (!window.jsQR) await kvLoad('lib-jsqr.js'); if (!window.KV) await kvLoad('verbindung.js'); }
+  catch (e) { alert('Die Verbindungsfunktion konnte nicht geladen werden.'); return; }
+  KV.openTablet();
+}
 function renderSicherung() {
   vbkState();
   var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}

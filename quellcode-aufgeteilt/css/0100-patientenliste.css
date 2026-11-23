@@ -89,4 +89,4 @@ header nav { flex:1; min-width:0; margin:0; border:0; }
 .ph-edit, .ra-pen { opacity:0; transition:opacity .15s; } .ph-edit:focus-visible, .ra-pen:focus-visible { opacity:1; }
 @media (hover:hover) and (pointer:fine) { .ph-row:hover .ph-edit, div:hover > span > .ra-pen, div:hover > .ra-pen { opacity:1; } }
 /* Plus/Pfeil der Zeitstrahl-Einträge: mit der Maus erst beim Überfahren sichtbar (Touch: bleibt sichtbar) */
-@media (hover:hover) and (pointer:fine) { .tl-plus { opacity:0; transition:opacity .15s; } .tl-item:hover .tl-plus, .tl-plus:focus-visible, .tl-plus[aria-expanded=true] { opacity:1; } }
+@media (any-hover:hover) { .tl-plus { opacity:0; transition:opacity .15s; } .tl-item:hover .tl-plus, .tl-plus:focus-visible, .tl-plus[aria-expanded=true] { opacity:1; } }

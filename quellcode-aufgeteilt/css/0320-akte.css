@@ -1,0 +1,20 @@
+/* Akte: Kästen bis zum Rand, kleinere Abstände, Datum mit Luft zur Linie */
+.a-tile:not(.ed) ul { margin-right:-24px; }
+@media (max-width:640px) { .a-tile:not(.ed) ul { margin-right:-18px; } .a-tiles { gap:6px; } }
+.tl-item.open .tl-body > .tl-first { margin-right:-34px !important; }
+.tl-day.tl-all .tl-date { padding-right:16px; }
+@media (max-width:520px) {
+  #modal-akte.akte-page { padding-left:8px; padding-right:8px; }
+  #modal-akte .card.a-side { padding:10px 8px; }
+  #modal-akte .a-pane { padding:10px 8px; }
+  #modal-akte .a-tile { padding-left:9px; }
+  .a-tile:not(.ed) ul { margin-right:-20px; }
+  .tl-item.open .tl-body > .tl-first { margin-right:-30px !important; }
+}
+/* Fußleiste: aktiver Reiter als Pille hinter dem Symbol, Beschriftung fett in Navy */
+@media (max-width:700px) {
+  .bnav-it svg { position:relative; z-index:1; }
+  .bnav-it::before { content:''; position:absolute; top:8px; left:50%; width:58px; height:32px; margin-left:-29px; border-radius:16px; background:rgba(1,34,101,.11); opacity:0; transform:scale(.6); transition:opacity .18s ease, transform .18s ease; pointer-events:none; }
+  .bnav-it.on::before { top:8px; bottom:auto; left:50%; right:auto; height:32px; border-radius:16px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
+  .bnav-it:active:not(.on)::before { opacity:1; transform:none; background:rgba(1,34,101,.07); }
+}

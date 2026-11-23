@@ -1,0 +1,5 @@
+Drittanbieter-Code in dieser App (lokal eingebunden, keine Verbindung zu fremden Servern)
+
+lib-qrcode.js  - QR Code Generator for JavaScript, Kazuhiko Arase, MIT-Lizenz (Kopfzeile in der Datei)
+lib-jsqr.js    - jsQR, Cosmo Wolfe, Apache-Lizenz 2.0 (https://github.com/cozmo/jsQR)
+Beide werden nur für die Handy-Verbindung (verbindung.js) geladen.
