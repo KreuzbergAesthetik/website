@@ -1,11 +1,11 @@
 
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-23-h';
+var KA_V = '2026-11-23-i';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
   ['#', 'Kommunikation & Vorlagen'], ['webformulare', 'Webformulare', 'renderWebf'], ['dokumente', 'Vorlagen', 'renderTemplates'], ['nachrichten', 'Nachrichtenvorlagen', 'renderNachr'], ['textbausteine', 'Textbausteine', 'renderTxt'],
-  ['#', 'Daten & Technik'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung'],
+  ['#', 'Daten & Technik'], ['abgleich', 'Geräte-Abgleich', 'renderSync'], ['sicherung', 'Sicherung', 'renderSicherung'], ['verbindung', 'Handy-Verbindung', 'renderVerbindung'],
   ['#', 'Geplant'], ['', 'Patientenstammdaten'], ['', 'Automationen']];
 var NAV_PINNED = ['rechnungen'];
 var PRAXIS_TABS = PRAXIS_NAV.filter(function (x) { return x[0] && x[0] !== '#'; }).map(function (x) { return x[0]; });
@@ -43,6 +43,7 @@ var NAV_ICON = {
   textbausteine: '<path d="M5 6h14M5 12h14M5 18h9"/>',
   abgleich: '<path d="M20 8a8 8 0 00-14-2M4 4v4h4M4 16a8 8 0 0014 2M20 20v-4h-4"/>',
   sicherung: '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>',
+  verbindung: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>',
   _: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/>'
 };
 function navIcon(id) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (NAV_ICON[id] || NAV_ICON._) + '</svg>'; }

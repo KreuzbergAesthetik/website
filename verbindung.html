@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<!-- Sicherheitsrichtlinie: nur eigene Dateien; die Verbindung zum Tablet läuft direkt (WebRTC), es gehen keine Daten an Server -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Handy-Verbindung</title>
+<style>
+  body { margin:0; font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; background:#f2f5fc; color:#0f172a; }
+  .top { background:#fff; padding:12px 16px; border-bottom:1px solid #dbe3f0; font-weight:800; color:#012265; }
+  .wrap { max-width:480px; margin:0 auto; padding:16px; text-align:center; }
+  .card { background:#fff; border:1px solid #dbe3f0; border-radius:14px; padding:16px; }
+  #st { font-size:15px; font-weight:600; margin:12px 0; }
+  .ok { color:#15803d; } .bad { color:#b91c1c; }
+  small { color:#64748b; }
+</style>
+</head>
+<body>
+<div class="top">Kreuzberg Ästhetik · Handy-Verbindung</div>
+<div class="wrap"><div class="card">
+  <div id="st">Wird vorbereitet …</div>
+  <div id="qr"></div>
+  <div id="res" style="text-align:left; line-height:1.6;"></div>
+  <p><small>Es werden nur Prüfdaten übertragen, keine Patientendaten.</small></p>
+</div></div>
+<script src="lib-qrcode.js"></script>
+<script src="verbindung.js"></script>
+<script>
+(async function () {
+  var st = document.getElementById('st'), qr = document.getElementById('qr'), res = document.getElementById('res');
+  function say(t, cls) { st.textContent = t; st.className = cls || ''; }
+  var m = /[#&]o=([A-Za-z0-9_-]+)/.exec(location.hash);
+  if (!m) { say('Bitte den Code am Tablet mit der Handy-Kamera scannen.', 'bad'); return; }
+  if (!window.RTCPeerConnection) { say('Dieser Browser unterstützt die direkte Verbindung nicht.', 'bad'); return; }
+  await KV.unmask();
+  var h;
+  try { h = await KV.accept(m[1]); } catch (e) { say('Der Code vom Tablet ist ungültig oder veraltet. Bitte am Tablet neu starten.', 'bad'); return; }
+  KV.lastAnswer = h.code;
+  say('Jetzt die Tablet-Kamera auf diesen Code halten:');
+  qr.appendChild(KV.qr(h.code, 320));
+  var fertig = false;
+  h.onchannel = function (dc) {
+    var go = function () {
+      if (fertig) return; fertig = true; qr.innerHTML = ''; say('Verbunden. Test läuft …', 'ok');
+      KV.testGuest(h, function (t, r) {
+        if (t) say(t, 'ok');
+        if (r) { say(r.ok ? 'Verbindung funktioniert' : 'Daten kamen fehlerhaft an', r.ok ? 'ok' : 'bad'); res.innerHTML = 'Laufzeit: ' + r.rtt + ' ms<br>Geschwindigkeit: ' + r.mbps + ' MBit/s'; }
+      });
+    };
+    if (dc.readyState === 'open') go(); else dc.onopen = go;
+  };
+  h.pc.onconnectionstatechange = function () { if (h.pc.connectionState === 'failed' && !fertig) say('Keine Verbindung möglich. Sind beide Geräte im selben WLAN (kein Gäste-WLAN)?', 'bad'); };
+})();
+</script>
+</body>
+</html>

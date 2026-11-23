@@ -195,3 +195,12 @@ Offene Punkte stehen in HANDOVER.md Abschnitt 0 (Serverpasswort nach dem IONOS-U
 - Neue Feldarten in `TF_KINDS` (`pdfedit.js`) mit Werten aus `fillExtra(p, termin)` (index.html): Datum heute, nächster Termin, letzte Anamnese (`anamInfo`), Honorarvereinbarung (`p.honorarVom`), Ort der Praxis, Ort und Datum, Telefon, E-Mail, Allergien, Akte-Nr., Behandlung des Termins, PLZ/Ort, Alter.
 - Unterschrift im Editor: Standardbreite 16 %, nach dem Platzieren per Regler 6-45 % skalierbar, "Neu platzieren", "Entfernen"; antippen mit Text-, Haken- oder Kreuz-Werkzeug wählt sie wieder aus.
 - `sendDokument(p, rec)`: Teilen-Menü bzw. Datei laden und Mail vorbereiten, Vermerk im Verlauf und Änderungsprotokoll. Im Editor "Speichern und senden", im Dateimenü "Senden (E-Mail, Teilen)".
+
+## Handy-Verbindung (Test, 23.11.2026)
+Ziel: Fotos vom Handy direkt im WLAN zum Tablet übertragen, ohne Server und ohne Größenlimit (Alternative zum verschlüsselten Postfach). Stand: nur der **Verbindungstest**, noch keine Fotoübertragung.
+- Praxis → Handy-Verbindung → „Verbindungstest starten“ (`kvOpen()` in `index.html`, lädt `lib-qrcode.js`, `lib-jsqr.js`, `verbindung.js` erst beim Öffnen).
+- Ablauf: Tablet erzeugt WebRTC-Angebot (ohne STUN/TURN, nur lokales Netz), zeigt es als QR-Link auf `verbindung.html#o=…`; das Handy öffnet den Link, zeigt die Antwort als QR; das Tablet scannt sie (Kamera, jsQR) oder nimmt sie als eingefügten Code. Danach: 8 Pings (Laufzeit) und 4 MB Prüfdaten mit Prüfsumme; Anzeige von Laufzeit, MBit/s und Verbindungsweg (`host / host` = direkt im lokalen Netz).
+- SDP wird per deflate-raw + base64url verkürzt (ca. 600 Zeichen); Kamera-Erlaubnis wird vorab angefragt, damit Browser echte lokale Adressen statt mDNS-Namen verwenden.
+- Grenzen: gleiches WLAN nötig (kein Gäste-WLAN / Geräteisolation), beide Geräte gleichzeitig online, WebRTC ohne Relay.
+- Test: `tests/handy-verbindung.mjs` (zwei Seiten im selben Chromium; QR wird mit jsQR zurückgelesen). Ob das echte WLAN der Praxis mitspielt, zeigt nur der Test mit den echten Geräten.
+- Nächste Schritte (nicht gebaut): Aufnahme-Seite am Handy, Zuordnung zur Akte (QR enthält Patienten-Bezug), Speichern verschlüsselt in `ka-files` mit Audit; optional Antwort über das Postfach für nur einen Scan.

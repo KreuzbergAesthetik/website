@@ -1,4 +1,12 @@
 /* ===== Geräte-Abgleich ===== */
+function renderVerbindung() {}
+/* Handy-Verbindung: Programmteile werden erst beim Öffnen geladen */
+function kvLoad(src) { return new Promise(function (res, rej) { var sc = document.createElement('script'); sc.src = src; sc.onload = res; sc.onerror = function () { rej(new Error(src)); }; document.head.appendChild(sc); }); }
+async function kvOpen() {
+  try { if (!window.qrcode) await kvLoad('lib-qrcode.js'); if (!window.jsQR) await kvLoad('lib-jsqr.js'); if (!window.KV) await kvLoad('verbindung.js'); }
+  catch (e) { alert('Die Verbindungsfunktion konnte nicht geladen werden.'); return; }
+  KV.openTablet();
+}
 function renderSicherung() {
   vbkState();
   var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
