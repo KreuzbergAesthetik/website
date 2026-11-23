@@ -25,7 +25,7 @@
 .tl-qb { width:30px; height:30px; padding:0; border-radius:50%; border:1px solid var(--pf-navy); background:rgba(255,255,255,.85); color:var(--pf-navy); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
 .tl-qb svg { width:16px; height:16px; }
 .tl-item.quick-on .tl-quick { opacity:1; pointer-events:auto; }
-@media (hover:hover) and (pointer:fine) { .tl-item:hover .tl-quick, .tl-item:focus-within .tl-quick { opacity:1; pointer-events:auto; } }
+@media (any-hover:hover) { .tl-item:hover .tl-quick, .tl-item:focus-within .tl-quick { opacity:1; pointer-events:auto; } }
 /* Mehr-Menü: ohne seitliche Streifen, alles in Praxis-Navy */
 .nav-section, .nav-section[data-ni] { --sec:var(--pf-navy); border-left:1px solid #dbe3f0; }
 .nav-section > .nav-group { background:var(--pf-inlay); color:var(--pf-navy); }

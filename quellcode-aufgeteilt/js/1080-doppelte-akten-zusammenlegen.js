@@ -233,6 +233,14 @@ function docBox(id, text, placeholder, label, onSave, onCancel, rerender) {
   }
   return dk;
 }
+/* E-Mail aus der Zeitleiste erneut senden: Empfänger, Betreff und Text aus dem Eintrag übernehmen, soweit vorhanden */
+function mailResend(lg) {
+  var t = String(lg.text || ''), an = (/(?:für|an) (\S+@\S+?)(?:\n|$)/.exec(t) || [])[1] || (curP && curP.email) || '', bm = /\nBetreff: ([^\n]*)(?:\nAnhänge: [^\n]*)?(?:\n([\s\S]*))?$/.exec(t);
+  openMail();
+  document.getElementById('m-an').value = an;
+  if (bm) { document.getElementById('m-betreff').value = bm[1] || ''; document.getElementById('m-text').value = bm[2] || ''; }
+  else { document.getElementById('m-text').value = t; }
+}
 function tlMenu(ev, items) {
   ev.stopPropagation();
   var m = document.getElementById('tl-menu');
@@ -248,14 +256,14 @@ function tlMenu(ev, items) {
   if (top + m.offsetHeight > window.innerHeight - 8) top = Math.max(8, window.innerHeight - 8 - m.offsetHeight);
   m.style.top = top + 'px'; m.style.right = 'auto';
 }
-function tlPlus(sh, items) {
+function tlPlus(sh, items, quick) {
   var b = mk('button', 'tl-plus'); b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'; b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
   sh.actions = items;
   var q = mk('div', 'tl-quick');
-  dockIds().forEach(function (id) {
-    var d = AM_DOCK.filter(function (x) { return x.act === id; })[0]; if (!d) return;
-    var qb = mk('button', 'tl-qb'); qb.type = 'button'; qb.title = d.t; qb.setAttribute('aria-label', d.t); qb.innerHTML = tvSvg(d.ic);
-    qb.onclick = function (ev) { ev.stopPropagation(); sh.row.classList.remove('quick-on'); aAct(d.act); }; q.appendChild(qb);
+  /* Symbole beim Überfahren gehören zum jeweiligen Eintrag: [Titel, Symbol, Funktion] */
+  (quick || []).forEach(function (d) {
+    var qb = mk('button', 'tl-qb'); qb.type = 'button'; qb.title = d[0]; qb.setAttribute('aria-label', d[0]); qb.innerHTML = tvSvg(d[1]);
+    qb.onclick = function (ev) { ev.stopPropagation(); sh.row.classList.remove('quick-on'); d[2](ev); }; q.appendChild(qb);
   });
   var mb = mk('button', 'tl-qb'); mb.type = 'button'; mb.title = 'Weitere Aktionen dieses Eintrags'; mb.setAttribute('aria-label', mb.title);
   mb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
@@ -263,7 +271,7 @@ function tlPlus(sh, items) {
   sh.row.appendChild(q);
   /* Maus: Überfahren zeigt die Symbole; Touch: Antippen des Pfeils blendet sie ein und aus */
   b.onclick = function (ev) {
-    if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) { tlMenu(ev, sh.actions); return; }
+    if (window.matchMedia('(any-hover:hover)').matches) { tlMenu(ev, sh.actions); return; }
     ev.stopPropagation(); var on = !sh.row.classList.contains('quick-on');
     [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) sh.row.classList.add('quick-on');
   };
@@ -339,8 +347,9 @@ function tlRow(it) {
     var tlb = sh.body.querySelector('.tl-label'); if (tlb) { tlb.style.cursor = 'pointer'; tlb.title = 'Termin im Kalender öffnen'; tlb.onclick = function (ev) { ev.stopPropagation(); showInCal(e); }; }
     sh.body.appendChild(dokSummary(e));
     sh.body.appendChild(attachBlock(curP, 'e' + e.id));
-    tlPlus(sh, [['Dokumentation', function () { openDok(e.id); }], ['Termin bearbeiten', function () { editTermin(e.id, true); }], ['Im Kalender anzeigen', function () { showInCal(e); }]]
-      .concat(attItems('e' + e.id), [['Produkt verwenden', function () { openVb(e.id); }], ['Rezept erstellen', function () { openRx('e' + e.id); }], ['Rechnung erstellen', function () { invFromEvent(e); }], ['E-Mail senden', function () { openMail(); }]], attMove('e' + e.id)));
+    tlPlus(sh, [['Termin bearbeiten', function () { editTermin(e.id, true); }]]
+      .concat([['Produkt verwenden', function () { openVb(e.id); }], ['E-Mail senden', function () { openMail(); }]], attItems('e' + e.id), attMove('e' + e.id)),
+      [['Im Kalender anzeigen', 'cal', function () { showInCal(e); }], ['Dokumentation', 'book', function () { openDok(e.id); }], ['Rechnung erstellen', 'euro', function () { invFromEvent(e); }], ['Rezept erstellen', 'rx', function () { openRx('e' + e.id); }]]);
   } else if (it.t === 'verbrauch') {
     var vb = it.v;
     sh = tlShell(it.k, 'Produkt');
@@ -354,9 +363,10 @@ function tlRow(it) {
     if (d.text) { dtb.style.color = '#0f172a'; dtb.textContent = d.text; } else { dtb.style.color = '#94a3b8'; dtb.textContent = 'Dokumentation hinzufügen'; }
     dtb.onclick = function () { openDokFree(d); }; sh.body.appendChild(dtb);
     sh.body.appendChild(attachBlock(curP, 'd' + d.ts));
-    tlPlus(sh, [['Mit Termin verknüpfen', function () { openDkPick(d); }], ['Datum und Uhrzeit ändern', function () {
+    tlPlus(sh, [['Datum und Uhrzeit ändern', function () {
       askDateTime(d.ts, function (t) { var oldTs = d.ts, oz = 'd' + d.ts, nz = 'd' + t; [curP.bilder, curP.dokumente].forEach(function (l) { (l || []).forEach(function (x) { if (x.zu === oz) x.zu = nz; }); }); d.ts = t; auditOne(curP, 'Dokumentation', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); });
-    }]].concat(attItems('d' + d.ts), attMove('d' + d.ts)));
+    }]].concat(attMove('d' + d.ts)),
+      [['Bearbeiten', 'pen', function () { openDokFree(d); }], ['Bild oder Datei anhängen', 'img', function (ev) { tlMenu(ev, attItems('d' + d.ts)); }], ['Mit Termin verknüpfen', 'link', function () { openDkPick(d); }]]);
   } else if (it.t === 'rechnung') {
     var iv = it.inv;
     sh = tlShell(it.k, 'Rechnung');
@@ -364,6 +374,8 @@ function tlRow(it) {
     line.style.cssText = 'font-weight:600; cursor:pointer;';
     line.onclick = function () { viewInvoice(iv.id); };
     sh.body.appendChild(line);
+    tlPlus(sh, [['Bearbeiten oder stornieren', function () { viewInvoice(iv.id); }]],
+      [['Ansehen', 'search', function () { viewInvoice(iv.id); }], ['Senden (E-Mail, Teilen)', 'mail', function () { viewInvoice(iv.id); sendInvoice(); }], ['Zahlung erfassen', 'euro', function () { viewInvoice(iv.id); openPay(); }]]);
   } else if (it.t === 'audit') {
     var au = it.a;
     sh = tlShell(it.k, 'Änderungshistorie');
@@ -398,7 +410,12 @@ function tlRow(it) {
     } else {
       var tx = mk('div', '', it.t === 'med' ? String(lg.text).replace(/^Medikament hinzugefügt:\s*/, '') : lg.text);
       tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
-      tlPlus(sh, [['Bearbeiten', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { var oldTs = lg.ts; lg.ts = t; auditOne(curP, 'Verlaufseintrag', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); }); }]]);
+      var lgDate = ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { var oldTs = lg.ts; lg.ts = t; auditOne(curP, 'Verlaufseintrag', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); }); }];
+      var lgEdit = ['Bearbeiten', 'pen', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], lgQuick = [];
+      if (it.t === 'mail') lgQuick = [['Erneut senden', 'mail', function () { mailResend(lg); }]];
+      else if (it.t === 'rezept') { lgQuick = [lgEdit]; var rxd = rxDocOf(lg); if (rxd) lgQuick.push(['Senden (E-Mail, Teilen)', 'mail', function () { sendDokument(curP, rxd); }]); }
+      else lgQuick = [lgEdit];
+      tlPlus(sh, [lgDate], lgQuick);
     }
   }
   var rec = it.e || it.d || it.l || it.inv || it.v;
