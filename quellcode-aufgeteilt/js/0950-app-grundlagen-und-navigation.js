@@ -1,6 +1,6 @@
 
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-25-e';
+var KA_V = '2026-11-25-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -150,6 +150,17 @@ function lgUpdate() {
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
 var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
+/* Fußleiste: Zustand „Mehr-Menü offen“ und kurze Antipp-Animation */
+(function () {
+  function ready() {
+    var m = document.getElementById('nav-menu'), bar = document.getElementById('bnav'); if (!m || !bar) return false;
+    var sync = function () { document.body.classList.toggle('navmenu-open', m.style.display !== 'none' && m.style.display !== ''); };
+    new MutationObserver(sync).observe(m, { attributes: true, attributeFilter: ['style'] }); sync();
+    bar.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.bnav-it'); if (!b) return; b.classList.remove('tap'); void b.offsetWidth; b.classList.add('tap'); setTimeout(function () { b.classList.remove('tap'); }, 750); }, true);
+    return true;
+  }
+  if (!ready()) document.addEventListener('DOMContentLoaded', ready);
+})();
 function bnavSync() {
   var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '';
   var on = ['kalender', 'patienten', 'todos', 'rechnungen'].indexOf(id) >= 0 ? id : (PRAXIS_TABS.indexOf(id) >= 0 ? 'mehr' : '');

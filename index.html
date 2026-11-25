@@ -1532,10 +1532,21 @@ body.pe-open { overflow:hidden; }
 }
 /* Fußleiste: aktiver Reiter als Pille hinter dem Symbol, Beschriftung fett in Navy */
 @media (max-width:700px) {
+  .bnav-it { gap:7px; }
   .bnav-it svg { position:relative; z-index:1; }
-  .bnav-it::before { content:''; position:absolute; top:8px; left:50%; width:58px; height:32px; margin-left:-29px; border-radius:16px; background:rgba(1,34,101,.11); opacity:0; transform:scale(.6); transition:opacity .18s ease, transform .18s ease; pointer-events:none; }
-  .bnav-it.on::before { top:8px; bottom:auto; left:50%; right:auto; height:32px; border-radius:16px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
-  .bnav-it:active:not(.on)::before { opacity:1; transform:none; background:rgba(1,34,101,.07); }
+  .bnav-it::before { content:''; position:absolute; top:7px; left:50%; width:56px; height:27px; margin-left:-28px; border-radius:14px; background:rgba(1,34,101,.11); opacity:0; transform:scale(.6); transition:opacity .22s ease, transform .22s ease, background-color .45s ease; pointer-events:none; }
+  .bnav-it.on::before { top:7px; bottom:auto; left:50%; right:auto; height:27px; border-radius:14px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
+  /* Antippen: Pille leuchtet kurz dunkelgrau auf, Symbol und Beschriftung werden dunkel und blenden dann zurück */
+  .bnav-it:active::before { opacity:1; transform:none; background:rgba(51,65,85,.34); transition:none; }
+  .bnav-it:active { color:#0a1a3d; }
+  .bnav-it.tap::before { animation:bnavPill .7s ease-out; }
+  .bnav-it.tap { animation:bnavInk .7s ease-out; }
+  /* Mehr-Menü offen: "Mehr" ist markiert, die Seite dahinter nicht */
+  body.navmenu-open .bnav-it.on:not(#bnav-mehr)::before { opacity:0; transform:scale(.6); }
+  body.navmenu-open .bnav-it.on:not(#bnav-mehr) { color:#64748b; }
+  body.navmenu-open #bnav-mehr { color:var(--pf-navy); }
+  body.navmenu-open #bnav-mehr::before { opacity:1; transform:none; background:rgba(1,34,101,.11); }
+}
 }
 /* Akte im Querformat: Name mittig im Kopfkasten */
 .a-top .a-title { align-items:center; }
@@ -1553,6 +1564,11 @@ body.pe-open { overflow:hidden; }
 #upd-bar .btn-cancel, #ks-bar .btn-cancel { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.6); }
 /* Zeitleiste: Mit Maus oder Stift zeigt das Überfahren die Symbole samt "…"; der Pfeil rechts würde dasselbe Menü öffnen und entfällt dort. Am reinen Touchgerät bleibt er. */
 @media (any-hover:hover) { .tl-item .tl-plus { display:none !important; } }
+@keyframes bnavPill { 0% { background-color:rgba(51,65,85,.34); } 100% { background-color:rgba(1,34,101,.11); } }
+@keyframes bnavInk { 0% { color:#0a1a3d; } }
+/* Geräte-Abgleich: Abschnitte mit Überschrift, Trennen rot */
+.sy-h { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:20px 0 8px; padding-top:14px; border-top:1px solid #eef2f6; }
+.btn.btn-rot { background:transparent; color:#b91c1c; border:1px solid #dc2626; box-shadow:none; border-radius:999px; } .btn.btn-rot:hover { background:rgba(220,38,38,.08); }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2261,11 +2277,17 @@ function kaStart() {
         <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
         <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:6px;"></div>
         <div class="sy-conn" style="font-size:12.5px; color:#64748b; margin-bottom:10px;"></div>
+        <div class="sy-h" style="margin-top:6px;">Abgleichen</div>
         <div class="form-group" style="max-width:420px;"><label>Wann soll abgeglichen werden?</label><select class="form-control sy-mode" onchange="KS.setMode(this.value)"><option value="taeglich">Einmal täglich beim Öffnen (empfohlen)</option><option value="manuell">Nur wenn ich es starte</option><option value="auto">Sofort nach jeder Änderung</option></select></div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button><button type="button" class="btn btn-secondary" onclick="KS.diagnose()">Verbindung prüfen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
-        <div class="form-group" style="max-width:520px; margin-bottom:12px;"><label class="tm-chk" style="display:flex; gap:8px; align-items:flex-start; font-weight:600;"><input type="checkbox" id="sy-mail" onchange="mailServerSet(this.checked)" style="margin-top:3px;"> <span>E-Mails ohne Anhang direkt über den Server senden<br><span style="font-weight:400; font-size:12.5px; color:#64748b;">Absender ist die Adresse aus dem Server-Skript. Der Text läuft verschlüsselt per HTTPS über den Praxis-Server und wird dort nicht gespeichert. E-Mails mit Anhang laufen weiter über Teilen bzw. Dein Mailprogramm.</span></span></label><button type="button" class="btn btn-secondary btn-sm" onclick="mailServerTest()" style="margin-top:6px;">Test-E-Mail an die Praxis senden</button> <span id="sy-mailst" style="font-size:12.5px; color:#64748b;"></span></div>
-        <div id="sy-baks"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button></div>
         <div style="font-size:13px; color:#64748b;">Je nach Einstellung läuft der Abgleich nur einmal täglich beim Öffnen der App, nur auf Antippen oder sofort nach jeder Änderung. Dabei wird auch das Postfach abgerufen. Dazwischen arbeitet die App ohne Verbindung zum Server, offline arbeitest Du normal weiter. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
+        <div class="sy-h">E-Mail-Versand</div>
+        <div class="form-group" style="max-width:520px; margin-bottom:0;"><label class="tm-chk" style="display:flex; gap:8px; align-items:flex-start; font-weight:600;"><input type="checkbox" id="sy-mail" onchange="mailServerSet(this.checked)" style="margin-top:3px;"> <span>E-Mails ohne Anhang direkt über den Server senden<br><span style="font-weight:400; font-size:12.5px; color:#64748b;">Absender ist die Adresse aus dem Server-Skript. Der Text läuft verschlüsselt per HTTPS über den Praxis-Server und wird dort nicht gespeichert. E-Mails mit Anhang laufen weiter über Teilen bzw. Dein Mailprogramm.</span></span></label><button type="button" class="btn btn-secondary btn-sm" onclick="mailServerTest()" style="margin-top:8px;">Test-E-Mail an die Praxis senden</button> <span id="sy-mailst" style="font-size:12.5px; color:#64748b;"></span></div>
+        <div class="sy-h">Prüfen und Wiederherstellen</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-secondary" onclick="KS.diagnose()">Verbindung prüfen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button></div>
+        <div id="sy-baks"></div>
+        <div class="sy-h">Zugang</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"><button type="button" class="btn btn-rot" onclick="syncOff()" title="Dieses Gerät vom Abgleich trennen">Trennen</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button></div>
       </div>
     </div>
     <div class="card" id="ext-box" style="margin-top:16px;">
@@ -3204,7 +3226,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-25-e';
+var KA_V = '2026-11-25-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3354,6 +3376,17 @@ function lgUpdate() {
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
 var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
+/* Fußleiste: Zustand „Mehr-Menü offen“ und kurze Antipp-Animation */
+(function () {
+  function ready() {
+    var m = document.getElementById('nav-menu'), bar = document.getElementById('bnav'); if (!m || !bar) return false;
+    var sync = function () { document.body.classList.toggle('navmenu-open', m.style.display !== 'none' && m.style.display !== ''); };
+    new MutationObserver(sync).observe(m, { attributes: true, attributeFilter: ['style'] }); sync();
+    bar.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.bnav-it'); if (!b) return; b.classList.remove('tap'); void b.offsetWidth; b.classList.add('tap'); setTimeout(function () { b.classList.remove('tap'); }, 750); }, true);
+    return true;
+  }
+  if (!ready()) document.addEventListener('DOMContentLoaded', ready);
+})();
 function bnavSync() {
   var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '';
   var on = ['kalender', 'patienten', 'todos', 'rechnungen'].indexOf(id) >= 0 ? id : (PRAXIS_TABS.indexOf(id) >= 0 ? 'mehr' : '');
