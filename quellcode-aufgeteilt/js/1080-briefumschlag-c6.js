@@ -109,7 +109,28 @@ function printInvoice() {
 }
 
 /* E-Mail-Versand: über sendmail.php auf dem Webspace der Praxis (Praxisdaten), sonst über das Mailprogramm des Geräts */
-function sendViaServer(mail) {
+/* Text-E-Mails direkt über den Praxis-Server (Schalter unter Geräte-Abgleich). Klappt es nicht, wird angeboten, das Mailprogramm zu öffnen. */
+function mailServerOn() { return !!(settings.mailServer && window.KS && KS.cfg && KS.cfg()); }
+async function sendViaServer(mail) {
+  if (mailServerOn()) {
+    try { var j = await KS.mail(mail); if (j && j.von && settings.mailVon !== j.von) { settings.mailVon = j.von; persist(); } return { via: 'server' }; }
+    catch (e) {
+      if (!await kaConfirm('Über den Server ging die E-Mail nicht raus:\n' + (e && e.message ? e.message : 'unbekannter Fehler') + '\n\nStattdessen im Mailprogramm öffnen?', { ok: 'Im Mailprogramm öffnen', cancel: 'Abbrechen', danger: false })) throw new Error('Nicht gesendet.');
+      return mailtoOpen(mail);
+    }
+  }
+  return mailtoOpen(mail);
+}
+function mailServerSet(on) { settings.mailServer = !!on; persist(); }
+async function mailServerTest() {
+  var st = document.getElementById('sy-mailst'), an = (PRAXIS && PRAXIS.mail) || settings.mailVon || '';
+  if (!window.KS || !KS.cfg || !KS.cfg()) { st.textContent = 'Zuerst den Geräte-Abgleich einrichten.'; return; }
+  if (!an) { st.textContent = 'Keine Praxis-Adresse hinterlegt.'; return; }
+  st.textContent = 'Wird gesendet …';
+  try { var j = await KS.mail({ an: an, betreff: 'Test aus der Praxis-App', text: 'Diese Test-E-Mail wurde direkt über den Praxis-Server gesendet.\n\nWenn sie angekommen ist, funktioniert der Mailversand aus der App.' }); if (j && j.von) { settings.mailVon = j.von; persist(); } st.textContent = 'Gesendet an ' + an + ' (Absender ' + ((j && j.von) || '?') + '). Bitte im Postfach nachsehen, auch im Spam-Ordner.'; st.style.color = '#15803d'; }
+  catch (e) { st.textContent = 'Nicht gesendet: ' + (e && e.message ? e.message : 'Fehler'); st.style.color = '#b91c1c'; }
+}
+function mailtoOpen(mail) {
   var url = (settings.mailUrl || '').trim();
   if (url) {
     return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: settings.mailToken || '', an: mail.an, betreff: mail.betreff, text: mail.text }) })
@@ -125,6 +146,7 @@ function openMail() {
   (settings.nachrichten || []).forEach(function (n) { var o = mk('option', '', n.name); o.value = n.id; vs.appendChild(o); });
   var tbx = document.getElementById('m-tb'); tbx.innerHTML = ''; var tp = tbPicker(document.getElementById('m-text')); if (tp) tbx.appendChild(tp);
   document.getElementById('m-an').value = curP.email || '';
+  var von = document.getElementById('m-von'); if (von) von.value = mailServerOn() ? (settings.mailVon || 'Praxis-Adresse') + ' (direkt über den Server)' : 'Über Dein Mailprogramm';
   document.getElementById('m-betreff').value = '';
   document.getElementById('m-text').value = '';
   mailAtt = []; mailAttRender();

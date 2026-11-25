@@ -2,7 +2,7 @@
 <div id="modal-mail" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><strong>E-Mail senden</strong><button type="button" class="close-btn" onclick="closeModal('modal-mail')">&times;</button></div>
-    <div class="form-group"><label>Von</label><input type="text" class="form-control" value="manuel.fella@kreuzberg-aesthetik.de" readonly style="background:#f8fafc; color:#64748b;"></div>
+    <div class="form-group"><label>Von</label><input type="text" id="m-von" class="form-control" value="Über Dein Mailprogramm" readonly style="background:#f8fafc; color:#64748b;"></div>
     <div class="form-group"><label>An</label><input type="email" id="m-an" class="form-control" placeholder="E-Mail-Adresse des Patienten"></div>
     <div class="form-group"><label>Vorlage</label><select id="m-vorl" class="form-control" onchange="applyMailVorl()"></select></div>
     <div class="form-group"><label>Betreff</label><input type="text" id="m-betreff" class="form-control"></div>

@@ -14,7 +14,11 @@
  *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/kalender?c=CODE (Kalender ohne Namen, Code erzeugt die App)
  *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/formular     (Webformulare)
  *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/schluessel   (öffentlicher Schlüssel)
- *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/abgleich     (Praxis-App)
+ *   https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/abgleich     (Praxis-App, auch Text-E-Mails: a=mail)
+ *
+ * 3. Text-E-Mails aus der Praxis-App (nur Text, keine Anhänge): Die App meldet sich mit demselben Zugangsschlüssel
+ *    wie beim Abgleich. Der Text läuft dabei unverschlüsselt (nur per HTTPS) über diesen Server und wird nicht gespeichert.
+ *    Ausschalten: MAIL_AN auf false setzen.
  */
 if (!function_exists('ka_cfg')) {
     function ka_cfg() {
@@ -26,6 +30,10 @@ if (!function_exists('ka_cfg')) {
             'MAX_OBJEKT'  => 40 * 1024 * 1024,   // größte Datei im Abgleich
             'MAX_GESAMT'  => 1500 * 1024 * 1024, // Speicher für den Abgleich insgesamt
             'MAX_POSTFACH' => 300,        // so viele Formulare höchstens im Postfach
+            'MAIL_AN'      => true,       // Text-E-Mails aus der App senden (false = aus)
+            'ABSENDER'     => 'info@kreuzberg-aesthetik.de',   // Absender der E-Mails aus der App (muss vom Webhoster versendet werden dürfen)
+            'ABSENDER_NAME' => 'Kreuzberg Ästhetik',
+            'MAIL_PRO_TAG' => 40,         // höchstens so viele E-Mails pro Tag aus der App
         );
     }
     function ka_dir($sub = '') {
@@ -70,6 +78,25 @@ if (!function_exists('ka_cfg')) {
         $ok = wp_mail($c['EMPFAENGER'], 'Neues Formular: ' . $label . ' - ' . $name, $text, array('Content-Type: text/plain; charset=UTF-8'), array($tmp));
         @unlink($tmp);
         return $ok;
+    }
+
+    /* Text-E-Mail aus der Praxis-App: nur Text, ein Empfänger, nichts wird gespeichert. Der Aufruf kommt über ka_abgleich (gleicher Zugangsschlüssel). */
+    function ka_mail($req, $c) {
+        if (empty($c['MAIL_AN'])) return ka_fail(403, 'Der Mailversand ist im Server-Skript ausgeschaltet (MAIL_AN).');
+        $an = trim((string) $req->get_param('an'));
+        $b = trim(preg_replace('/[\r\n\t]+/', ' ', (string) $req->get_param('b')));
+        $x = str_replace("\r\n", "\n", (string) $req->get_param('x'));
+        if ($an === '' || !is_email($an) || preg_match('/[,;<>\s]/', $an)) return ka_fail(400, 'Die Empfängeradresse ist ungültig.');
+        if ($b === '' || strlen($b) > 250) return ka_fail(400, 'Bitte einen Betreff mit höchstens 250 Zeichen angeben.');
+        if (strlen($x) > 20000) return ka_fail(400, 'Der Text ist zu lang (höchstens 20.000 Zeichen).');
+        $dayKey = 'ka_mail_' . current_time('Ymd'); $n = (int) get_transient($dayKey);
+        if ($n >= (int) $c['MAIL_PRO_TAG']) return ka_fail(429, 'Heute wurden schon ' . $n . ' E-Mails aus der App gesendet (Grenze MAIL_PRO_TAG im Server-Skript).');
+        $von = (string) $c['ABSENDER'];
+        if (!is_email($von)) return ka_fail(500, 'Im Server-Skript ist kein gültiger ABSENDER eingetragen.');
+        $headers = array('Content-Type: text/plain; charset=UTF-8', 'From: ' . $c['ABSENDER_NAME'] . ' <' . $von . '>', 'Reply-To: ' . $von);
+        if (!wp_mail($an, $b, $x, $headers)) return ka_fail(502, 'Der Server konnte die E-Mail nicht senden. Bitte den Mailversand beim Webhoster bzw. im SMTP-Plugin prüfen.');
+        set_transient($dayKey, $n + 1, DAY_IN_SECONDS);
+        return ka_ok(array('von' => $von, 'heute' => $n + 1));
     }
 
     /* Webformulare */
@@ -178,6 +205,7 @@ if (!function_exists('ka_cfg')) {
             return ka_ok(array('neu' => true));
         }
         if (!is_dir($vdir)) return $bad(404, 'Hier ist nichts eingerichtet, oder das Passwort stimmt nicht.');
+        if ($a === 'mail') return ka_mail($req, $c);
 
         $revFile = $vdir . '/rev';
         $rev = function () use ($revFile) { return is_file($revFile) ? (int) trim(file_get_contents($revFile)) : 0; };

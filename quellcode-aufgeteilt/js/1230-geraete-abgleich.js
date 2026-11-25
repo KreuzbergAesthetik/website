@@ -164,7 +164,7 @@ function extSave() {
 }
 async function extOff() { if (!await kaConfirm('Privaten Kalender entfernen? Die Adresse wird aus der App gelöscht.')) return; settings.extUrl = ''; persist(); EXT.clear(); EXT.ui(); try { renderCal(); } catch (x) {} }
 function extHide(on) { settings.extHide = !!on; persist(); EXT.ui(); try { renderCal(); } catch (x) {} }
-function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }
+function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; var sm = document.getElementById('sy-mail'); if (sm) sm.checked = !!settings.mailServer; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }
 async function syncGo(mode) {
   var pw = document.getElementById('sy-pw').value, m = document.getElementById('sy-msg'); m.className = ''; m.style.color = '#64748b';
   if (pw.length < 12) { m.style.color = '#b91c1c'; m.textContent = 'Das Passwort braucht mindestens 12 Zeichen.'; return; }

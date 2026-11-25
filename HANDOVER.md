@@ -204,3 +204,10 @@ Ziel: Fotos vom Handy direkt im WLAN zum Tablet übertragen, ohne Server und ohn
 - Grenzen: gleiches WLAN nötig (kein Gäste-WLAN / Geräteisolation), beide Geräte gleichzeitig online, WebRTC ohne Relay.
 - Test: `tests/handy-verbindung.mjs` (zwei Seiten im selben Chromium; QR wird mit jsQR zurückgelesen). Ob das echte WLAN der Praxis mitspielt, zeigt nur der Test mit den echten Geräten.
 - Nächste Schritte (nicht gebaut): Aufnahme-Seite am Handy, Zuordnung zur Akte (QR enthält Patienten-Bezug), Speichern verschlüsselt in `ka-files` mit Audit; optional Antwort über das Postfach für nur einen Scan.
+
+## Text-E-Mails über den Server (25.11.2026)
+- Server: `formular-empfang-wordpress.txt`, Aktion `a=mail` in `ka_abgleich` (gleicher Zugangsschlüssel `t` wie der Abgleich) → `ka_mail()`: nur Text, ein Empfänger (`is_email`, keine Kommas), Betreff ohne Zeilenumbrüche (gegen Header-Einschleusung), Text höchstens 20.000 Zeichen, höchstens `MAIL_PRO_TAG` (40) Mails pro Tag, Absender `ABSENDER` (info@kreuzberg-aesthetik.de) mit `ABSENDER_NAME`, `MAIL_AN` schaltet ab. Es wird nichts gespeichert. Getestet mit einer kleinen WordPress-Nachbildung (PHP), nicht auf dem echten Server.
+- App: `KS.mail()` in `sync.js`; `sendViaServer()` nutzt den Server, wenn `settings.mailServer` an ist und der Abgleich eingerichtet ist, sonst das Mailprogramm. Bei Fehlern fragt die App, ob das Mailprogramm geöffnet werden soll. Schalter und „Test-E-Mail an die Praxis senden“ unter Praxis → Geräte-Abgleich. Mails mit Anhang (Dokumente, Rechnungen) laufen unverändert über Teilen bzw. Mailprogramm.
+- Datenschutz: Der Text liegt auf dem Weg über den Server unverschlüsselt vor (nur HTTPS). Mit Anhängen erst nach Rücksprache mit der Datenschutzberatung.
+- Test: `tests/mail-server.mjs` (nachgebauter Server).
+- Einrichtung beim Praxisinhaber: neues Snippet in WPCode einfügen; der Webhoster muss Mails mit dem Absender info@… senden dürfen (sonst SMTP-Plugin mit diesem Postfach).

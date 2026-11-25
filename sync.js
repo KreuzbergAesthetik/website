@@ -400,6 +400,11 @@ var KS = (function () {
     out.push('Erwartet bei intaktem Server: Zufallsschlüssel = 404 „nichts eingerichtet“, ohne Schlüssel = 400 „Ungültige Anfrage“. Beim Upload-Test bedeutet „Ungültige Anfrage“, dass der Server diese Größe nicht annimmt.');
     await kaConfirm(out.join('\n\n'), { ok: 'Schließen', single: true });
   }
+  /* Text-E-Mail über den Praxis-Server senden (nur Text, gleicher Zugangsschlüssel wie der Abgleich). Der Text läuft per HTTPS über den Server und wird dort nicht gespeichert. */
+  async function mail(m) {
+    if (!cfg()) throw new Error('Der Geräte-Abgleich ist auf diesem Gerät nicht eingerichtet.');
+    return api('mail', { an: String(m.an || ''), b: String(m.betreff || ''), x: String(m.text || '') });
+  }
   function setMode(m) { settings.syncMode = (m === 'auto' || m === 'manuell') ? m : 'taeglich'; persist(); ui(); if (settings.syncMode === 'auto') run(false); }
-  return { diagnose: diagnose, setMode: setMode, mode: syncMode, extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  return { mail: mail, diagnose: diagnose, setMode: setMode, mode: syncMode, extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();
