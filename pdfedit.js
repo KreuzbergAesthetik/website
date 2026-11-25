@@ -533,10 +533,29 @@
     if (Object.keys(queue).length && !timer) timer = setTimeout(flush, 900);
   };
   window.logbuchNow = async function (p, rec) { await write(p, rec); };
+  /* Logbuch in der App anzeigen (alle Seiten als Bild), damit es auch auf Tablets ohne eingebauten PDF-Betrachter lesbar ist; Öffnen und Herunterladen als Knöpfe. */
   window.logbuchOpen = async function (p, rec) {
-    var w = window.open('', '_blank');
-    try { await write(p, rec); var u = await fileURL({ id: rec.logId }); if (u && w) w.location.href = u; else { if (w) w.close(); alert('Das Logbuch konnte nicht erstellt werden.'); } }
-    catch (e) { if (w) w.close(); alert('Das Logbuch konnte nicht erstellt werden.'); }
+    var o = document.createElement('div'); o.className = 'dp-ov'; o.style.cssText = 'z-index:200; align-items:stretch;';
+    var box = document.createElement('div'); box.className = 'dp-box'; box.style.cssText = 'display:flex; flex-direction:column; max-height:100%; width:100%; max-width:760px;';
+    var bar = document.createElement('div'); bar.className = 'dp-bar'; var t = document.createElement('span'); t.className = 'dp-t'; t.textContent = 'Logbuch - ' + rec.name;
+    var open = document.createElement('a'); open.className = 'btn btn-secondary btn-sm'; open.textContent = 'Öffnen'; open.target = '_blank'; open.rel = 'noopener'; open.style.textDecoration = 'none';
+    var dl = document.createElement('a'); dl.className = 'btn btn-secondary btn-sm'; dl.textContent = 'Herunterladen'; dl.style.textDecoration = 'none'; dl.download = 'Logbuch - ' + rec.name + '.pdf';
+    var x = document.createElement('button'); x.type = 'button'; x.className = 'btn btn-cancel btn-sm'; x.textContent = 'Schließen';
+    var close = function () { o.remove(); }; x.onclick = close; o.onclick = function (ev) { if (ev.target === o) close(); };
+    bar.appendChild(t); bar.appendChild(open); bar.appendChild(dl); bar.appendChild(x);
+    var body = document.createElement('div'); body.style.cssText = 'overflow:auto; flex:1 1 auto; background:#e2e8f0; padding:8px; -webkit-overflow-scrolling:touch;'; body.textContent = 'Das Logbuch wird erstellt …'; body.style.color = '#475569';
+    box.appendChild(bar); box.appendChild(body); o.appendChild(box); document.body.appendChild(o);
+    try {
+      await write(p, rec); var f = await fGet(rec.logId); if (!f || !f.blob) throw new Error('leer');
+      var u = URL.createObjectURL(f.blob); open.href = u; dl.href = u;
+      var lib = await loadPdfJs(), doc = await lib.getDocument({ data: new Uint8Array(await f.blob.arrayBuffer()) }).promise; body.textContent = '';
+      for (var n = 1; n <= doc.numPages; n++) {
+        var pg = await doc.getPage(n), v0 = pg.getViewport({ scale: 1 }), v = pg.getViewport({ scale: 1100 / v0.width }), c = document.createElement('canvas');
+        c.width = Math.round(v.width); c.height = Math.round(v.height); c.style.cssText = 'width:100%; height:auto; display:block; margin:0 auto 8px; background:#fff; box-shadow:0 1px 4px rgba(15,23,42,.25);'; body.appendChild(c);
+        var cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height); await pg.render({ canvasContext: cx, viewport: v }).promise;
+      }
+      if (doc.destroy) doc.destroy();
+    } catch (e) { body.textContent = 'Das Logbuch konnte nicht erstellt werden.'; body.style.color = '#b91c1c'; }
   };
   window.logbuchFlush = flush;
 })();
