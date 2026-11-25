@@ -317,7 +317,9 @@ function invTerminChanged() {
   if (!e) { invDokEv = null; document.getElementById('inv-doku-btn').style.display = 'none'; return; }
   document.getElementById('inv-leistung').value = e.date;
   invDokEv = e; var rb = document.getElementById('inv-doku-btn'); if (rb) rb.style.display = e.dok && String(e.dok.rechnung || '').trim() ? '' : 'none';
-  var lst = evLeistungen(e).filter(function (n) { return findKat(n); });
+  /* Leistungen aus der Dokumentation (Feld „Leistungen“) haben Vorrang vor denen des Termins */
+  var dl = e.dok ? String(e.dok.leist || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean) : [];
+  var lst = (dl.length ? dl : evLeistungen(e)).filter(function (n) { return findKat(n); });
   if (lst.length > 1 || (lst.length === 1 && lst[0] !== e.behandlung)) {
     var f0 = invRows[0]; if (invRows.length === 1 && f0.type === 'pos' && !f0.text.trim() && !f0.price) invRows = [];
     lst.forEach(function (n) { if (invRows.some(function (r) { return r.text === n; })) return; var k = findKat(n), r = newRow('pos'); r.datum = e.date; r.text = k.name; r.price = String(k.price).replace('.', ','); r.rate = String(k.rate); invRows.push(r); });
