@@ -46,10 +46,10 @@ try {
   assert.ok(r.legende && r.legendeFix === 'fixed', 'Schwebende Legende (Knopf mit Ausklappen) fehlt');
   assert.ok(r.erKopf && r.altKnopfWeg, 'Erstellt-am-Symbol nicht in der Kopfzeile: ' + JSON.stringify(r));
   assert.ok(r.klickBreite > 200 && r.klickHoehe >= 50, 'Klickfläche zu klein: ' + r.klickBreite + 'x' + r.klickHoehe);
-  // Schnellaktionen: links nicht sichtbar, rechts beim Überfahren sichtbar
+  // Schnellaktionen: erscheinen in der Patientenübersicht nicht mehr beim Überfahren (Wunsch des Praxisinhabers, 25.11.2026)
   const op = () => page.evaluate(() => getComputedStyle(document.querySelector('#patient-table .pt-quick')).opacity);
   await page.hover('#patient-table .pt-l'); await page.waitForTimeout(300); assert.equal(await op(), '0', 'Schnellaktionen links sichtbar');
-  await page.hover('#patient-table .pt-rz'); await page.waitForTimeout(300); assert.equal(await op(), '1', 'Schnellaktionen rechts nicht sichtbar');
+  await page.hover('#patient-table .pt-rz'); await page.waitForTimeout(300); assert.equal(await op(), '0', 'Schnellaktionen erscheinen beim Überfahren der Patientenübersicht');
   // Klick auf den leeren Teil der linken Zone öffnet die Akte
   await page.evaluate(() => { document.getElementById('modal-akte') && 0; });
   const hit = await page.evaluate(() => { const l = document.querySelector('#patient-table .pt-dobc').getBoundingClientRect(); return { x: l.left + l.width - 4, y: l.top + l.height / 2 }; });
