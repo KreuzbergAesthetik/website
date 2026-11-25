@@ -164,7 +164,10 @@ function extSave() {
 }
 async function extOff() { if (!await kaConfirm('Privaten Kalender entfernen? Die Adresse wird aus der App gelöscht.')) return; settings.extUrl = ''; persist(); EXT.clear(); EXT.ui(); try { renderCal(); } catch (x) {} }
 function extHide(on) { settings.extHide = !!on; persist(); EXT.ui(); try { renderCal(); } catch (x) {} }
-function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; var sm = document.getElementById('sy-mail'); if (sm) sm.checked = !!settings.mailServer; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }
+var SY_MODES = [['taeglich', 'Einmal täglich beim Öffnen (empfohlen)', 'Einmal täglich'], ['manuell', 'Nur wenn ich es starte', 'Nur auf Antippen'], ['auto', 'Sofort nach jeder Änderung', 'Sofort']];
+function syModeLabel() { var l = document.getElementById('sy-modelbl'); if (!l || !window.KS) return; var m = SY_MODES.filter(function (x) { return x[0] === KS.mode(); })[0] || SY_MODES[0]; l.textContent = m[2]; }
+function syModeMenu(ev) { tlMenu(ev, SY_MODES.map(function (m) { return [m[1], function () { KS.setMode(m[0]); syModeLabel(); }]; })); }
+function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; var sm = document.getElementById('sy-mail'); if (sm) sm.checked = !!settings.mailServer; syModeLabel(); document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }
 async function syncGo(mode) {
   var pw = document.getElementById('sy-pw').value, m = document.getElementById('sy-msg'); m.className = ''; m.style.color = '#64748b';
   if (pw.length < 12) { m.style.color = '#b91c1c'; m.textContent = 'Das Passwort braucht mindestens 12 Zeichen.'; return; }
