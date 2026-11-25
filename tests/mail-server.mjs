@@ -10,9 +10,9 @@ try {
   await context.addInitScript(() => { try { localStorage.clear(); } catch {} });
   const page = await context.newPage(); page.on('pageerror', e => pageErrors.push(String(e)));
   const gesendet = []; let fehler = false;
-  await page.route('**/wp-json/ka/v1/abgleich', async r => {
+  await page.route('**/wp-json/ka/v1/*', async r => {  // abgleich und mail
     const body = r.request().postData() || '', feld = n => { const m = new RegExp('name="' + n + '"\\r\\n\\r\\n([\\s\\S]*?)\\r\\n--').exec(body); return m ? m[1] : null; };
-    if (feld('a') === 'mail') {
+    if (/\/ka\/v1\/mail/.test(r.request().url())) {
       if (fehler) return r.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'Der Server konnte die E-Mail nicht senden.' }) });
       gesendet.push({ t: feld('t'), an: feld('an'), b: feld('b'), x: (feld('x') || '').replace(/\r\n/g, '\n') });  // Formulardaten senden Zeilenumbrüche als CRLF, der Server wandelt sie zurück
       return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, von: 'info@kreuzberg-aesthetik.de', heute: gesendet.length }) });
