@@ -8,8 +8,30 @@ var GOAE_VORSCHLAEGE = [
   { nr: '7', pkt: 160, text: 'Vollständige Untersuchung des gesamten Hautorgans', hint: 'Umfasst Haut, Hautanhangsgebilde und sichtbare Schleimhäute.' },
   { nr: '252', pkt: 40, text: 'Injektion, subkutan, submukös, intrakutan oder intramuskulär', hint: '' },
   { nr: '267', pkt: 80, text: 'Medikamentöse Infiltrationsbehandlung im Bereich einer Körperregion, je Sitzung', hint: 'Laut BÄK für Botulinumtoxin oder Hyaluronsäure, wenn eine Seite bzw. eine Region behandelt wird (z. B. eine Wange). Nur eine der Nrn. 267/268 je Sitzung.' },
+  { nr: '271', pkt: 120, text: 'Intravenöse Infusion (ggf. auch in ein Reservoir), bis zu 30 Minuten Dauer', hint: 'Je Gefäßzugang einmal, insgesamt höchstens zweimal je Behandlungstag. Nicht neben Nr. 272 (Zeitraum zählt).' },
+  { nr: '272', pkt: 180, text: 'Intravenöse Infusion (ggf. auch in ein Reservoir), von mehr als 30 Minuten Dauer', hint: 'Je Gefäßzugang einmal, insgesamt höchstens zweimal je Behandlungstag. Nicht neben Nr. 271 zur selben Zeit.' },
   { nr: '268', pkt: 130, text: 'Medikamentöse Infiltrationsbehandlung im Bereich mehrerer Körperregionen (auch eine Körperregion beidseitig), je Sitzung', hint: 'Laut BÄK, wenn über die Mittellinie oder beidseitig behandelt wird (ganze Stirn, ganzes Kinn, beide Wangen). Nicht neben Nr. 267.' }
 ];
+/* Standard-Vorschlag je Leistung (nach dem Namen). Nur für Leistungen mit belegter Nummer: Botulinumtoxin und Hyaluronsäure (BÄK-Ratgeber Faltenunterspritzung, DÄ 2022;119(13):A 584) und intravenöse Infusionen (Nrn. 271/272).
+   Für alle anderen Leistungen gibt es hier bewusst keinen Vorschlag: Eine Analogbewertung nach § 6 Abs. 2 GOÄ entscheidet der Arzt (Verzeichnis der analogen Bewertungen der Bundesärztekammer). */
+function goaeStandardFor(name) {
+  var n = String(name || '').toLowerCase();
+  if (/jede weitere zone/.test(n)) return { nrs: [], hint: 'Je Sitzung ist nur eine der Nrn. 267/268 berechnungsfähig. Für weitere Zonen gibt es keine zusätzliche Position (BÄK). Bitte bei der Hauptleistung ansetzen.' };
+  if (/1 zone/.test(n) && /neuromodulator|botox|botulinum/.test(n)) return { nrs: ['267'], hint: 'Eine Körperregion, eine Seite: Nr. 267 (BÄK-Ratgeber Faltenunterspritzung). Beidseitig: Nr. 268.' };
+  if (/neuromodulator|botox|botulinum|bruxismus|masseter|jawline|platysma|nefertiti|trap-tox|barbie|hyperhidrosis/.test(n)) return { nrs: ['268'], hint: 'Mehrere Körperregionen oder beidseitig: Nr. 268 (BÄK-Ratgeber Faltenunterspritzung). Bei nur einer Seite/Region: Nr. 267.' + (/hyperhidrosis/.test(n) ? ' Bei medizinischer Indikation bitte Abrechnung und Begründung prüfen.' : '') };
+  if (/hyaluron|lip-flip|filler/.test(n) && !/hylase|hyaluronidase/.test(n)) return { nrs: ['267'], hint: 'Eine Region/Seite: Nr. 267. Beidseitig oder mehrere Regionen (z. B. beide Wangen): Nr. 268 (BÄK-Ratgeber Faltenunterspritzung). Das Präparat als Auslage nach § 10 GOÄ.' };
+  if (/infusion/.test(n)) return { nrs: ['272'], hint: 'Infusion länger als 30 Minuten: Nr. 272, bis 30 Minuten: Nr. 271. Nur bei medizinischer Begründung; das Präparat als Auslage nach § 10 GOÄ.' };
+  return null;
+}
+function lsGoaeSuggest() {
+  var name = (document.getElementById('ls-name') || {}).value || '', g = goaeStandardFor(name), h = document.getElementById('ls-goae-hint');
+  var say = function (t) { if (h) h.textContent = t; };
+  if (!g) { say('Für „' + (name || 'diese Leistung') + '“ gibt es keinen belegten Standard. Mögliche Analogbewertung nach § 6 Abs. 2 GOÄ: im Verzeichnis der analogen Bewertungen der Bundesärztekammer nachsehen und die Position von Hand eintragen („+ Eigene“, Haken A).'); return; }
+  if (!g.nrs.length) { say(g.hint); return; }
+  LS_POS = g.nrs.map(function (nr) { var v = GOAE_VORSCHLAEGE.filter(function (x) { return x.nr === nr; })[0]; return { nr: v.nr, pkt: v.pkt, text: v.text, analog: false }; });
+  say('Vorschlag (bitte fachlich prüfen): ' + g.hint);
+  var bx = document.getElementById('ls-goae-box'); if (bx) bx.open = true; lsPosRender(); lsFaktorInfo();
+}
 function goaeFaktor(bruttoEinzel, rate, pkt) { var net = (+bruttoEinzel || 0) / (1 + (+rate || 0) / 100); return pkt > 0 ? Math.round(net / (pkt * GOAE_PW) * 10000) / 10000 : 0; }
 function goaeFx(f) { return String(f).replace('.', ','); }
 /* GOÄ-Positionen einer Leistung (ältere Leistungen mit nur einer Nummer werden übernommen) */
@@ -418,6 +440,13 @@ function renderInvRows() {
       mid.appendChild(q); mid.appendChild(as); mid.appendChild(rt); card.appendChild(mid); box.appendChild(card); return;
     }
     mid.appendChild(q); mid.appendChild(pr); mid.appendChild(rt); card.appendChild(mid);
+    /* Leistungen mit GOÄ-Positionen: Aufschlüsselung pro Zeile wählbar */
+    var kg = !r.goae && !r.auslage ? (settings.katalog || []).filter(function (x) { return x.name.trim().toLowerCase() === String(r.text || '').trim().toLowerCase(); })[0] : null;
+    if (kg && lsGoaePos(kg).length) {
+      var gl = mk('label', 'tm-chk'); gl.style.cssText = 'display:flex; gap:6px; align-items:center; font-size:12.5px; color:#475569; margin:4px 0 6px;';
+      var gc = mk('input'); gc.type = 'checkbox'; gc.checked = !r.goaeOff; gc.onchange = function () { r.goaeOff = !gc.checked; };
+      gl.appendChild(gc); gl.appendChild(document.createTextNode('Nach GOÄ aufschlüsseln (Nr. ' + lsGoaePos(kg).map(function (p) { return p.nr; }).join(', ') + ')')); card.appendChild(gl);
+    }
     /* kleine Zusatzfelder je Position: Rabatt, Datum, Text */
     var btns = mk('div', 'ic-btns'), fields = mk('div', 'ic-fields');
     var shown = { rab: !!(String(r.rab || '').trim()), datum: !!r.datum, note: !!String(r.note || '').trim() };
@@ -463,7 +492,7 @@ async function saveInvoice() {
       var it0 = { text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || datum, note: String(r.note || '').trim() };
       if (r.goae) { var same = r.goae.gebuehr != null && Math.abs(r2(r.goae.gebuehr * (1 + it0.rate / 100)) - pr) < 0.005; it0.goae = same ? Object.assign({}, r.goae) : Object.assign({}, r.goae, { faktor: goaeFaktor(pr, it0.rate, r.goae.pkt), gebuehr: r2(pr / (1 + it0.rate / 100)) }); items.push(it0); }
       else if (r.auslage) { it0.auslage = true; items.push(it0); }
-      else { var ex = goaeExpand(it0); if (ex === 'err') { goaeErr = it0.text; bad = true; return; } if (ex) ex.forEach(function (x) { items.push(x); }); else items.push(it0); }
+      else { var ex = r.goaeOff ? null : goaeExpand(it0); if (ex === 'err') { goaeErr = it0.text; bad = true; return; } if (ex) ex.forEach(function (x) { items.push(x); }); else items.push(it0); }
       var pcr = numIn(r.rab), pge = r.rabArt === 'eur';
       if (pcr > 0 && (pge || pcr <= 100)) { var pa = posRab(i); items.push(pge ? { rabatt: true, perPos: true, art: 'eur', eur: pcr, pct: 0, text: String(r.rabText || 'Rabatt').trim() + ' -' + nf(pa) + ' €', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }
         : { rabatt: true, perPos: true, pct: pcr, text: String(r.rabText || 'Rabatt').trim() + ' -' + String(pcr).replace('.', ',') + '%', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }); } else if (pcr > 100 && !pge) bad = true;
