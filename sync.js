@@ -400,6 +400,15 @@ var KS = (function () {
     out.push('Erwartet bei intaktem Server: Zufallsschlüssel = 404 „nichts eingerichtet“, ohne Schlüssel = 400 „Ungültige Anfrage“. Beim Upload-Test bedeutet „Ungültige Anfrage“, dass der Server diese Größe nicht annimmt.');
     await kaConfirm(out.join('\n\n'), { ok: 'Schließen', single: true });
   }
+  /* Text-E-Mail über den Praxis-Server senden (nur Text, gleicher Zugangsschlüssel wie der Abgleich, eigenes Zusatz-Snippet). Der Text läuft per HTTPS über den Server und wird dort nicht gespeichert. */
+  async function mail(m) {
+    var c = cfg(); if (!c) throw new Error('Der Geräte-Abgleich ist auf diesem Gerät nicht eingerichtet.');
+    var fd = new FormData(); fd.append('t', c.tok); fd.append('an', String(m.an || '')); fd.append('b', String(m.betreff || '')); fd.append('x', String(m.text || ''));
+    var r; try { r = await fetch(EP.replace(/\/abgleich$/, '/mail'), { method: 'POST', body: fd, cache: 'no-store' }); } catch (x) { throw new Error('Keine Verbindung zum Server.'); }
+    var j = null; try { j = await r.json(); } catch (x) {}
+    if (!j || !j.ok) throw new Error(r.status === 404 ? 'Auf dem Server fehlt das Zusatz-Snippet für den Mailversand (siehe mail-snippet-wordpress.txt).' : ((j && (j.error || j.message)) || 'Fehler ' + r.status));
+    return j;
+  }
   function setMode(m) { settings.syncMode = (m === 'auto' || m === 'manuell') ? m : 'taeglich'; persist(); ui(); if (settings.syncMode === 'auto') run(false); }
-  return { diagnose: diagnose, setMode: setMode, mode: syncMode, extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
+  return { mail: mail, diagnose: diagnose, setMode: setMode, mode: syncMode, extFetch: extFetch, calOn: calOn, calOff: calOff, calPush: calPush, calUrl: calUrl, calBuild: calBuild, txtset: txtset, init: init, run: run, touch: touch, setup: setup, connect: connect, disconnect: disconnect, changePw: changePw, abrufen: abrufen, ui: ui, backups: backups, restoreBackup: restoreBackup, state: S, cfg: cfg, base: base };
 })();

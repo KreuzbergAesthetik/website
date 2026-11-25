@@ -339,6 +339,14 @@ function linkDokuToTermin(d, eid) {
   persist(); renderVerlauf();
 }
 var tlEditLog = null;
+/* Dokument in der Zeitleiste: kleines Vorschaublatt, Antippen öffnet das vorhandene Dokument */
+function tlDocPreview(dd, sub) {
+  var w = mk('div', 'tl-docp'), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '', ic = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase());
+  docThumb(dd, ic); var tx = mk('div'); tx.appendChild(mk('div', 'tl-docn', dd.name || 'Dokument')); if (sub) tx.appendChild(mk('div', 'tl-docs', sub));
+  w.appendChild(ic); w.appendChild(tx);
+  w.onclick = function (ev) { ev.stopPropagation(); if (/\.(pdf|png|jpe?g|webp|gif)$/i.test(dd.name || '')) docPreview(dd); else fileURL(dd).then(function (u) { if (u) { var a = mk('a'); a.href = u; a.download = dd.name; document.body.appendChild(a); a.click(); a.remove(); } }); };
+  return w;
+}
 function tlRow(it) {
   var sh, line;
   if (it.t === 'termin') {
@@ -376,6 +384,11 @@ function tlRow(it) {
     sh.body.appendChild(line);
     tlPlus(sh, [['Bearbeiten oder stornieren', function () { viewInvoice(iv.id); }]],
       [['Ansehen', 'search', function () { viewInvoice(iv.id); }], ['Senden (E-Mail, Teilen)', 'mail', function () { viewInvoice(iv.id); sendInvoice(); }], ['Zahlung erfassen', 'euro', function () { viewInvoice(iv.id); openPay(); }]]);
+  } else if (it.t === 'dokument') {
+    sh = tlShell(it.k, 'Dokument');
+    sh.body.appendChild(tlDocPreview(it.dd, it.dd.sig ? 'unterschrieben' : katOf(it.dd)));
+    tlPlus(sh, [['Zuordnen', function () { openZu(curP, [it.dd]); }], ['Senden (E-Mail, Teilen)', function () { sendDokument(curP, it.dd); }]],
+      [['Öffnen', 'search', function () { docPreview(it.dd); }], ['Bearbeiten', 'pen', function () { pdfEdit(curP, it.dd); }], ['Senden (E-Mail, Teilen)', 'mail', function () { sendDokument(curP, it.dd); }]]);
   } else if (it.t === 'audit') {
     var au = it.a;
     sh = tlShell(it.k, 'Änderungshistorie');
@@ -410,6 +423,7 @@ function tlRow(it) {
     } else {
       var tx = mk('div', '', it.t === 'med' ? String(lg.text).replace(/^Medikament hinzugefügt:\s*/, '') : lg.text);
       tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
+      if (it.t === 'rezept') { var rxd0 = rxDocOf(lg); if (rxd0) sh.body.appendChild(tlDocPreview(rxd0, 'Rezept öffnen')); }
       var lgDate = ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { var oldTs = lg.ts; lg.ts = t; auditOne(curP, 'Verlaufseintrag', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); }); }];
       var lgEdit = ['Bearbeiten', 'pen', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], lgQuick = [];
       if (it.t === 'mail') lgQuick = [['Erneut senden', 'mail', function () { mailResend(lg); }]];
@@ -439,6 +453,12 @@ function tlRow(it) {
   return sh.row;
 }
 var tlAuditPatient = null, tlAuditVisible = false;
+/* Kleines Symbol vor der Art des Eintrags */
+var TL_ICON = { termin: 'cal', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
+function tlIcon(row, t) {
+  var k = TL_ICON[t], lab = row.querySelector('.tl-label'); if (!k || !lab || lab.querySelector('svg') || !TV_I[k]) return;
+  lab.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
+}
 function renderVerlauf() {
   if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; }
   renderFin(); renderUnterlagen(); renderMedien();
@@ -446,6 +466,8 @@ function renderVerlauf() {
   events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
   (curP.doku || []).forEach(function (d) { items.push({ k: d.ts, t: 'doku', d: d }); });
   (curP.log || []).forEach(function (l) { if (!(l.type === 'mail' && /^E-Mail-Fenster/.test(l.text))) items.push({ k: l.ts, t: l.type, l: l }); });
+  var rxIds = {}; (curP.log || []).forEach(function (l) { if (l.type === 'rezept') { var rd = rxDocOf(l); if (rd) rxIds[rd.id] = 1; } });
+  (curP.dokumente || []).forEach(function (dd) { if (!dd.zu && !dd.hiddenFromView && !rxIds[dd.id] && !isVideoDoc(dd)) items.push({ k: tsOf(dd), t: 'dokument', dd: dd }); });
   if (tlAuditVisible) (curP.audit || []).forEach(function (a) { items.push({ k: a.ts, t: 'audit', a: a }); });
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
   lager.verbrauch.forEach(function (v) { if (v.pid === curP.id) items.push({ k: v.ts, t: 'verbrauch', v: v }); });
@@ -454,7 +476,7 @@ function renderVerlauf() {
       pair[1].filter(function (f) { return f.hiddenFromView; }).forEach(function (f) { items.push({ k: tsOf(f), t: 'hiddenfile', kind: pair[0], file: f }); });
     });
   }
-  items = items.filter(function (it) { var r = it.e || it.d || it.l || it.inv || it.v; return !r || recordVisible(r); });
+  items = items.filter(function (it) { var r = it.e || it.d || it.l || it.inv || it.v || it.dd; return !r || recordVisible(r); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
   var dkey = function (k) { var d = new Date(k); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
@@ -474,10 +496,11 @@ function renderVerlauf() {
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
     var row = tlRow(it); if (neuerTag) row.classList.add('tl-dstart');
+    tlIcon(row, it.t);
     var bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
     if (first) first.classList.add('tl-first');
-    var always = it.t === 'termin' || it.t === 'doku';
+    var always = it.t === 'termin' || it.t === 'doku' || it.t === 'dokument' || !!row.querySelector('.tl-docp');
     if (always) row.classList.add('open');
     if (bd && !always) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
     card.appendChild(row);

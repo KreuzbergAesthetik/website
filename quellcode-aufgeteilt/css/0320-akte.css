@@ -18,3 +18,17 @@
   .bnav-it.on::before { top:8px; bottom:auto; left:50%; right:auto; height:32px; border-radius:16px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
   .bnav-it:active:not(.on)::before { opacity:1; transform:none; background:rgba(1,34,101,.07); }
 }
+/* Akte im Querformat: Name mittig im Kopfkasten */
+.a-top .a-title { align-items:center; }
+/* Eingabemasken: Datum, Zeit und Knöpfe bleiben innerhalb des Fensters */
+.modal-overlay input[type=date], .modal-overlay input[type=time], .modal-overlay input[type=datetime-local], .modal-overlay select { min-width:0; max-width:100%; box-sizing:border-box; }
+.modal-overlay .foot-bar { flex-wrap:wrap; }
+.modal-overlay .foot-bar .btn { min-width:0; max-width:100%; }
+.tm-tile, .tm-tile > *, .modal-overlay .form-group { min-width:0; }
+/* Zeitleiste: kleine Symbole am Eintrag, Dokumente mit Vorschaublatt */
+.tl-ico { width:13px; height:13px; vertical-align:-2px; margin-right:5px; flex:none; }
+.tl-att { font-size:11px; color:#64748b; margin:8px 0 2px; } .tl-att svg { width:13px; height:13px; vertical-align:-2px; margin-right:4px; }
+.tl-docp { display:flex; align-items:center; gap:10px; margin-top:6px; cursor:pointer; }
+.tl-docp .md-ic { width:34px; height:44px; } .tl-docp .tl-docn { font-size:13px; font-weight:600; color:#0f172a; min-width:0; overflow-wrap:anywhere; } .tl-docp .tl-docs { font-size:11.5px; color:#64748b; }
+/* Update-Hinweis: Später-Knopf auf dunklem Grund gut lesbar */
+#upd-bar .btn-cancel, #ks-bar .btn-cancel { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.6); }

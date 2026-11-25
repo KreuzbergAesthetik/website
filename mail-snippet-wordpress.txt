@@ -1,0 +1,51 @@
+/*
+ * Zusatz-Snippet für Kreuzberg Ästhetik: Text-E-Mails direkt aus der Praxis-App senden.
+ * Das ist ein EIGENES kleines Snippet in WPCode (PHP-Snippet, überall ausführen). Das bisherige große Snippet bleibt unverändert.
+ *
+ * - Nur Text, ein Empfänger, keine Anhänge. Der Text läuft per HTTPS über diesen Server und wird nicht gespeichert.
+ * - Die App weist sich mit dem Zugangsschlüssel des Geräte-Abgleichs aus. Ohne eingerichteten Abgleich wird nichts gesendet.
+ * - Adresse: https://www.kreuzberg-aesthetik.de/wp-json/ka/v1/mail
+ * - Ausschalten: 'AN' auf false setzen oder das Snippet deaktivieren.
+ */
+if (!function_exists('ka_mailsend')) {
+    function ka_mailcfg() {
+        return array(
+            'AN'            => true,
+            'ABSENDER'      => 'info@kreuzberg-aesthetik.de',   // muss vom Webhoster versendet werden dürfen
+            'ABSENDER_NAME' => 'Kreuzberg Ästhetik',
+            'PRO_TAG'       => 40,                               // höchstens so viele E-Mails pro Tag
+            'ERLAUBT'       => array('https://kreuzbergaesthetik.github.io', 'https://fellamanuel-arch.github.io'),
+        );
+    }
+    function ka_mailsend($req) {
+        $c = ka_mailcfg();
+        $fail = function ($code, $msg) { return new WP_REST_Response(array('ok' => false, 'error' => $msg), $code); };
+        if (empty($c['AN'])) return $fail(403, 'Der Mailversand ist im Server-Skript ausgeschaltet.');
+        $origin = (string) $req->get_header('origin');
+        if ($origin && !in_array($origin, $c['ERLAUBT'], true)) return $fail(403, 'Nicht erlaubt.');
+        $ipKey = 'ka_mf_' . md5(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'x');
+        if ((int) get_transient($ipKey) >= 40) return $fail(429, 'Zu viele Fehlversuche. Bitte in einer Stunde noch einmal versuchen.');
+        $t = strtolower((string) $req->get_param('t'));
+        if (!preg_match('/^[0-9a-f]{64}$/', $t) || !is_dir(WP_CONTENT_DIR . '/ka-daten/v/' . hash('sha256', $t))) {
+            set_transient($ipKey, (int) get_transient($ipKey) + 1, HOUR_IN_SECONDS);
+            return $fail(403, 'Dieses Gerät ist nicht für den Server angemeldet. Bitte unter Geräte-Abgleich einrichten.');
+        }
+        $an = trim((string) $req->get_param('an'));
+        $b  = trim(preg_replace('/[\r\n\t]+/', ' ', (string) $req->get_param('b')));
+        $x  = str_replace("\r\n", "\n", (string) $req->get_param('x'));
+        if ($an === '' || !is_email($an) || preg_match('/[,;<>\s]/', $an)) return $fail(400, 'Die Empfängeradresse ist ungültig.');
+        if ($b === '' || strlen($b) > 250) return $fail(400, 'Bitte einen Betreff mit höchstens 250 Zeichen angeben.');
+        if (strlen($x) > 20000) return $fail(400, 'Der Text ist zu lang (höchstens 20.000 Zeichen).');
+        $dayKey = 'ka_mail_' . current_time('Ymd'); $n = (int) get_transient($dayKey);
+        if ($n >= (int) $c['PRO_TAG']) return $fail(429, 'Heute wurden schon ' . $n . ' E-Mails aus der App gesendet (Grenze PRO_TAG im Snippet).');
+        $von = (string) $c['ABSENDER'];
+        if (!is_email($von)) return $fail(500, 'Im Snippet ist kein gültiger ABSENDER eingetragen.');
+        $headers = array('Content-Type: text/plain; charset=UTF-8', 'From: ' . $c['ABSENDER_NAME'] . ' <' . $von . '>', 'Reply-To: ' . $von);
+        if (!wp_mail($an, $b, $x, $headers)) return $fail(502, 'Der Server konnte die E-Mail nicht senden. Bitte den Mailversand beim Webhoster bzw. im SMTP-Plugin prüfen.');
+        set_transient($dayKey, $n + 1, DAY_IN_SECONDS);
+        return new WP_REST_Response(array('ok' => true, 'von' => $von, 'heute' => $n + 1), 200);
+    }
+    add_action('rest_api_init', function () {
+        register_rest_route('ka/v1', '/mail', array('methods' => 'POST', 'permission_callback' => '__return_true', 'callback' => 'ka_mailsend'));
+    });
+}

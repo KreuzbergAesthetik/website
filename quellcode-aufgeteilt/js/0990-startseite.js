@@ -139,6 +139,7 @@ function renderHome() {
 /* Terminansicht (angelehnt an die Termin-Karte des Altsystems): Details, Schnellaktionen, Ablauf-Status */
 var TV_PH = [['', 'Patient noch nicht erschienen', '#d9edf7', '#31708f', 'Patient im Warteraum'], ['Warteraum', 'Patient im Warteraum', '#fef3c7', '#92400e', 'Behandlung starten'], ['Behandlung', 'Patient in Behandlung', '#d1fae5', '#065f46', 'Abschließen'], ['Fertig', 'Behandlung abgeschlossen', '#e2e8f0', '#334155', 'Wieder öffnen'], ['Abgesagt', 'Termin abgesagt', '#fee2e2', '#991b1b', 'Wieder aktivieren']];
 var TV_I = {
+  clip: '<path d="M21 11.5l-8.5 8.5a5 5 0 01-7-7L14 4.5a3.5 3.5 0 015 5l-8.5 8.5a2 2 0 01-3-3L15 7"/>',
   merge: '<circle cx="6" cy="5.5" r="2.2"/><circle cx="6" cy="18.5" r="2.2"/><circle cx="18" cy="12" r="2.2"/><path d="M6 7.7v8.6M8.2 5.5c5.5 0 9.8 1.5 9.8 4.3"/>',
   plus: '<path d="M12 5v14M5 12h14"/>', cancel: '<circle cx="12" cy="12" r="9"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/>',
   box: '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>', rx: '<path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 12h5M10 16h5"/>', wa: '<path d="M4 20l1.3-4A8 8 0 118 18.7z"/>', link: '<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>', img: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>', auto: '<path d="M4 12a8 8 0 0114-5l2-2v6h-6l2.2-2.2A5.5 5.5 0 006.5 12M20 12a8 8 0 01-14 5l-2 2v-6h6l-2.2 2.2A5.5 5.5 0 0017.5 12"/>',
