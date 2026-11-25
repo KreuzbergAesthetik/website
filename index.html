@@ -1262,10 +1262,6 @@ header nav .nav-btn.nav-more { --np:10px; }
   /* Antippen der rechten Zone (Touch) blendet die Schnellaktionen ein und aus */
   #tab-patienten .pt-rz.quick-on .pt-quick { opacity:1; pointer-events:auto; } #tab-patienten .pt-rz.quick-on .pt-info { opacity:0; }
 }
-@media (min-width:700px) and (hover:hover) and (pointer:fine) {
-  #tab-patienten .pt-rz:hover .pt-quick, #tab-patienten .pt-rz:focus-within .pt-quick { opacity:1; pointer-events:auto; }
-  #tab-patienten .pt-rz:hover .pt-info, #tab-patienten .pt-rz:focus-within .pt-info { opacity:0; }
-}
 /* Handy hochkant (bis 699 px): Reiter unten als Leiste, oben Logo, Suche und Plus. Tablet und Querformat unverändert. */
 .bnav { display:none; }
 @media (max-width:699px) and (orientation:portrait) {
@@ -1541,6 +1537,20 @@ body.pe-open { overflow:hidden; }
   .bnav-it.on::before { top:8px; bottom:auto; left:50%; right:auto; height:32px; border-radius:16px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
   .bnav-it:active:not(.on)::before { opacity:1; transform:none; background:rgba(1,34,101,.07); }
 }
+/* Akte im Querformat: Name mittig im Kopfkasten */
+.a-top .a-title { align-items:center; }
+/* Eingabemasken: Datum, Zeit und Knöpfe bleiben innerhalb des Fensters */
+.modal-overlay input[type=date], .modal-overlay input[type=time], .modal-overlay input[type=datetime-local], .modal-overlay select { min-width:0; max-width:100%; box-sizing:border-box; }
+.modal-overlay .foot-bar { flex-wrap:wrap; }
+.modal-overlay .foot-bar .btn { min-width:0; max-width:100%; }
+.tm-tile, .tm-tile > *, .modal-overlay .form-group { min-width:0; }
+/* Zeitleiste: kleine Symbole am Eintrag, Dokumente mit Vorschaublatt */
+.tl-ico { width:13px; height:13px; vertical-align:-2px; margin-right:5px; flex:none; }
+.tl-att { font-size:11px; color:#64748b; margin:8px 0 2px; } .tl-att svg { width:13px; height:13px; vertical-align:-2px; margin-right:4px; }
+.tl-docp { display:flex; align-items:center; gap:10px; margin-top:6px; cursor:pointer; }
+.tl-docp .md-ic { width:34px; height:44px; } .tl-docp .tl-docn { font-size:13px; font-weight:600; color:#0f172a; min-width:0; overflow-wrap:anywhere; } .tl-docp .tl-docs { font-size:11.5px; color:#64748b; }
+/* Update-Hinweis: Später-Knopf auf dunklem Grund gut lesbar */
+#upd-bar .btn-cancel, #ks-bar .btn-cancel { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.6); }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3191,7 +3201,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-23-i';
+var KA_V = '2026-11-25-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -4381,6 +4391,7 @@ function renderHome() {
 /* Terminansicht (angelehnt an die Termin-Karte des Altsystems): Details, Schnellaktionen, Ablauf-Status */
 var TV_PH = [['', 'Patient noch nicht erschienen', '#d9edf7', '#31708f', 'Patient im Warteraum'], ['Warteraum', 'Patient im Warteraum', '#fef3c7', '#92400e', 'Behandlung starten'], ['Behandlung', 'Patient in Behandlung', '#d1fae5', '#065f46', 'Abschließen'], ['Fertig', 'Behandlung abgeschlossen', '#e2e8f0', '#334155', 'Wieder öffnen'], ['Abgesagt', 'Termin abgesagt', '#fee2e2', '#991b1b', 'Wieder aktivieren']];
 var TV_I = {
+  clip: '<path d="M21 11.5l-8.5 8.5a5 5 0 01-7-7L14 4.5a3.5 3.5 0 015 5l-8.5 8.5a2 2 0 01-3-3L15 7"/>',
   merge: '<circle cx="6" cy="5.5" r="2.2"/><circle cx="6" cy="18.5" r="2.2"/><circle cx="18" cy="12" r="2.2"/><path d="M6 7.7v8.6M8.2 5.5c5.5 0 9.8 1.5 9.8 4.3"/>',
   plus: '<path d="M12 5v14M5 12h14"/>', cancel: '<circle cx="12" cy="12" r="9"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/>',
   box: '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>', rx: '<path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 12h5M10 16h5"/>', wa: '<path d="M4 20l1.3-4A8 8 0 118 18.7z"/>', link: '<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>', img: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>', auto: '<path d="M4 12a8 8 0 0114-5l2-2v6h-6l2.2-2.2A5.5 5.5 0 006.5 12M20 12a8 8 0 01-14 5l-2 2v-6h6l-2.2 2.2A5.5 5.5 0 0017.5 12"/>',
@@ -7084,6 +7095,14 @@ function linkDokuToTermin(d, eid) {
   persist(); renderVerlauf();
 }
 var tlEditLog = null;
+/* Dokument in der Zeitleiste: kleines Vorschaublatt, Antippen öffnet das vorhandene Dokument */
+function tlDocPreview(dd, sub) {
+  var w = mk('div', 'tl-docp'), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '', ic = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase());
+  docThumb(dd, ic); var tx = mk('div'); tx.appendChild(mk('div', 'tl-docn', dd.name || 'Dokument')); if (sub) tx.appendChild(mk('div', 'tl-docs', sub));
+  w.appendChild(ic); w.appendChild(tx);
+  w.onclick = function (ev) { ev.stopPropagation(); if (/\.(pdf|png|jpe?g|webp|gif)$/i.test(dd.name || '')) docPreview(dd); else fileURL(dd).then(function (u) { if (u) { var a = mk('a'); a.href = u; a.download = dd.name; document.body.appendChild(a); a.click(); a.remove(); } }); };
+  return w;
+}
 function tlRow(it) {
   var sh, line;
   if (it.t === 'termin') {
@@ -7121,6 +7140,11 @@ function tlRow(it) {
     sh.body.appendChild(line);
     tlPlus(sh, [['Bearbeiten oder stornieren', function () { viewInvoice(iv.id); }]],
       [['Ansehen', 'search', function () { viewInvoice(iv.id); }], ['Senden (E-Mail, Teilen)', 'mail', function () { viewInvoice(iv.id); sendInvoice(); }], ['Zahlung erfassen', 'euro', function () { viewInvoice(iv.id); openPay(); }]]);
+  } else if (it.t === 'dokument') {
+    sh = tlShell(it.k, 'Dokument');
+    sh.body.appendChild(tlDocPreview(it.dd, it.dd.sig ? 'unterschrieben' : katOf(it.dd)));
+    tlPlus(sh, [['Zuordnen', function () { openZu(curP, [it.dd]); }], ['Senden (E-Mail, Teilen)', function () { sendDokument(curP, it.dd); }]],
+      [['Öffnen', 'search', function () { docPreview(it.dd); }], ['Bearbeiten', 'pen', function () { pdfEdit(curP, it.dd); }], ['Senden (E-Mail, Teilen)', 'mail', function () { sendDokument(curP, it.dd); }]]);
   } else if (it.t === 'audit') {
     var au = it.a;
     sh = tlShell(it.k, 'Änderungshistorie');
@@ -7155,6 +7179,7 @@ function tlRow(it) {
     } else {
       var tx = mk('div', '', it.t === 'med' ? String(lg.text).replace(/^Medikament hinzugefügt:\s*/, '') : lg.text);
       tx.style.whiteSpace = 'pre-wrap'; sh.body.appendChild(tx);
+      if (it.t === 'rezept') { var rxd0 = rxDocOf(lg); if (rxd0) sh.body.appendChild(tlDocPreview(rxd0, 'Rezept öffnen')); }
       var lgDate = ['Datum und Uhrzeit ändern', function () { askDateTime(lg.ts, function (t) { var oldTs = lg.ts; lg.ts = t; auditOne(curP, 'Verlaufseintrag', 'Zeitpunkt', fmtDT(oldTs), fmtDT(t)); persist(); renderVerlauf(); }); }];
       var lgEdit = ['Bearbeiten', 'pen', function () { if (it.t === 'rezept') openRx(null, lg); else { tlEditLog = lg; renderVerlauf(); } }], lgQuick = [];
       if (it.t === 'mail') lgQuick = [['Erneut senden', 'mail', function () { mailResend(lg); }]];
@@ -7184,6 +7209,12 @@ function tlRow(it) {
   return sh.row;
 }
 var tlAuditPatient = null, tlAuditVisible = false;
+/* Kleines Symbol vor der Art des Eintrags */
+var TL_ICON = { termin: 'cal', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
+function tlIcon(row, t) {
+  var k = TL_ICON[t], lab = row.querySelector('.tl-label'); if (!k || !lab || lab.querySelector('svg') || !TV_I[k]) return;
+  lab.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
+}
 function renderVerlauf() {
   if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; }
   renderFin(); renderUnterlagen(); renderMedien();
@@ -7191,6 +7222,8 @@ function renderVerlauf() {
   events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
   (curP.doku || []).forEach(function (d) { items.push({ k: d.ts, t: 'doku', d: d }); });
   (curP.log || []).forEach(function (l) { if (!(l.type === 'mail' && /^E-Mail-Fenster/.test(l.text))) items.push({ k: l.ts, t: l.type, l: l }); });
+  var rxIds = {}; (curP.log || []).forEach(function (l) { if (l.type === 'rezept') { var rd = rxDocOf(l); if (rd) rxIds[rd.id] = 1; } });
+  (curP.dokumente || []).forEach(function (dd) { if (!dd.zu && !dd.hiddenFromView && !rxIds[dd.id] && !isVideoDoc(dd)) items.push({ k: tsOf(dd), t: 'dokument', dd: dd }); });
   if (tlAuditVisible) (curP.audit || []).forEach(function (a) { items.push({ k: a.ts, t: 'audit', a: a }); });
   invoices.forEach(function (i) { if (i.pid === curP.id) items.push({ k: i.created, t: 'rechnung', inv: i }); });
   lager.verbrauch.forEach(function (v) { if (v.pid === curP.id) items.push({ k: v.ts, t: 'verbrauch', v: v }); });
@@ -7199,7 +7232,7 @@ function renderVerlauf() {
       pair[1].filter(function (f) { return f.hiddenFromView; }).forEach(function (f) { items.push({ k: tsOf(f), t: 'hiddenfile', kind: pair[0], file: f }); });
     });
   }
-  items = items.filter(function (it) { var r = it.e || it.d || it.l || it.inv || it.v; return !r || recordVisible(r); });
+  items = items.filter(function (it) { var r = it.e || it.d || it.l || it.inv || it.v || it.dd; return !r || recordVisible(r); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
   var dkey = function (k) { var d = new Date(k); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
@@ -7219,10 +7252,11 @@ function renderVerlauf() {
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
     var row = tlRow(it); if (neuerTag) row.classList.add('tl-dstart');
+    tlIcon(row, it.t);
     var bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
     if (first) first.classList.add('tl-first');
-    var always = it.t === 'termin' || it.t === 'doku';
+    var always = it.t === 'termin' || it.t === 'doku' || it.t === 'dokument' || !!row.querySelector('.tl-docp');
     if (always) row.classList.add('open');
     if (bd && !always) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
     card.appendChild(row);
@@ -8767,6 +8801,7 @@ function attachBlock(p, key) {
   var imgs = (p.bilder || []).filter(function (x) { return x.zu === key && !x.hiddenFromView; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
   var docs = (p.dokumente || []).filter(function (x) { return x.zu === key && !x.hiddenFromView; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
   var box = mk('div'); box.style.marginTop = '8px';
+  if (imgs.length || docs.length) { var at = mk('div', 'tl-att'); at.innerHTML = tvSvg('clip') + (imgs.length + docs.length) + (imgs.length + docs.length === 1 ? ' Anhang' : ' Anhänge'); box.appendChild(at); }
   if (imgs.length) box.appendChild(mediaGrid(p, imgs));
   if (docs.length) box.appendChild(docList(p, docs));
   return box;

@@ -46,7 +46,3 @@
   /* Antippen der rechten Zone (Touch) blendet die Schnellaktionen ein und aus */
   #tab-patienten .pt-rz.quick-on .pt-quick { opacity:1; pointer-events:auto; } #tab-patienten .pt-rz.quick-on .pt-info { opacity:0; }
 }
-@media (min-width:700px) and (hover:hover) and (pointer:fine) {
-  #tab-patienten .pt-rz:hover .pt-quick, #tab-patienten .pt-rz:focus-within .pt-quick { opacity:1; pointer-events:auto; }
-  #tab-patienten .pt-rz:hover .pt-info, #tab-patienten .pt-rz:focus-within .pt-info { opacity:0; }
-}
