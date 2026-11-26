@@ -508,7 +508,7 @@ function renderVerlauf() {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
     var row = tlRow(it);
     if (neuerTag) { dayN++; grp = mk('div', 'tl-dg' + (dayN % 2 ? ' tl-dg2' : '')); card.appendChild(grp); }
-    if (neuerTag) grp.appendChild(mk('div', 'tl-dh', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
+    if (neuerTag) { var dhz = mk('div', 'tl-dh'); dhz.appendChild(mk('div', 'tl-dh-t', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2))); dhz.appendChild(mk('div', 'tl-dh-s')); grp.appendChild(dhz); }
     tlIcon(row, it.t);
     var bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
