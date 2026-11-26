@@ -354,5 +354,5 @@ window.addEventListener('popstate', function () {
   if (anyOverlay()) histPush();
 });
 function syncLock() { document.body.style.overflow = document.querySelector('.modal-overlay.active') ? 'hidden' : ''; }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); histClean(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); window.scrollTo(0, 0); saveLast(); } }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); histClean(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); try { bnavSync(); } catch (x) {} window.scrollTo(0, 0); saveLast(); } }
 

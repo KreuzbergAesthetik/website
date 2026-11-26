@@ -396,9 +396,6 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) { padding-top:0; padding-bottom:0; border-top:0; grid-template-columns:44px 1fr; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:6px; padding-bottom:6px; }
 .tl-day .tl-item.tl-notiz .tl-body, .tl-day .tl-item.tl-mail .tl-body, .tl-day .tl-item.tl-med .tl-body, .tl-day .tl-item.tl-rezept .tl-body, .tl-day .tl-item.tl-rechnung .tl-body, .tl-day .tl-item.tl-verbrauch .tl-body, .tl-day .tl-item.tl-angelegt .tl-body { padding-top:3px; padding-bottom:3px; }
-.tl-day .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; left:0; right:0; top:0; height:1px; background:linear-gradient(to right, #e2e8f0 0 50px, transparent 50px 53px, #e2e8f0 53px); pointer-events:none; }
-.tl-day .tl-day-h + .tl-item::before { display:none; }
-.tl-day .tl-item.tl-termin + .tl-item::before, .tl-day .tl-item.tl-doku + .tl-item::before { display:none; }
 .tl-day .tl-item.tl-termin, .tl-day .tl-item.tl-doku { padding-top:0; padding-bottom:0; padding-left:5px; margin-top:0; margin-bottom:0; }
 .tl-day .tl-item.tl-termin .tl-body, .tl-day .tl-item.tl-doku .tl-body { margin-top:-1.5px; margin-bottom:-1.5px; padding-top:7.5px; padding-bottom:7.5px; }
 .wf-i { width:22px; height:22px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#94a3b8; font:italic 700 13px Georgia,serif; cursor:pointer; padding:0; line-height:1; } .wf-i.on { background:#e2e8f0; color:#475569; }
@@ -1193,16 +1190,7 @@ header nav .nav-btn.nav-more { --np:10px; }
 .tl-day.tl-all .tl-item { grid-template-columns:82px 1fr !important; gap:0; }
 .tl-day.tl-all .tl-date { display:flex; flex-direction:column; align-items:flex-end; text-align:right; gap:1px; padding-right:10px; line-height:1.25; }
 .tl-day.tl-all .tl-date b { display:none; font-size:11.5px; font-weight:800; color:#0f172a; letter-spacing:.01em; white-space:nowrap; }
-.tl-day.tl-all .tl-item.tl-dstart .tl-date b { display:block; }
 /* Trennlinien: zwischen Ereignissen dünn und hellgrau nur rechts vom farbigen Strich; zwischen Tagen dick und über die ganze Zeile. Umrandete Karten untereinander mit kleinem Abstand. */
-.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku)::before { background:linear-gradient(to right, transparent 0 85px, #e2e8f0 85px); }
-.tl-day.tl-all .tl-item:first-child::before { display:none; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child)::before { display:block; height:1.5px; background:#94a3b8; z-index:1; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::after, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { content:''; position:absolute; left:86.5px; top:-8.5px; width:3px; height:7px; background:#22c55e; pointer-events:none; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { background:#3b82f6; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku { margin-top:7px; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::before, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::before { content:''; position:absolute; left:6px; right:6px; top:-5px; pointer-events:none; background:#94a3b8; z-index:1; }
-.tl-day.tl-all .tl-item.tl-dstart .tl-date { padding-top:5px; }
 .tl-day.tl-all .tl-item.tl-termin + .tl-item.tl-termin, .tl-day.tl-all .tl-item.tl-termin + .tl-item.tl-doku, .tl-day.tl-all .tl-item.tl-doku + .tl-item.tl-termin, .tl-day.tl-all .tl-item.tl-doku + .tl-item.tl-doku { margin-top:4px; }
 @media (max-width:460px) { .tv-acts { gap:6px; padding-left:12px; padding-right:12px; } .tv-acts .tv-tool .tv-lbl { font-size:10px; letter-spacing:-.4px; } }
 /* Patienten im Querformat und am Desktop: Geburtsdatum als eigene Spalte, der Strich zwischen ID und Name durchgehend blau */
@@ -1520,7 +1508,6 @@ body.pe-open { overflow:hidden; }
 /* Akte: Kästen bis zum Rand, kleinere Abstände, Datum mit Luft zur Linie */
 .a-tile:not(.ed) ul { margin-right:-24px; }
 @media (max-width:640px) { .a-tile:not(.ed) ul { margin-right:-18px; } .a-tiles { gap:6px; } }
-.tl-item.open .tl-body > .tl-first { margin-right:-34px !important; }
 .tl-day.tl-all .tl-date { padding-right:16px; }
 @media (max-width:520px) {
   #modal-akte.akte-page { padding-left:8px; padding-right:8px; }
@@ -1528,7 +1515,6 @@ body.pe-open { overflow:hidden; }
   #modal-akte .a-pane { padding:10px 8px; }
   #modal-akte .a-tile { padding-left:9px; }
   .a-tile:not(.ed) ul { margin-right:-20px; }
-  .tl-item.open .tl-body > .tl-first { margin-right:-30px !important; }
 }
 /* Fußleiste: aktiver Reiter als Pille hinter dem Symbol, Beschriftung fett in Navy */
 @media (max-width:700px) {
@@ -1616,9 +1602,63 @@ body.pe-open { overflow:hidden; }
 .med-rxall { position:absolute; top:3px; right:30px; display:inline-flex; gap:4px; align-items:center; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); border-radius:999px; padding:2px 10px 2px 8px; font-size:12px; font-weight:600; cursor:pointer; } .med-rxall svg { width:14px; height:14px; }
 /* Zeitleiste: Dokument-Einträge bündig mit den anderen, eigene Strichfarbe; gleicher Abstand der grauen Tageslinie zu den Kästen darüber und darunter */
 .tl-day .tl-item.tl-dokument .tl-body { padding-left:8px; border-left-color:#64748b; } .tl-item.tl-dokument .tl-label { color:#475569; font-weight:600; } .tl-item.tl-dokument .tl-date .tl-ico { color:#64748b; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku { margin-top:9px !important; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::before, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::before { top:-5.25px !important; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::after, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { top:-9px !important; height:9px !important; }
+/* Zeitleiste: Inhalt bis an den Rand (der Pfeil rechts ist weg, der Platz dafür entfällt) */
+.tl-day .tl-item { padding-right:10px; }
+.md-l2 { flex-wrap:wrap; row-gap:4px; }
+/* Zeitleiste: Filter als kleine Symbole in der Kopfzeile; Plus unten rechts klein und ohne Kreis */
+.tl-fbtn { width:26px; height:26px; padding:0; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#64748b; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; } .tl-fbtn svg { width:14px; height:14px; }
+.tl-fbtn.on { background:var(--pf-navy); border-color:var(--pf-navy); color:#fff; }
+.a-addtile { width:26px; height:26px; border:0 !important; background:none !important; color:#94a3b8; } .a-addtile svg { width:15px; height:15px; } .a-addtile:hover { color:#475569; }
+/* Schlanker: weniger Abstände und kleinere Vorschaubilder */
+.tl-day.tl-all { padding-top:0; padding-bottom:0; }
+.md-edit { flex:none; width:26px; height:26px; padding:0; border-radius:50%; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; } .md-edit svg { width:14px; height:14px; }
+.tl-body .md-doc { border-left:1px solid var(--pf-line,#dbe3f0) !important; } .tl-body .md-stx { display:none; }
+.md-doc { padding:6px 10px; margin-bottom:6px; gap:8px; } .md-ic.th { width:28px; height:36px; } .md-ic { width:24px; height:28px; } .md-col { gap:2px; } .md-nm { font-size:13.5px; } .md-item { margin-bottom:8px; }
+.tl-body .tl-att { margin:4px 0 2px; } .tl-docp { margin-top:4px; gap:8px; } .tl-docp .md-ic { width:26px; height:34px; } .tl-docp .tl-docp .tl-docn, .tl-docp .tl-docn { font-size:12.5px; }
+.un-row { padding:6px 10px !important; margin:0 0 6px !important; } .un-row .un-t { font-size:14px; } .un-row .un-s { font-size:11.5px; } .un-row .btn, .un-row .ak-act { min-height:32px; padding-top:4px; padding-bottom:4px; font-size:13px; }
+.tl-day .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:3px; padding-bottom:3px; }
+/* Zeitleiste: Datum näher an der Linie und innerhalb der Trennlinien */
+.tl-day.tl-all .tl-date { padding-right:8px; }
+/* Zeitleiste: Tage mit Abstand und durchgehender Linie bis an den Tabellenrand; Termine kompakt */
+.tl-day.tl-all { padding:7px 12px; }
+.tl-day.tl-all .tl-item.tl-termin .tl-body, .tl-day.tl-all .tl-item.tl-doku .tl-body { padding-top:5px; padding-bottom:5px; }
+.tl-day.tl-all .tl-item.tl-termin .tl-body > .tl-first, .tl-day.tl-all .tl-item.tl-doku .tl-body > .tl-first { padding:5px 8px !important; margin-top:2px !important; }
+.tl-day.tl-all .tl-item.tl-termin .tl-body > div[style*="margin-top: 8px"], .tl-day.tl-all .tl-item.tl-doku .tl-body > div[style*="margin-top: 8px"] { margin-top:4px !important; }
+.tl-day.tl-all .tl-item.tl-termin .md-doc, .tl-day.tl-all .tl-item.tl-doku .md-doc { margin-bottom:4px; }
+/* Zeitleiste: Symbole links neben der Uhrzeit größer */
+.tl-date span .tl-ico { width:18px; height:18px; vertical-align:-4px; margin-right:5px; }
+/* Zeitleiste: Anordnung wie im Vorbild: Datum/Uhrzeit rechtsbündig, daneben das Symbol, dann die senkrechte Linie */
+.tl-day.tl-all .tl-item { grid-template-columns:100px 1fr !important; }
+.tl-day.tl-all .tl-date { position:relative; padding-right:34px; }
+.tl-date .tl-ico { position:absolute; right:7px; top:1px; width:22px; height:22px; margin:0; }
+/* Zeitleiste: Die senkrechte Linie bleibt überall durchgehend; waagerechte Trennlinien laufen hinter ihr durch (Aussparung an der Linie) */
+/* Reiter Dateien als Tabelle wie die Zeitleiste der Akte: eine runde Karte, Datum | durchgehender farbiger Strich | Name mit Aktionen | Vorschau */
+#md-list.md-tab { background:#f2f5fc; border:1px solid #dbe3f0; border-radius:12px; padding:0; overflow:hidden; }
+#md-list.md-tab .md-item { margin:0; }
+.md-tr { position:relative; display:flex; align-items:stretch; margin:0; background:transparent; cursor:pointer; min-width:0; }
+.md-tr:hover { background:#e9eef9; }
+.md-tr-d { flex:none; width:104px; text-align:right; padding:10px 10px 10px 8px; } .md-tr-d b { display:block; font-size:13px; font-weight:800; color:#0f172a; } .md-tr-d span { font-size:12px; color:#94a3b8; font-style:italic; }
+.md-tr-m { flex:1 1 0; min-width:0; border-left:4px solid #94a3b8; padding:8px 8px 8px 12px; display:flex; align-items:center; } .md-tr.md-ok .md-tr-m { border-left-color:#22c55e; } .md-tr.md-wait .md-tr-m { border-left-color:#f59e0b; }
+.md-tr .md-col { flex:1 1 0; min-width:0; gap:6px; } .md-tr .md-nm { white-space:normal; overflow-wrap:anywhere; } .md-tr .md-date, .md-tr .md-stx { display:none; }
+.md-tr .md-l2 { gap:8px; } .md-tr .md-l2 .md-dots { margin-left:0; }
+.md-tr .md-ic.md-tr-th, .md-tr .md-ic.th.md-tr-th { flex:none; width:44px; height:58px; align-self:center; margin:8px 10px 8px 4px; font-size:10px; }
+@media (max-width:520px) { .md-tr-d { width:80px; padding-right:8px; } .md-tr-d b { font-size:12px; } }
+/* Zeitleiste der Akte: eine Karte, je Tag ein Block (jeder zweite Tag etwas anderer Grundton) mit eigener Datumszeile; der farbige Strich läuft durch, Trennlinien liegen dahinter */
+.tl-day.tl-all { overflow:hidden; }
+.tl-day.tl-all .tl-item { --tlc:#6abf69; isolation:isolate; }
+.tl-day.tl-all .tl-item.tl-termin { --tlc:#22c55e; } .tl-day.tl-all .tl-item.tl-doku { --tlc:#3b82f6; } .tl-day.tl-all .tl-item.tl-notiz { --tlc:#eab308; } .tl-day.tl-all .tl-item.tl-med { --tlc:#8b5cf6; }
+.tl-day.tl-all .tl-item.tl-rezept { --tlc:#ec4899; } .tl-day.tl-all .tl-item.tl-mail { --tlc:#14b8a6; } .tl-day.tl-all .tl-item.tl-rechnung { --tlc:#f97316; } .tl-day.tl-all .tl-item.tl-verbrauch { --tlc:#06b6d4; }
+.tl-day.tl-all .tl-item.tl-angelegt, .tl-day.tl-all .tl-item.tl-dokument { --tlc:#64748b; }
+.tl-day.tl-all .tl-date b { display:none; }
+.tl-dg { margin:0 -12px; padding:0 12px; } .tl-dg2 { background:#e4ebfa; }
+.tl-dh { position:relative; margin:0 -12px; padding:9px 12px 3px; border-top:2px solid #dbe3f0; font-size:14px; font-weight:800; color:#0f172a; letter-spacing:.02em; }
+.tl-dh::before { content:''; position:absolute; left:112px; top:-2px; bottom:0; width:3px; background:var(--tlc,#6abf69); pointer-events:none; }
+.tl-dg:first-child > .tl-dh { border-top:0; padding-top:10px; } .tl-dg:first-child > .tl-dh::before { top:0; }
+/* feine Trennlinien zwischen Einträgen eines Tages (mit Abstand zum Rand, hinter dem Strich); an Terminen und Dokumentationen mit Rahmen keine Linie, dafür etwas Luft */
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; z-index:-1; left:6px; right:6px; top:0; height:1px; background:#d3dcee; pointer-events:none; }
+.tl-day.tl-all .tl-dh + .tl-item::before, .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item::before { display:none; }
+.tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:8px; }
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):has(+ .tl-item:is(.tl-termin,.tl-doku)) .tl-body { padding-bottom:8px; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3278,7 +3318,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-j';
+var KA_V = '2026-11-26-zl';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3444,6 +3484,7 @@ window.addEventListener('scroll', function () { document.body.classList.toggle('
 function bnavSync() {
   var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '';
   var on = ['kalender', 'patienten', 'todos', 'rechnungen'].indexOf(id) >= 0 ? id : (PRAXIS_TABS.indexOf(id) >= 0 ? 'mehr' : '');
+  if (document.body.classList.contains('akte-open')) on = 'patienten';   /* die Patientenakte gehört zu Patienten, auch wenn sie aus dem Kalender geöffnet wurde */
   [].forEach.call(document.querySelectorAll('.bnav-it'), function (b) { var a = b.dataset.tab === on; b.classList.toggle('on', a); if (a) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
 }
 /* Letzte Seite merken: nach dem Neuladen (z. B. Ziehen nach unten) geht es dort weiter, wo man war */
@@ -3477,7 +3518,7 @@ function switchTab(tabId) {
   if (tabId === 'start') histClean(); else histPush();
   bnavSync(); lgToggle(false); lgUpdate(); saveLast();
 }
-function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') { document.body.classList.add('akte-open'); requestAnimationFrame(function () { try { aFabFit(); } catch (x) {} }); } }
+function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') { document.body.classList.add('akte-open'); try { bnavSync(); } catch (x) {} requestAnimationFrame(function () { try { aFabFit(); } catch (x) {} }); } }
 var ausgaben = [], todos = [], entw = [];
 try { var sen = JSON.parse(kaGet('ka_entw')); if (Array.isArray(sen)) entw = sen; } catch (x) {}
 try { var sa = JSON.parse(kaGet('ka_ausgaben')); if (Array.isArray(sa)) ausgaben = sa; } catch (x) {}
@@ -3870,7 +3911,7 @@ window.addEventListener('popstate', function () {
   if (anyOverlay()) histPush();
 });
 function syncLock() { document.body.style.overflow = document.querySelector('.modal-overlay.active') ? 'hidden' : ''; }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); histClean(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); window.scrollTo(0, 0); saveLast(); } }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); syncLock(); histClean(); if (id === 'modal-akte') { document.body.classList.remove('akte-open'); try { bnavSync(); } catch (x) {} window.scrollTo(0, 0); saveLast(); } }
 
 /* ===== Globale Suche im Kopfbereich ===== */
 var gsScope = { kal: true, pat: true, rec: true };
@@ -4486,6 +4527,7 @@ var TV_I = {
   plus: '<path d="M12 5v14M5 12h14"/>', cancel: '<circle cx="12" cy="12" r="9"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/>',
   box: '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>', rx: '<path d="M7 4h7l4 4v12H7z"/><path d="M14 4v4h4M10 12h5M10 16h5"/>', wa: '<path d="M4 20l1.3-4A8 8 0 118 18.7z"/>', link: '<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>', img: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>', auto: '<path d="M4 12a8 8 0 0114-5l2-2v6h-6l2.2-2.2A5.5 5.5 0 006.5 12M20 12a8 8 0 01-14 5l-2 2v-6h6l-2.2 2.2A5.5 5.5 0 0017.5 12"/>',
   cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
+  calplain: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>', euro: '<path d="M17.5 6.5A7 7 0 107 17.5 7 7 0 0017.5 17.5M4 10.5h9M4 13.5h9"/>', book: '<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h11M9 8h6"/>', pill: '<path d="M10.5 20.5a4.95 4.95 0 01-7-7l10-10a4.95 4.95 0 017 7z"/><path d="M8.5 8.5l7 7"/>',
   ban: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>', phone: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>', down: '<path d="M6 9l6 6 6-6"/>', dots: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>', form: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>', trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', pencil2: '<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16z"/>' };
@@ -7365,10 +7407,10 @@ var tlAuditPatient = null, tlAuditVisible = false;
 /* Kleines Symbol vor der Art des Eintrags */
 var tlFilter = '';
 var TL_CHIPS = [['termin', 'Termine'], ['doku', 'Dokumentation'], ['dokument', 'Dokumente'], ['rezept', 'Rezepte'], ['mail', 'E-Mails'], ['notiz', 'Notizen'], ['rechnung', 'Rechnungen']];
-var TL_ICON = { termin: 'cal', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
+var TL_ICON = { termin: 'calplain', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
 function tlIcon(row, t) {
-  var k = TL_ICON[t], tm = row.querySelector('.tl-date span'), lab = row.querySelector('.tl-label'); if (!k || !tm || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
-  tm.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
+  var k = TL_ICON[t], dt = row.querySelector('.tl-date'), lab = row.querySelector('.tl-label'); if (!k || !dt || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
+  dt.insertAdjacentHTML('beforeend', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
 }
 function renderVerlauf() {
   if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = ''; }
@@ -7404,18 +7446,20 @@ function renderVerlauf() {
   auditCheck.onchange = function () { tlAuditVisible = auditCheck.checked; renderVerlauf(); };
   auditFilter.appendChild(auditCheck);
   var auditSlot = document.getElementById('a-audit-filter');
-  auditSlot.innerHTML = ''; auditSlot.appendChild(auditFilter);
-  /* Eine Karte für die ganze Zeitleiste: durchgehender Strich, links Datum (beim ersten Eintrag eines Tages) und Uhrzeit, rechts das Ereignis */
+  auditSlot.innerHTML = ''; auditSlot.style.cssText = 'display:inline-flex; align-items:center; gap:6px;';
   var chipsOn = TL_CHIPS.filter(function (c) { return tlHas[c[0]]; });
-  if (chipsOn.length > 1) {
-    var fr = mk('div', 'md-chips tl-filter'); fr.style.margin = '4px 0 8px';
-    [['', 'Alle']].concat(chipsOn).forEach(function (c) { var bt = mk('button', 'md-chip' + (tlFilter === c[0] ? ' on' : ''), c[1]); bt.type = 'button'; bt.onclick = function () { tlFilter = c[0]; renderVerlauf(); }; fr.appendChild(bt); });
-    box.appendChild(fr);
-  }
-  var day = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
+  if (chipsOn.length > 1) chipsOn.forEach(function (c) {
+    var fb = mk('button', 'tl-fbtn' + (tlFilter === c[0] ? ' on' : '')); fb.type = 'button'; fb.title = (tlFilter === c[0] ? 'Alle anzeigen' : 'Nur ' + c[1]); fb.setAttribute('aria-label', 'Nur ' + c[1]); fb.setAttribute('aria-pressed', tlFilter === c[0] ? 'true' : 'false');
+    fb.innerHTML = tvSvg(TL_ICON[c[0]]); fb.onclick = function () { tlFilter = tlFilter === c[0] ? '' : c[0]; renderVerlauf(); }; auditSlot.appendChild(fb);
+  });
+  auditSlot.appendChild(auditFilter);
+  /* Eine Karte für die ganze Zeitleiste: durchgehender Strich; je Tag eine eigene Datumszeile, darunter links Uhrzeit mit Symbol, rechts das Ereignis */
+  var day = null, dayN = -1, grp = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
-    var row = tlRow(it); if (neuerTag) row.classList.add('tl-dstart');
+    var row = tlRow(it);
+    if (neuerTag) { dayN++; grp = mk('div', 'tl-dg' + (dayN % 2 ? ' tl-dg2' : '')); card.appendChild(grp); }
+    if (neuerTag) grp.appendChild(mk('div', 'tl-dh', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
     tlIcon(row, it.t);
     var bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
@@ -7428,8 +7472,10 @@ function renderVerlauf() {
       var on = !row.classList.contains('quick-on'); [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) row.classList.add('quick-on');
     });
     if (bd && !always) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
-    card.appendChild(row);
+    grp.appendChild(row);
   });
+  /* Der Datumszeile die Farbe des ersten Eintrags geben, damit der Strich durchgehend bleibt */
+  [].forEach.call(card.querySelectorAll('.tl-dh'), function (dh) { var nx = dh.nextElementSibling; if (nx) dh.style.setProperty('--tlc', getComputedStyle(nx).getPropertyValue('--tlc')); });
 }
 
 /* Bilder und Dokumente hinzufügen */
@@ -8963,7 +9009,7 @@ function mediaGrid(p, list) {
   });
   return g;
 }
-var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3.5a2.1 2.1 0 013 3L8 17l-4 1 1-4z"/><path d="M3 21h18"/></svg>';
+var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c2-6 4-10 5.5-10 1.6 0 .5 6-.5 9-1 3 1 2.5 3-1.5s2.5-3 2 0 1 2 2.5-.5 1.5 1.5 4 .5"/><path d="M3 20h18"/></svg>';
 function docList(p, list) { var ul = mk('div'); list.forEach(function (dd) { ul.appendChild(medDocRow(p, dd)); }); return ul; }
 /* Dateien, die zu einem Termin oder einer Dokumentation gehören, direkt dort anzeigen */
 function attachBlock(p, key) {
@@ -9049,7 +9095,7 @@ function setMedFilter(f, k) { medFilter = f; medKat = k || ''; medLimit = 30; re
 /* Anlagen als Zeitleiste nach Monat: Bilder pro Tag als Streifen, Dokumente als Zeilen, Aktionen im Menü */
 function medDots(items) {
   var b = mk('button', 'md-dots', '⋯'); b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
-  b.onclick = function (ev) { tlMenu(ev, items); }; return b;
+  b._items = items; b.onclick = function (ev) { tlMenu(ev, items); }; return b;
 }
 /* Vorschaubild: erste Seite bei PDFs, das Bild selbst bei Fotos. Die PDFs werden nacheinander im Hintergrund gezeichnet. */
 var THQ = Promise.resolve(), THC = {};
@@ -9080,7 +9126,7 @@ function docPreview(dd) {
   fileURL(dd).then(function (u) { if (u) { open.href = u; if (!/\.pdf$/i.test(dd.name || '')) img.src = u; } });
   if (/\.pdf$/i.test(dd.name || '')) { img.alt = 'Wird geladen …'; pdfThumb(dd, 900).then(function (u) { if (u) img.src = u; }).catch(function () { img.alt = 'Keine Vorschau möglich.'; }); }
 }
-function medDocRow(p, dd) {
+function medDocRow(p, dd, tab) {
   var r = mk('div', 'md-doc' + (dd.sig && !needSig2(dd) ? ' md-ok' : dd.sig || signable(dd) ? ' md-wait' : '')), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
   var ic0 = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()); r.appendChild(ic0); docThumb(dd, ic0); ic0.onclick = function () { if (ic0.classList.contains('th')) docPreview(dd); };
   var a = mk('a', 'md-nm', dd.name); a.href = '#'; a.title = dd.name + ' · ' + fmtD(iso(new Date(tsOf(dd))));
@@ -9092,7 +9138,7 @@ function medDocRow(p, dd) {
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
   var stx = dd.sig && !needSig2(dd) ? ['unterschrieben', 'ok'] : dd.sig ? ['Arzt-Unterschrift fehlt', 'wait'] : signable(dd) ? ['Unterschrift fehlt', 'wait'] : null;
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
-  else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
+  if ((/\.pdf$/i.test(dd.name || '') || dd.tid) && !isVideoDoc(dd)) { var eb = mk('button', 'md-edit'); eb.type = 'button'; eb.title = 'Bearbeiten (Stift, Text, Markieren, Unterschrift)'; eb.setAttribute('aria-label', eb.title); eb.innerHTML = tvSvg('pen'); eb.onclick = function (ev) { ev.stopPropagation(); pdfEdit(p, dd); }; l2.appendChild(eb); }
   if (stx) l2.appendChild(mk('span', 'md-stx ' + stx[1], stx[0]));
   var dots = medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
@@ -9113,7 +9159,31 @@ function medDocRow(p, dd) {
     [dd.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden', function () { fileHide(p, dd); }]
   ])));
   l2.appendChild(dots);
+  if (tab) return medDocTab(p, dd, r, ic0, col, l2, dots);
   return r;
+}
+/* Reiter Dateien: Tabellenzeile wie die Zeitleiste (Datum, farbiger Strich, Name mit Aktionen, Vorschau rechts); das ganze Menü öffnet beim Überfahren oder Antippen der Zeile */
+function medDocTab(p, dd, r, ic0, col, l2, dots) {
+  var d = new Date(tsOf(dd)), st = /md-ok/.test(r.className) ? ' md-ok' : /md-wait/.test(r.className) ? ' md-wait' : '';
+  var tr = mk('div', 'md-tr' + st), dc = mk('div', 'md-tr-d');
+  dc.appendChild(mk('b', '', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
+  dc.appendChild(mk('span', '', pad(d.getHours()) + ':' + pad(d.getMinutes())));
+  var mb = mk('button', 'md-edit'); mb.type = 'button'; mb.title = 'Senden (E-Mail, Teilen)'; mb.setAttribute('aria-label', mb.title); mb.innerHTML = tvSvg('mail');
+  mb.onclick = function (ev) { ev.stopPropagation(); sendDokument(p, dd); };
+  l2.insertBefore(mb, dots);
+  var main = mk('div', 'md-tr-m'); main.appendChild(col);
+  tr.appendChild(dc); tr.appendChild(main); ic0.classList.add('md-tr-th'); tr.appendChild(ic0);
+  var m = function () { return document.getElementById('tl-menu'); }, tm = null;
+  function open() { var mm = m(); if (mm && mm.style.display === 'block' && mm._src === tr) return; tlMenu({ stopPropagation: function () {}, currentTarget: tr }, dots._items); }
+  function shut() { var mm = m(); if (mm && mm._src === tr) mm.style.display = 'none'; }
+  tr.onclick = function (ev) { if (ev.target.closest && ev.target.closest('a,button,.md-ic.th')) return; ev.stopPropagation(); var mm = m(); if (mm && mm.style.display === 'block' && mm._src === tr) shut(); else open(); };
+  if (window.matchMedia && matchMedia('(hover:hover) and (pointer:fine)').matches) {
+    tr.addEventListener('mouseenter', function () { clearTimeout(tm); tm = setTimeout(open, 350); });
+    tr.addEventListener('mouseleave', function (ev) { clearTimeout(tm); var mm = m(); if (mm && ev.relatedTarget && mm.contains(ev.relatedTarget)) return; tm = setTimeout(shut, 250); });
+    document.addEventListener('mouseover', function hv(ev) { if (!tr.isConnected) { document.removeEventListener('mouseover', hv); return; } var mm = m(); if (mm && mm._src === tr && mm.contains(ev.target)) clearTimeout(tm); });
+    document.addEventListener('mouseout', function ho(ev) { if (!tr.isConnected) { document.removeEventListener('mouseout', ho); return; } var mm = m(); if (mm && mm._src === tr && mm.contains(ev.target) && !(ev.relatedTarget && (mm.contains(ev.relatedTarget) || tr.contains(ev.relatedTarget)))) { clearTimeout(tm); tm = setTimeout(shut, 250); } });
+  }
+  return tr;
 }
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
@@ -9137,7 +9207,7 @@ function renderMedien() {
     if (l.length) items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
   });
   items.sort(function (a, b) { return b.k - a.k; });
-  box.innerHTML = '';
+  box.innerHTML = ''; box.classList.toggle('md-tab', medFilter === 'dok');
   var vids = medFilter === 'bild' ? (curP.videos || []).filter(function (v) { return recordVisible(v) && (!q || String(v.name || '').toLowerCase().indexOf(q) >= 0); }).sort(function (a, b) { return tsOf(b) - tsOf(a); }) : [];
   if (vids.length) box.appendChild(medVideos(curP, vids));
   if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
@@ -9152,7 +9222,7 @@ function renderMedien() {
       c.appendChild(mediaGrid(g.p, g.list));
     } else {
       if (zl) c.appendChild(zl);
-      g.list.forEach(function (dd) { c.appendChild(medDocRow(g.p, dd)); });
+      g.list.forEach(function (dd) { c.appendChild(medDocRow(g.p, dd, true)); });
     }
     box.appendChild(c);
   });

@@ -456,10 +456,10 @@ var tlAuditPatient = null, tlAuditVisible = false;
 /* Kleines Symbol vor der Art des Eintrags */
 var tlFilter = '';
 var TL_CHIPS = [['termin', 'Termine'], ['doku', 'Dokumentation'], ['dokument', 'Dokumente'], ['rezept', 'Rezepte'], ['mail', 'E-Mails'], ['notiz', 'Notizen'], ['rechnung', 'Rechnungen']];
-var TL_ICON = { termin: 'cal', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
+var TL_ICON = { termin: 'calplain', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
 function tlIcon(row, t) {
-  var k = TL_ICON[t], tm = row.querySelector('.tl-date span'), lab = row.querySelector('.tl-label'); if (!k || !tm || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
-  tm.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
+  var k = TL_ICON[t], dt = row.querySelector('.tl-date'), lab = row.querySelector('.tl-label'); if (!k || !dt || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
+  dt.insertAdjacentHTML('beforeend', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
 }
 function renderVerlauf() {
   if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = ''; }
@@ -495,18 +495,20 @@ function renderVerlauf() {
   auditCheck.onchange = function () { tlAuditVisible = auditCheck.checked; renderVerlauf(); };
   auditFilter.appendChild(auditCheck);
   var auditSlot = document.getElementById('a-audit-filter');
-  auditSlot.innerHTML = ''; auditSlot.appendChild(auditFilter);
-  /* Eine Karte für die ganze Zeitleiste: durchgehender Strich, links Datum (beim ersten Eintrag eines Tages) und Uhrzeit, rechts das Ereignis */
+  auditSlot.innerHTML = ''; auditSlot.style.cssText = 'display:inline-flex; align-items:center; gap:6px;';
   var chipsOn = TL_CHIPS.filter(function (c) { return tlHas[c[0]]; });
-  if (chipsOn.length > 1) {
-    var fr = mk('div', 'md-chips tl-filter'); fr.style.margin = '4px 0 8px';
-    [['', 'Alle']].concat(chipsOn).forEach(function (c) { var bt = mk('button', 'md-chip' + (tlFilter === c[0] ? ' on' : ''), c[1]); bt.type = 'button'; bt.onclick = function () { tlFilter = c[0]; renderVerlauf(); }; fr.appendChild(bt); });
-    box.appendChild(fr);
-  }
-  var day = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
+  if (chipsOn.length > 1) chipsOn.forEach(function (c) {
+    var fb = mk('button', 'tl-fbtn' + (tlFilter === c[0] ? ' on' : '')); fb.type = 'button'; fb.title = (tlFilter === c[0] ? 'Alle anzeigen' : 'Nur ' + c[1]); fb.setAttribute('aria-label', 'Nur ' + c[1]); fb.setAttribute('aria-pressed', tlFilter === c[0] ? 'true' : 'false');
+    fb.innerHTML = tvSvg(TL_ICON[c[0]]); fb.onclick = function () { tlFilter = tlFilter === c[0] ? '' : c[0]; renderVerlauf(); }; auditSlot.appendChild(fb);
+  });
+  auditSlot.appendChild(auditFilter);
+  /* Eine Karte für die ganze Zeitleiste: durchgehender Strich; je Tag eine eigene Datumszeile, darunter links Uhrzeit mit Symbol, rechts das Ereignis */
+  var day = null, dayN = -1, grp = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
-    var row = tlRow(it); if (neuerTag) row.classList.add('tl-dstart');
+    var row = tlRow(it);
+    if (neuerTag) { dayN++; grp = mk('div', 'tl-dg' + (dayN % 2 ? ' tl-dg2' : '')); card.appendChild(grp); }
+    if (neuerTag) grp.appendChild(mk('div', 'tl-dh', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
     tlIcon(row, it.t);
     var bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
@@ -519,8 +521,10 @@ function renderVerlauf() {
       var on = !row.classList.contains('quick-on'); [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) row.classList.add('quick-on');
     });
     if (bd && !always) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
-    card.appendChild(row);
+    grp.appendChild(row);
   });
+  /* Der Datumszeile die Farbe des ersten Eintrags geben, damit der Strich durchgehend bleibt */
+  [].forEach.call(card.querySelectorAll('.tl-dh'), function (dh) { var nx = dh.nextElementSibling; if (nx) dh.style.setProperty('--tlc', getComputedStyle(nx).getPropertyValue('--tlc')); });
 }
 
 /* Bilder und Dokumente hinzufügen */

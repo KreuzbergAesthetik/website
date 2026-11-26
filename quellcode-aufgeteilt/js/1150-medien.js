@@ -53,7 +53,7 @@ function mediaGrid(p, list) {
   });
   return g;
 }
-var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3.5a2.1 2.1 0 013 3L8 17l-4 1 1-4z"/><path d="M3 21h18"/></svg>';
+var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c2-6 4-10 5.5-10 1.6 0 .5 6-.5 9-1 3 1 2.5 3-1.5s2.5-3 2 0 1 2 2.5-.5 1.5 1.5 4 .5"/><path d="M3 20h18"/></svg>';
 function docList(p, list) { var ul = mk('div'); list.forEach(function (dd) { ul.appendChild(medDocRow(p, dd)); }); return ul; }
 /* Dateien, die zu einem Termin oder einer Dokumentation gehören, direkt dort anzeigen */
 function attachBlock(p, key) {
@@ -139,7 +139,7 @@ function setMedFilter(f, k) { medFilter = f; medKat = k || ''; medLimit = 30; re
 /* Anlagen als Zeitleiste nach Monat: Bilder pro Tag als Streifen, Dokumente als Zeilen, Aktionen im Menü */
 function medDots(items) {
   var b = mk('button', 'md-dots', '⋯'); b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
-  b.onclick = function (ev) { tlMenu(ev, items); }; return b;
+  b._items = items; b.onclick = function (ev) { tlMenu(ev, items); }; return b;
 }
 /* Vorschaubild: erste Seite bei PDFs, das Bild selbst bei Fotos. Die PDFs werden nacheinander im Hintergrund gezeichnet. */
 var THQ = Promise.resolve(), THC = {};
@@ -170,7 +170,7 @@ function docPreview(dd) {
   fileURL(dd).then(function (u) { if (u) { open.href = u; if (!/\.pdf$/i.test(dd.name || '')) img.src = u; } });
   if (/\.pdf$/i.test(dd.name || '')) { img.alt = 'Wird geladen …'; pdfThumb(dd, 900).then(function (u) { if (u) img.src = u; }).catch(function () { img.alt = 'Keine Vorschau möglich.'; }); }
 }
-function medDocRow(p, dd) {
+function medDocRow(p, dd, tab) {
   var r = mk('div', 'md-doc' + (dd.sig && !needSig2(dd) ? ' md-ok' : dd.sig || signable(dd) ? ' md-wait' : '')), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
   var ic0 = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()); r.appendChild(ic0); docThumb(dd, ic0); ic0.onclick = function () { if (ic0.classList.contains('th')) docPreview(dd); };
   var a = mk('a', 'md-nm', dd.name); a.href = '#'; a.title = dd.name + ' · ' + fmtD(iso(new Date(tsOf(dd))));
@@ -182,7 +182,7 @@ function medDocRow(p, dd) {
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
   var stx = dd.sig && !needSig2(dd) ? ['unterschrieben', 'ok'] : dd.sig ? ['Arzt-Unterschrift fehlt', 'wait'] : signable(dd) ? ['Unterschrift fehlt', 'wait'] : null;
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
-  else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
+  if ((/\.pdf$/i.test(dd.name || '') || dd.tid) && !isVideoDoc(dd)) { var eb = mk('button', 'md-edit'); eb.type = 'button'; eb.title = 'Bearbeiten (Stift, Text, Markieren, Unterschrift)'; eb.setAttribute('aria-label', eb.title); eb.innerHTML = tvSvg('pen'); eb.onclick = function (ev) { ev.stopPropagation(); pdfEdit(p, dd); }; l2.appendChild(eb); }
   if (stx) l2.appendChild(mk('span', 'md-stx ' + stx[1], stx[0]));
   var dots = medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
@@ -203,7 +203,31 @@ function medDocRow(p, dd) {
     [dd.hiddenFromView ? 'Wieder einblenden' : 'Ausblenden', function () { fileHide(p, dd); }]
   ])));
   l2.appendChild(dots);
+  if (tab) return medDocTab(p, dd, r, ic0, col, l2, dots);
   return r;
+}
+/* Reiter Dateien: Tabellenzeile wie die Zeitleiste (Datum, farbiger Strich, Name mit Aktionen, Vorschau rechts); das ganze Menü öffnet beim Überfahren oder Antippen der Zeile */
+function medDocTab(p, dd, r, ic0, col, l2, dots) {
+  var d = new Date(tsOf(dd)), st = /md-ok/.test(r.className) ? ' md-ok' : /md-wait/.test(r.className) ? ' md-wait' : '';
+  var tr = mk('div', 'md-tr' + st), dc = mk('div', 'md-tr-d');
+  dc.appendChild(mk('b', '', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
+  dc.appendChild(mk('span', '', pad(d.getHours()) + ':' + pad(d.getMinutes())));
+  var mb = mk('button', 'md-edit'); mb.type = 'button'; mb.title = 'Senden (E-Mail, Teilen)'; mb.setAttribute('aria-label', mb.title); mb.innerHTML = tvSvg('mail');
+  mb.onclick = function (ev) { ev.stopPropagation(); sendDokument(p, dd); };
+  l2.insertBefore(mb, dots);
+  var main = mk('div', 'md-tr-m'); main.appendChild(col);
+  tr.appendChild(dc); tr.appendChild(main); ic0.classList.add('md-tr-th'); tr.appendChild(ic0);
+  var m = function () { return document.getElementById('tl-menu'); }, tm = null;
+  function open() { var mm = m(); if (mm && mm.style.display === 'block' && mm._src === tr) return; tlMenu({ stopPropagation: function () {}, currentTarget: tr }, dots._items); }
+  function shut() { var mm = m(); if (mm && mm._src === tr) mm.style.display = 'none'; }
+  tr.onclick = function (ev) { if (ev.target.closest && ev.target.closest('a,button,.md-ic.th')) return; ev.stopPropagation(); var mm = m(); if (mm && mm.style.display === 'block' && mm._src === tr) shut(); else open(); };
+  if (window.matchMedia && matchMedia('(hover:hover) and (pointer:fine)').matches) {
+    tr.addEventListener('mouseenter', function () { clearTimeout(tm); tm = setTimeout(open, 350); });
+    tr.addEventListener('mouseleave', function (ev) { clearTimeout(tm); var mm = m(); if (mm && ev.relatedTarget && mm.contains(ev.relatedTarget)) return; tm = setTimeout(shut, 250); });
+    document.addEventListener('mouseover', function hv(ev) { if (!tr.isConnected) { document.removeEventListener('mouseover', hv); return; } var mm = m(); if (mm && mm._src === tr && mm.contains(ev.target)) clearTimeout(tm); });
+    document.addEventListener('mouseout', function ho(ev) { if (!tr.isConnected) { document.removeEventListener('mouseout', ho); return; } var mm = m(); if (mm && mm._src === tr && mm.contains(ev.target) && !(ev.relatedTarget && (mm.contains(ev.relatedTarget) || tr.contains(ev.relatedTarget)))) { clearTimeout(tm); tm = setTimeout(shut, 250); } });
+  }
+  return tr;
 }
 function renderMedien() {
   var box = document.getElementById('md-list'); if (!box || !curP) return;
@@ -227,7 +251,7 @@ function renderMedien() {
     if (l.length) items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
   });
   items.sort(function (a, b) { return b.k - a.k; });
-  box.innerHTML = '';
+  box.innerHTML = ''; box.classList.toggle('md-tab', medFilter === 'dok');
   var vids = medFilter === 'bild' ? (curP.videos || []).filter(function (v) { return recordVisible(v) && (!q || String(v.name || '').toLowerCase().indexOf(q) >= 0); }).sort(function (a, b) { return tsOf(b) - tsOf(a); }) : [];
   if (vids.length) box.appendChild(medVideos(curP, vids));
   if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
@@ -242,7 +266,7 @@ function renderMedien() {
       c.appendChild(mediaGrid(g.p, g.list));
     } else {
       if (zl) c.appendChild(zl);
-      g.list.forEach(function (dd) { c.appendChild(medDocRow(g.p, dd)); });
+      g.list.forEach(function (dd) { c.appendChild(medDocRow(g.p, dd, true)); });
     }
     box.appendChild(c);
   });

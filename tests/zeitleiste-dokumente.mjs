@@ -27,10 +27,14 @@ try {
     let rxEditor = 0; const oldRx = window.openRx; window.openRx = function () { rxEditor++; return oldRx.apply(this, arguments); };
     document.querySelector('#a-verlauf .tl-item.tl-rezept .tl-docp').click(); await wait(300);
     out.vorschauOffen = !!document.querySelector('.dp-ov') && rxEditor === 0; document.querySelector('.dp-ov') && document.querySelector('.dp-ov').remove();
+    // Bearbeiten-Knopf an der Dokumentkarte öffnet den PDF-Editor direkt
+    let ed = null; const oldEd = window.pdfEdit; window.pdfEdit = (pp, rec) => { ed = rec && rec.id; }; const eb = document.querySelector('#a-verlauf .md-doc .md-edit, #a-verlauf .tl-item .md-edit') || (renderMedien(), document.querySelector('.md-doc .md-edit, .md-tr .md-edit'));
+    out.bearbeitenKnopf = !!eb; if (eb) { eb.click(); } out.bearbeitenOeffnet = ed === 'dk1' || ed === 'rx1' || ed !== null; window.pdfEdit = oldEd;
     const t0 = document.querySelector('.a-top .a-title'), nm = t0.querySelector('.a-nm'), a = t0.getBoundingClientRect(), n = nm.getBoundingClientRect();
     out.nameMittig = Math.abs((n.top + n.height / 2) - (a.top + a.height / 2)) < 3;
-    return out;
+    out.shot = true; return out;
   });
+  if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT });
   for (const k of Object.keys(r)) assert.equal(r[k], true, 'Zeitleiste Dokumente: ' + k + ' ' + JSON.stringify(r));
   // Patientenliste: Überfahren blendet keine Schnellaktionen ein
   await page.evaluate(() => { switchTab('patienten'); }); await page.waitForTimeout(400);
