@@ -25,7 +25,7 @@
     cross: '<path d="M6 6l12 12M18 6L6 18"/>',
     erase: '<path d="M20 20H8l-5-5 10-10 8 8-6 6"/><path d="M7 11l6 6"/>',
     undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
-    sign: '<path d="M15.5 3.5a2.1 2.1 0 013 3L8 17l-4 1 1-4z"/><path d="M3.2 13.5c-2.1-4-.4-8.6 3.6-10.4" stroke-width="1.5" stroke-dasharray="2 2.5"/>',
+    sign: '<path d="M18.5 2.5a2.1 2.1 0 013 3L11 16l-4 1 1-4z"/><path d="M2 21.5c1.3-3.2 2.7-3.4 3.4-1.6.6 1.6 1.4 1.4 1.9-.6"/>',
     plus: '<path d="M12 5v14M5 12h14"/>'
   };
   function svg(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + IC[k] + '</svg>'; }

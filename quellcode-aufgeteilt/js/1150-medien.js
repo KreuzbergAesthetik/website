@@ -53,7 +53,7 @@ function mediaGrid(p, list) {
   });
   return g;
 }
-var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3.5a2.1 2.1 0 013 3L8 17l-4 1 1-4z"/><path d="M3.2 13.5c-2.1-4-.4-8.6 3.6-10.4" stroke-width="1.5" stroke-dasharray="2 2.5"/></svg>';
+var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.5 2.5a2.1 2.1 0 013 3L11 16l-4 1 1-4z"/><path d="M2 21.5c1.3-3.2 2.7-3.4 3.4-1.6.6 1.6 1.4 1.4 1.9-.6"/></svg>';
 function docList(p, list) { var ul = mk('div'); list.forEach(function (dd) { ul.appendChild(medDocRow(p, dd)); }); return ul; }
 /* Dateien, die zu einem Termin oder einer Dokumentation gehören, direkt dort anzeigen */
 function attachBlock(p, key) {
