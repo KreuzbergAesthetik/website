@@ -130,3 +130,7 @@
 /* Zeitleiste: Inhalt bis an den Rand (der Pfeil rechts ist weg, der Platz dafür entfällt) */
 .tl-day .tl-item { padding-right:10px; }
 .md-l2 { flex-wrap:wrap; row-gap:4px; }
+/* Zeitleiste: Filter als kleine Symbole in der Kopfzeile; Plus unten rechts klein und ohne Kreis */
+.tl-fbtn { width:26px; height:26px; padding:0; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#64748b; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; } .tl-fbtn svg { width:14px; height:14px; }
+.tl-fbtn.on { background:var(--pf-navy); border-color:var(--pf-navy); color:#fff; }
+.a-addtile { width:26px; height:26px; border:0 !important; background:none !important; color:#94a3b8; } .a-addtile svg { width:15px; height:15px; } .a-addtile:hover { color:#475569; }

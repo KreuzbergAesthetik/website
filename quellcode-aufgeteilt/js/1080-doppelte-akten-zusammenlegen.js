@@ -495,14 +495,14 @@ function renderVerlauf() {
   auditCheck.onchange = function () { tlAuditVisible = auditCheck.checked; renderVerlauf(); };
   auditFilter.appendChild(auditCheck);
   var auditSlot = document.getElementById('a-audit-filter');
-  auditSlot.innerHTML = ''; auditSlot.appendChild(auditFilter);
-  /* Eine Karte für die ganze Zeitleiste: durchgehender Strich, links Datum (beim ersten Eintrag eines Tages) und Uhrzeit, rechts das Ereignis */
+  auditSlot.innerHTML = ''; auditSlot.style.cssText = 'display:inline-flex; align-items:center; gap:6px;';
   var chipsOn = TL_CHIPS.filter(function (c) { return tlHas[c[0]]; });
-  if (chipsOn.length > 1) {
-    var fr = mk('div', 'md-chips tl-filter'); fr.style.margin = '4px 0 8px';
-    [['', 'Alle']].concat(chipsOn).forEach(function (c) { var bt = mk('button', 'md-chip' + (tlFilter === c[0] ? ' on' : ''), c[1]); bt.type = 'button'; bt.onclick = function () { tlFilter = c[0]; renderVerlauf(); }; fr.appendChild(bt); });
-    box.appendChild(fr);
-  }
+  if (chipsOn.length > 1) chipsOn.forEach(function (c) {
+    var fb = mk('button', 'tl-fbtn' + (tlFilter === c[0] ? ' on' : '')); fb.type = 'button'; fb.title = (tlFilter === c[0] ? 'Alle anzeigen' : 'Nur ' + c[1]); fb.setAttribute('aria-label', 'Nur ' + c[1]); fb.setAttribute('aria-pressed', tlFilter === c[0] ? 'true' : 'false');
+    fb.innerHTML = tvSvg(TL_ICON[c[0]]); fb.onclick = function () { tlFilter = tlFilter === c[0] ? '' : c[0]; renderVerlauf(); }; auditSlot.appendChild(fb);
+  });
+  auditSlot.appendChild(auditFilter);
+  /* Eine Karte für die ganze Zeitleiste: durchgehender Strich, links Datum (beim ersten Eintrag eines Tages) und Uhrzeit, rechts das Ereignis */
   var day = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;

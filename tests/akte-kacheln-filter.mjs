@@ -28,12 +28,12 @@ try {
     out.bearbeiten = !!document.getElementById('a-tile-in');
     // Filter
     tileEdit = ''; renderHead(); renderVerlauf(); await wait(200);
-    const chips = [...document.querySelectorAll('.tl-filter .md-chip')].map(c => c.textContent);
-    out.chips = chips[0] === 'Alle' && chips.includes('Notizen') && chips.includes('E-Mails') && chips.includes('Dokumentation');
-    [...document.querySelectorAll('.tl-filter .md-chip')].find(c => c.textContent === 'Notizen').click(); await wait(200);
+    const chips = [...document.querySelectorAll('#a-audit-filter .tl-fbtn')].map(c => c.getAttribute('aria-label'));
+    out.chips = chips.includes('Nur Notizen') && chips.includes('Nur E-Mails') && chips.includes('Nur Dokumentation') && !document.querySelector('.tl-filter');
+    document.querySelector('#a-audit-filter .tl-fbtn[aria-label="Nur Notizen"]').click(); await wait(200);
     const nur = [...document.querySelectorAll('#a-verlauf .tl-item')].every(x => x.classList.contains('tl-notiz')) && document.querySelectorAll('#a-verlauf .tl-item').length === 1;
     out.filter = nur;
-    document.querySelector('.tl-filter .md-chip').click(); await wait(200);
+    document.querySelector('#a-audit-filter .tl-fbtn.on').click(); await wait(200);
     out.alle = document.querySelectorAll('#a-verlauf .tl-item').length >= 3;
     // Touch: Antippen des Eintrags zeigt das Menü
     const row = document.querySelector('#a-verlauf .tl-item.tl-notiz'); row.querySelector('.tl-body').click(); await wait(100);
