@@ -43,6 +43,9 @@ try {
   // Liste im Abgleichbereich: Zeile „Abgleich“ öffnet die Auswahl und setzt die Einstellung samt Beschriftung
   const menu = await page.evaluate(() => { switchTab('abgleich'); renderSync(); syModeMenu({ stopPropagation() {}, currentTarget: document.querySelector('#sync-box .sy-row') }); [...document.querySelectorAll('#tl-menu button')].find(b => /Sofort nach jeder/.test(b.textContent)).click(); return { m: KS.mode(), l: document.getElementById('sy-modelbl').textContent }; });
   assert.deepEqual(menu, { m: 'auto', l: 'Sofort' }, 'Abgleich-Zeile: ' + JSON.stringify(menu));
+  // „Erweitert“ klappt auf und zu; die E-Mail-Karte erscheint nur mit eingerichtetem Abgleich
+  const erw = await page.evaluate(() => { const z = () => document.getElementById('sy-erw').style.display; const a = z(); syErw(document.querySelector('[onclick^="syErw"]')); const b = z(); syErw(document.querySelector('[onclick^="syErw"]')); return { zu: a, auf: b, wieder: z(), mail: document.getElementById('mail-box').style.display }; });
+  assert.deepEqual(erw, { zu: 'none', auf: '', wieder: 'none', mail: '' }, 'Erweitert: ' + JSON.stringify(erw));
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
   console.log('Abgleich-Modus OK (täglich, nur auf Antippen, sofort)');
 } finally {

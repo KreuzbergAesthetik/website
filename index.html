@@ -1578,6 +1578,8 @@ body.pe-open { overflow:hidden; }
 .sy-sw i { position:absolute; inset:0; border-radius:12px; background:#cbd5e1; transition:background .2s; pointer-events:none; } .sy-sw i::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; box-shadow:0 1px 2px rgba(15,23,42,.3); }
 .sy-sw input:checked + i { background:#15803d; } .sy-sw input:checked + i::after { transform:translateX(18px); }
 .sy-info { margin-top:14px; font-size:13px; color:#64748b; } .sy-info summary { cursor:pointer; color:#475569; padding:4px 0; }
+.sy-row.sy-sub2 { padding-left:14px; font-size:14.5px; }
+.sy-state::before { content:''; display:inline-block; width:9px; height:9px; border-radius:50%; background:currentColor; margin-right:8px; vertical-align:1px; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2283,23 +2285,28 @@ function kaStart() {
         <div id="sy-msg" style="margin-top:10px; font-size:13px;"></div>
       </div>
       <div class="sy-on" style="display:none">
-        <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
-        <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:6px;"></div>
-        <div class="sy-conn" style="font-size:12.5px; color:#64748b; margin-bottom:10px;"></div>
+        <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:6px;"></div>
+        <div class="sy-inbox-row" style="display:none; align-items:center; gap:10px; margin-bottom:8px;"><span class="sy-inbox" style="font-size:13px; color:#64748b; flex:1;"></span><button type="button" class="btn btn-secondary btn-sm" onclick="KS.abrufen()">Abrufen</button></div>
         <select class="sy-mode" style="display:none" aria-hidden="true"><option value="taeglich"></option><option value="manuell"></option><option value="auto"></option></select>
         <button type="button" class="btn btn-save" style="width:100%; margin:4px 0 8px;" onclick="KS.run(true)">Jetzt abgleichen</button>
         <button type="button" class="sy-row" onclick="syModeMenu(event)"><span class="t">Abgleich</span><span class="v" id="sy-modelbl">Einmal täglich</span><span class="ch">›</span></button>
-        <button type="button" class="sy-row" onclick="KS.abrufen()"><span class="t">Postfach abrufen</span><span class="ch">›</span></button>
-        <label class="sy-row" for="sy-mail"><span class="t">E-Mails direkt über den Server<small>Text per HTTPS über den Praxis-Server, nichts wird gespeichert. Mit Anhang weiter über Teilen.</small></span><span class="sy-sw"><input type="checkbox" id="sy-mail" onchange="mailServerSet(this.checked)"><i></i></span></label>
-        <button type="button" class="sy-row sy-sub" onclick="mailServerTest()"><span class="t">Test-E-Mail an die Praxis senden</span><span class="ch">›</span></button>
-        <div id="sy-mailst" style="font-size:12.5px; color:#64748b; padding:0 2px 8px;"></div>
-        <button type="button" class="sy-row" onclick="KS.diagnose()"><span class="t">Verbindung prüfen</span><span class="ch">›</span></button>
-        <button type="button" class="sy-row" onclick="syncBackups()"><span class="t">Frühere Stände</span><span class="ch">›</span></button>
-        <div id="sy-baks"></div>
-        <button type="button" class="sy-row" onclick="syncPw()"><span class="t">Passwort ändern</span><span class="ch">›</span></button>
-        <div style="border-top:1px solid #eef2f6; padding-top:14px; margin-top:0;"><button type="button" class="btn btn-rot" onclick="syncOff()" title="Dieses Gerät vom Abgleich trennen">Trennen</button></div>
+        <button type="button" class="sy-row" onclick="syErw(this)" aria-expanded="false"><span class="t">Erweitert</span><span class="ch" id="sy-erwch">›</span></button>
+        <div id="sy-erw" style="display:none">
+          <div class="sy-conn" style="font-size:12.5px; color:#64748b; padding:4px 2px 8px;"></div>
+          <button type="button" class="sy-row sy-sub2" onclick="KS.diagnose()"><span class="t">Verbindung prüfen</span><span class="ch">›</span></button>
+          <button type="button" class="sy-row sy-sub2" onclick="syncBackups()"><span class="t">Frühere Stände</span><span class="ch">›</span></button>
+          <div id="sy-baks"></div>
+          <button type="button" class="sy-row sy-sub2" onclick="syncPw()"><span class="t">Passwort ändern</span><span class="ch">›</span></button>
+          <div style="border-top:1px solid #eef2f6; padding-top:14px;"><button type="button" class="btn btn-rot" onclick="syncOff()" title="Dieses Gerät vom Abgleich trennen">Trennen</button></div>
+        </div>
         <details class="sy-info"><summary>Wie funktioniert der Abgleich?</summary><div>Je nach Einstellung läuft der Abgleich nur einmal täglich beim Öffnen der App, nur auf Antippen oder sofort nach jeder Änderung. Dabei wird auch das Postfach abgerufen. Dazwischen arbeitet die App ohne Verbindung zum Server, offline arbeitest Du normal weiter. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div></details>
       </div>
+    </div>
+    <div class="card" id="mail-box" style="margin-top:16px; display:none;">
+      <div class="card-header"><span class="card-title">E-Mail</span></div>
+      <label class="sy-row" for="sy-mail" style="border-top:0;"><span class="t">E-Mails direkt über den Server<small>Text per HTTPS über den Praxis-Server, nichts wird gespeichert. Mit Anhang weiter über Teilen.</small></span><span class="sy-sw"><input type="checkbox" id="sy-mail" onchange="mailServerSet(this.checked)"><i></i></span></label>
+      <button type="button" class="sy-row" onclick="mailServerTest()"><span class="t">Test-E-Mail an die Praxis senden</span><span class="ch">›</span></button>
+      <div id="sy-mailst" style="font-size:12.5px; color:#64748b; padding:0 2px 4px;"></div>
     </div>
     <div class="card" id="ext-box" style="margin-top:16px;">
       <div class="card-header"><span class="card-title">Privaten Kalender anzeigen</span></div>
@@ -3237,7 +3244,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-25-h';
+var KA_V = '2026-11-26-a';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -11251,6 +11258,7 @@ function extSave() {
 async function extOff() { if (!await kaConfirm('Privaten Kalender entfernen? Die Adresse wird aus der App gelöscht.')) return; settings.extUrl = ''; persist(); EXT.clear(); EXT.ui(); try { renderCal(); } catch (x) {} }
 function extHide(on) { settings.extHide = !!on; persist(); EXT.ui(); try { renderCal(); } catch (x) {} }
 var SY_MODES = [['taeglich', 'Einmal täglich beim Öffnen (empfohlen)', 'Einmal täglich'], ['manuell', 'Nur wenn ich es starte', 'Nur auf Antippen'], ['auto', 'Sofort nach jeder Änderung', 'Sofort']];
+function syErw(b) { var e = document.getElementById('sy-erw'), on = e.style.display === 'none'; e.style.display = on ? '' : 'none'; b.setAttribute('aria-expanded', on ? 'true' : 'false'); var c = document.getElementById('sy-erwch'); if (c) c.textContent = on ? '⌄' : '›'; }
 function syModeLabel() { var l = document.getElementById('sy-modelbl'); if (!l || !window.KS) return; var m = SY_MODES.filter(function (x) { return x[0] === KS.mode(); })[0] || SY_MODES[0]; l.textContent = m[2]; }
 function syModeMenu(ev) { tlMenu(ev, SY_MODES.map(function (m) { return [m[1], function () { KS.setMode(m[0]); syModeLabel(); }]; })); }
 function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; var sm = document.getElementById('sy-mail'); if (sm) sm.checked = !!settings.mailServer; syModeLabel(); document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }

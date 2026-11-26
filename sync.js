@@ -361,13 +361,15 @@ var KS = (function () {
     var box = document.getElementById('sync-box'); if (!box) return;
     box.querySelector('.sy-off').style.display = c ? 'none' : '';
     box.querySelector('.sy-on').style.display = c ? '' : 'none';
+    var mxb = document.getElementById('mail-box'); if (mxb) mxb.style.display = c ? '' : 'none';
     if (c) {
       var st = box.querySelector('.sy-state');
       st.textContent = S.busy ? (S.msg || 'Gleiche ab …') : S.err ? S.err : b.dirty ? 'Änderungen warten auf den Abgleich' + (syncMode() === 'auto' ? '' : ' (nächster Abgleich: ' + (syncMode() === 'manuell' ? 'wenn Du ihn startest' : 'morgen beim Öffnen oder auf Antippen') + ')') : 'Alles abgeglichen (' + ago(b.last) + ')';
       var cn = box.querySelector('.sy-conn'); if (cn) cn.textContent = 'Zuletzt mit dem Server verbunden: ' + (lastConn() ? ago(lastConn()) : 'noch nie');
       var ms = box.querySelector('.sy-mode'); if (ms && ms.value !== syncMode()) ms.value = syncMode(); try { if (window.syModeLabel) syModeLabel(); } catch (x) {}
       st.className = 'sy-state' + (S.err ? ' bad' : b.dirty || S.busy ? ' wait' : ' good');
-      box.querySelector('.sy-inbox').textContent = n ? n + ' Formular(e) im Postfach' : 'Postfach leer';
+      box.querySelector('.sy-inbox').textContent = n ? n + (n === 1 ? ' Formular wartet im Postfach' : ' Formulare warten im Postfach') : '';
+      var ir = box.querySelector('.sy-inbox-row'); if (ir) ir.style.display = n ? 'flex' : 'none';
     }
   }
   function init() {
