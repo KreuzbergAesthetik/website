@@ -1580,6 +1580,12 @@ body.pe-open { overflow:hidden; }
 .sy-info { margin-top:14px; border-top:1.5px solid #b6c2d1; padding-top:10px; font-size:13px; color:#64748b; } .sy-info summary { cursor:pointer; color:#475569; padding:4px 0; }
 .sy-row.sy-sub2 { padding-left:14px; font-size:14.5px; }
 .sy-state::before { content:''; display:inline-block; width:9px; height:9px; border-radius:50%; background:currentColor; margin-right:8px; vertical-align:1px; }
+/* Geräte-Abgleich: Zeilen als Karten (Versuch) */
+.sy-row { background:var(--pf-inlay,#f2f5fc); border:1px solid var(--pf-line,#dbe3f0); border-radius:12px; padding:10px 14px; margin:0 0 8px; min-height:52px; width:100%; box-sizing:border-box; }
+.sy-row.sy-sub, .sy-row.sy-sub2 { padding-left:14px; border-top:1px solid var(--pf-line,#dbe3f0); }
+#mail-box .sy-row { border-top:1px solid var(--pf-line,#dbe3f0) !important; }
+#sy-erw { margin-top:2px; } #sy-erw > div:last-child { border-top:0 !important; padding-top:4px !important; }
+.sy-info { border-top:0 !important; padding-top:0 !important; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3244,7 +3250,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-b';
+var KA_V = '2026-11-26-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
