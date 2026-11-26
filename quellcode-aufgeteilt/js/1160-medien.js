@@ -251,7 +251,7 @@ function renderMedien() {
     if (l.length) items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
   });
   items.sort(function (a, b) { return b.k - a.k; });
-  box.innerHTML = '';
+  box.innerHTML = ''; box.classList.toggle('md-tab', medFilter === 'dok');
   var vids = medFilter === 'bild' ? (curP.videos || []).filter(function (v) { return recordVisible(v) && (!q || String(v.name || '').toLowerCase().indexOf(q) >= 0); }).sort(function (a, b) { return tsOf(b) - tsOf(a); }) : [];
   if (vids.length) box.appendChild(medVideos(curP, vids));
   if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }

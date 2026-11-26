@@ -1,0 +1,13 @@
+/* Reiter Dateien als Tabelle wie die Zeitleiste der Akte: eine runde Karte, Datum | durchgehender farbiger Strich | Name mit Aktionen | Vorschau */
+#md-list.md-tab { background:#f2f5fc; border:1px solid #dbe3f0; border-radius:12px; padding:0; overflow:hidden; }
+#md-list.md-tab .md-item { margin:0; }
+.md-tr { position:relative; display:flex; align-items:stretch; margin:0; background:transparent; cursor:pointer; min-width:0; }
+.md-tr:hover { background:#e9eef9; }
+.md-tr::after { content:''; position:absolute; left:8px; right:8px; bottom:0; height:1px; background:linear-gradient(90deg,#94a3b8 0 99px,transparent 99px 109px,#94a3b8 109px); }
+#md-list.md-tab > .md-item:last-child .md-tr:last-child::after { display:none; }
+.md-tr-d { flex:none; width:104px; text-align:right; padding:10px 10px 10px 8px; } .md-tr-d b { display:block; font-size:13px; font-weight:800; color:#0f172a; } .md-tr-d span { font-size:12px; color:#94a3b8; font-style:italic; }
+.md-tr-m { flex:1 1 0; min-width:0; border-left:4px solid #94a3b8; padding:8px 8px 8px 12px; display:flex; align-items:center; } .md-tr.md-ok .md-tr-m { border-left-color:#22c55e; } .md-tr.md-wait .md-tr-m { border-left-color:#f59e0b; }
+.md-tr .md-col { flex:1 1 0; min-width:0; gap:6px; } .md-tr .md-nm { white-space:normal; overflow-wrap:anywhere; } .md-tr .md-date, .md-tr .md-stx { display:none; }
+.md-tr .md-l2 { gap:8px; } .md-tr .md-l2 .md-dots { margin-left:0; }
+.md-tr .md-ic.md-tr-th, .md-tr .md-ic.th.md-tr-th { flex:none; width:44px; height:58px; align-self:center; margin:8px 10px 8px 4px; font-size:10px; }
+@media (max-width:520px) { .md-tr-d { width:80px; padding-right:8px; } .md-tr-d b { font-size:12px; } .md-tr::after { background:linear-gradient(90deg,#94a3b8 0 75px,transparent 75px 85px,#94a3b8 85px); } }
