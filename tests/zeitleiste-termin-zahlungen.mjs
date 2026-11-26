@@ -37,12 +37,14 @@ try {
     out.eineKarte = cards.length === 1 && document.querySelectorAll('#a-verlauf .tl-day').length === 1;
     const rows = [...document.querySelectorAll('#a-verlauf .tl-item')];
     const tageKeys = new Set(rows.map(x => x.querySelector('.tl-date b').textContent));
-    out.tagStart = rows.filter(x => x.classList.contains('tl-dstart')).length === tageKeys.size && tageKeys.size >= 4;
-    const ersteZeilen = rows.filter(x => x.classList.contains('tl-dstart')), folge = rows.filter(x => !x.classList.contains('tl-dstart'));
-    out.datumNurErster = ersteZeilen.every(x => getComputedStyle(x.querySelector('.tl-date b')).display !== 'none') && folge.length > 0 && folge.every(x => getComputedStyle(x.querySelector('.tl-date b')).display === 'none');
+    const koepfe = [...document.querySelectorAll('#a-verlauf .tl-dh')];
+    out.tagStart = koepfe.length === tageKeys.size && tageKeys.size >= 4 && rows.every(x => !x.classList.contains('tl-dstart'));
+    out.datumEigeneZeile = koepfe.every(k => k.nextElementSibling && k.nextElementSibling.classList.contains('tl-item')) && rows.every(x => getComputedStyle(x.querySelector('.tl-date b')).display === 'none');
+    out.datumTextOk = koepfe.every(k => /^[A-ZÄÖÜ]{2}, \d\d\.\d\d\.\d\d$/.test(k.textContent.trim()));
     out.uhrzeitImmer = rows.every(x => /^\d{2}:\d{2}$/.test(x.querySelector('.tl-date span').textContent.trim()));
     out.datumRechtsbuendig = getComputedStyle(rows[0].querySelector('.tl-date')).textAlign === 'right';
-    out.sortiertNeuZuerst = (() => { const ks = [...document.querySelectorAll('#a-verlauf .tl-item .tl-date b')].filter(b => getComputedStyle(b).display !== 'none').map(b => b.textContent); return ks.length >= 4 && ks[0] !== ks[ks.length - 1]; })();
+    out.sortiertNeuZuerst = koepfe.length >= 4 && koepfe[0].textContent !== koepfe[koepfe.length - 1].textContent;
+    out.dickeTagesLinie = koepfe.slice(1).every(k => getComputedStyle(k).borderTopWidth === '2px') && getComputedStyle(koepfe[0]).borderTopWidth === '0px';
     out.terminDokuOffen = rows.filter(x => x.classList.contains('tl-termin') || x.classList.contains('tl-doku')).every(x => x.classList.contains('open'));
     const notiz = rows.find(x => x.classList.contains('tl-notiz')); const offenVor = notiz.classList.contains('open');
     notiz.querySelector('.tl-body').click(); out.notizKlappt = !offenVor && notiz.classList.contains('open');
