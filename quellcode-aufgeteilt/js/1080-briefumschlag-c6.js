@@ -403,10 +403,18 @@ function renderHead() {
   }));
   var tAl = txtTile('allergien', 'Allergien', (hasWarn(p) ? 'a-warn ' : '') + 'a-half', 'Keine Angabe'), tAd = txtTile('adresse', 'Anschrift', 'a-half', 'Keine Anschrift');
   tiles.appendChild(tAl); tiles.appendChild(tAd);
-  if ([tAl, tAd].filter(function (x) { return x.style.display !== 'none'; }).length === 1) { tAl.classList.remove('a-half'); tAd.classList.remove('a-half'); }
   tiles.appendChild(txtTile('diagnosen', 'Erkrankungen / Diagnosen', '', 'Keine Angabe'));
+  /* Leere Kacheln werden ausgeblendet; über das „+“ unten rechts lassen sie sich wieder anlegen */
+  var KT = [[1, 'wiedervorstellung', 'Wiedervorstellung', !p.wiedervorstellung], [2, 'notizen', 'Notiz', !(String(p.notizen || '').trim() || p.titel)], [3, 'med', 'Medikation', !(p.medikation || []).length], [4, 'allergien', 'Allergien', !String(p.allergien || '').trim()], [5, 'adresse', 'Anschrift', !String(p.adresse || '').trim()], [6, 'diagnosen', 'Erkrankungen / Diagnosen', !String(p.diagnosen || '').trim()]], fehlend = [];
+  KT.forEach(function (k) { var el = tiles.children[k[0]]; if (k[3] && tileEdit !== k[1] && el) { el.style.display = 'none'; fehlend.push(k); } });
+  if ([tAl, tAd].filter(function (x) { return x.style.display !== 'none'; }).length === 1) { tAl.classList.remove('a-half'); tAd.classList.remove('a-half'); }
   tiles.setAttribute('data-n', [].filter.call(tiles.children, function (c) { return c.style.display !== 'none'; }).length);
   box.appendChild(tiles);
+  if (fehlend.length) {
+    var plus = mk('button', 'a-addtile'); plus.type = 'button'; plus.title = 'Angabe ergänzen'; plus.setAttribute('aria-label', 'Angabe ergänzen'); plus.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+    plus.onclick = function (ev) { tlMenu(ev, fehlend.map(function (k) { return [k[2], function () { stammEdit = false; tileEdit = k[1]; renderHead(); var f = document.getElementById('a-tile-in') || document.getElementById('a-med-in') || document.getElementById('a-wieder-in'); if (f) f.focus(); }]; })); };
+    var pw = mk('div', 'a-addrow'); pw.appendChild(plus); box.appendChild(pw);
+  }
 }
 function hdH() { var h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdh', h.offsetHeight + 'px'); }
 window.addEventListener('resize', hdH);

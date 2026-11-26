@@ -83,3 +83,10 @@
 /* Stift an den Kacheln: klein, hell, in der Ecke; am Gerät mit Maus nur beim Überfahren */
 .a-tile .a-pen { top:3px; right:3px; width:22px; height:22px; opacity:.6; color:#b4bfcc; } .a-tile .a-pen svg { width:13px; height:13px; }
 @media (any-hover:hover) { .a-tile .a-pen { opacity:0; transition:opacity .15s; } .a-tile:hover .a-pen, .a-tile .a-pen:focus-visible { opacity:.9; } }
+/* Zeitleiste: Pfeil weg (Menü beim Überfahren/Antippen), Symbol links neben der Uhrzeit, Vorschaublatt rechts */
+.tl-item .tl-plus { display:none !important; }
+.tl-date span .tl-ico { width:13px; height:13px; vertical-align:-2px; margin-right:5px; color:#64748b; font-style:normal; }
+.tl-item.tl-termin .tl-date .tl-ico { color:#16a34a; } .tl-item.tl-doku .tl-date .tl-ico { color:#2563eb; } .tl-item.tl-notiz .tl-date .tl-ico { color:#ca8a04; } .tl-item.tl-med .tl-date .tl-ico { color:#7c3aed; } .tl-item.tl-rezept .tl-date .tl-ico { color:#db2777; } .tl-item.tl-mail .tl-date .tl-ico { color:#0d9488; } .tl-item.tl-rechnung .tl-date .tl-ico { color:#ea580c; } .tl-item.tl-verbrauch .tl-date .tl-ico { color:#0891b2; }
+.tl-docp { flex-direction:row-reverse; justify-content:space-between; } .tl-docp > div:last-child { flex:1; min-width:0; }
+.tl-filter { margin:4px 0 8px; }
+.a-addrow { display:flex; justify-content:flex-end; margin-top:8px; } .a-addtile { width:32px; height:32px; border-radius:50%; border:1px solid #94a3b8; background:#fff; color:#475569; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }

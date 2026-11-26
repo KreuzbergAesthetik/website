@@ -21,7 +21,7 @@ try {
       dokumente: [{ id: 'rx1', ts: t - D * 3, name: 'Rezept_Test.pdf', kat: 'Rezept' }, { id: 'dk1', ts: t - D, name: 'Honorar.pdf', kat: 'Honorar' }],
       log: [{ ts: t - D * 3, type: 'rezept', text: 'Rezept erstellt: Test', docId: 'rx1' }, { ts: t - D * 2, type: 'notiz', text: 'Notiz' }, { ts: t - D * 2.5, type: 'mail', text: 'E-Mail gesendet an a@example.org\nBetreff: Test' }] };
     patients.length = 0; patients.push(p); events.length = 0; FLC = null; persist(); viewAkte(p); await wait(1200);
-    const icon = c => !!document.querySelector('#a-verlauf .tl-item.' + c + ' .tl-label svg.tl-ico');
+    const icon = c => !!document.querySelector('#a-verlauf .tl-item.' + c + ' .tl-date svg.tl-ico');
     out.symbole = ['tl-notiz', 'tl-mail', 'tl-rezept', 'tl-doku'].every(icon);
     out.dokumentEintrag = !!document.querySelector('#a-verlauf .tl-item .tl-docp') && document.querySelectorAll('#a-verlauf .tl-docp').length === 2;   // Honorar + Rezept
     let rxEditor = 0; const oldRx = window.openRx; window.openRx = function () { rxEditor++; return oldRx.apply(this, arguments); };

@@ -454,13 +454,15 @@ function tlRow(it) {
 }
 var tlAuditPatient = null, tlAuditVisible = false;
 /* Kleines Symbol vor der Art des Eintrags */
+var tlFilter = '';
+var TL_CHIPS = [['termin', 'Termine'], ['doku', 'Dokumentation'], ['dokument', 'Dokumente'], ['rezept', 'Rezepte'], ['mail', 'E-Mails'], ['notiz', 'Notizen'], ['rechnung', 'Rechnungen']];
 var TL_ICON = { termin: 'cal', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
 function tlIcon(row, t) {
-  var k = TL_ICON[t], lab = row.querySelector('.tl-label'); if (!k || !lab || lab.querySelector('svg') || !TV_I[k]) return;
-  lab.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
+  var k = TL_ICON[t], tm = row.querySelector('.tl-date span'), lab = row.querySelector('.tl-label'); if (!k || !tm || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
+  tm.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
 }
 function renderVerlauf() {
-  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; }
+  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = ''; }
   renderFin(); renderUnterlagen(); renderMedien();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
   events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
@@ -478,6 +480,9 @@ function renderVerlauf() {
   }
   items = items.filter(function (it) { var r = it.e || it.d || it.l || it.inv || it.v || it.dd; return !r || recordVisible(r); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
+  var tlHas = {}; items.forEach(function (it) { tlHas[it.t] = 1; });
+  if (tlFilter && !tlHas[tlFilter]) tlFilter = '';
+  if (tlFilter) items = items.filter(function (it) { return it.t === tlFilter; });
   var dkey = function (k) { var d = new Date(k); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
   box.innerHTML = '';
@@ -492,6 +497,12 @@ function renderVerlauf() {
   var auditSlot = document.getElementById('a-audit-filter');
   auditSlot.innerHTML = ''; auditSlot.appendChild(auditFilter);
   /* Eine Karte für die ganze Zeitleiste: durchgehender Strich, links Datum (beim ersten Eintrag eines Tages) und Uhrzeit, rechts das Ereignis */
+  var chipsOn = TL_CHIPS.filter(function (c) { return tlHas[c[0]]; });
+  if (chipsOn.length > 1) {
+    var fr = mk('div', 'md-chips tl-filter'); fr.style.margin = '4px 0 8px';
+    [['', 'Alle']].concat(chipsOn).forEach(function (c) { var bt = mk('button', 'md-chip' + (tlFilter === c[0] ? ' on' : ''), c[1]); bt.type = 'button'; bt.onclick = function () { tlFilter = c[0]; renderVerlauf(); }; fr.appendChild(bt); });
+    box.appendChild(fr);
+  }
   var day = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
@@ -502,6 +513,11 @@ function renderVerlauf() {
     if (first) first.classList.add('tl-first');
     var always = it.t === 'termin' || it.t === 'doku' || it.t === 'dokument' || !!row.querySelector('.tl-docp');
     if (always) row.classList.add('open');
+    row.addEventListener('click', function (ev) {
+      if (window.matchMedia('(any-hover:hover)').matches || !row.querySelector('.tl-quick')) return;
+      if (ev.target.closest('button, a, input, textarea, select, .tl-quick, .tl-docp, img')) return;
+      var on = !row.classList.contains('quick-on'); [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) row.classList.add('quick-on');
+    });
     if (bd && !always) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
     card.appendChild(row);
   });

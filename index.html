@@ -1602,6 +1602,13 @@ body.pe-open { overflow:hidden; }
 /* Stift an den Kacheln: klein, hell, in der Ecke; am Gerät mit Maus nur beim Überfahren */
 .a-tile .a-pen { top:3px; right:3px; width:22px; height:22px; opacity:.6; color:#b4bfcc; } .a-tile .a-pen svg { width:13px; height:13px; }
 @media (any-hover:hover) { .a-tile .a-pen { opacity:0; transition:opacity .15s; } .a-tile:hover .a-pen, .a-tile .a-pen:focus-visible { opacity:.9; } }
+/* Zeitleiste: Pfeil weg (Menü beim Überfahren/Antippen), Symbol links neben der Uhrzeit, Vorschaublatt rechts */
+.tl-item .tl-plus { display:none !important; }
+.tl-date span .tl-ico { width:13px; height:13px; vertical-align:-2px; margin-right:5px; color:#64748b; font-style:normal; }
+.tl-item.tl-termin .tl-date .tl-ico { color:#16a34a; } .tl-item.tl-doku .tl-date .tl-ico { color:#2563eb; } .tl-item.tl-notiz .tl-date .tl-ico { color:#ca8a04; } .tl-item.tl-med .tl-date .tl-ico { color:#7c3aed; } .tl-item.tl-rezept .tl-date .tl-ico { color:#db2777; } .tl-item.tl-mail .tl-date .tl-ico { color:#0d9488; } .tl-item.tl-rechnung .tl-date .tl-ico { color:#ea580c; } .tl-item.tl-verbrauch .tl-date .tl-ico { color:#0891b2; }
+.tl-docp { flex-direction:row-reverse; justify-content:space-between; } .tl-docp > div:last-child { flex:1; min-width:0; }
+.tl-filter { margin:4px 0 8px; }
+.a-addrow { display:flex; justify-content:flex-end; margin-top:8px; } .a-addtile { width:32px; height:32px; border-radius:50%; border:1px solid #94a3b8; background:#fff; color:#475569; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3261,7 +3268,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-g';
+var KA_V = '2026-11-26-h';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -6751,10 +6758,18 @@ function renderHead() {
   }));
   var tAl = txtTile('allergien', 'Allergien', (hasWarn(p) ? 'a-warn ' : '') + 'a-half', 'Keine Angabe'), tAd = txtTile('adresse', 'Anschrift', 'a-half', 'Keine Anschrift');
   tiles.appendChild(tAl); tiles.appendChild(tAd);
-  if ([tAl, tAd].filter(function (x) { return x.style.display !== 'none'; }).length === 1) { tAl.classList.remove('a-half'); tAd.classList.remove('a-half'); }
   tiles.appendChild(txtTile('diagnosen', 'Erkrankungen / Diagnosen', '', 'Keine Angabe'));
+  /* Leere Kacheln werden ausgeblendet; über das „+“ unten rechts lassen sie sich wieder anlegen */
+  var KT = [[1, 'wiedervorstellung', 'Wiedervorstellung', !p.wiedervorstellung], [2, 'notizen', 'Notiz', !(String(p.notizen || '').trim() || p.titel)], [3, 'med', 'Medikation', !(p.medikation || []).length], [4, 'allergien', 'Allergien', !String(p.allergien || '').trim()], [5, 'adresse', 'Anschrift', !String(p.adresse || '').trim()], [6, 'diagnosen', 'Erkrankungen / Diagnosen', !String(p.diagnosen || '').trim()]], fehlend = [];
+  KT.forEach(function (k) { var el = tiles.children[k[0]]; if (k[3] && tileEdit !== k[1] && el) { el.style.display = 'none'; fehlend.push(k); } });
+  if ([tAl, tAd].filter(function (x) { return x.style.display !== 'none'; }).length === 1) { tAl.classList.remove('a-half'); tAd.classList.remove('a-half'); }
   tiles.setAttribute('data-n', [].filter.call(tiles.children, function (c) { return c.style.display !== 'none'; }).length);
   box.appendChild(tiles);
+  if (fehlend.length) {
+    var plus = mk('button', 'a-addtile'); plus.type = 'button'; plus.title = 'Angabe ergänzen'; plus.setAttribute('aria-label', 'Angabe ergänzen'); plus.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+    plus.onclick = function (ev) { tlMenu(ev, fehlend.map(function (k) { return [k[2], function () { stammEdit = false; tileEdit = k[1]; renderHead(); var f = document.getElementById('a-tile-in') || document.getElementById('a-med-in') || document.getElementById('a-wieder-in'); if (f) f.focus(); }]; })); };
+    var pw = mk('div', 'a-addrow'); pw.appendChild(plus); box.appendChild(pw);
+  }
 }
 function hdH() { var h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdh', h.offsetHeight + 'px'); }
 window.addEventListener('resize', hdH);
@@ -7336,13 +7351,15 @@ function tlRow(it) {
 }
 var tlAuditPatient = null, tlAuditVisible = false;
 /* Kleines Symbol vor der Art des Eintrags */
+var tlFilter = '';
+var TL_CHIPS = [['termin', 'Termine'], ['doku', 'Dokumentation'], ['dokument', 'Dokumente'], ['rezept', 'Rezepte'], ['mail', 'E-Mails'], ['notiz', 'Notizen'], ['rechnung', 'Rechnungen']];
 var TL_ICON = { termin: 'cal', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
 function tlIcon(row, t) {
-  var k = TL_ICON[t], lab = row.querySelector('.tl-label'); if (!k || !lab || lab.querySelector('svg') || !TV_I[k]) return;
-  lab.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
+  var k = TL_ICON[t], tm = row.querySelector('.tl-date span'), lab = row.querySelector('.tl-label'); if (!k || !tm || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
+  tm.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
 }
 function renderVerlauf() {
-  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; }
+  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = ''; }
   renderFin(); renderUnterlagen(); renderMedien();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
   events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
@@ -7360,6 +7377,9 @@ function renderVerlauf() {
   }
   items = items.filter(function (it) { var r = it.e || it.d || it.l || it.inv || it.v || it.dd; return !r || recordVisible(r); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
+  var tlHas = {}; items.forEach(function (it) { tlHas[it.t] = 1; });
+  if (tlFilter && !tlHas[tlFilter]) tlFilter = '';
+  if (tlFilter) items = items.filter(function (it) { return it.t === tlFilter; });
   var dkey = function (k) { var d = new Date(k); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
   box.innerHTML = '';
@@ -7374,6 +7394,12 @@ function renderVerlauf() {
   var auditSlot = document.getElementById('a-audit-filter');
   auditSlot.innerHTML = ''; auditSlot.appendChild(auditFilter);
   /* Eine Karte für die ganze Zeitleiste: durchgehender Strich, links Datum (beim ersten Eintrag eines Tages) und Uhrzeit, rechts das Ereignis */
+  var chipsOn = TL_CHIPS.filter(function (c) { return tlHas[c[0]]; });
+  if (chipsOn.length > 1) {
+    var fr = mk('div', 'md-chips tl-filter'); fr.style.margin = '4px 0 8px';
+    [['', 'Alle']].concat(chipsOn).forEach(function (c) { var bt = mk('button', 'md-chip' + (tlFilter === c[0] ? ' on' : ''), c[1]); bt.type = 'button'; bt.onclick = function () { tlFilter = c[0]; renderVerlauf(); }; fr.appendChild(bt); });
+    box.appendChild(fr);
+  }
   var day = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
@@ -7384,6 +7410,11 @@ function renderVerlauf() {
     if (first) first.classList.add('tl-first');
     var always = it.t === 'termin' || it.t === 'doku' || it.t === 'dokument' || !!row.querySelector('.tl-docp');
     if (always) row.classList.add('open');
+    row.addEventListener('click', function (ev) {
+      if (window.matchMedia('(any-hover:hover)').matches || !row.querySelector('.tl-quick')) return;
+      if (ev.target.closest('button, a, input, textarea, select, .tl-quick, .tl-docp, img')) return;
+      var on = !row.classList.contains('quick-on'); [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) row.classList.add('quick-on');
+    });
     if (bd && !always) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
     card.appendChild(row);
   });
