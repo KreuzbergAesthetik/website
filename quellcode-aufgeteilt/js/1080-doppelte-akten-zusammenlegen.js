@@ -454,7 +454,7 @@ function tlRow(it) {
 }
 var tlAuditPatient = null, tlAuditVisible = false;
 /* Kleines Symbol vor der Art des Eintrags */
-var tlFilter = '';
+var tlFilter = [];   /* Mehrfachauswahl: Liste der gewählten Eintragsarten */
 var TL_CHIPS = [['termin', 'Termine'], ['doku', 'Dokumentation'], ['dokument', 'Dokumente'], ['rezept', 'Rezepte'], ['mail', 'E-Mails'], ['notiz', 'Notizen'], ['rechnung', 'Rechnungen']];
 var TL_ICON = { termin: 'calplain', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
 function tlIcon(row, t) {
@@ -462,7 +462,7 @@ function tlIcon(row, t) {
   dt.insertAdjacentHTML('beforeend', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
 }
 function renderVerlauf() {
-  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = ''; }
+  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = []; }
   renderFin(); renderUnterlagen(); renderMedien();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
   events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
@@ -481,8 +481,8 @@ function renderVerlauf() {
   items = items.filter(function (it) { var r = it.e || it.d || it.l || it.inv || it.v || it.dd; return !r || recordVisible(r); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
   var tlHas = {}; items.forEach(function (it) { tlHas[it.t] = 1; });
-  if (tlFilter && !tlHas[tlFilter]) tlFilter = '';
-  if (tlFilter) items = items.filter(function (it) { return it.t === tlFilter; });
+  tlFilter = tlFilter.filter(function (x) { return tlHas[x]; });
+  if (tlFilter.length) items = items.filter(function (it) { return tlFilter.indexOf(it.t) >= 0; });
   var dkey = function (k) { var d = new Date(k); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
   box.innerHTML = '';
@@ -498,8 +498,8 @@ function renderVerlauf() {
   auditSlot.innerHTML = ''; auditSlot.style.cssText = 'display:inline-flex; align-items:center; gap:6px;';
   var chipsOn = TL_CHIPS.filter(function (c) { return tlHas[c[0]]; });
   if (chipsOn.length > 1) chipsOn.forEach(function (c) {
-    var fb = mk('button', 'tl-fbtn' + (tlFilter === c[0] ? ' on' : '')); fb.type = 'button'; fb.title = (tlFilter === c[0] ? 'Alle anzeigen' : 'Nur ' + c[1]); fb.setAttribute('aria-label', 'Nur ' + c[1]); fb.setAttribute('aria-pressed', tlFilter === c[0] ? 'true' : 'false');
-    fb.innerHTML = tvSvg(TL_ICON[c[0]]); fb.onclick = function () { tlFilter = tlFilter === c[0] ? '' : c[0]; renderVerlauf(); }; auditSlot.appendChild(fb);
+    var fon = tlFilter.indexOf(c[0]) >= 0, fb = mk('button', 'tl-fbtn' + (fon ? ' on' : '')); fb.type = 'button'; fb.title = (fon ? c[1] + ' wieder ausblenden' : 'Nur ' + c[1] + ' (mehrere möglich)'); fb.setAttribute('aria-label', 'Nur ' + c[1]); fb.setAttribute('aria-pressed', fon ? 'true' : 'false');
+    fb.innerHTML = tvSvg(TL_ICON[c[0]]); fb.onclick = function () { tlFilter = fon ? tlFilter.filter(function (x) { return x !== c[0]; }) : tlFilter.concat([c[0]]); renderVerlauf(); }; auditSlot.appendChild(fb);
   });
   auditSlot.appendChild(auditFilter);
   /* Eine Karte für die ganze Zeitleiste: durchgehender Strich; je Tag eine eigene Datumszeile, darunter links Uhrzeit mit Symbol, rechts das Ereignis */

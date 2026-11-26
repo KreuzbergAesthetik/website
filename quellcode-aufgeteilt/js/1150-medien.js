@@ -1,5 +1,5 @@
 /* ===== Medien: Gruppen, Galerie, Zuordnung ===== */
-var zuNext = null, gal = null, zuCtx = null, medFilter = 'dok', medKat = '', medLimit = 30;
+var zuNext = null, gal = null, zuCtx = null, medFilter = 'dok', medKat = [], medLimit = 30;
 function validZu(p) {
   var v = {}, n = nameKey(p);
   events.forEach(function (e) { if (eventBelongs(e, p)) v['e' + e.id] = 1; });
@@ -135,7 +135,7 @@ function saveZu() {
   closeModal('modal-zu'); refreshFiles();
 }
 /* Medien und Dokumente des Patienten an einem Ort */
-function setMedFilter(f, k) { medFilter = f; medKat = k || ''; medLimit = 30; renderMedien(); }
+function setMedFilter(f, k) { medFilter = f; medKat = Array.isArray(k) ? k : (k ? [k] : []); medLimit = 30; renderMedien(); }
 /* Anlagen als Zeitleiste nach Monat: Bilder pro Tag als Streifen, Dokumente als Zeilen, Aktionen im Menü */
 function medDots(items) {
   var b = mk('button', 'md-dots', '⋯'); b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
@@ -236,25 +236,25 @@ function renderMedien() {
   var nb = (curP.bilder || []).filter(recordVisible).length + (curP.videos || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
   document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dateien (' + nd + ')';
   document.getElementById('md-bild').className = medFilter === 'bild' ? 'on' : ''; document.getElementById('md-dok').className = medFilter === 'dok' ? 'on' : '';
-  var ub = document.getElementById('a-unt-block'); if (ub) ub.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none';
+  var ub = document.getElementById('a-unt-block'); if (ub) ub.style.display = (medFilter === 'dok' && !medKat.length) ? 'block' : 'none';
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
   var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
   var kats = []; (curP.dokumente || []).filter(recordVisible).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });
   kats.sort(function (a, b) { return KATS.indexOf(a) - KATS.indexOf(b); });
-  if (medKat && kats.indexOf(medKat) < 0) medKat = '';
+  medKat = medKat.filter(function (k) { return kats.indexOf(k) >= 0; });
   if (medFilter === 'dok' && kats.length > 1) [''].concat(kats).forEach(function (k) {
-    var bt = mk('button', 'md-chip' + (medKat === k ? ' on' : ''), k || 'Alle'); bt.type = 'button'; bt.onclick = function () { setMedFilter('dok', k); }; chips.appendChild(bt);
+    var an = k ? medKat.indexOf(k) >= 0 : !medKat.length, bt = mk('button', 'md-chip' + (an ? ' on' : ''), k || 'Alle'); bt.type = 'button'; bt.setAttribute('aria-pressed', an ? 'true' : 'false'); bt.onclick = function () { setMedFilter('dok', !k ? [] : an ? medKat.filter(function (x) { return x !== k; }) : medKat.concat([k])); }; chips.appendChild(bt);
   });
   var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), items = [];
   fileGroups(curP, medFilter).forEach(function (g) {
-    var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat && medFilter === 'dok') || kc(x) === medKat); });
+    var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat.length && medFilter === 'dok') || medKat.indexOf(kc(x)) >= 0); });
     if (l.length) items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
   });
   items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = ''; box.classList.toggle('md-tab', medFilter === 'dok');
   var vids = medFilter === 'bild' ? (curP.videos || []).filter(function (v) { return recordVisible(v) && (!q || String(v.name || '').toLowerCase().indexOf(q) >= 0); }).sort(function (a, b) { return tsOf(b) - tsOf(a); }) : [];
   if (vids.length) box.appendChild(medVideos(curP, vids));
-  if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
+  if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat.length) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
   items.slice(0, medLimit).forEach(function (it) {
     var g = it.g, d = new Date(it.k);
     var c = mk('div', 'md-item'), zl = g.zu ? mk('div', 'md-zu', zuLabel(g.p, g.zu)) : null;
