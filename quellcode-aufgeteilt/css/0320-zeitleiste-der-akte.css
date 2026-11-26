@@ -15,3 +15,5 @@
 .tl-day.tl-all .tl-dh + .tl-item::before, .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item::before { display:none; }
 .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:8px; }
 .tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):has(+ .tl-item:is(.tl-termin,.tl-doku)) .tl-body { padding-bottom:8px; }
+/* Kopfzeile der Anhänge mit rundem Bearbeiten-Knopf */
+.tl-att { display:flex; align-items:center; gap:8px; } .tl-att .md-edit { width:24px; height:24px; } .tl-att .md-edit svg { width:14px; height:14px; margin:0; vertical-align:0; }
