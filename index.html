@@ -1614,6 +1614,11 @@ body.pe-open { overflow:hidden; }
 @media (any-hover:hover) { .med-rx { opacity:0; transition:opacity .15s; } .a-tile ul li:hover .med-rx, .med-rx:focus-visible { opacity:1; color:var(--pf-navy); } }
 @media (any-hover:none) { .med-rx { display:none; } }
 .med-rxall { position:absolute; top:3px; right:30px; display:inline-flex; gap:4px; align-items:center; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); border-radius:999px; padding:2px 10px 2px 8px; font-size:12px; font-weight:600; cursor:pointer; } .med-rxall svg { width:14px; height:14px; }
+/* Zeitleiste: Dokument-Einträge bündig mit den anderen, eigene Strichfarbe; gleicher Abstand der grauen Tageslinie zu den Kästen darüber und darunter */
+.tl-day .tl-item.tl-dokument .tl-body { padding-left:8px; border-left-color:#64748b; } .tl-item.tl-dokument .tl-label { color:#475569; font-weight:600; } .tl-item.tl-dokument .tl-date .tl-ico { color:#64748b; }
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku { margin-top:9px !important; }
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::before, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::before { top:-5.25px !important; }
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::after, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { top:-9px !important; height:9px !important; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3273,7 +3278,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-i';
+var KA_V = '2026-11-26-j';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
