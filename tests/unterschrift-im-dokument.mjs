@@ -59,8 +59,12 @@ try {
     // Veränderung wird erkannt
     await fPut(d.id, d.name, new Blob([await fileBlob(d), new Uint8Array([1])], { type: 'application/pdf' }));
     const c2 = await sigCheck(d); out.geaendertErkannt = c2.st === 'geaendert';
-    // Menü: Logbuch wird erzeugt (auch für Dokumente ohne Logbuch)
-    out.menue = true;
+    // Menü: Logbuch öffnet in der App (Seiten als Bild, Öffnen, Herunterladen), auch für Dokumente ohne Logbuch
+    d.logId = null; logbuchOpen(curP || patients[0], d);
+    for (let i = 0; i < 40 && !document.querySelector('.dp-ov canvas'); i++) await new Promise(r => setTimeout(r, 150));
+    const lov = document.querySelector('.dp-ov');
+    out.menue = !!lov && lov.querySelectorAll('canvas').length >= 1 && /Öffnen/.test(lov.textContent) && /Herunterladen/.test(lov.textContent) && !!lov.querySelector('a[download]') && /^blob:/.test(lov.querySelector('a[download]').href);
+    if (lov) lov.remove();
     return out;
   });
   for (const k of Object.keys(r)) assert.equal(r[k], true, 'Unterschrift im Dokument: ' + k + ' ' + JSON.stringify(r));

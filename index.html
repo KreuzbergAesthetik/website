@@ -1532,10 +1532,21 @@ body.pe-open { overflow:hidden; }
 }
 /* Fußleiste: aktiver Reiter als Pille hinter dem Symbol, Beschriftung fett in Navy */
 @media (max-width:700px) {
+  .bnav-it { gap:7px; }
   .bnav-it svg { position:relative; z-index:1; }
-  .bnav-it::before { content:''; position:absolute; top:8px; left:50%; width:58px; height:32px; margin-left:-29px; border-radius:16px; background:rgba(1,34,101,.11); opacity:0; transform:scale(.6); transition:opacity .18s ease, transform .18s ease; pointer-events:none; }
-  .bnav-it.on::before { top:8px; bottom:auto; left:50%; right:auto; height:32px; border-radius:16px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
-  .bnav-it:active:not(.on)::before { opacity:1; transform:none; background:rgba(1,34,101,.07); }
+  .bnav-it::before { content:''; position:absolute; top:7px; left:50%; width:56px; height:27px; margin-left:-28px; border-radius:14px; background:rgba(1,34,101,.11); opacity:0; transform:scale(.6); transition:opacity .22s ease, transform .22s ease, background-color .45s ease; pointer-events:none; }
+  .bnav-it.on::before { top:7px; bottom:auto; left:50%; right:auto; height:27px; border-radius:14px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
+  /* Antippen: Pille leuchtet kurz dunkelgrau auf, Symbol und Beschriftung werden dunkel und blenden dann zurück */
+  .bnav-it:active::before { opacity:1; transform:none; background:rgba(51,65,85,.34); transition:none; }
+  .bnav-it:active { color:var(--pf-navy,#012265); }
+  .bnav-it.tap::before { animation:bnavPill .7s ease-out; }
+  .bnav-it.tap { animation:bnavInk .7s ease-out; }
+  /* Mehr-Menü offen: "Mehr" ist markiert, die Seite dahinter nicht */
+  body.navmenu-open .bnav-it.on:not(#bnav-mehr)::before { opacity:0; transform:scale(.6); }
+  body.navmenu-open .bnav-it.on:not(#bnav-mehr) { color:#64748b; }
+  body.navmenu-open #bnav-mehr { color:var(--pf-navy); }
+  body.navmenu-open #bnav-mehr::before { opacity:1; transform:none; background:rgba(1,34,101,.11); }
+}
 }
 /* Akte im Querformat: Name mittig im Kopfkasten */
 .a-top .a-title { align-items:center; }
@@ -1551,6 +1562,22 @@ body.pe-open { overflow:hidden; }
 .tl-docp .md-ic { width:34px; height:44px; } .tl-docp .tl-docn { font-size:13px; font-weight:600; color:#0f172a; min-width:0; overflow-wrap:anywhere; } .tl-docp .tl-docs { font-size:11.5px; color:#64748b; }
 /* Update-Hinweis: Später-Knopf auf dunklem Grund gut lesbar */
 #upd-bar .btn-cancel, #ks-bar .btn-cancel { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.6); }
+/* Zeitleiste: Mit Maus oder Stift zeigt das Überfahren die Symbole samt "…"; der Pfeil rechts würde dasselbe Menü öffnen und entfällt dort. Am reinen Touchgerät bleibt er. */
+@media (any-hover:hover) { .tl-item .tl-plus { display:none !important; } }
+@keyframes bnavPill { 0% { background-color:rgba(51,65,85,.34); } 100% { background-color:rgba(1,34,101,.11); } }
+@keyframes bnavInk { 0% { color:var(--pf-navy,#012265); } }
+/* Geräte-Abgleich: Abschnitte mit Überschrift, Trennen rot */
+.sy-h { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:20px 0 8px; padding-top:14px; border-top:1px solid #eef2f6; }
+.btn.btn-rot { background:transparent; color:#b91c1c; border:1px solid #dc2626; box-shadow:none; border-radius:999px; } .btn.btn-rot:hover { background:rgba(220,38,38,.08); }
+/* Geräte-Abgleich als Liste */
+.sy-row { display:flex; align-items:center; gap:8px; width:100%; min-height:48px; padding:6px 2px; background:none; border:0; border-top:1px solid #eef2f6; text-align:left; font:inherit; font-size:15px; color:#0f172a; cursor:pointer; }
+.sy-row .t { flex:1; min-width:0; } .sy-row .t small { display:block; font-size:12px; color:#64748b; margin-top:1px; }
+.sy-row .v { font-size:13px; color:#64748b; } .sy-row .ch { color:#94a3b8; font-size:20px; line-height:1; }
+.sy-row.sy-sub { padding-left:16px; font-size:14px; color:#012265; min-height:40px; border-top:0; }
+.sy-sw { position:relative; flex:none; width:42px; height:24px; } .sy-sw input { position:absolute; inset:0; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+.sy-sw i { position:absolute; inset:0; border-radius:12px; background:#cbd5e1; transition:background .2s; pointer-events:none; } .sy-sw i::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; box-shadow:0 1px 2px rgba(15,23,42,.3); }
+.sy-sw input:checked + i { background:#15803d; } .sy-sw input:checked + i::after { transform:translateX(18px); }
+.sy-info { margin-top:14px; font-size:13px; color:#64748b; } .sy-info summary { cursor:pointer; color:#475569; padding:4px 0; }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -2259,11 +2286,19 @@ function kaStart() {
         <div class="sy-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
         <div class="sy-inbox" style="font-size:13px; color:#64748b; margin-bottom:6px;"></div>
         <div class="sy-conn" style="font-size:12.5px; color:#64748b; margin-bottom:10px;"></div>
-        <div class="form-group" style="max-width:420px;"><label>Wann soll abgeglichen werden?</label><select class="form-control sy-mode" onchange="KS.setMode(this.value)"><option value="taeglich">Einmal täglich beim Öffnen (empfohlen)</option><option value="manuell">Nur wenn ich es starte</option><option value="auto">Sofort nach jeder Änderung</option></select></div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"><button type="button" class="btn btn-save" onclick="KS.run(true)">Jetzt abgleichen</button><button type="button" class="btn btn-secondary" onclick="KS.abrufen()">Postfach abrufen</button><button type="button" class="btn btn-secondary" onclick="KS.diagnose()">Verbindung prüfen</button><button type="button" class="btn btn-secondary" onclick="syncBackups()">Frühere Stände</button><button type="button" class="btn btn-secondary" onclick="syncPw()">Passwort ändern</button><button type="button" class="btn btn-cancel" onclick="syncOff()">Trennen</button></div>
-        <div class="form-group" style="max-width:520px; margin-bottom:12px;"><label class="tm-chk" style="display:flex; gap:8px; align-items:flex-start; font-weight:600;"><input type="checkbox" id="sy-mail" onchange="mailServerSet(this.checked)" style="margin-top:3px;"> <span>E-Mails ohne Anhang direkt über den Server senden<br><span style="font-weight:400; font-size:12.5px; color:#64748b;">Absender ist die Adresse aus dem Server-Skript. Der Text läuft verschlüsselt per HTTPS über den Praxis-Server und wird dort nicht gespeichert. E-Mails mit Anhang laufen weiter über Teilen bzw. Dein Mailprogramm.</span></span></label><button type="button" class="btn btn-secondary btn-sm" onclick="mailServerTest()" style="margin-top:6px;">Test-E-Mail an die Praxis senden</button> <span id="sy-mailst" style="font-size:12.5px; color:#64748b;"></span></div>
+        <select class="sy-mode" style="display:none" aria-hidden="true"><option value="taeglich"></option><option value="manuell"></option><option value="auto"></option></select>
+        <button type="button" class="btn btn-save" style="width:100%; margin:4px 0 8px;" onclick="KS.run(true)">Jetzt abgleichen</button>
+        <button type="button" class="sy-row" onclick="syModeMenu(event)"><span class="t">Abgleich</span><span class="v" id="sy-modelbl">Einmal täglich</span><span class="ch">›</span></button>
+        <button type="button" class="sy-row" onclick="KS.abrufen()"><span class="t">Postfach abrufen</span><span class="ch">›</span></button>
+        <label class="sy-row" for="sy-mail"><span class="t">E-Mails direkt über den Server<small>Text per HTTPS über den Praxis-Server, nichts wird gespeichert. Mit Anhang weiter über Teilen.</small></span><span class="sy-sw"><input type="checkbox" id="sy-mail" onchange="mailServerSet(this.checked)"><i></i></span></label>
+        <button type="button" class="sy-row sy-sub" onclick="mailServerTest()"><span class="t">Test-E-Mail an die Praxis senden</span><span class="ch">›</span></button>
+        <div id="sy-mailst" style="font-size:12.5px; color:#64748b; padding:0 2px 8px;"></div>
+        <button type="button" class="sy-row" onclick="KS.diagnose()"><span class="t">Verbindung prüfen</span><span class="ch">›</span></button>
+        <button type="button" class="sy-row" onclick="syncBackups()"><span class="t">Frühere Stände</span><span class="ch">›</span></button>
         <div id="sy-baks"></div>
-        <div style="font-size:13px; color:#64748b;">Je nach Einstellung läuft der Abgleich nur einmal täglich beim Öffnen der App, nur auf Antippen oder sofort nach jeder Änderung. Dabei wird auch das Postfach abgerufen. Dazwischen arbeitet die App ohne Verbindung zum Server, offline arbeitest Du normal weiter. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div>
+        <button type="button" class="sy-row" onclick="syncPw()"><span class="t">Passwort ändern</span><span class="ch">›</span></button>
+        <div style="border-top:1px solid #eef2f6; padding-top:14px; margin-top:0;"><button type="button" class="btn btn-rot" onclick="syncOff()" title="Dieses Gerät vom Abgleich trennen">Trennen</button></div>
+        <details class="sy-info"><summary>Wie funktioniert der Abgleich?</summary><div>Je nach Einstellung läuft der Abgleich nur einmal täglich beim Öffnen der App, nur auf Antippen oder sofort nach jeder Änderung. Dabei wird auch das Postfach abgerufen. Dazwischen arbeitet die App ohne Verbindung zum Server, offline arbeitest Du normal weiter. Haben zwei Geräte gleichzeitig offline etwas geändert, fragt die App, welcher Stand gilt, und hebt den anderen verschlüsselt auf.</div></details>
       </div>
     </div>
     <div class="card" id="ext-box" style="margin-top:16px;">
@@ -2673,7 +2708,7 @@ function kaStart() {
     <div class="grid-2"><div class="form-group"><label>Gruppe (bestimmt die Farbe im Kalender)</label><select id="ls-kat" class="form-control"></select></div><div class="form-group"><label>Dauer in Minuten</label><input type="text" id="ls-dauer" class="form-control" inputmode="numeric" placeholder="z.B. 30"></div></div>
     <details class="settings-section" id="ls-goae-box"><summary>GOÄ (optional)</summary><div class="settings-content">
       <div class="form-group"><label>GOÄ-Positionen dieser Behandlung</label><div id="ls-goae-list"></div>
-        <div style="display:flex; gap:6px; margin-top:6px;"><select id="ls-goae-pick" class="form-control" style="min-width:0;" onchange="lsGoaePick(this.value)"></select><button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="lsGoaeAdd('')">+ Eigene</button></div>
+        <div style="display:flex; gap:6px; margin-top:6px;"><select id="ls-goae-pick" class="form-control" style="min-width:0;" onchange="lsGoaePick(this.value)"></select><button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="lsGoaeAdd('')">+ Eigene</button><button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="lsGoaeSuggest()" title="Standard-Vorschlag nach dem Namen der Leistung">Vorschlag</button></div>
         <div id="ls-goae-hint" style="font-size:12px; color:#64748b; margin-top:4px;"></div></div>
       <div class="grid-2">
         <div class="form-group"><label>Präparat (Auslage § 10 GOÄ)</label><input type="text" id="ls-ausl-text" class="form-control" autocomplete="off" placeholder="Bezeichnung"></div>
@@ -3202,7 +3237,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-25-b';
+var KA_V = '2026-11-25-h';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3352,6 +3387,17 @@ function lgUpdate() {
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
 var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
+/* Fußleiste: Zustand „Mehr-Menü offen“ und kurze Antipp-Animation */
+(function () {
+  function ready() {
+    var m = document.getElementById('nav-menu'), bar = document.getElementById('bnav'); if (!m || !bar) return false;
+    var sync = function () { document.body.classList.toggle('navmenu-open', m.style.display !== 'none' && m.style.display !== ''); };
+    new MutationObserver(sync).observe(m, { attributes: true, attributeFilter: ['style'] }); sync();
+    bar.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.bnav-it'); if (!b) return; b.classList.remove('tap'); void b.offsetWidth; b.classList.add('tap'); setTimeout(function () { b.classList.remove('tap'); }, 750); }, true);
+    return true;
+  }
+  if (!ready()) document.addEventListener('DOMContentLoaded', ready);
+})();
 function bnavSync() {
   var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '';
   var on = ['kalender', 'patienten', 'todos', 'rechnungen'].indexOf(id) >= 0 ? id : (PRAXIS_TABS.indexOf(id) >= 0 ? 'mehr' : '');
@@ -4885,8 +4931,30 @@ var GOAE_VORSCHLAEGE = [
   { nr: '7', pkt: 160, text: 'Vollständige Untersuchung des gesamten Hautorgans', hint: 'Umfasst Haut, Hautanhangsgebilde und sichtbare Schleimhäute.' },
   { nr: '252', pkt: 40, text: 'Injektion, subkutan, submukös, intrakutan oder intramuskulär', hint: '' },
   { nr: '267', pkt: 80, text: 'Medikamentöse Infiltrationsbehandlung im Bereich einer Körperregion, je Sitzung', hint: 'Laut BÄK für Botulinumtoxin oder Hyaluronsäure, wenn eine Seite bzw. eine Region behandelt wird (z. B. eine Wange). Nur eine der Nrn. 267/268 je Sitzung.' },
+  { nr: '271', pkt: 120, text: 'Intravenöse Infusion (ggf. auch in ein Reservoir), bis zu 30 Minuten Dauer', hint: 'Je Gefäßzugang einmal, insgesamt höchstens zweimal je Behandlungstag. Nicht neben Nr. 272 (Zeitraum zählt).' },
+  { nr: '272', pkt: 180, text: 'Intravenöse Infusion (ggf. auch in ein Reservoir), von mehr als 30 Minuten Dauer', hint: 'Je Gefäßzugang einmal, insgesamt höchstens zweimal je Behandlungstag. Nicht neben Nr. 271 zur selben Zeit.' },
   { nr: '268', pkt: 130, text: 'Medikamentöse Infiltrationsbehandlung im Bereich mehrerer Körperregionen (auch eine Körperregion beidseitig), je Sitzung', hint: 'Laut BÄK, wenn über die Mittellinie oder beidseitig behandelt wird (ganze Stirn, ganzes Kinn, beide Wangen). Nicht neben Nr. 267.' }
 ];
+/* Standard-Vorschlag je Leistung (nach dem Namen). Nur für Leistungen mit belegter Nummer: Botulinumtoxin und Hyaluronsäure (BÄK-Ratgeber Faltenunterspritzung, DÄ 2022;119(13):A 584) und intravenöse Infusionen (Nrn. 271/272).
+   Für alle anderen Leistungen gibt es hier bewusst keinen Vorschlag: Eine Analogbewertung nach § 6 Abs. 2 GOÄ entscheidet der Arzt (Verzeichnis der analogen Bewertungen der Bundesärztekammer). */
+function goaeStandardFor(name) {
+  var n = String(name || '').toLowerCase();
+  if (/jede weitere zone/.test(n)) return { nrs: [], hint: 'Je Sitzung ist nur eine der Nrn. 267/268 berechnungsfähig. Für weitere Zonen gibt es keine zusätzliche Position (BÄK). Bitte bei der Hauptleistung ansetzen.' };
+  if (/1 zone/.test(n) && /neuromodulator|botox|botulinum/.test(n)) return { nrs: ['267'], hint: 'Eine Körperregion, eine Seite: Nr. 267 (BÄK-Ratgeber Faltenunterspritzung). Beidseitig: Nr. 268.' };
+  if (/neuromodulator|botox|botulinum|bruxismus|masseter|jawline|platysma|nefertiti|trap-tox|barbie|hyperhidrosis/.test(n)) return { nrs: ['268'], hint: 'Mehrere Körperregionen oder beidseitig: Nr. 268 (BÄK-Ratgeber Faltenunterspritzung). Bei nur einer Seite/Region: Nr. 267.' + (/hyperhidrosis/.test(n) ? ' Bei medizinischer Indikation bitte Abrechnung und Begründung prüfen.' : '') };
+  if (/hyaluron|lip-flip|filler/.test(n) && !/hylase|hyaluronidase/.test(n)) return { nrs: ['267'], hint: 'Eine Region/Seite: Nr. 267. Beidseitig oder mehrere Regionen (z. B. beide Wangen): Nr. 268 (BÄK-Ratgeber Faltenunterspritzung). Das Präparat als Auslage nach § 10 GOÄ.' };
+  if (/infusion/.test(n)) return { nrs: ['272'], hint: 'Infusion länger als 30 Minuten: Nr. 272, bis 30 Minuten: Nr. 271. Nur bei medizinischer Begründung; das Präparat als Auslage nach § 10 GOÄ.' };
+  return null;
+}
+function lsGoaeSuggest() {
+  var name = (document.getElementById('ls-name') || {}).value || '', g = goaeStandardFor(name), h = document.getElementById('ls-goae-hint');
+  var say = function (t) { if (h) h.textContent = t; };
+  if (!g) { say('Für „' + (name || 'diese Leistung') + '“ gibt es keinen belegten Standard. Mögliche Analogbewertung nach § 6 Abs. 2 GOÄ: im Verzeichnis der analogen Bewertungen der Bundesärztekammer nachsehen und die Position von Hand eintragen („+ Eigene“, Haken A).'); return; }
+  if (!g.nrs.length) { say(g.hint); return; }
+  LS_POS = g.nrs.map(function (nr) { var v = GOAE_VORSCHLAEGE.filter(function (x) { return x.nr === nr; })[0]; return { nr: v.nr, pkt: v.pkt, text: v.text, analog: false }; });
+  say('Vorschlag (bitte fachlich prüfen): ' + g.hint);
+  var bx = document.getElementById('ls-goae-box'); if (bx) bx.open = true; lsPosRender(); lsFaktorInfo();
+}
 function goaeFaktor(bruttoEinzel, rate, pkt) { var net = (+bruttoEinzel || 0) / (1 + (+rate || 0) / 100); return pkt > 0 ? Math.round(net / (pkt * GOAE_PW) * 10000) / 10000 : 0; }
 function goaeFx(f) { return String(f).replace('.', ','); }
 /* GOÄ-Positionen einer Leistung (ältere Leistungen mit nur einer Nummer werden übernommen) */
@@ -5194,7 +5262,9 @@ function invTerminChanged() {
   if (!e) { invDokEv = null; document.getElementById('inv-doku-btn').style.display = 'none'; return; }
   document.getElementById('inv-leistung').value = e.date;
   invDokEv = e; var rb = document.getElementById('inv-doku-btn'); if (rb) rb.style.display = e.dok && String(e.dok.rechnung || '').trim() ? '' : 'none';
-  var lst = evLeistungen(e).filter(function (n) { return findKat(n); });
+  /* Leistungen aus der Dokumentation (Feld „Leistungen“) haben Vorrang vor denen des Termins */
+  var dl = e.dok ? String(e.dok.leist || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean) : [];
+  var lst = (dl.length ? dl : evLeistungen(e)).filter(function (n) { return findKat(n); });
   if (lst.length > 1 || (lst.length === 1 && lst[0] !== e.behandlung)) {
     var f0 = invRows[0]; if (invRows.length === 1 && f0.type === 'pos' && !f0.text.trim() && !f0.price) invRows = [];
     lst.forEach(function (n) { if (invRows.some(function (r) { return r.text === n; })) return; var k = findKat(n), r = newRow('pos'); r.datum = e.date; r.text = k.name; r.price = String(k.price).replace('.', ','); r.rate = String(k.rate); invRows.push(r); });
@@ -5293,6 +5363,13 @@ function renderInvRows() {
       mid.appendChild(q); mid.appendChild(as); mid.appendChild(rt); card.appendChild(mid); box.appendChild(card); return;
     }
     mid.appendChild(q); mid.appendChild(pr); mid.appendChild(rt); card.appendChild(mid);
+    /* Leistungen mit GOÄ-Positionen: Aufschlüsselung pro Zeile wählbar */
+    var kg = !r.goae && !r.auslage ? (settings.katalog || []).filter(function (x) { return x.name.trim().toLowerCase() === String(r.text || '').trim().toLowerCase(); })[0] : null;
+    if (kg && lsGoaePos(kg).length) {
+      var gl = mk('label', 'tm-chk'); gl.style.cssText = 'display:flex; gap:6px; align-items:center; font-size:12.5px; color:#475569; margin:4px 0 6px;';
+      var gc = mk('input'); gc.type = 'checkbox'; gc.checked = !r.goaeOff; gc.onchange = function () { r.goaeOff = !gc.checked; };
+      gl.appendChild(gc); gl.appendChild(document.createTextNode('Nach GOÄ aufschlüsseln (Nr. ' + lsGoaePos(kg).map(function (p) { return p.nr; }).join(', ') + ')')); card.appendChild(gl);
+    }
     /* kleine Zusatzfelder je Position: Rabatt, Datum, Text */
     var btns = mk('div', 'ic-btns'), fields = mk('div', 'ic-fields');
     var shown = { rab: !!(String(r.rab || '').trim()), datum: !!r.datum, note: !!String(r.note || '').trim() };
@@ -5338,7 +5415,7 @@ async function saveInvoice() {
       var it0 = { text: r.text.trim(), qty: q, price: pr, amount: r2(q * pr), rate: parseInt(r.rate, 10), datum: r.datum || datum, note: String(r.note || '').trim() };
       if (r.goae) { var same = r.goae.gebuehr != null && Math.abs(r2(r.goae.gebuehr * (1 + it0.rate / 100)) - pr) < 0.005; it0.goae = same ? Object.assign({}, r.goae) : Object.assign({}, r.goae, { faktor: goaeFaktor(pr, it0.rate, r.goae.pkt), gebuehr: r2(pr / (1 + it0.rate / 100)) }); items.push(it0); }
       else if (r.auslage) { it0.auslage = true; items.push(it0); }
-      else { var ex = goaeExpand(it0); if (ex === 'err') { goaeErr = it0.text; bad = true; return; } if (ex) ex.forEach(function (x) { items.push(x); }); else items.push(it0); }
+      else { var ex = r.goaeOff ? null : goaeExpand(it0); if (ex === 'err') { goaeErr = it0.text; bad = true; return; } if (ex) ex.forEach(function (x) { items.push(x); }); else items.push(it0); }
       var pcr = numIn(r.rab), pge = r.rabArt === 'eur';
       if (pcr > 0 && (pge || pcr <= 100)) { var pa = posRab(i); items.push(pge ? { rabatt: true, perPos: true, art: 'eur', eur: pcr, pct: 0, text: String(r.rabText || 'Rabatt').trim() + ' -' + nf(pa) + ' €', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }
         : { rabatt: true, perPos: true, pct: pcr, text: String(r.rabText || 'Rabatt').trim() + ' -' + String(pcr).replace('.', ',') + '%', qty: 1, price: -pa, amount: -pa, rate: parseInt(r.rate, 10) }); } else if (pcr > 100 && !pge) bad = true;
@@ -11173,7 +11250,10 @@ function extSave() {
 }
 async function extOff() { if (!await kaConfirm('Privaten Kalender entfernen? Die Adresse wird aus der App gelöscht.')) return; settings.extUrl = ''; persist(); EXT.clear(); EXT.ui(); try { renderCal(); } catch (x) {} }
 function extHide(on) { settings.extHide = !!on; persist(); EXT.ui(); try { renderCal(); } catch (x) {} }
-function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; var sm = document.getElementById('sy-mail'); if (sm) sm.checked = !!settings.mailServer; document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }
+var SY_MODES = [['taeglich', 'Einmal täglich beim Öffnen (empfohlen)', 'Einmal täglich'], ['manuell', 'Nur wenn ich es starte', 'Nur auf Antippen'], ['auto', 'Sofort nach jeder Änderung', 'Sofort']];
+function syModeLabel() { var l = document.getElementById('sy-modelbl'); if (!l || !window.KS) return; var m = SY_MODES.filter(function (x) { return x[0] === KS.mode(); })[0] || SY_MODES[0]; l.textContent = m[2]; }
+function syModeMenu(ev) { tlMenu(ev, SY_MODES.map(function (m) { return [m[1], function () { KS.setMode(m[0]); syModeLabel(); }]; })); }
+function renderSync() { var m = document.getElementById('sy-msg'); if (m) m.textContent = ''; var sm = document.getElementById('sy-mail'); if (sm) sm.checked = !!settings.mailServer; syModeLabel(); document.getElementById('sy-baks').innerHTML = ''; KS.ui(); EXT.ui(); }
 async function syncGo(mode) {
   var pw = document.getElementById('sy-pw').value, m = document.getElementById('sy-msg'); m.className = ''; m.style.color = '#64748b';
   if (pw.length < 12) { m.style.color = '#b91c1c'; m.textContent = 'Das Passwort braucht mindestens 12 Zeichen.'; return; }

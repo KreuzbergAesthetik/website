@@ -365,7 +365,7 @@ var KS = (function () {
       var st = box.querySelector('.sy-state');
       st.textContent = S.busy ? (S.msg || 'Gleiche ab …') : S.err ? S.err : b.dirty ? 'Änderungen warten auf den Abgleich' + (syncMode() === 'auto' ? '' : ' (nächster Abgleich: ' + (syncMode() === 'manuell' ? 'wenn Du ihn startest' : 'morgen beim Öffnen oder auf Antippen') + ')') : 'Alles abgeglichen (' + ago(b.last) + ')';
       var cn = box.querySelector('.sy-conn'); if (cn) cn.textContent = 'Zuletzt mit dem Server verbunden: ' + (lastConn() ? ago(lastConn()) : 'noch nie');
-      var ms = box.querySelector('.sy-mode'); if (ms && ms.value !== syncMode()) ms.value = syncMode();
+      var ms = box.querySelector('.sy-mode'); if (ms && ms.value !== syncMode()) ms.value = syncMode(); try { if (window.syModeLabel) syModeLabel(); } catch (x) {}
       st.className = 'sy-state' + (S.err ? ' bad' : b.dirty || S.busy ? ' wait' : ' good');
       box.querySelector('.sy-inbox').textContent = n ? n + ' Formular(e) im Postfach' : 'Postfach leer';
     }

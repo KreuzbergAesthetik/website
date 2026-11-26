@@ -40,6 +40,9 @@ try {
   await page.evaluate(() => KS.setMode('auto')); await page.waitForTimeout(800);
   const v1 = n; await page.evaluate(() => fPut('y-' + Date.now(), 'y.txt', new Blob(['y']))); await page.waitForTimeout(7500);
   assert.ok(n > v1, 'auto: Änderung löst nach wenigen Sekunden einen Abgleich aus');
+  // Liste im Abgleichbereich: Zeile „Abgleich“ öffnet die Auswahl und setzt die Einstellung samt Beschriftung
+  const menu = await page.evaluate(() => { switchTab('abgleich'); renderSync(); syModeMenu({ stopPropagation() {}, currentTarget: document.querySelector('#sync-box .sy-row') }); [...document.querySelectorAll('#tl-menu button')].find(b => /Sofort nach jeder/.test(b.textContent)).click(); return { m: KS.mode(), l: document.getElementById('sy-modelbl').textContent }; });
+  assert.deepEqual(menu, { m: 'auto', l: 'Sofort' }, 'Abgleich-Zeile: ' + JSON.stringify(menu));
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
   console.log('Abgleich-Modus OK (täglich, nur auf Antippen, sofort)');
 } finally {
