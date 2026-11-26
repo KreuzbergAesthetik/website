@@ -1650,7 +1650,7 @@ body.pe-open { overflow:hidden; }
 .tl-day.tl-all .tl-date { position:relative; padding-right:34px; }
 .tl-date .tl-ico { position:absolute; right:7px; top:1px; width:22px; height:22px; margin:0; }
 .tl-day.tl-all .tl-item.tl-dstart .tl-date .tl-ico { top:5px; }
-.tl-day.tl-all { background-position:113px 0; }
+.tl-day.tl-all { background-position:112px 0; }
 .tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart)::before { background:linear-gradient(to right, transparent 0 103px, #e2e8f0 103px); }
 /* Zeitleiste: Die senkrechte Linie bleibt überall durchgehend; waagerechte Trennlinien laufen hinter ihr durch (Aussparung an der Linie) */
 .tl-day.tl-all .tl-item.tl-dstart:not(:first-child)::before { left:6px !important; right:6px !important; background:linear-gradient(to right, #94a3b8 0 95px, transparent 95px 98px, #94a3b8 98px) !important; }
@@ -3327,7 +3327,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-zc';
+var KA_V = '2026-11-26-zd';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
