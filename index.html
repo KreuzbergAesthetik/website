@@ -250,7 +250,7 @@ textarea.form-control { font-size:15px; }
 .md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
 .md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:var(--pf-navy); border-color:#0f172a; color:#fff; }
 .md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .seg#inv-payseg { display:flex; width:100%; margin-bottom:16px; } #inv-payseg button { flex:1 1 auto; min-width:0; padding:9px 4px; font-size:12.5px; white-space:nowrap; } #inv-paybox { margin-bottom:6px; }
-.md-seg { display:flex; margin:10px 0 2px; } .md-seg button { flex:1; }
+.md-seg { display:flex; margin:2px 0 12px; } .md-seg button { flex:1; }
 .md-mon { font-weight:800; font-size:15px; margin:18px 0 8px; } .md-mon:first-child { margin-top:10px; }
 .md-item { margin-bottom:14px; } .md-gh { display:flex; align-items:center; gap:6px; } .md-gt { font-size:12.5px; color:#64748b; } .md-zu { font-size:12px; color:#047857; margin:2px 0 4px; }
 .md-strip { grid-template-columns:repeat(auto-fill,minmax(62px,68px)) !important; margin:4px 0 6px !important; }
@@ -2532,6 +2532,7 @@ function kaStart() {
   </div>
   <div id="at-anl" style="display:none;">
   <div id="a-medien-block" class="card">
+    <div class="seg md-seg" id="md-seg"><button type="button" id="md-bild" onclick="setMedFilter('bild')"></button><button type="button" id="md-dok" onclick="setMedFilter('dok')"></button></div>
     <div class="card-header" style="margin-bottom:6px;">
       <div class="ak-h" style="margin:0; border:none; padding:0;">Bilder und Dateien</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -2541,7 +2542,6 @@ function kaStart() {
     <div class="cal-bar">
       <input type="text" id="md-filter" class="form-control" placeholder="Dateiname suchen..." autocomplete="off" oninput="medLimit = 30; renderMedien()" style="flex:1 1 200px;">
     </div>
-    <div class="seg md-seg" id="md-seg"><button type="button" id="md-bild" onclick="setMedFilter('bild')"></button><button type="button" id="md-dok" onclick="setMedFilter('dok')"></button></div>
     <div id="md-cmp" class="vg-area" style="display:none;"></div>
     <div id="md-chips" class="md-chips"></div>
   <div id="a-unt-block" class="md-forms" style="display:none;">
@@ -3251,7 +3251,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-e';
+var KA_V = '2026-11-26-f';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
