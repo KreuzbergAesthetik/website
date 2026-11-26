@@ -1651,9 +1651,10 @@ body.pe-open { overflow:hidden; }
 .tl-day.tl-all .tl-item.tl-angelegt, .tl-day.tl-all .tl-item.tl-dokument { --tlc:#64748b; }
 .tl-day.tl-all .tl-date b { display:none; }
 .tl-dg { margin:0 -12px; padding:0 12px; } .tl-dg2 { background:#e4ebfa; }
-.tl-dh { position:relative; margin:0 -12px; padding:9px 12px 3px; border-top:2px solid #dbe3f0; font-size:14px; font-weight:800; color:#0f172a; letter-spacing:.02em; }
-.tl-dh::before { content:''; position:absolute; left:112px; top:-2px; bottom:0; width:3px; background:var(--tlc,#6abf69); pointer-events:none; }
-.tl-dg:first-child > .tl-dh { border-top:0; padding-top:10px; } .tl-dg:first-child > .tl-dh::before { top:0; }
+.tl-dh { display:grid; grid-template-columns:100px 1fr; margin:0 -12px; padding:0 12px; border-top:2px solid #dbe3f0; font-size:14px; font-weight:800; color:#0f172a; letter-spacing:.02em; }
+.tl-dh-t { padding:9px 0 3px; white-space:nowrap; }
+.tl-dh-s { border-left:3px solid var(--tlc,#6abf69); margin-top:-2px; }
+.tl-dg:first-child > .tl-dh { border-top:0; } .tl-dg:first-child > .tl-dh .tl-dh-t { padding-top:10px; } .tl-dg:first-child > .tl-dh .tl-dh-s { margin-top:0; }
 /* feine Trennlinien zwischen Einträgen eines Tages (mit Abstand zum Rand, hinter dem Strich); an Terminen und Dokumentationen mit Rahmen keine Linie, dafür etwas Luft */
 .tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; z-index:-1; left:6px; right:6px; top:0; height:1px; background:#d3dcee; pointer-events:none; }
 .tl-day.tl-all .tl-dh + .tl-item::before, .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item::before { display:none; }
@@ -3318,7 +3319,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-zl';
+var KA_V = '2026-11-26-zq';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -7405,7 +7406,7 @@ function tlRow(it) {
 }
 var tlAuditPatient = null, tlAuditVisible = false;
 /* Kleines Symbol vor der Art des Eintrags */
-var tlFilter = '';
+var tlFilter = [];   /* Mehrfachauswahl: Liste der gewählten Eintragsarten */
 var TL_CHIPS = [['termin', 'Termine'], ['doku', 'Dokumentation'], ['dokument', 'Dokumente'], ['rezept', 'Rezepte'], ['mail', 'E-Mails'], ['notiz', 'Notizen'], ['rechnung', 'Rechnungen']];
 var TL_ICON = { termin: 'calplain', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
 function tlIcon(row, t) {
@@ -7413,7 +7414,7 @@ function tlIcon(row, t) {
   dt.insertAdjacentHTML('beforeend', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
 }
 function renderVerlauf() {
-  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = ''; }
+  if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = []; }
   renderFin(); renderUnterlagen(); renderMedien();
   var name = nameKey(curP), box = document.getElementById('a-verlauf'), items = [];
   events.forEach(function (e) { if (eventBelongs(e, curP)) items.push({ k: new Date(e.date + 'T' + e.time).getTime() || 0, t: 'termin', e: e }); });
@@ -7432,8 +7433,8 @@ function renderVerlauf() {
   items = items.filter(function (it) { var r = it.e || it.d || it.l || it.inv || it.v || it.dd; return !r || recordVisible(r); });
   if (curP.erstellt) items.push({ k: curP.erstellt, t: 'angelegt' });
   var tlHas = {}; items.forEach(function (it) { tlHas[it.t] = 1; });
-  if (tlFilter && !tlHas[tlFilter]) tlFilter = '';
-  if (tlFilter) items = items.filter(function (it) { return it.t === tlFilter; });
+  tlFilter = tlFilter.filter(function (x) { return tlHas[x]; });
+  if (tlFilter.length) items = items.filter(function (it) { return tlFilter.indexOf(it.t) >= 0; });
   var dkey = function (k) { var d = new Date(k); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
   items.sort(function (a, b) { return dkey(b.k) - dkey(a.k) || b.k - a.k; });
   box.innerHTML = '';
@@ -7449,8 +7450,8 @@ function renderVerlauf() {
   auditSlot.innerHTML = ''; auditSlot.style.cssText = 'display:inline-flex; align-items:center; gap:6px;';
   var chipsOn = TL_CHIPS.filter(function (c) { return tlHas[c[0]]; });
   if (chipsOn.length > 1) chipsOn.forEach(function (c) {
-    var fb = mk('button', 'tl-fbtn' + (tlFilter === c[0] ? ' on' : '')); fb.type = 'button'; fb.title = (tlFilter === c[0] ? 'Alle anzeigen' : 'Nur ' + c[1]); fb.setAttribute('aria-label', 'Nur ' + c[1]); fb.setAttribute('aria-pressed', tlFilter === c[0] ? 'true' : 'false');
-    fb.innerHTML = tvSvg(TL_ICON[c[0]]); fb.onclick = function () { tlFilter = tlFilter === c[0] ? '' : c[0]; renderVerlauf(); }; auditSlot.appendChild(fb);
+    var fon = tlFilter.indexOf(c[0]) >= 0, fb = mk('button', 'tl-fbtn' + (fon ? ' on' : '')); fb.type = 'button'; fb.title = (fon ? c[1] + ' wieder ausblenden' : 'Nur ' + c[1] + ' (mehrere möglich)'); fb.setAttribute('aria-label', 'Nur ' + c[1]); fb.setAttribute('aria-pressed', fon ? 'true' : 'false');
+    fb.innerHTML = tvSvg(TL_ICON[c[0]]); fb.onclick = function () { tlFilter = fon ? tlFilter.filter(function (x) { return x !== c[0]; }) : tlFilter.concat([c[0]]); renderVerlauf(); }; auditSlot.appendChild(fb);
   });
   auditSlot.appendChild(auditFilter);
   /* Eine Karte für die ganze Zeitleiste: durchgehender Strich; je Tag eine eigene Datumszeile, darunter links Uhrzeit mit Symbol, rechts das Ereignis */
@@ -7459,7 +7460,7 @@ function renderVerlauf() {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
     var row = tlRow(it);
     if (neuerTag) { dayN++; grp = mk('div', 'tl-dg' + (dayN % 2 ? ' tl-dg2' : '')); card.appendChild(grp); }
-    if (neuerTag) grp.appendChild(mk('div', 'tl-dh', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
+    if (neuerTag) { var dhz = mk('div', 'tl-dh'); dhz.appendChild(mk('div', 'tl-dh-t', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2))); dhz.appendChild(mk('div', 'tl-dh-s')); grp.appendChild(dhz); }
     tlIcon(row, it.t);
     var bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
@@ -8414,7 +8415,17 @@ function tplsForEvent(e) {
   return out;
 }
 function addTplTo(p, t, zu, i, datum) {
-  var id = newId();
+  /* Weitere Kopien derselben Vorlage bekommen das Datum im Namen (bei gleichem Tag zusätzlich die Uhrzeit) */
+  var id = newId(), nm = t.name, hat = (p.dokumente || []).filter(function (d) { return d.tid === t.id; }).length;
+  if (hat) {
+    var dz = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dz)) dz = new Date(); var jetzt = new Date();
+    var mitZusatz = function (z) { return String(t.name).replace(/(\.(pdf|docx?|png|jpe?g))?$/i, function (x) { return ' ' + z + x; }); };
+    var vergeben = function (n) { return (p.dokumente || []).some(function (d) { return String(d.name).toLowerCase() === n.toLowerCase(); }); };
+    var tag = pad(dz.getDate()) + '.' + pad(dz.getMonth() + 1) + '.' + dz.getFullYear();
+    nm = mitZusatz(tag);
+    if (vergeben(nm)) nm = mitZusatz(tag + ' ' + pad(jetzt.getHours()) + '.' + pad(jetzt.getMinutes()));
+    for (var k = 2; vergeben(nm); k++) nm = mitZusatz(tag + ' (' + k + ')');
+  }
   return fileBlob(t).then(function (bl) {
     if (bl && (t.fill || (t.fields && t.fields.length)) && /pdf/i.test(bl.type || 'pdf')) {
       var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
@@ -8422,8 +8433,8 @@ function addTplTo(p, t, zu, i, datum) {
         dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }), fillExtra: fillExtra(p, datum) }, t.fields).catch(function () { return bl; });
     }
     return bl;
-  }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
-    if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: t.name, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
+  }).then(function (bl) { return bl ? fPut(id, nm, bl) : false; }).then(function (ok) {
+    if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: nm, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
     return ok;
   });
 }
@@ -8515,7 +8526,7 @@ function docSend(ev, p, d) {
 function renderUnterlagen() {
   fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
-  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none'; box.innerHTML = '';
+  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = (medFilter === 'dok' && !medKat.length) ? 'block' : 'none'; box.innerHTML = '';
   var offen = mk('div'), erl = mk('div');
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;
@@ -8602,8 +8613,8 @@ function medAddMenu(ev) {
     items.push(['Video', function () { document.getElementById('a-vid-in').click(); }, 'Nur auf diesem Gerät gespeichert']);
   }
   items.push(['Datei hochladen', function () { zuNext = null; document.getElementById('a-doc-in').click(); }, 'PDF, Brief oder Foto vom Gerät; ausgefüllte Formulare werden erkannt']);
-  var tp = templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; });
-  if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben']);
+  var tp = templates.filter(function (t) { return !t.neu; });
+  if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }, tplDoc(p, t) ? 'schon in der Akte, wird noch einmal mit Datum im Namen angelegt' : '']; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben; auch mehrfach möglich']);
   items.push(['Link an Patient senden …', sub(KA_DOCS.map(function (d) { return [(d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]; })), 'Patient füllt Aufklärung oder Hinweis selbst online aus']);
   tlMenu(ev, items);
 }
@@ -8611,7 +8622,7 @@ function untAddMenu(ev) {
   var p = curP; if (!p) return;
   var anker = ev.currentTarget;   /* currentTarget ist nach dem Klick leer, deshalb jetzt merken */
   var items = [];
-  templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]); });
+  templates.filter(function (t) { return !t.neu; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }, tplDoc(p, t) ? 'schon in der Akte, wird noch einmal mit Datum im Namen angelegt' : '']); });
   KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]); });
   tlMenu(ev, items);
 }
@@ -8955,7 +8966,7 @@ function addTemplates(inp) {
   });
 }
 /* ===== Medien: Gruppen, Galerie, Zuordnung ===== */
-var zuNext = null, gal = null, zuCtx = null, medFilter = 'dok', medKat = '', medLimit = 30;
+var zuNext = null, gal = null, zuCtx = null, medFilter = 'dok', medKat = [], medLimit = 30;
 function validZu(p) {
   var v = {}, n = nameKey(p);
   events.forEach(function (e) { if (eventBelongs(e, p)) v['e' + e.id] = 1; });
@@ -9091,7 +9102,7 @@ function saveZu() {
   closeModal('modal-zu'); refreshFiles();
 }
 /* Medien und Dokumente des Patienten an einem Ort */
-function setMedFilter(f, k) { medFilter = f; medKat = k || ''; medLimit = 30; renderMedien(); }
+function setMedFilter(f, k) { medFilter = f; medKat = Array.isArray(k) ? k : (k ? [k] : []); medLimit = 30; renderMedien(); }
 /* Anlagen als Zeitleiste nach Monat: Bilder pro Tag als Streifen, Dokumente als Zeilen, Aktionen im Menü */
 function medDots(items) {
   var b = mk('button', 'md-dots', '⋯'); b.type = 'button'; b.title = 'Weitere Aktionen'; b.setAttribute('aria-label', 'Weitere Aktionen');
@@ -9192,25 +9203,25 @@ function renderMedien() {
   var nb = (curP.bilder || []).filter(recordVisible).length + (curP.videos || []).filter(recordVisible).length, nd = (curP.dokumente || []).filter(recordVisible).length;
   document.getElementById('md-bild').textContent = 'Bilder (' + nb + ')'; document.getElementById('md-dok').textContent = 'Dateien (' + nd + ')';
   document.getElementById('md-bild').className = medFilter === 'bild' ? 'on' : ''; document.getElementById('md-dok').className = medFilter === 'dok' ? 'on' : '';
-  var ub = document.getElementById('a-unt-block'); if (ub) ub.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none';
+  var ub = document.getElementById('a-unt-block'); if (ub) ub.style.display = (medFilter === 'dok' && !medKat.length) ? 'block' : 'none';
   var chips = document.getElementById('md-chips'); chips.innerHTML = '';
   var kmap = {}, kc = function (d) { return kmap[d.id] || (kmap[d.id] = katOf(d)); };
   var kats = []; (curP.dokumente || []).filter(recordVisible).forEach(function (d) { var k = kc(d); if (kats.indexOf(k) < 0) kats.push(k); });
   kats.sort(function (a, b) { return KATS.indexOf(a) - KATS.indexOf(b); });
-  if (medKat && kats.indexOf(medKat) < 0) medKat = '';
+  medKat = medKat.filter(function (k) { return kats.indexOf(k) >= 0; });
   if (medFilter === 'dok' && kats.length > 1) [''].concat(kats).forEach(function (k) {
-    var bt = mk('button', 'md-chip' + (medKat === k ? ' on' : ''), k || 'Alle'); bt.type = 'button'; bt.onclick = function () { setMedFilter('dok', k); }; chips.appendChild(bt);
+    var an = k ? medKat.indexOf(k) >= 0 : !medKat.length, bt = mk('button', 'md-chip' + (an ? ' on' : ''), k || 'Alle'); bt.type = 'button'; bt.setAttribute('aria-pressed', an ? 'true' : 'false'); bt.onclick = function () { setMedFilter('dok', !k ? [] : an ? medKat.filter(function (x) { return x !== k; }) : medKat.concat([k])); }; chips.appendChild(bt);
   });
   var q = (document.getElementById('md-filter').value || '').trim().toLowerCase(), items = [];
   fileGroups(curP, medFilter).forEach(function (g) {
-    var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat && medFilter === 'dok') || kc(x) === medKat); });
+    var l = g.list.filter(function (x) { return (!q || String(x.name || '').toLowerCase().indexOf(q) >= 0) && (!(medKat.length && medFilter === 'dok') || medKat.indexOf(kc(x)) >= 0); });
     if (l.length) items.push({ k: g.k, g: { kind: g.kind, p: g.p, zu: g.zu, k: g.k, list: l } });
   });
   items.sort(function (a, b) { return b.k - a.k; });
   box.innerHTML = ''; box.classList.toggle('md-tab', medFilter === 'dok');
   var vids = medFilter === 'bild' ? (curP.videos || []).filter(function (v) { return recordVisible(v) && (!q || String(v.name || '').toLowerCase().indexOf(q) >= 0); }).sort(function (a, b) { return tsOf(b) - tsOf(a); }) : [];
   if (vids.length) box.appendChild(medVideos(curP, vids));
-  if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
+  if (!items.length) { if (!vids.length) box.appendChild(mk('div', 'hm-empty', (q || medKat.length) ? 'Keine Datei gefunden' : medFilter === 'bild' ? 'Noch keine Fotos' : 'Noch keine Dateien')); return; }
   items.slice(0, medLimit).forEach(function (it) {
     var g = it.g, d = new Date(it.k);
     var c = mk('div', 'md-item'), zl = g.zu ? mk('div', 'md-zu', zuLabel(g.p, g.zu)) : null;

@@ -27,7 +27,17 @@ function tplsForEvent(e) {
   return out;
 }
 function addTplTo(p, t, zu, i, datum) {
-  var id = newId();
+  /* Weitere Kopien derselben Vorlage bekommen das Datum im Namen (bei gleichem Tag zusätzlich die Uhrzeit) */
+  var id = newId(), nm = t.name, hat = (p.dokumente || []).filter(function (d) { return d.tid === t.id; }).length;
+  if (hat) {
+    var dz = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dz)) dz = new Date(); var jetzt = new Date();
+    var mitZusatz = function (z) { return String(t.name).replace(/(\.(pdf|docx?|png|jpe?g))?$/i, function (x) { return ' ' + z + x; }); };
+    var vergeben = function (n) { return (p.dokumente || []).some(function (d) { return String(d.name).toLowerCase() === n.toLowerCase(); }); };
+    var tag = pad(dz.getDate()) + '.' + pad(dz.getMonth() + 1) + '.' + dz.getFullYear();
+    nm = mitZusatz(tag);
+    if (vergeben(nm)) nm = mitZusatz(tag + ' ' + pad(jetzt.getHours()) + '.' + pad(jetzt.getMinutes()));
+    for (var k = 2; vergeben(nm); k++) nm = mitZusatz(tag + ' (' + k + ')');
+  }
   return fileBlob(t).then(function (bl) {
     if (bl && (t.fill || (t.fields && t.fields.length)) && /pdf/i.test(bl.type || 'pdf')) {
       var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
@@ -35,8 +45,8 @@ function addTplTo(p, t, zu, i, datum) {
         dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }), fillExtra: fillExtra(p, datum) }, t.fields).catch(function () { return bl; });
     }
     return bl;
-  }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
-    if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: t.name, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
+  }).then(function (bl) { return bl ? fPut(id, nm, bl) : false; }).then(function (ok) {
+    if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: nm, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
     return ok;
   });
 }
@@ -128,7 +138,7 @@ function docSend(ev, p, d) {
 function renderUnterlagen() {
   fNamen();
   var blk = document.getElementById('a-unt-block'), box = document.getElementById('a-unt'); if (!blk || !curP) return;
-  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = (medFilter === 'dok' && !medKat) ? 'block' : 'none'; box.innerHTML = '';
+  var p = curP, today = iso(new Date()), n = nameKey(p); blk.style.display = (medFilter === 'dok' && !medKat.length) ? 'block' : 'none'; box.innerHTML = '';
   var offen = mk('div'), erl = mk('div');
   var row = function (cls, ic, t, sub, btn) {
     var r = mk('div', 'un-row'), m = mk('div', 'un-main'); r.appendChild(mk('div', 'un-st ' + cls, ic)); m.appendChild(mk('div', 'un-t', t)); m.appendChild(mk('div', 'un-s', sub)); r.appendChild(m); if (btn) r.appendChild(btn); (cls === 'ok' ? erl : offen).appendChild(r); return r;
@@ -215,8 +225,8 @@ function medAddMenu(ev) {
     items.push(['Video', function () { document.getElementById('a-vid-in').click(); }, 'Nur auf diesem Gerät gespeichert']);
   }
   items.push(['Datei hochladen', function () { zuNext = null; document.getElementById('a-doc-in').click(); }, 'PDF, Brief oder Foto vom Gerät; ausgefüllte Formulare werden erkannt']);
-  var tp = templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; });
-  if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben']);
+  var tp = templates.filter(function (t) { return !t.neu; });
+  if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }, tplDoc(p, t) ? 'schon in der Akte, wird noch einmal mit Datum im Namen angelegt' : '']; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben; auch mehrfach möglich']);
   items.push(['Link an Patient senden …', sub(KA_DOCS.map(function (d) { return [(d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]; })), 'Patient füllt Aufklärung oder Hinweis selbst online aus']);
   tlMenu(ev, items);
 }
@@ -224,7 +234,7 @@ function untAddMenu(ev) {
   var p = curP; if (!p) return;
   var anker = ev.currentTarget;   /* currentTarget ist nach dem Klick leer, deshalb jetzt merken */
   var items = [];
-  templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]); });
+  templates.filter(function (t) { return !t.neu; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }, tplDoc(p, t) ? 'schon in der Akte, wird noch einmal mit Datum im Namen angelegt' : '']); });
   KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]); });
   tlMenu(ev, items);
 }

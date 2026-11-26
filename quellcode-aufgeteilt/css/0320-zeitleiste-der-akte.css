@@ -1,0 +1,17 @@
+/* Zeitleiste der Akte: eine Karte, je Tag ein Block (jeder zweite Tag etwas anderer Grundton) mit eigener Datumszeile; der farbige Strich läuft durch, Trennlinien liegen dahinter */
+.tl-day.tl-all { overflow:hidden; }
+.tl-day.tl-all .tl-item { --tlc:#6abf69; isolation:isolate; }
+.tl-day.tl-all .tl-item.tl-termin { --tlc:#22c55e; } .tl-day.tl-all .tl-item.tl-doku { --tlc:#3b82f6; } .tl-day.tl-all .tl-item.tl-notiz { --tlc:#eab308; } .tl-day.tl-all .tl-item.tl-med { --tlc:#8b5cf6; }
+.tl-day.tl-all .tl-item.tl-rezept { --tlc:#ec4899; } .tl-day.tl-all .tl-item.tl-mail { --tlc:#14b8a6; } .tl-day.tl-all .tl-item.tl-rechnung { --tlc:#f97316; } .tl-day.tl-all .tl-item.tl-verbrauch { --tlc:#06b6d4; }
+.tl-day.tl-all .tl-item.tl-angelegt, .tl-day.tl-all .tl-item.tl-dokument { --tlc:#64748b; }
+.tl-day.tl-all .tl-date b { display:none; }
+.tl-dg { margin:0 -12px; padding:0 12px; } .tl-dg2 { background:#e4ebfa; }
+.tl-dh { display:grid; grid-template-columns:100px 1fr; margin:0 -12px; padding:0 12px; border-top:2px solid #dbe3f0; font-size:14px; font-weight:800; color:#0f172a; letter-spacing:.02em; }
+.tl-dh-t { padding:9px 0 3px; white-space:nowrap; }
+.tl-dh-s { border-left:3px solid var(--tlc,#6abf69); margin-top:-2px; }
+.tl-dg:first-child > .tl-dh { border-top:0; } .tl-dg:first-child > .tl-dh .tl-dh-t { padding-top:10px; } .tl-dg:first-child > .tl-dh .tl-dh-s { margin-top:0; }
+/* feine Trennlinien zwischen Einträgen eines Tages (mit Abstand zum Rand, hinter dem Strich); an Terminen und Dokumentationen mit Rahmen keine Linie, dafür etwas Luft */
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; z-index:-1; left:6px; right:6px; top:0; height:1px; background:#d3dcee; pointer-events:none; }
+.tl-day.tl-all .tl-dh + .tl-item::before, .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item::before { display:none; }
+.tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:8px; }
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):has(+ .tl-item:is(.tl-termin,.tl-doku)) .tl-body { padding-bottom:8px; }
