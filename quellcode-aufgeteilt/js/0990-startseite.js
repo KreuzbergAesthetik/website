@@ -86,9 +86,8 @@ function renderHome() {
     var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(p.dob || ''); if (!m || +m[1] !== now.getDate() || +m[2] !== now.getMonth() + 1) return;
     imp.appendChild(hmRow(null, 'Geburtstag: ' + dnP(p), 'wird heute ' + (now.getFullYear() - +m[3]), function () { viewAkte(p); }, null, 'next'));
   });
-  var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
-  var days = lb ? Math.round((new Date(today) - new Date(iso(new Date(lb)))) / 86400000) : null;
-  if (lb === null || days >= 2 || (days === 1 && h >= 12) || (days >= 1 && h >= 17)) imp.appendChild(hmImportantRow(lb === null ? 'Noch keine Datensicherung auf diesem Gerät' : days === 1 ? 'Heute noch nicht gesichert' : 'Letzte Datensicherung vor ' + days + ' Tagen', '', function () { exportData(); }, 'Jetzt sichern', function () { exportData(); }));
+  var bks = bkStatus(), lb = bks.lb, days = bks.days;
+  if (bks.level > 0) imp.appendChild(hmImportantRow(lb === null ? 'Noch keine Datensicherung auf diesem Gerät' : days === 1 ? 'Heute noch nicht gesichert' : 'Letzte Datensicherung vor ' + days + ' Tagen', '', function () { exportData(); }, 'Jetzt sichern', function () { exportData(); }));
   if (!imp.children.length) imp.appendChild(mk('div', 'hm-empty', 'Heute nichts Dringendes.'));
   /* Geburtstage in den nächsten 7 Tagen (ab morgen) */
   var bd = [];

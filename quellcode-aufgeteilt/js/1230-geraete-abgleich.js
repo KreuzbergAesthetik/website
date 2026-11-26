@@ -7,6 +7,35 @@ async function kvOpen() {
   catch (e) { alert('Die Verbindungsfunktion konnte nicht geladen werden.'); return; }
   KV.openTablet();
 }
+/* Erinnerung an die Datensicherung: Stufe 0 = nichts, 1 = heute noch nicht gesichert (ab 12 Uhr), 2 = noch nie oder seit 2 Tagen nicht.
+   Orte: Startseite (Wichtig), Hinweisleiste unten (#bk-bar), Punkt am Praxis-Menü (#btn-praxis, #bnav-mehr), Sicherungs-Seite. */
+function bkStatus() {
+  var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
+  var now = new Date(), h = now.getHours();
+  var days = lb ? Math.round((new Date(iso(now)) - new Date(iso(new Date(lb)))) / 86400000) : null;
+  var level = 0;
+  if (lb === null || days >= 2) level = 2; else if (days >= 1 && h >= 12) level = 1;
+  return { lb: lb, days: days, level: level, h: h };
+}
+function bkText(st) { return st.lb === null ? 'Noch keine Datensicherung auf diesem Gerät.' : st.days === 1 ? 'Heute noch nicht gesichert.' : 'Letzte Datensicherung vor ' + st.days + ' Tagen.'; }
+function bkNudge(force) {
+  try {
+    var st = bkStatus(), bar = document.getElementById('bk-bar');
+    [].forEach.call(document.querySelectorAll('#btn-praxis, #bnav-mehr'), function (b) { b.classList.toggle('bk-dot', st.level > 0); b.classList.toggle('bk-dot2', st.level > 1); });
+    if (!bar) return;
+    if (st.level === 0 || document.hidden || document.documentElement.classList.contains('locked')) { if (st.level === 0) bar.style.display = 'none'; return; }
+    /* Zeitpunkte: Stufe 2 bei jedem Öffnen, danach höchstens alle 3 Stunden; Stufe 1 einmal ab 12 Uhr und einmal ab 17 Uhr */
+    var slot = st.level > 1 ? 'x' + Math.floor(Date.now() / 10800000) : iso(new Date()) + (st.h >= 17 ? 'b' : 'a');
+    var seen = null; try { seen = kaGet('ka_bknudge'); } catch (x) {}
+    if (!force && seen === slot) return;
+    document.getElementById('bk-bar-t').textContent = bkText(st);
+    bar.className = st.level > 1 ? 'bk-warn' : '';
+    bar.style.display = 'flex'; bar.dataset.slot = slot;
+  } catch (x) {}
+}
+function bkLater() { var bar = document.getElementById('bk-bar'); if (bar) { bar.style.display = 'none'; try { kaSet('ka_bknudge', bar.dataset.slot || ''); } catch (x) {} } }
+function bkNow() { bkLater(); exportData(); }
+setTimeout(bkNudge, 2500); setInterval(bkNudge, 600000); document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(bkNudge, 400); });
 function renderSicherung() {
   vbkState();
   var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
