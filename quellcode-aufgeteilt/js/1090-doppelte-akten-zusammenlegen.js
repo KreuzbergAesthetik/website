@@ -108,9 +108,9 @@ function rxDocOf(lg) {
   var ds = curP.dokumente || [];
   return ds.filter(function (d) { return d.id === lg.docId; })[0] || ds.filter(function (d) { return d.kat === 'Rezept' && Math.abs((d.ts || 0) - lg.ts) < 15000; })[0] || null;
 }
-function openRx(zu, edit) {
+function openRx(zu, edit, pre) {
   rxEdit = edit || null; rxZu = zu || null;
-  rxRows = (curP.medikation || []).map(function (m) { return { on: false, text: m, neu: false }; });
+  rxRows = (curP.medikation || []).map(function (m) { return { on: (pre || []).indexOf(m) >= 0, text: m, neu: false }; });
   var dat = iso(new Date());
   if (edit) {
     var od = rxDocOf(edit); if (od && od.zu) rxZu = od.zu; if (!edit.items && !String(edit.text || '').trim() && od) { var mm = /(\d{2})\.(\d{2})\.(\d{4})/.exec(od.name || ''); if (mm) edit.datum = mm[3] + '-' + mm[2] + '-' + mm[1]; }

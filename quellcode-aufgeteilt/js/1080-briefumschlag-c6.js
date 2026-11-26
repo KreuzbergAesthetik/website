@@ -390,9 +390,11 @@ function renderHead() {
       tx.appendChild(mk('b', 'med-n', md.n)); if (md.d) tx.appendChild(mk('span', 'med-d', ' ' + md.d));
       if (ed) { tx.style.cursor = 'pointer'; tx.onclick = async function () { var v = await kaPrompt('Medikament bearbeiten:', m); if (v === null) return; v = v.trim(); if (v && v !== m) { p.medikation[i] = v; auditOne(p, 'Medikation', 'Medikament', m, v); persist(); renderHead(); renderVerlauf(); } }; }
       li.appendChild(tx);
+      if (!ed) { var rb = mk('button', 'med-rx'); rb.type = 'button'; rb.title = 'Rezept für dieses Medikament'; rb.setAttribute('aria-label', rb.title); rb.innerHTML = tvSvg('rx'); rb.onclick = function (ev) { ev.stopPropagation(); openRx(null, null, [m]); }; li.appendChild(rb); }
       if (ed) { var b = mk('button', '', '×'); b.type = 'button'; b.onclick = function () { var old = p.medikation[i]; p.medikation.splice(i, 1); auditOne(p, 'Medikation', 'Medikament', old, '[entfernt]'); persist(); renderHead(); renderVerlauf(); }; li.appendChild(b); }
       ul.appendChild(li);
     }); t.appendChild(ul);
+    if (!ed && list.length) { var ra = mk('button', 'med-rxall'); ra.type = 'button'; ra.title = 'Rezept ausstellen'; ra.innerHTML = tvSvg('rx') + '<span>Rezept</span>'; ra.onclick = function (ev) { ev.stopPropagation(); openRx(null, null, []); }; t.appendChild(ra); }
     if (ed) {
       var row = mk('div'); row.style.cssText = 'display:flex; gap:6px; margin-top:6px;';
       var inp = mk('input', 'form-control'); inp.id = 'a-med-in'; inp.placeholder = 'Medikament hinzufügen...'; inp.onkeydown = function (e) { if (e.key === 'Enter') addMed(); };

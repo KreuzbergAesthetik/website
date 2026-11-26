@@ -90,3 +90,8 @@
 .tl-docp { flex-direction:row-reverse; justify-content:space-between; } .tl-docp > div:last-child { flex:1; min-width:0; }
 .tl-filter { margin:4px 0 8px; }
 .a-addrow { display:flex; justify-content:flex-end; margin-top:8px; } .a-addtile { width:32px; height:32px; border-radius:50%; border:1px solid #94a3b8; background:#fff; color:#475569; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+/* Medikation: Rezept direkt ausstellen (Knopf an der Karte; je Medikament beim Überfahren) */
+.med-rx { background:none; border:0; color:#94a3b8; width:28px; height:24px; padding:0; cursor:pointer; flex:none; display:inline-flex; align-items:center; justify-content:center; } .med-rx svg { width:16px; height:16px; }
+@media (any-hover:hover) { .med-rx { opacity:0; transition:opacity .15s; } .a-tile ul li:hover .med-rx, .med-rx:focus-visible { opacity:1; color:var(--pf-navy); } }
+@media (any-hover:none) { .med-rx { display:none; } }
+.med-rxall { position:absolute; top:3px; right:30px; display:inline-flex; gap:4px; align-items:center; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); border-radius:999px; padding:2px 10px 2px 8px; font-size:12px; font-weight:600; cursor:pointer; } .med-rxall svg { width:14px; height:14px; }
