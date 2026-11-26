@@ -51,13 +51,13 @@
 .sy-h { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:20px 0 8px; padding-top:14px; border-top:1px solid #eef2f6; }
 .btn.btn-rot { background:transparent; color:#b91c1c; border:1px solid #dc2626; box-shadow:none; border-radius:999px; } .btn.btn-rot:hover { background:rgba(220,38,38,.08); }
 /* Geräte-Abgleich als Liste */
-.sy-row { display:flex; align-items:center; gap:8px; width:100%; min-height:48px; padding:6px 2px; background:none; border:0; border-top:1px solid #eef2f6; text-align:left; font:inherit; font-size:15px; color:#0f172a; cursor:pointer; }
+.sy-row { display:flex; align-items:center; gap:8px; width:100%; min-height:48px; padding:6px 2px; background:none; border:0; border-top:1.5px solid #b6c2d1; text-align:left; font:inherit; font-size:15px; color:#0f172a; cursor:pointer; }
 .sy-row .t { flex:1; min-width:0; } .sy-row .t small { display:block; font-size:12px; color:#64748b; margin-top:1px; }
 .sy-row .v { font-size:13px; color:#64748b; } .sy-row .ch { color:#94a3b8; font-size:20px; line-height:1; }
 .sy-row.sy-sub { padding-left:16px; font-size:14px; color:#012265; min-height:40px; border-top:0; }
 .sy-sw { position:relative; flex:none; width:42px; height:24px; } .sy-sw input { position:absolute; inset:0; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
 .sy-sw i { position:absolute; inset:0; border-radius:12px; background:#cbd5e1; transition:background .2s; pointer-events:none; } .sy-sw i::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; box-shadow:0 1px 2px rgba(15,23,42,.3); }
 .sy-sw input:checked + i { background:#15803d; } .sy-sw input:checked + i::after { transform:translateX(18px); }
-.sy-info { margin-top:14px; font-size:13px; color:#64748b; } .sy-info summary { cursor:pointer; color:#475569; padding:4px 0; }
+.sy-info { margin-top:14px; border-top:1.5px solid #b6c2d1; padding-top:10px; font-size:13px; color:#64748b; } .sy-info summary { cursor:pointer; color:#475569; padding:4px 0; }
 .sy-row.sy-sub2 { padding-left:14px; font-size:14.5px; }
 .sy-state::before { content:''; display:inline-block; width:9px; height:9px; border-radius:50%; background:currentColor; margin-right:8px; vertical-align:1px; }
