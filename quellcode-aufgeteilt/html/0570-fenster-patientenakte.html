@@ -40,6 +40,7 @@
   </div>
   <div id="at-anl" style="display:none;">
   <div id="a-medien-block" class="card">
+    <div class="seg md-seg" id="md-seg"><button type="button" id="md-bild" onclick="setMedFilter('bild')"></button><button type="button" id="md-dok" onclick="setMedFilter('dok')"></button></div>
     <div class="card-header" style="margin-bottom:6px;">
       <div class="ak-h" style="margin:0; border:none; padding:0;">Bilder und Dateien</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -49,7 +50,6 @@
     <div class="cal-bar">
       <input type="text" id="md-filter" class="form-control" placeholder="Dateiname suchen..." autocomplete="off" oninput="medLimit = 30; renderMedien()" style="flex:1 1 200px;">
     </div>
-    <div class="seg md-seg" id="md-seg"><button type="button" id="md-bild" onclick="setMedFilter('bild')"></button><button type="button" id="md-dok" onclick="setMedFilter('dok')"></button></div>
     <div id="md-cmp" class="vg-area" style="display:none;"></div>
     <div id="md-chips" class="md-chips"></div>
   <div id="a-unt-block" class="md-forms" style="display:none;">
