@@ -503,11 +503,12 @@ function renderVerlauf() {
   });
   auditSlot.appendChild(auditFilter);
   /* Eine Karte für die ganze Zeitleiste: durchgehender Strich; je Tag eine eigene Datumszeile, darunter links Uhrzeit mit Symbol, rechts das Ereignis */
-  var day = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
+  var day = null, dayN = -1, grp = null, card = mk('div', 'tl-day tl-all'); box.appendChild(card);
   items.forEach(function (it) {
     var d = new Date(it.k), key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(), neuerTag = key !== day; day = key;
     var row = tlRow(it);
-    if (neuerTag) card.appendChild(mk('div', 'tl-dh', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
+    if (neuerTag) { dayN++; grp = mk('div', 'tl-dg' + (dayN % 2 ? ' tl-dg2' : '')); card.appendChild(grp); }
+    if (neuerTag) grp.appendChild(mk('div', 'tl-dh', WD[(d.getDay() + 6) % 7].toUpperCase() + ', ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2)));
     tlIcon(row, it.t);
     var bd = row.querySelector('.tl-body'), kids = bd ? [].slice.call(bd.children) : [];
     var first = kids.filter(function (c) { return !c.classList.contains('tl-label') && !c.classList.contains('x-btn'); })[0];
@@ -520,7 +521,7 @@ function renderVerlauf() {
       var on = !row.classList.contains('quick-on'); [].forEach.call(document.querySelectorAll('.tl-item.quick-on'), function (x) { x.classList.remove('quick-on'); }); if (on) row.classList.add('quick-on');
     });
     if (bd && !always) bd.addEventListener('click', function (ev) { if (ev.target.closest('button, a, input, textarea, select, .docbox, img')) return; row.classList.toggle('open'); });
-    card.appendChild(row);
+    grp.appendChild(row);
   });
   /* Der Datumszeile die Farbe des ersten Eintrags geben, damit der Strich durchgehend bleibt */
   [].forEach.call(card.querySelectorAll('.tl-dh'), function (dh) { var nx = dh.nextElementSibling; if (nx) dh.style.setProperty('--tlc', getComputedStyle(nx).getPropertyValue('--tlc')); });
