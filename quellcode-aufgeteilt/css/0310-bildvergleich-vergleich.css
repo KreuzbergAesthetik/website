@@ -162,3 +162,6 @@
 .tl-day.tl-all .tl-item.tl-dstart .tl-date .tl-ico { top:5px; }
 .tl-day.tl-all { background-position:113px 0; }
 .tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart)::before { background:linear-gradient(to right, transparent 0 103px, #e2e8f0 103px); }
+/* Zeitleiste: Die senkrechte Linie bleibt überall durchgehend; waagerechte Trennlinien laufen hinter ihr durch (Aussparung an der Linie) */
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child)::before { left:6px !important; right:6px !important; background:linear-gradient(to right, #94a3b8 0 95px, transparent 95px 98px, #94a3b8 98px) !important; }
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart):not(:first-child)::before { left:6px !important; right:6px !important; background:linear-gradient(to right, transparent 0 98px, #e2e8f0 98px) !important; }
