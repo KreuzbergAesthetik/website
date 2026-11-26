@@ -155,3 +155,10 @@
 .tl-day.tl-all .tl-item.tl-termin .md-doc, .tl-day.tl-all .tl-item.tl-doku .md-doc { margin-bottom:4px; }
 /* Zeitleiste: Symbole links neben der Uhrzeit größer */
 .tl-date span .tl-ico { width:18px; height:18px; vertical-align:-4px; margin-right:5px; }
+/* Zeitleiste: Anordnung wie im Vorbild: Datum/Uhrzeit rechtsbündig, daneben das Symbol, dann die senkrechte Linie */
+.tl-day.tl-all .tl-item { grid-template-columns:100px 1fr !important; }
+.tl-day.tl-all .tl-date { position:relative; padding-right:34px; }
+.tl-date .tl-ico { position:absolute; right:7px; top:1px; width:22px; height:22px; margin:0; }
+.tl-day.tl-all .tl-item.tl-dstart .tl-date .tl-ico { top:5px; }
+.tl-day.tl-all { background-position:113px 0; }
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart)::before { background:linear-gradient(to right, transparent 0 103px, #e2e8f0 103px); }

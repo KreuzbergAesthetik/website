@@ -458,8 +458,8 @@ var tlFilter = '';
 var TL_CHIPS = [['termin', 'Termine'], ['doku', 'Dokumentation'], ['dokument', 'Dokumente'], ['rezept', 'Rezepte'], ['mail', 'E-Mails'], ['notiz', 'Notizen'], ['rechnung', 'Rechnungen']];
 var TL_ICON = { termin: 'calplain', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
 function tlIcon(row, t) {
-  var k = TL_ICON[t], tm = row.querySelector('.tl-date span'), lab = row.querySelector('.tl-label'); if (!k || !tm || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
-  tm.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
+  var k = TL_ICON[t], dt = row.querySelector('.tl-date'), lab = row.querySelector('.tl-label'); if (!k || !dt || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
+  dt.insertAdjacentHTML('beforeend', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
 }
 function renderVerlauf() {
   if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = ''; }

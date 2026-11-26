@@ -1645,6 +1645,13 @@ body.pe-open { overflow:hidden; }
 .tl-day.tl-all .tl-item.tl-termin .md-doc, .tl-day.tl-all .tl-item.tl-doku .md-doc { margin-bottom:4px; }
 /* Zeitleiste: Symbole links neben der Uhrzeit größer */
 .tl-date span .tl-ico { width:18px; height:18px; vertical-align:-4px; margin-right:5px; }
+/* Zeitleiste: Anordnung wie im Vorbild: Datum/Uhrzeit rechtsbündig, daneben das Symbol, dann die senkrechte Linie */
+.tl-day.tl-all .tl-item { grid-template-columns:100px 1fr !important; }
+.tl-day.tl-all .tl-date { position:relative; padding-right:34px; }
+.tl-date .tl-ico { position:absolute; right:7px; top:1px; width:22px; height:22px; margin:0; }
+.tl-day.tl-all .tl-item.tl-dstart .tl-date .tl-ico { top:5px; }
+.tl-day.tl-all { background-position:113px 0; }
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart)::before { background:linear-gradient(to right, transparent 0 103px, #e2e8f0 103px); }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3304,7 +3311,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-q';
+var KA_V = '2026-11-26-s';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -7395,8 +7402,8 @@ var tlFilter = '';
 var TL_CHIPS = [['termin', 'Termine'], ['doku', 'Dokumentation'], ['dokument', 'Dokumente'], ['rezept', 'Rezepte'], ['mail', 'E-Mails'], ['notiz', 'Notizen'], ['rechnung', 'Rechnungen']];
 var TL_ICON = { termin: 'calplain', doku: 'book', rechnung: 'euro', rezept: 'rx', mail: 'mail', notiz: 'pen', verbrauch: 'box', angelegt: 'plus', audit: 'clock', hiddenfile: 'ban', dokument: 'form' };
 function tlIcon(row, t) {
-  var k = TL_ICON[t], tm = row.querySelector('.tl-date span'), lab = row.querySelector('.tl-label'); if (!k || !tm || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
-  tm.insertAdjacentHTML('afterbegin', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
+  var k = TL_ICON[t], dt = row.querySelector('.tl-date'), lab = row.querySelector('.tl-label'); if (!k || !dt || !TV_I[k] || (lab && lab.querySelector('svg'))) return;
+  dt.insertAdjacentHTML('beforeend', tvSvg(k).replace('<svg ', '<svg class="tl-ico" aria-hidden="true" '));
 }
 function renderVerlauf() {
   if (tlAuditPatient !== curP.id) { tlAuditPatient = curP.id; tlAuditVisible = false; tlFilter = ''; }
@@ -8991,7 +8998,7 @@ function mediaGrid(p, list) {
   });
   return g;
 }
-var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5l2.2-7.5 6-6.2 5.3 5.3-6.2 6.2z"/><path d="M4 19.5l6.3-6.3"/><circle cx="11" cy="13.2" r="1"/><path d="M14.5 20.5c1-2.4 1.9-2.4 2.8-.4s1.9 1.4 3.2-.8"/></svg>';
+var ICON_SIGN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3.5a2.1 2.1 0 013 3L8 17l-4 1 1-4z"/><path d="M3.2 13.5c-2.1-4-.4-8.6 3.6-10.4" stroke-width="1.5" stroke-dasharray="2 2.5"/></svg>';
 function docList(p, list) { var ul = mk('div'); list.forEach(function (dd) { ul.appendChild(medDocRow(p, dd)); }); return ul; }
 /* Dateien, die zu einem Termin oder einer Dokumentation gehören, direkt dort anzeigen */
 function attachBlock(p, key) {
