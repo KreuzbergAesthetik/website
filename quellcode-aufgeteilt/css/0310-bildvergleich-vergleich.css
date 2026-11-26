@@ -176,3 +176,5 @@
 .md-tr .md-l2 { gap:8px; } .md-tr .md-l2 .md-dots { margin-left:0; }
 .md-tr .md-ic.md-tr-th, .md-tr .md-ic.th.md-tr-th { flex:none; width:44px; height:58px; align-self:center; margin:8px 10px 8px 4px; font-size:10px; }
 @media (max-width:520px) { .md-tr-d { width:80px; padding-right:8px; } .md-tr-d b { font-size:12px; } }
+/* Zeitleiste ohne horizontale Trennlinien zwischen den Einträgen (senkrechter Strich bleibt) */
+.tl-day .tl-item::before, .tl-day .tl-item::after { display:none !important; }
