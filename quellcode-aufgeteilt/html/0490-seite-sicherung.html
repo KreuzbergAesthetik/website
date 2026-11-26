@@ -2,23 +2,18 @@
   <div id="tab-sicherung" class="tab-content">
     <div class="card">
       <div class="card-header"><span class="card-title">Sicherung</span></div>
-      <div id="sk-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
-      <div style="font-size:13px; color:#64748b; margin-bottom:16px;">Die Sicherung ist eine ZIP-Datei mit allen Daten, Fotos und Dokumenten. Sie wird immer mit einem eigenen Passwort verschlüsselt. Sie ist unabhängig vom Geräte-Abgleich: Wird dort versehentlich etwas gelöscht, bleibt sie erhalten.</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button type="button" class="btn btn-save" onclick="hdRun(exportData, 'Sichern')">Sichern</button>
-        <button type="button" class="btn btn-secondary" onclick="hdRun(function () { document.getElementById('imp-file').click(); }, 'Laden')">Laden</button>
-      </div>
-      <div style="font-size:13px; color:#64748b; margin-top:16px;"><b>Sichern</b> speichert den aktuellen Stand. <b>Laden</b> liest eine Sicherung wieder ein, bei mehreren Teilen bitte alle Teile gemeinsam wählen. Einzelne Formulare, Rechnungen oder Patienten liest der Knopf <b>Import</b> unter der Patientenliste ein.</div>
+      <div id="sk-state" style="font-size:15px; font-weight:600; margin-bottom:8px;"></div>
+      <button type="button" class="btn btn-save" style="width:100%; margin:4px 0 8px;" onclick="hdRun(exportData, 'Sichern')">Sichern</button>
+      <button type="button" class="sy-row" onclick="hdRun(function () { document.getElementById('imp-file').click(); }, 'Laden')"><span class="t">Sicherung laden<small>Liest eine Sicherung wieder ein, bei mehreren Teilen alle gemeinsam wählen.</small></span><span class="ch">›</span></button>
+      <details class="sy-info"><summary>Was ist die Sicherung?</summary><div>Die Sicherung ist eine ZIP-Datei mit allen Daten, Fotos und Dokumenten. Sie wird immer mit einem eigenen Passwort verschlüsselt. Sie ist unabhängig vom Geräte-Abgleich: Wird dort versehentlich etwas gelöscht, bleibt sie erhalten. <b>Sichern</b> speichert den aktuellen Stand. Einzelne Formulare, Rechnungen oder Patienten liest der Knopf <b>Import</b> unter der Patientenliste ein.</div></details>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Videos</span></div>
-      <div id="vbk-state" style="font-size:15px; font-weight:600; margin-bottom:4px;"></div>
-      <div style="font-size:13px; color:#64748b; margin-bottom:16px;">Videos liegen nur auf diesem Gerät und sind weder in der normalen Sicherung noch im Geräte-Abgleich. Hier lassen sie sich getrennt sichern: als ZIP-Datei, die immer mit einem eigenen Passwort verschlüsselt wird. <b>Laden</b> bringt sie auf diesem oder einem anderen Gerät zurück in die jeweilige Akte.</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button type="button" class="btn btn-save" onclick="vbkExport()">Videos sichern</button>
-        <button type="button" class="btn btn-secondary" onclick="document.getElementById('vbk-file').click()">Videos laden</button>
-        <input type="file" id="vbk-file" accept=".zip,application/zip" multiple style="display:none" onchange="vbkImport(this)">
-      </div>
+      <div id="vbk-state" style="font-size:15px; font-weight:600; margin-bottom:8px;"></div>
+      <button type="button" class="btn btn-save" style="width:100%; margin:4px 0 8px;" onclick="vbkExport()">Videos sichern</button>
+      <button type="button" class="sy-row" onclick="document.getElementById('vbk-file').click()"><span class="t">Videos laden<small>Bringt eine Videosicherung auf dieses Gerät.</small></span><span class="ch">›</span></button>
+      <input type="file" id="vbk-file" accept=".zip,application/zip" multiple style="display:none" onchange="vbkImport(this)">
+      <details class="sy-info"><summary>Was sind Videosicherungen?</summary><div>Videos liegen nur auf diesem Gerät und sind weder in der normalen Sicherung noch im Geräte-Abgleich. Hier lassen sie sich getrennt sichern: als ZIP-Datei, die immer mit einem eigenen Passwort verschlüsselt wird. <b>Laden</b> bringt sie auf diesem oder einem anderen Gerät wieder in die Akten.</div></details>
     </div>
   </div>
 
