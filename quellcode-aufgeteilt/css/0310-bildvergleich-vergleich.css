@@ -144,3 +144,12 @@
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:3px; padding-bottom:3px; }
 /* Zeitleiste: Datum näher an der Linie und innerhalb der Trennlinien */
 .tl-day.tl-all .tl-date { padding-right:8px; } .tl-day.tl-all .tl-item.tl-dstart .tl-date b { font-size:12px; letter-spacing:0; }
+/* Zeitleiste: Tage mit Abstand und durchgehender Linie bis an den Tabellenrand; Termine kompakt */
+.tl-day.tl-all { padding:7px 12px; background-image:linear-gradient(#94a3b8,#94a3b8); background-repeat:no-repeat; background-size:3px 100%; background-position:95px 0; }
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child) { margin-top:14px !important; }
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child)::before { top:-7.75px !important; left:6px !important; right:6px !important; }
+.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::after, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { display:none !important; }
+.tl-day.tl-all .tl-item.tl-termin .tl-body, .tl-day.tl-all .tl-item.tl-doku .tl-body { padding-top:5px; padding-bottom:5px; }
+.tl-day.tl-all .tl-item.tl-termin .tl-body > .tl-first, .tl-day.tl-all .tl-item.tl-doku .tl-body > .tl-first { padding:5px 8px !important; margin-top:2px !important; }
+.tl-day.tl-all .tl-item.tl-termin .tl-body > div[style*="margin-top: 8px"], .tl-day.tl-all .tl-item.tl-doku .tl-body > div[style*="margin-top: 8px"] { margin-top:4px !important; }
+.tl-day.tl-all .tl-item.tl-termin .md-doc, .tl-day.tl-all .tl-item.tl-doku .md-doc { margin-bottom:4px; }
