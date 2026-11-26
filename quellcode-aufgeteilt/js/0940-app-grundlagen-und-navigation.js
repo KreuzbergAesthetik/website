@@ -1,6 +1,6 @@
 
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-j';
+var KA_V = '2026-11-26-k';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -166,6 +166,7 @@ window.addEventListener('scroll', function () { document.body.classList.toggle('
 function bnavSync() {
   var cur = document.querySelector('.tab-content.active'), id = cur ? cur.id.replace(/^tab-/, '') : '';
   var on = ['kalender', 'patienten', 'todos', 'rechnungen'].indexOf(id) >= 0 ? id : (PRAXIS_TABS.indexOf(id) >= 0 ? 'mehr' : '');
+  if (document.body.classList.contains('akte-open')) on = 'patienten';   /* die Patientenakte gehört zu Patienten, auch wenn sie aus dem Kalender geöffnet wurde */
   [].forEach.call(document.querySelectorAll('.bnav-it'), function (b) { var a = b.dataset.tab === on; b.classList.toggle('on', a); if (a) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
 }
 /* Letzte Seite merken: nach dem Neuladen (z. B. Ziehen nach unten) geht es dort weiter, wo man war */
@@ -199,7 +200,7 @@ function switchTab(tabId) {
   if (tabId === 'start') histClean(); else histPush();
   bnavSync(); lgToggle(false); lgUpdate(); saveLast();
 }
-function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') { document.body.classList.add('akte-open'); requestAnimationFrame(function () { try { aFabFit(); } catch (x) {} }); } }
+function openModal(id) { var mo = document.getElementById(id); mo.dataset.dirty = ''; mo.classList.add('active'); syncLock(); histPush(); if (id === 'modal-akte') { document.body.classList.add('akte-open'); try { bnavSync(); } catch (x) {} requestAnimationFrame(function () { try { aFabFit(); } catch (x) {} }); } }
 var ausgaben = [], todos = [], entw = [];
 try { var sen = JSON.parse(kaGet('ka_entw')); if (Array.isArray(sen)) entw = sen; } catch (x) {}
 try { var sa = JSON.parse(kaGet('ka_ausgaben')); if (Array.isArray(sa)) ausgaben = sa; } catch (x) {}
