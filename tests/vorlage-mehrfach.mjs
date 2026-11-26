@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-// Vorlagen lassen sich mehrfach in dieselbe Akte legen (auch wenn schon vorhanden); weitere Kopien werden durchnummeriert. Erfundene Daten.
+// Vorlagen lassen sich mehrfach in dieselbe Akte legen (auch wenn schon vorhanden); weitere Kopien tragen das Datum im Namen. Erfundene Daten.
 const base = process.env.APP_URL || 'http://127.0.0.1:4173/index.html';
 const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}) });
 const pageErrors = [];
@@ -21,7 +21,8 @@ try {
     patients.length = 0; patients.push(p); events.length = 0; FLC = null; persist(); viewAkte(p); await wait(600);
     await addTplTo(p, t, null, 0); await addTplTo(p, t, null, 1); await addTplTo(p, t, null, 2);
     out.dreiKopien = p.dokumente.length === 3;
-    out.namen = p.dokumente.map(d => d.name).join('|') === 'Aufklärung Testvorlage|Aufklärung Testvorlage (2)|Aufklärung Testvorlage (3)';
+    const heute = new Date(), tag = String(heute.getDate()).padStart(2, '0') + '.' + String(heute.getMonth() + 1).padStart(2, '0') + '.' + heute.getFullYear();
+    out.namen = p.dokumente[0].name === 'Aufklärung Testvorlage' && p.dokumente[1].name === 'Aufklärung Testvorlage ' + tag && /^Aufklärung Testvorlage \d\d\.\d\d\.\d{4} \d\d\.\d\d$/.test(p.dokumente[2].name) && new Set(p.dokumente.map(d => d.name)).size === 3;
     out.gleicheVorlage = p.dokumente.every(d => d.tid === t.id);
     setAkTab('anl'); setMedFilter('dok', ''); await wait(600);
     const ev = { stopPropagation() {}, currentTarget: document.getElementById('md-list') };
@@ -31,12 +32,12 @@ try {
     const m = document.getElementById('tl-menu'); const eintrag = m && [...m.querySelectorAll('button')].find(b => b.textContent.indexOf('Aufklärung Testvorlage') === 0);
     out.vorhandeneWaehlbar = !!eintrag && /noch einmal/.test(eintrag.textContent);
     if (eintrag) { eintrag.click(); await wait(800); }
-    out.vierteKopie = p.dokumente.length === 4 && p.dokumente[3].name === 'Aufklärung Testvorlage (4)';
+    out.vierteKopie = p.dokumente.length === 4 && new Set(p.dokumente.map(d => d.name)).size === 4 && /^Aufklärung Testvorlage \d\d\.\d\d\.\d{4}/.test(p.dokumente[3].name);
     return out;
   });
   for (const k of Object.keys(r)) assert.equal(r[k], true, 'Vorlage mehrfach: ' + k + ' ' + JSON.stringify(r));
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
-  console.log('Vorlage mehrfach OK (3 Kopien nummeriert, Menü bietet vorhandene Vorlage erneut an, vierte Kopie)');
+  console.log('Vorlage mehrfach OK (3 Kopien mit Datum im Namen, Menü bietet vorhandene Vorlage erneut an, vierte Kopie)');
 } finally {
   await browser.close();
 }
