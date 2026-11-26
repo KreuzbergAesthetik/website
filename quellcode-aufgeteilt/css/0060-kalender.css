@@ -234,9 +234,6 @@ body.akte-open .a-fab { display:flex; align-items:center; gap:8px; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) { padding-top:0; padding-bottom:0; border-top:0; grid-template-columns:44px 1fr; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:6px; padding-bottom:6px; }
 .tl-day .tl-item.tl-notiz .tl-body, .tl-day .tl-item.tl-mail .tl-body, .tl-day .tl-item.tl-med .tl-body, .tl-day .tl-item.tl-rezept .tl-body, .tl-day .tl-item.tl-rechnung .tl-body, .tl-day .tl-item.tl-verbrauch .tl-body, .tl-day .tl-item.tl-angelegt .tl-body { padding-top:3px; padding-bottom:3px; }
-.tl-day .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; left:0; right:0; top:0; height:1px; background:linear-gradient(to right, #e2e8f0 0 50px, transparent 50px 53px, #e2e8f0 53px); pointer-events:none; }
-.tl-day .tl-day-h + .tl-item::before { display:none; }
-.tl-day .tl-item.tl-termin + .tl-item::before, .tl-day .tl-item.tl-doku + .tl-item::before { display:none; }
 .tl-day .tl-item.tl-termin, .tl-day .tl-item.tl-doku { padding-top:0; padding-bottom:0; padding-left:5px; margin-top:0; margin-bottom:0; }
 .tl-day .tl-item.tl-termin .tl-body, .tl-day .tl-item.tl-doku .tl-body { margin-top:-1.5px; margin-bottom:-1.5px; padding-top:7.5px; padding-bottom:7.5px; }
 .wf-i { width:22px; height:22px; border-radius:50%; border:1px solid #cbd5e1; background:#fff; color:#94a3b8; font:italic 700 13px Georgia,serif; cursor:pointer; padding:0; line-height:1; } .wf-i.on { background:#e2e8f0; color:#475569; }

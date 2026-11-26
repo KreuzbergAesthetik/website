@@ -124,9 +124,6 @@
 .med-rxall { position:absolute; top:3px; right:30px; display:inline-flex; gap:4px; align-items:center; border:1px solid var(--pf-navy); background:#fff; color:var(--pf-navy); border-radius:999px; padding:2px 10px 2px 8px; font-size:12px; font-weight:600; cursor:pointer; } .med-rxall svg { width:14px; height:14px; }
 /* Zeitleiste: Dokument-Einträge bündig mit den anderen, eigene Strichfarbe; gleicher Abstand der grauen Tageslinie zu den Kästen darüber und darunter */
 .tl-day .tl-item.tl-dokument .tl-body { padding-left:8px; border-left-color:#64748b; } .tl-item.tl-dokument .tl-label { color:#475569; font-weight:600; } .tl-item.tl-dokument .tl-date .tl-ico { color:#64748b; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku { margin-top:9px !important; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::before, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::before { top:-5.25px !important; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::after, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { top:-9px !important; height:9px !important; }
 /* Zeitleiste: Inhalt bis an den Rand (der Pfeil rechts ist weg, der Platz dafür entfällt) */
 .tl-day .tl-item { padding-right:10px; }
 .md-l2 { flex-wrap:wrap; row-gap:4px; }
@@ -143,12 +140,9 @@
 .un-row { padding:6px 10px !important; margin:0 0 6px !important; } .un-row .un-t { font-size:14px; } .un-row .un-s { font-size:11.5px; } .un-row .btn, .un-row .ak-act { min-height:32px; padding-top:4px; padding-bottom:4px; font-size:13px; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:3px; padding-bottom:3px; }
 /* Zeitleiste: Datum näher an der Linie und innerhalb der Trennlinien */
-.tl-day.tl-all .tl-date { padding-right:8px; } .tl-day.tl-all .tl-item.tl-dstart .tl-date b { font-size:12px; letter-spacing:0; }
+.tl-day.tl-all .tl-date { padding-right:8px; }
 /* Zeitleiste: Tage mit Abstand und durchgehender Linie bis an den Tabellenrand; Termine kompakt */
-.tl-day.tl-all { padding:7px 12px; background-image:linear-gradient(#94a3b8,#94a3b8); background-repeat:no-repeat; background-size:3px 100%; background-position:95px 0; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child) { margin-top:14px !important; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child)::before { top:-7.75px !important; left:6px !important; right:6px !important; }
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-termin::after, .tl-day.tl-all .tl-item.tl-dstart:not(:first-child).tl-doku::after { display:none !important; }
+.tl-day.tl-all { padding:7px 12px; }
 .tl-day.tl-all .tl-item.tl-termin .tl-body, .tl-day.tl-all .tl-item.tl-doku .tl-body { padding-top:5px; padding-bottom:5px; }
 .tl-day.tl-all .tl-item.tl-termin .tl-body > .tl-first, .tl-day.tl-all .tl-item.tl-doku .tl-body > .tl-first { padding:5px 8px !important; margin-top:2px !important; }
 .tl-day.tl-all .tl-item.tl-termin .tl-body > div[style*="margin-top: 8px"], .tl-day.tl-all .tl-item.tl-doku .tl-body > div[style*="margin-top: 8px"] { margin-top:4px !important; }
@@ -159,12 +153,7 @@
 .tl-day.tl-all .tl-item { grid-template-columns:100px 1fr !important; }
 .tl-day.tl-all .tl-date { position:relative; padding-right:34px; }
 .tl-date .tl-ico { position:absolute; right:7px; top:1px; width:22px; height:22px; margin:0; }
-.tl-day.tl-all .tl-item.tl-dstart .tl-date .tl-ico { top:5px; }
-.tl-day.tl-all { background-position:112px 0; }
-.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart)::before { background:linear-gradient(to right, transparent 0 103px, #e2e8f0 103px); }
 /* Zeitleiste: Die senkrechte Linie bleibt überall durchgehend; waagerechte Trennlinien laufen hinter ihr durch (Aussparung an der Linie) */
-.tl-day.tl-all .tl-item.tl-dstart:not(:first-child)::before { left:6px !important; right:6px !important; background:linear-gradient(to right, #94a3b8 0 95px, transparent 95px 98px, #94a3b8 98px) !important; }
-.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart):not(:first-child)::before { left:6px !important; right:6px !important; background:linear-gradient(to right, transparent 0 98px, #e2e8f0 98px) !important; }
 /* Reiter Dateien als Tabelle wie die Zeitleiste der Akte: eine runde Karte, Datum | durchgehender farbiger Strich | Name mit Aktionen | Vorschau */
 #md-list.md-tab { background:#f2f5fc; border:1px solid #dbe3f0; border-radius:12px; padding:0; overflow:hidden; }
 #md-list.md-tab .md-item { margin:0; }
@@ -176,21 +165,19 @@
 .md-tr .md-l2 { gap:8px; } .md-tr .md-l2 .md-dots { margin-left:0; }
 .md-tr .md-ic.md-tr-th, .md-tr .md-ic.th.md-tr-th { flex:none; width:44px; height:58px; align-self:center; margin:8px 10px 8px 4px; font-size:10px; }
 @media (max-width:520px) { .md-tr-d { width:80px; padding-right:8px; } .md-tr-d b { font-size:12px; } }
-/* Zeitleiste: Farbstriche gehen nahtlos ineinander über (Füllstück im Tagesabstand); waagerechte Trennlinien laufen dahinter durch, genau an der Linie ausgespart */
-.tl-day.tl-all { background-image:none !important; }
-.tl-day.tl-all .tl-item { --tlc:#6abf69; }
+/* Zeitleiste der Akte: eine Karte, je Tag ein Block (jeder zweite Tag etwas anderer Grundton) mit eigener Datumszeile; der farbige Strich läuft durch, Trennlinien liegen dahinter */
+.tl-day.tl-all { overflow:hidden; }
+.tl-day.tl-all .tl-item { --tlc:#6abf69; isolation:isolate; }
 .tl-day.tl-all .tl-item.tl-termin { --tlc:#22c55e; } .tl-day.tl-all .tl-item.tl-doku { --tlc:#3b82f6; } .tl-day.tl-all .tl-item.tl-notiz { --tlc:#eab308; } .tl-day.tl-all .tl-item.tl-med { --tlc:#8b5cf6; }
 .tl-day.tl-all .tl-item.tl-rezept { --tlc:#ec4899; } .tl-day.tl-all .tl-item.tl-mail { --tlc:#14b8a6; } .tl-day.tl-all .tl-item.tl-rechnung { --tlc:#f97316; } .tl-day.tl-all .tl-item.tl-verbrauch { --tlc:#06b6d4; }
-.tl-day.tl-all .tl-item.tl-angelegt { --tlc:#64748b; } .tl-day.tl-all .tl-item.tl-dokument { --tlc:#64748b; }
-/* Datumszeile je Tag: dicke Trennlinie bis an die Ränder der Karte, der Strich läuft darüber durch */
+.tl-day.tl-all .tl-item.tl-angelegt, .tl-day.tl-all .tl-item.tl-dokument { --tlc:#64748b; }
+.tl-day.tl-all .tl-date b { display:none; }
+.tl-dg { margin:0 -12px; padding:0 12px; } .tl-dg2 { background:#e4ebfa; }
 .tl-dh { position:relative; margin:0 -12px; padding:9px 12px 3px; border-top:2px solid #dbe3f0; font-size:14px; font-weight:800; color:#0f172a; letter-spacing:.02em; }
 .tl-dh::before { content:''; position:absolute; left:112px; top:-2px; bottom:0; width:3px; background:var(--tlc,#6abf69); pointer-events:none; }
 .tl-dg:first-child > .tl-dh { border-top:0; padding-top:10px; } .tl-dg:first-child > .tl-dh::before { top:0; }
-.tl-day.tl-all .tl-date b { display:none !important; }
-.tl-day.tl-all .tl-item { isolation:isolate; }
-/* feine Trennlinie zwischen Einträgen eines Tages, mit Abstand zum Rand, hinter dem Strich */
-body .tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart):not(:first-child)::before { content:'' !important; display:block !important; position:absolute !important; z-index:-1 !important; left:6px !important; right:6px !important; top:0 !important; height:1px !important; background:#e2e8f0 !important; pointer-events:none; }
-body .tl-day.tl-all .tl-dh + .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart):not(:first-child)::before, body .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item:not(.tl-termin):not(.tl-doku):not(.tl-dstart):not(:first-child)::before { display:none !important; }
-/* Jeder Tag ein eigener Block; jeder zweite Tag mit etwas anderem Grundton, damit die Tage besser getrennt wirken */
-.tl-day.tl-all { overflow:hidden; }
-.tl-dg { margin:0 -12px; padding:0 12px; } .tl-dg2 { background:#e7edfa; }
+/* feine Trennlinien zwischen Einträgen eines Tages (mit Abstand zum Rand, hinter dem Strich); an Terminen und Dokumentationen mit Rahmen keine Linie, dafür etwas Luft */
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; z-index:-1; left:6px; right:6px; top:0; height:1px; background:#d3dcee; pointer-events:none; }
+.tl-day.tl-all .tl-dh + .tl-item::before, .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item::before { display:none; }
+.tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:8px; }
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):has(+ .tl-item:is(.tl-termin,.tl-doku)) .tl-body { padding-bottom:8px; }
