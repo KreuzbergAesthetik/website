@@ -1673,7 +1673,7 @@ body.pe-open { overflow:hidden; }
 .tl-day.tl-all .tl-item.tl-rezept { --tlc:#ec4899; } .tl-day.tl-all .tl-item.tl-mail { --tlc:#14b8a6; } .tl-day.tl-all .tl-item.tl-rechnung { --tlc:#f97316; } .tl-day.tl-all .tl-item.tl-verbrauch { --tlc:#06b6d4; }
 .tl-day.tl-all .tl-item.tl-angelegt { --tlc:#64748b; } .tl-day.tl-all .tl-item.tl-dokument { --tlc:#64748b; }
 /* Datumszeile je Tag: dicke Trennlinie bis an die Ränder der Karte, der Strich läuft darüber durch */
-.tl-dh { position:relative; margin:0 -12px; padding:9px 12px 3px; border-top:2px solid #cbd5e1; font-size:14px; font-weight:800; color:#0f172a; letter-spacing:.02em; }
+.tl-dh { position:relative; margin:0 -12px; padding:9px 12px 3px; border-top:2px solid #dbe3f0; font-size:14px; font-weight:800; color:#0f172a; letter-spacing:.02em; }
 .tl-dh::before { content:''; position:absolute; left:112px; top:-2px; bottom:0; width:3px; background:var(--tlc,#6abf69); pointer-events:none; }
 .tl-dh:first-child { border-top:0; padding-top:10px; } .tl-dh:first-child::before { top:0; }
 .tl-day.tl-all .tl-date b { display:none !important; }
@@ -3340,7 +3340,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-zh';
+var KA_V = '2026-11-26-zi';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
