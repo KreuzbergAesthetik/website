@@ -27,7 +27,7 @@ function tplsForEvent(e) {
   return out;
 }
 function addTplTo(p, t, zu, i, datum) {
-  var id = newId();
+  var id = newId(), nth = (p.dokumente || []).filter(function (d) { return d.tid === t.id; }).length, nm = nth ? String(t.name).replace(/(\.[A-Za-z0-9]{1,5})?$/, function (x) { return ' (' + (nth + 1) + ')' + x; }) : t.name;
   return fileBlob(t).then(function (bl) {
     if (bl && (t.fill || (t.fields && t.fields.length)) && /pdf/i.test(bl.type || 'pdf')) {
       var dd = datum ? new Date(datum + 'T12:00:00') : new Date(); if (isNaN(dd)) dd = new Date();
@@ -35,8 +35,8 @@ function addTplTo(p, t, zu, i, datum) {
         dob: String(p.dob || '').replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$3.$2.$1'), datum: dd.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }), fillExtra: fillExtra(p, datum) }, t.fields).catch(function () { return bl; });
     }
     return bl;
-  }).then(function (bl) { return bl ? fPut(id, t.name, bl) : false; }).then(function (ok) {
-    if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: t.name, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
+  }).then(function (bl) { return bl ? fPut(id, nm, bl) : false; }).then(function (ok) {
+    if (ok) { var rec = { id: id, ts: Date.now() + (i || 0), name: nm, kat: t.kat || katOf(t), tid: t.id, zu: zu || undefined }; p.dokumente = (p.dokumente || []).concat([rec]); auditFilesAdded(p, [rec], 'Dokumente'); }
     return ok;
   });
 }
@@ -215,8 +215,8 @@ function medAddMenu(ev) {
     items.push(['Video', function () { document.getElementById('a-vid-in').click(); }, 'Nur auf diesem Gerät gespeichert']);
   }
   items.push(['Datei hochladen', function () { zuNext = null; document.getElementById('a-doc-in').click(); }, 'PDF, Brief oder Foto vom Gerät; ausgefüllte Formulare werden erkannt']);
-  var tp = templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; });
-  if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben']);
+  var tp = templates.filter(function (t) { return !t.neu; });
+  if (tp.length) items.push(['Vorlage in die Akte legen …', sub(tp.map(function (t) { return [t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }, tplDoc(p, t) ? 'schon in der Akte, wird noch einmal angelegt' : '']; })), 'z. B. Honorarvereinbarung zum Ausfüllen und Unterschreiben; auch mehrfach möglich']);
   items.push(['Link an Patient senden …', sub(KA_DOCS.map(function (d) { return [(d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]; })), 'Patient füllt Aufklärung oder Hinweis selbst online aus']);
   tlMenu(ev, items);
 }
@@ -224,7 +224,7 @@ function untAddMenu(ev) {
   var p = curP; if (!p) return;
   var anker = ev.currentTarget;   /* currentTarget ist nach dem Klick leer, deshalb jetzt merken */
   var items = [];
-  templates.filter(function (t) { return !t.neu && tplState(p, t).s === 'fehlt'; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }]); });
+  templates.filter(function (t) { return !t.neu; }).forEach(function (t) { items.push(['Vorlage: ' + t.name, function () { addTplsTo(p, [t], null, renderUnterlagen); }, tplDoc(p, t) ? 'schon in der Akte, wird noch einmal angelegt' : '']); });
   KA_DOCS.forEach(function (d) { items.push(['Link senden: ' + (d.typ === 'info' ? 'Hinweis ' : 'Aufklärung ') + d.name.replace(/^(Nachsorge|Aufklärung) /, ''), function () { setTimeout(function () { docSend({ stopPropagation: function () {}, currentTarget: anker }, p, d); }, 0); }]); });
   tlMenu(ev, items);
 }
