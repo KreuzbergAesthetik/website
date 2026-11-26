@@ -171,7 +171,7 @@ function docPreview(dd) {
   if (/\.pdf$/i.test(dd.name || '')) { img.alt = 'Wird geladen …'; pdfThumb(dd, 900).then(function (u) { if (u) img.src = u; }).catch(function () { img.alt = 'Keine Vorschau möglich.'; }); }
 }
 function medDocRow(p, dd) {
-  var r = mk('div', 'md-doc'), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
+  var r = mk('div', 'md-doc' + (dd.sig && !needSig2(dd) ? ' md-ok' : dd.sig || signable(dd) ? ' md-wait' : '')), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
   var ic0 = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()); r.appendChild(ic0); docThumb(dd, ic0); ic0.onclick = function () { if (ic0.classList.contains('th')) docPreview(dd); };
   var a = mk('a', 'md-nm', dd.name); a.href = '#'; a.title = dd.name + ' · ' + fmtD(iso(new Date(tsOf(dd))));
   fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
@@ -180,8 +180,10 @@ function medDocRow(p, dd) {
   var dl = mk('span', 'md-date', fmtD(iso(new Date(tsOf(dd))))); l2.appendChild(dl);
   if (dd.hiddenFromView) l2.appendChild(restoreVisibilityButton(function () { fileHide(p, dd); }));
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
+  var stx = dd.sig && !needSig2(dd) ? ['unterschrieben', 'ok'] : dd.sig ? ['Arzt-Unterschrift fehlt', 'wait'] : signable(dd) ? ['Unterschrift fehlt', 'wait'] : null;
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
+  if (stx) l2.appendChild(mk('span', 'md-stx ' + stx[1], stx[0]));
   var dots = medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }

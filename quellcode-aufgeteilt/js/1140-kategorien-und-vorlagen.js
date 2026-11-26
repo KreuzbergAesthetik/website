@@ -142,7 +142,7 @@ function renderUnterlagen() {
     return b;
   };
   /* Pakete */
-  pakete().forEach(function (pk) {
+  [].forEach(function (pk) {   /* Paket-Karten (z. B. „Erstkunden“) werden hier nicht mehr angezeigt */
     var c = mk('div', 'un-pk'), cm = mk('div', 'un-main'); cm.appendChild(mk('b', '', pk.name));
     var names = (pk.forms || []).map(function (k) { return pkForm(k)[1]; }).concat((pk.tpls || []).map(function (id) { var t = tplById(id); return t ? t.name + ' (vor Ort)' : ''; }).filter(Boolean));
     cm.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket')); c.appendChild(cm);

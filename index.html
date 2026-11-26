@@ -247,7 +247,7 @@ textarea.form-control { font-size:15px; }
 .un-btn { flex:none; padding:6px 10px; font-size:13px; white-space:nowrap; }
 .un-pk { display:flex; align-items:center; gap:10px; background:var(--pf-inlay,#f2f5fc); border:1px solid var(--pf-line,#dbe3f0); border-left:4px solid #16a34a; border-radius:12px; padding:8px 10px; margin-bottom:6px; } .un-pk b { display:block; }
 .un-fold { display:block; width:100%; text-align:left; background:none; border:0; cursor:pointer; padding:0; }
-.md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
+.md-chips { display:flex; gap:6px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; margin:10px 0 2px; } .md-chips::-webkit-scrollbar { display:none; } .md-chip { flex:none; white-space:nowrap; }
 .md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:var(--pf-navy); border-color:#0f172a; color:#fff; }
 .md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .seg#inv-payseg { display:flex; width:100%; margin-bottom:16px; } #inv-payseg button { flex:1 1 auto; min-width:0; padding:9px 4px; font-size:12.5px; white-space:nowrap; } #inv-paybox { margin-bottom:6px; }
 .md-seg { display:flex; margin:2px 0 12px; } .md-seg button { flex:1; }
@@ -1534,7 +1534,7 @@ body.pe-open { overflow:hidden; }
 @media (max-width:700px) {
   .bnav-it { gap:7px; }
   .bnav-it svg { position:relative; z-index:1; }
-  .bnav-it::before { content:''; position:absolute; top:7px; left:50%; width:56px; height:27px; margin-left:-28px; border-radius:14px; background:rgba(1,34,101,.11); opacity:0; transform:scale(.6); transition:opacity .22s ease, transform .22s ease, background-color .45s ease; pointer-events:none; }
+  .bnav-it::before { content:''; position:absolute; top:7px; left:50%; width:48px; height:27px; margin-left:-24px; border-radius:14px; background:rgba(1,34,101,.11); opacity:0; transform:scale(.6); transition:opacity .22s ease, transform .22s ease, background-color .45s ease; pointer-events:none; }
   .bnav-it.on::before { top:7px; bottom:auto; left:50%; right:auto; height:27px; border-radius:14px; opacity:1; transform:none; background:rgba(1,34,101,.11); }
   /* Antippen: Pille leuchtet kurz dunkelgrau auf, Symbol und Beschriftung werden dunkel und blenden dann zurück */
   .bnav-it:active::before { opacity:1; transform:none; background:rgba(51,65,85,.34); transition:none; }
@@ -1592,6 +1592,16 @@ body.pe-open { overflow:hidden; }
 .dp-bar .btn, .dp-bar a.btn { display:inline-flex; align-items:center; justify-content:center; min-height:38px; line-height:1.2; padding-top:0; padding-bottom:0; text-decoration:none; box-sizing:border-box; }
 /* Webformulare: Zeilen als Karten wie im Abgleich */
 .wf-row { background:var(--pf-inlay,#f2f5fc); border:1px solid var(--pf-line,#dbe3f0) !important; border-radius:12px; padding:10px 14px !important; margin:0 0 8px !important; }
+/* Status-Linie links (wie in der Zeitleiste): grün erledigt, orange offen, grau noch nicht gesendet */
+.un-row { border-left:4px solid #94a3b8 !important; } .un-row:has(.un-st.ok) { border-left-color:#22c55e !important; } .un-row:has(.un-st.wait) { border-left-color:#f59e0b !important; } .un-row .un-st { display:none; }
+.md-doc.md-ok { border-left:4px solid #22c55e; } .md-doc.md-wait { border-left:4px solid #f59e0b; }
+.md-stx { font-size:12px; font-weight:600; white-space:nowrap; } .md-stx.ok { color:#15803d; } .md-stx.wait { color:#b45309; }
+/* Akte-Kopf: Alter entfällt (steht bei Kontakt), beim Scrollen wird die Leiste kleiner */
+.a-top .a-rt .a-age { display:none; }
+.a-top { transition:padding .18s ease; } body.akte-scrolled .a-top { padding-top:4px; padding-bottom:4px; } body.akte-scrolled .a-top .a-nm-1, body.akte-scrolled .a-top .a-nm-2 { font-size:17px; } body.akte-scrolled .a-top .a-rt { transform:scale(.85); transform-origin:right center; }
+/* Stift an den Kacheln: klein, hell, in der Ecke; am Gerät mit Maus nur beim Überfahren */
+.a-tile .a-pen { top:3px; right:3px; width:22px; height:22px; opacity:.6; color:#b4bfcc; } .a-tile .a-pen svg { width:13px; height:13px; }
+@media (any-hover:hover) { .a-tile .a-pen { opacity:0; transition:opacity .15s; } .a-tile:hover .a-pen, .a-tile .a-pen:focus-visible { opacity:.9; } }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3251,7 +3261,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-f';
+var KA_V = '2026-11-26-g';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -3401,6 +3411,8 @@ function lgUpdate() {
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
 var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
+/* Akte: Kopfleiste wird beim Scrollen kleiner */
+window.addEventListener('scroll', function () { document.body.classList.toggle('akte-scrolled', document.body.classList.contains('akte-open') && window.scrollY > 40); }, { passive: true });
 /* Fußleiste: Zustand „Mehr-Menü offen“ und kurze Antipp-Animation */
 (function () {
   function ready() {
@@ -8428,7 +8440,7 @@ function renderUnterlagen() {
     return b;
   };
   /* Pakete */
-  pakete().forEach(function (pk) {
+  [].forEach(function (pk) {   /* Paket-Karten (z. B. „Erstkunden“) werden hier nicht mehr angezeigt */
     var c = mk('div', 'un-pk'), cm = mk('div', 'un-main'); cm.appendChild(mk('b', '', pk.name));
     var names = (pk.forms || []).map(function (k) { return pkForm(k)[1]; }).concat((pk.tpls || []).map(function (id) { var t = tplById(id); return t ? t.name + ' (vor Ort)' : ''; }).filter(Boolean));
     cm.appendChild(mk('div', 'un-s', names.join(' + ') || 'Leeres Paket')); c.appendChild(cm);
@@ -9026,7 +9038,7 @@ function docPreview(dd) {
   if (/\.pdf$/i.test(dd.name || '')) { img.alt = 'Wird geladen …'; pdfThumb(dd, 900).then(function (u) { if (u) img.src = u; }).catch(function () { img.alt = 'Keine Vorschau möglich.'; }); }
 }
 function medDocRow(p, dd) {
-  var r = mk('div', 'md-doc'), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
+  var r = mk('div', 'md-doc' + (dd.sig && !needSig2(dd) ? ' md-ok' : dd.sig || signable(dd) ? ' md-wait' : '')), ext = (/\.([A-Za-z0-9]+)$/.exec(dd.name || '') || [])[1] || '';
   var ic0 = mk('div', 'md-ic', (ext || 'Datei').slice(0, 4).toUpperCase()); r.appendChild(ic0); docThumb(dd, ic0); ic0.onclick = function () { if (ic0.classList.contains('th')) docPreview(dd); };
   var a = mk('a', 'md-nm', dd.name); a.href = '#'; a.title = dd.name + ' · ' + fmtD(iso(new Date(tsOf(dd))));
   fileURL(dd).then(function (u) { if (u) { a.href = u; if (/\.pdf$/i.test(dd.name)) { a.target = '_blank'; a.rel = 'noopener'; } else a.download = dd.name; } });
@@ -9035,8 +9047,10 @@ function medDocRow(p, dd) {
   var dl = mk('span', 'md-date', fmtD(iso(new Date(tsOf(dd))))); l2.appendChild(dl);
   if (dd.hiddenFromView) l2.appendChild(restoreVisibilityButton(function () { fileHide(p, dd); }));
   /* Unterschrift: schwarzes Symbol = noch zu unterschreiben, grünes = vorhanden (Datum beim Darüberfahren) */
+  var stx = dd.sig && !needSig2(dd) ? ['unterschrieben', 'ok'] : dd.sig ? ['Arzt-Unterschrift fehlt', 'wait'] : signable(dd) ? ['Unterschrift fehlt', 'wait'] : null;
   if (dd.sig) { var sg = mk('span', 'md-sig on'); sg.title = 'Unterschrieben am ' + fmtD(iso(new Date(dd.sig.ts))) + (dd.sig2 ? ', Arzt am ' + fmtD(iso(new Date(dd.sig2.ts))) : ''); sg.setAttribute('aria-label', sg.title); sg.innerHTML = ICON_SIGN; l2.appendChild(sg); if (needSig2(dd)) { var sb2 = mk('button', 'md-sig'); sb2.type = 'button'; sb2.title = 'Als Arzt unterschreiben'; sb2.setAttribute('aria-label', sb2.title); sb2.innerHTML = ICON_SIGN; sb2.onclick = function () { openSign(p, dd, true); }; l2.appendChild(sb2); } }
   else if (signable(dd)) { var sb = mk('button', 'md-sig'); sb.type = 'button'; sb.title = 'Unterschrift hinzufügen'; sb.setAttribute('aria-label', 'Unterschrift hinzufügen'); sb.innerHTML = ICON_SIGN; sb.onclick = function () { openSign(p, dd); }; l2.appendChild(sb); }
+  if (stx) l2.appendChild(mk('span', 'md-stx ' + stx[1], stx[0]));
   var dots = medDots((dd.kat === 'Rezept' ? [['Rezept bearbeiten', function () {
       curP = p; var lg = (p.log || []).filter(function (x) { return x.type === 'rezept' && (x.docId === dd.id || Math.abs((x.ts || 0) - (dd.ts || 0)) < 15000); })[0];
       if (!lg) { lg = { ts: dd.ts || Date.now(), type: 'rezept', text: '', docId: dd.id, _tmp: true }; }

@@ -85,7 +85,7 @@
 .un-btn { flex:none; padding:6px 10px; font-size:13px; white-space:nowrap; }
 .un-pk { display:flex; align-items:center; gap:10px; background:var(--pf-inlay,#f2f5fc); border:1px solid var(--pf-line,#dbe3f0); border-left:4px solid #16a34a; border-radius:12px; padding:8px 10px; margin-bottom:6px; } .un-pk b { display:block; }
 .un-fold { display:block; width:100%; text-align:left; background:none; border:0; cursor:pointer; padding:0; }
-.md-chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
+.md-chips { display:flex; gap:6px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; margin:10px 0 2px; } .md-chips::-webkit-scrollbar { display:none; } .md-chip { flex:none; white-space:nowrap; }
 .md-chip { border:1px solid #cbd5e1; background:#fff; color:#475569; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; } .md-chip.on { background:var(--pf-navy); border-color:#0f172a; color:#fff; }
 .md-day { font-size:13px; font-weight:700; color:#334155; margin-top:6px; } .seg#inv-payseg { display:flex; width:100%; margin-bottom:16px; } #inv-payseg button { flex:1 1 auto; min-width:0; padding:9px 4px; font-size:12.5px; white-space:nowrap; } #inv-paybox { margin-bottom:6px; }
 .md-seg { display:flex; margin:2px 0 12px; } .md-seg button { flex:1; }

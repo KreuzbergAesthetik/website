@@ -1,6 +1,6 @@
 
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-f';
+var KA_V = '2026-11-26-g';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -150,6 +150,8 @@ function lgUpdate() {
 function navGo(id) { document.getElementById('nav-menu').style.display = 'none'; switchTab(id); }
 /* Untere Leiste (Handy hochkant): aktiven Bereich markieren; Praxis-Seiten zählen zu „Mehr“ */
 var KA_PH = window.matchMedia('(max-width:699px) and (orientation:portrait)');
+/* Akte: Kopfleiste wird beim Scrollen kleiner */
+window.addEventListener('scroll', function () { document.body.classList.toggle('akte-scrolled', document.body.classList.contains('akte-open') && window.scrollY > 40); }, { passive: true });
 /* Fußleiste: Zustand „Mehr-Menü offen“ und kurze Antipp-Animation */
 (function () {
   function ready() {

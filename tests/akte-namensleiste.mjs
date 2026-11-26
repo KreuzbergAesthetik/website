@@ -28,8 +28,8 @@ const pruefe = (page, rows) => page.evaluate(async rows => {
     const rt = bar.querySelector('.a-rt'), age = rt.querySelector('.a-age'), pid = rt.querySelector('.a-pid'), pen = document.getElementById('a-edit');
     const r = e => e.getBoundingClientRect();
     out.push({ anrede, ein: nm.classList.contains('a-nm-1'), zwei: nm.classList.contains('a-nm-2'), zeilen, vornameUnten: r(f).top >= r(l).bottom - 2 || nm.classList.contains('a-nm-1'),
-      farbe: getComputedStyle(bar).borderTopColor, pfeil: getComputedStyle(bar.querySelector(':scope > .icon-btn')).color, rechtsUntereinander: r(age).bottom <= r(pid).top + 1 && r(pen).bottom <= r(age).top + 2,
-      rechtsbuendig: Math.abs(r(pen.querySelector('svg')).right - r(age).right) <= 1.5 && Math.abs(r(age).right - r(pid).right) <= 1.5,
+      farbe: getComputedStyle(bar).borderTopColor, pfeil: getComputedStyle(bar.querySelector(':scope > .icon-btn')).color, rechtsUntereinander: r(pen).bottom <= r(pid).top + 2 && getComputedStyle(age).display === 'none',   // Alter steht nur noch bei Kontakt (Wunsch 26.11.2026)
+      rechtsbuendig: Math.abs(r(pen.querySelector('svg')).right - r(pid).right) <= 4,
       nichtAbgeschnitten: r(nm).right <= r(rt).left + 1 && r(rt).right <= r(bar).right && l.scrollWidth <= nm.clientWidth + 1 && f.scrollWidth <= nm.clientWidth + 1 });
   }
   return out;
