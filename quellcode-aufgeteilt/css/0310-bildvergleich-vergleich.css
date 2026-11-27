@@ -141,6 +141,12 @@
 .md-doc { padding:6px 10px; margin-bottom:6px; gap:8px; } .md-ic.th { width:28px; height:36px; } .md-ic { width:24px; height:28px; } .md-col { gap:2px; } .md-nm { font-size:13.5px; } .md-item { margin-bottom:8px; }
 .tl-body .tl-att { margin:4px 0 2px; } .tl-docp { margin-top:4px; gap:8px; } .tl-docp .md-ic { width:26px; height:34px; } .tl-docp .tl-docp .tl-docn, .tl-docp .tl-docn { font-size:12.5px; }
 .un-row { padding:6px 10px !important; margin:0 0 6px !important; } .un-row .un-t { font-size:14px; } .un-row .un-s { font-size:11.5px; } .un-row .btn, .un-row .ak-act { min-height:32px; padding-top:4px; padding-bottom:4px; font-size:13px; }
+/* Anhänge in der Zeitleiste kompakt: eine Zeile je Datei, Stift ohne Kreis */
+.tl-body .md-doc { padding:3px 8px; margin-bottom:3px; gap:6px; border-radius:8px; } .tl-body .md-doc .md-ic.th { width:22px; height:28px; } .tl-body .md-doc .md-ic { width:20px; height:24px; }
+.tl-body .md-doc .md-col { flex-direction:row; align-items:center; gap:6px; } .tl-body .md-doc .md-nm { flex:1 1 0; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; }
+.tl-body .md-doc .md-l2 { flex:none; flex-wrap:nowrap; gap:2px; } .tl-body .md-doc .md-date { display:none; }
+.tl-body .md-doc .md-edit { width:22px; height:22px; border:0; background:none; border-radius:6px; } .tl-body .md-doc .md-edit svg { width:15px; height:15px; }
+.tl-body .md-doc .md-dots { padding:0 4px; font-size:18px; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:3px; padding-bottom:3px; }
 /* Zeitleiste: Datum näher an der Linie und innerhalb der Trennlinien */
 .tl-day.tl-all .tl-date { padding-right:8px; }
