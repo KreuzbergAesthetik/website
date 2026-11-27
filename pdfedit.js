@@ -271,7 +271,7 @@
     if (!base) { alert('Die Datei liegt nicht auf diesem Gerät.'); return; }
     var head = new Uint8Array(await base.slice(0, 5).arrayBuffer()); if (String.fromCharCode.apply(null, head) !== '%PDF-') { alert('Bearbeiten geht nur bei PDF-Dateien.'); return; }
     var t = typeof tplFor === 'function' ? tplFor(rec) : null;
-    PE = { p: p, rec: rec, base: base, hadBase: cont, items: cont ? JSON.parse(JSON.stringify(rec.anno)) : [], undo: [], tool: 'pen', color: COLORS[0][0], width: 2, size: 11, dirty: false,
+    PE = { p: p, rec: rec, base: base, hadBase: cont, items: cont ? JSON.parse(JSON.stringify(rec.anno)) : [], undo: [], tool: 'hand', color: COLORS[0][0], width: 2, size: 11, dirty: false,
       free: t && Array.isArray(t.fields) ? t.fields.filter(function (f) { return f.k === 'frei'; }) : [],
       boxes: t && Array.isArray(t.fields) ? t.fields.filter(function (f) { return f.k === 'kasten'; }) : [] };
     var ui = shell(rec.name || 'Dokument'); PE.ui = ui;
@@ -293,11 +293,11 @@
     cancel.onclick = async function () { if (PE && PE.dirty && !await kaConfirm('Änderungen verwerfen?')) return; ui.close(); PE = null; };
     var save = h('button', 'btn btn-save btn-sm', 'Speichern'); save.type = 'button'; save.onclick = function () { peSave(false); }; ui.save = save;
     var save2 = h('button', 'btn btn-save btn-sm', 'Speichern und senden'); save2.type = 'button'; save2.onclick = function () { peSave(true); }; ui.save2 = save2;
-    tools.appendChild(cancel); tools.appendChild(save); tools.appendChild(save2);
+    var endBox = h('span', 'pe-end'); endBox.appendChild(cancel); endBox.appendChild(save); endBox.appendChild(save2); tools.appendChild(endBox);
     ui.scroll.appendChild(h('div', 'pe-load', 'Dokument wird geladen …'));
     try {
       ui.scroll.innerHTML = ''; PE.pages = await renderPages(base, ui.scroll);
-      PE.pages.forEach(peBind); peTool('pen'); peRedraw();
+      PE.pages.forEach(peBind); peTool('hand'); peRedraw();
       if (opt && opt.sign) peSignStart(opt.sign);
     } catch (e) { ui.scroll.innerHTML = ''; ui.scroll.appendChild(h('div', 'pe-load', 'Das PDF konnte nicht angezeigt werden.')); }
   };
@@ -411,7 +411,7 @@
       try { if (typeof tpFieldsInfo === 'function') tpFieldsInfo(); } catch (x) {}
       ui.close(); TF = null; alert('Felder gespeichert.');
     };
-    ui.tools.appendChild(cancel); ui.tools.appendChild(save);
+    var endBox2 = h('span', 'pe-end'); endBox2.appendChild(cancel); endBox2.appendChild(save); ui.tools.appendChild(endBox2);
     var props = h('div', 'pe-props'); ui.bar.appendChild(props); ui.props = props;
     ui.scroll.appendChild(h('div', 'pe-load', 'Vorlage wird geladen …'));
     try {

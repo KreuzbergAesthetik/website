@@ -1660,6 +1660,11 @@ body.pe-open { overflow:hidden; }
 .tl-day.tl-all .tl-dh + .tl-item::before, .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item::before { display:none; }
 .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:8px; }
 .tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):has(+ .tl-item:is(.tl-termin,.tl-doku)) .tl-body { padding-bottom:8px; }
+/* Kopfzeile der Anhänge mit rundem Bearbeiten-Knopf */
+.tl-att { display:flex; align-items:center; gap:8px; } .tl-att .md-edit { width:24px; height:24px; } .tl-att .md-edit svg { width:14px; height:14px; margin:0; vertical-align:0; }
+/* PDF-Editor: Leiste bleibt vollständig sichtbar (scrollt nicht mit), Abbrechen, Speichern und Speichern und senden immer in einer Zeile */
+.pe-bar { flex:none; } .pe-end { display:flex; flex-wrap:nowrap; gap:6px; margin-left:auto; } .pe-end .btn { white-space:nowrap; }
+@media (max-width:420px) { .pe-end { gap:4px; } .pe-end .btn { padding-left:10px; padding-right:10px; font-size:12.5px; } }
 </style>
 <script src="dialoge.js"></script>
 <script src="docs.js"></script>
@@ -3319,7 +3324,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-26-zq';
+var KA_V = '2026-11-27-b';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -9027,7 +9032,13 @@ function attachBlock(p, key) {
   var imgs = (p.bilder || []).filter(function (x) { return x.zu === key && !x.hiddenFromView; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
   var docs = (p.dokumente || []).filter(function (x) { return x.zu === key && !x.hiddenFromView; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
   var box = mk('div'); box.style.marginTop = '8px';
-  if (imgs.length || docs.length) { var at = mk('div', 'tl-att'); at.innerHTML = tvSvg('clip') + (imgs.length + docs.length) + (imgs.length + docs.length === 1 ? ' Anhang' : ' Anhänge'); box.appendChild(at); }
+  if (imgs.length || docs.length) {
+    var at = mk('div', 'tl-att'), alle = imgs.concat(docs), tx = mk('span'); tx.innerHTML = tvSvg('clip') + alle.length + (alle.length === 1 ? ' Anhang' : ' Anhänge'); at.appendChild(tx);
+    /* Bearbeiten-Knopf für alle Anhänge dieses Eintrags */
+    var ab = mk('button', 'md-edit'); ab.type = 'button'; ab.title = 'Anhänge bearbeiten'; ab.setAttribute('aria-label', ab.title); ab.innerHTML = tvSvg('pen');
+    ab.onclick = function (ev) { tlMenu(ev, attItems(key).concat([['Alle einem anderen Eintrag zuordnen …', function () { openZu(p, alle); }], ['Datum aller Anhänge ändern', function () { editGroupDate(alle); }]])); };
+    at.appendChild(ab); box.appendChild(at);
+  }
   if (imgs.length) box.appendChild(mediaGrid(p, imgs));
   if (docs.length) box.appendChild(docList(p, docs));
   return box;

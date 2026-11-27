@@ -1,6 +1,6 @@
 {
   "quelle": "index.html",
-  "sha256": "ba5fa4b8c3b9dcb4e01dd42cab9af962757a98de6297dfd761102ab7c0f1aaec",
+  "sha256": "43fcd2e9bac7637a90b1dd2a88623a38024bdfc8635c9d1ea3caf139368bce57",
   "hinweis": "Teile in dieser Reihenfolge aneinanderhängen = index.html",
   "teile": [
     {
@@ -225,685 +225,685 @@
       "art": "css",
       "titel": "Zeitleiste der Akte",
       "ab_zeile": 1646,
-      "zeilen": 17
+      "zeilen": 22
     },
     {
       "datei": "html/0330-oberflaeche-rahmen.html",
       "art": "html",
       "titel": "oberflaeche-rahmen",
-      "ab_zeile": 1663,
+      "ab_zeile": 1668,
       "zeilen": 7
     },
     {
       "datei": "js/0340-sperre-sofort-aktivieren.js",
       "art": "js",
       "titel": "sperre-sofort-aktivieren",
-      "ab_zeile": 1670,
+      "ab_zeile": 1675,
       "zeilen": 0
     },
     {
       "datei": "html/0350-oberflaeche-body-applock.html",
       "art": "html",
       "titel": "oberflaeche-body-applock",
-      "ab_zeile": 1670,
+      "ab_zeile": 1675,
       "zeilen": 13
     },
     {
       "datei": "js/0360-speicher-mit-verpflichtender-verschluesselung.js",
       "art": "js",
       "titel": "Speicher mit verpflichtender Verschlüsselung ",
-      "ab_zeile": 1683,
+      "ab_zeile": 1688,
       "zeilen": 339
     },
     {
       "datei": "html/0370-oberflaeche-header-btn-kalender.html",
       "art": "html",
       "titel": "oberflaeche-header-btn-kalender",
-      "ab_zeile": 2022,
+      "ab_zeile": 2027,
       "zeilen": 17
     },
     {
       "datei": "html/0380-handy-hochkant-hauptnavigation-unten-daumenreich.html",
       "art": "html",
       "titel": "Handy hochkant: Hauptnavigation unten (Daumenreichweite); Tablet und Querformat behalten die Reiter oben",
-      "ab_zeile": 2039,
+      "ab_zeile": 2044,
       "zeilen": 28
     },
     {
       "datei": "html/0390-seite-start.html",
       "art": "html",
       "titel": "seite START",
-      "ab_zeile": 2067,
+      "ab_zeile": 2072,
       "zeilen": 47
     },
     {
       "datei": "html/0400-seite-patienten.html",
       "art": "html",
       "titel": "seite PATIENTEN",
-      "ab_zeile": 2114,
+      "ab_zeile": 2119,
       "zeilen": 28
     },
     {
       "datei": "html/0410-seite-rechnungen.html",
       "art": "html",
       "titel": "seite RECHNUNGEN",
-      "ab_zeile": 2142,
+      "ab_zeile": 2147,
       "zeilen": 30
     },
     {
       "datei": "html/0420-seite-leistungen.html",
       "art": "html",
       "titel": "seite LEISTUNGEN",
-      "ab_zeile": 2172,
+      "ab_zeile": 2177,
       "zeilen": 29
     },
     {
       "datei": "html/0430-seite-dokumente.html",
       "art": "html",
       "titel": "seite DOKUMENTE",
-      "ab_zeile": 2201,
+      "ab_zeile": 2206,
       "zeilen": 19
     },
     {
       "datei": "html/0440-seite-zahlungen.html",
       "art": "html",
       "titel": "seite ZAHLUNGEN",
-      "ab_zeile": 2220,
+      "ab_zeile": 2225,
       "zeilen": 22
     },
     {
       "datei": "html/0450-seite-praxisdaten.html",
       "art": "html",
       "titel": "seite PRAXISDATEN",
-      "ab_zeile": 2242,
+      "ab_zeile": 2247,
       "zeilen": 47
     },
     {
       "datei": "html/0460-seite-nachrichtenvorlagen.html",
       "art": "html",
       "titel": "seite NACHRICHTENVORLAGEN",
-      "ab_zeile": 2289,
+      "ab_zeile": 2294,
       "zeilen": 15
     },
     {
       "datei": "html/0470-seite-webformulare.html",
       "art": "html",
       "titel": "seite WEBFORMULARE",
-      "ab_zeile": 2304,
+      "ab_zeile": 2309,
       "zeilen": 18
     },
     {
       "datei": "html/0480-seite-handy-verbindung-test.html",
       "art": "html",
       "titel": "seite HANDY-VERBINDUNG (Test)",
-      "ab_zeile": 2322,
+      "ab_zeile": 2327,
       "zeilen": 9
     },
     {
       "datei": "html/0490-seite-sicherung.html",
       "art": "html",
       "titel": "seite SICHERUNG",
-      "ab_zeile": 2331,
+      "ab_zeile": 2336,
       "zeilen": 19
     },
     {
       "datei": "html/0500-seite-geraete-abgleich.html",
       "art": "html",
       "titel": "seite GERÄTE-ABGLEICH",
-      "ab_zeile": 2350,
+      "ab_zeile": 2355,
       "zeilen": 64
     },
     {
       "datei": "html/0510-seite-textbausteine.html",
       "art": "html",
       "titel": "seite TEXTBAUSTEINE",
-      "ab_zeile": 2414,
+      "ab_zeile": 2419,
       "zeilen": 9
     },
     {
       "datei": "html/0520-seite-todos.html",
       "art": "html",
       "titel": "seite TODOS",
-      "ab_zeile": 2423,
+      "ab_zeile": 2428,
       "zeilen": 16
     },
     {
       "datei": "html/0530-seite-statistik.html",
       "art": "html",
       "titel": "seite STATISTIK",
-      "ab_zeile": 2439,
+      "ab_zeile": 2444,
       "zeilen": 34
     },
     {
       "datei": "html/0540-seite-lager.html",
       "art": "html",
       "titel": "seite LAGER",
-      "ab_zeile": 2473,
+      "ab_zeile": 2478,
       "zeilen": 20
     },
     {
       "datei": "html/0550-fenster-neuer-patient.html",
       "art": "html",
       "titel": "fenster NEUER PATIENT",
-      "ab_zeile": 2493,
+      "ab_zeile": 2498,
       "zeilen": 25
     },
     {
       "datei": "html/0560-fenster-neuer-termin.html",
       "art": "html",
       "titel": "fenster NEUER TERMIN",
-      "ab_zeile": 2518,
+      "ab_zeile": 2523,
       "zeilen": 43
     },
     {
       "datei": "html/0570-fenster-patientenakte.html",
       "art": "html",
       "titel": "fenster PATIENTENAKTE",
-      "ab_zeile": 2561,
+      "ab_zeile": 2566,
       "zeilen": 72
     },
     {
       "datei": "html/0580-schwebender-aktionsknopf-der-akte-eigene-ebene-v.html",
       "art": "html",
       "titel": "Schwebender Aktionsknopf der Akte (eigene Ebene, verschiebt das Layout nicht)",
-      "ab_zeile": 2633,
+      "ab_zeile": 2638,
       "zeilen": 10
     },
     {
       "datei": "html/0590-fenster-termin-ansehen.html",
       "art": "html",
       "titel": "fenster TERMIN ANSEHEN",
-      "ab_zeile": 2643,
+      "ab_zeile": 2648,
       "zeilen": 7
     },
     {
       "datei": "html/0600-fenster-rechnungen-importieren.html",
       "art": "html",
       "titel": "fenster RECHNUNGEN IMPORTIEREN",
-      "ab_zeile": 2650,
+      "ab_zeile": 2655,
       "zeilen": 17
     },
     {
       "datei": "html/0610-fenster-dokumentation-zu-termin.html",
       "art": "html",
       "titel": "fenster DOKUMENTATION ZU TERMIN",
-      "ab_zeile": 2667,
+      "ab_zeile": 2672,
       "zeilen": 10
     },
     {
       "datei": "html/0620-fenster-rezept.html",
       "art": "html",
       "titel": "fenster REZEPT",
-      "ab_zeile": 2677,
+      "ab_zeile": 2682,
       "zeilen": 23
     },
     {
       "datei": "html/0630-fenster-rechnung-erstellen.html",
       "art": "html",
       "titel": "fenster RECHNUNG ERSTELLEN",
-      "ab_zeile": 2700,
+      "ab_zeile": 2705,
       "zeilen": 54
     },
     {
       "datei": "html/0640-fenster-leistungskategorie.html",
       "art": "html",
       "titel": "fenster LEISTUNGSKATEGORIE",
-      "ab_zeile": 2754,
+      "ab_zeile": 2759,
       "zeilen": 27
     },
     {
       "datei": "html/0650-fenster-leistung.html",
       "art": "html",
       "titel": "fenster LEISTUNG",
-      "ab_zeile": 2781,
+      "ab_zeile": 2786,
       "zeilen": 31
     },
     {
       "datei": "html/0660-fenster-altsystem-import.html",
       "art": "html",
       "titel": "fenster ALTSYSTEM-IMPORT",
-      "ab_zeile": 2812,
+      "ab_zeile": 2817,
       "zeilen": 20
     },
     {
       "datei": "html/0670-fenster-unterschrift.html",
       "art": "html",
       "titel": "fenster UNTERSCHRIFT",
-      "ab_zeile": 2832,
+      "ab_zeile": 2837,
       "zeilen": 15
     },
     {
       "datei": "html/0680-fenster-ausgabe.html",
       "art": "html",
       "titel": "fenster AUSGABE",
-      "ab_zeile": 2847,
+      "ab_zeile": 2852,
       "zeilen": 18
     },
     {
       "datei": "html/0690-fenster-nachrichtenvorlage.html",
       "art": "html",
       "titel": "fenster NACHRICHTENVORLAGE",
-      "ab_zeile": 2865,
+      "ab_zeile": 2870,
       "zeilen": 37
     },
     {
       "datei": "html/0700-fenster-platzhalter.html",
       "art": "html",
       "titel": "fenster PLATZHALTER",
-      "ab_zeile": 2902,
+      "ab_zeile": 2907,
       "zeilen": 15
     },
     {
       "datei": "html/0710-fenster-anrede.html",
       "art": "html",
       "titel": "fenster ANREDE",
-      "ab_zeile": 2917,
+      "ab_zeile": 2922,
       "zeilen": 16
     },
     {
       "datei": "html/0720-fenster-textbaustein.html",
       "art": "html",
       "titel": "fenster TEXTBAUSTEIN",
-      "ab_zeile": 2933,
+      "ab_zeile": 2938,
       "zeilen": 14
     },
     {
       "datei": "html/0730-fenster-vorlage.html",
       "art": "html",
       "titel": "fenster VORLAGE",
-      "ab_zeile": 2947,
+      "ab_zeile": 2952,
       "zeilen": 52
     },
     {
       "datei": "html/0740-fenster-rechnungen-pruefen.html",
       "art": "html",
       "titel": "fenster RECHNUNGEN PRÜFEN",
-      "ab_zeile": 2999,
+      "ab_zeile": 3004,
       "zeilen": 9
     },
     {
       "datei": "html/0750-fenster-rechnung-ansehen.html",
       "art": "html",
       "titel": "fenster RECHNUNG ANSEHEN",
-      "ab_zeile": 3008,
+      "ab_zeile": 3013,
       "zeilen": 18
     },
     {
       "datei": "html/0760-fenster-zahlung.html",
       "art": "html",
       "titel": "fenster ZAHLUNG",
-      "ab_zeile": 3026,
+      "ab_zeile": 3031,
       "zeilen": 15
     },
     {
       "datei": "html/0770-fenster-sicherung.html",
       "art": "html",
       "titel": "fenster SICHERUNG",
-      "ab_zeile": 3041,
+      "ab_zeile": 3046,
       "zeilen": 15
     },
     {
       "datei": "html/0780-fenster-fortschritt.html",
       "art": "html",
       "titel": "fenster FORTSCHRITT",
-      "ab_zeile": 3056,
+      "ab_zeile": 3061,
       "zeilen": 11
     },
     {
       "datei": "html/0790-fenster-sicherung-entschluesseln.html",
       "art": "html",
       "titel": "fenster SICHERUNG ENTSCHLÜSSELN",
-      "ab_zeile": 3067,
+      "ab_zeile": 3072,
       "zeilen": 10
     },
     {
       "datei": "html/0800-fenster-dokumentation.html",
       "art": "html",
       "titel": "fenster DOKUMENTATION",
-      "ab_zeile": 3077,
+      "ab_zeile": 3082,
       "zeilen": 12
     },
     {
       "datei": "html/0810-fenster-todo.html",
       "art": "html",
       "titel": "fenster TODO",
-      "ab_zeile": 3089,
+      "ab_zeile": 3094,
       "zeilen": 19
     },
     {
       "datei": "html/0820-fenster-webformular-texte.html",
       "art": "html",
       "titel": "fenster WEBFORMULAR-TEXTE",
-      "ab_zeile": 3108,
+      "ab_zeile": 3113,
       "zeilen": 14
     },
     {
       "datei": "html/0830-fenster-webformular-felder.html",
       "art": "html",
       "titel": "fenster WEBFORMULAR-FELDER",
-      "ab_zeile": 3122,
+      "ab_zeile": 3127,
       "zeilen": 12
     },
     {
       "datei": "html/0840-fenster-webformular-visuell-bearbeiten.html",
       "art": "html",
       "titel": "fenster WEBFORMULAR VISUELL BEARBEITEN",
-      "ab_zeile": 3134,
+      "ab_zeile": 3139,
       "zeilen": 12
     },
     {
       "datei": "html/0850-fenster-produkt.html",
       "art": "html",
       "titel": "fenster PRODUKT",
-      "ab_zeile": 3146,
+      "ab_zeile": 3151,
       "zeilen": 48
     },
     {
       "datei": "html/0860-fenster-ausbuchen.html",
       "art": "html",
       "titel": "fenster AUSBUCHEN",
-      "ab_zeile": 3194,
+      "ab_zeile": 3199,
       "zeilen": 13
     },
     {
       "datei": "html/0870-fenster-wareneingang.html",
       "art": "html",
       "titel": "fenster WARENEINGANG",
-      "ab_zeile": 3207,
+      "ab_zeile": 3212,
       "zeilen": 20
     },
     {
       "datei": "html/0880-fenster-produkt-verwenden.html",
       "art": "html",
       "titel": "fenster PRODUKT VERWENDEN",
-      "ab_zeile": 3227,
+      "ab_zeile": 3232,
       "zeilen": 16
     },
     {
       "datei": "html/0890-fenster-akten-zusammenlegen.html",
       "art": "html",
       "titel": "fenster AKTEN ZUSAMMENLEGEN",
-      "ab_zeile": 3243,
+      "ab_zeile": 3248,
       "zeilen": 12
     },
     {
       "datei": "html/0900-fenster-datum-und-uhrzeit.html",
       "art": "html",
       "titel": "fenster DATUM UND UHRZEIT",
-      "ab_zeile": 3255,
+      "ab_zeile": 3260,
       "zeilen": 9
     },
     {
       "datei": "html/0910-fenster-produktbuchung-bearbeiten.html",
       "art": "html",
       "titel": "fenster PRODUKTBUCHUNG BEARBEITEN",
-      "ab_zeile": 3264,
+      "ab_zeile": 3269,
       "zeilen": 19
     },
     {
       "datei": "html/0920-fenster-e-mail.html",
       "art": "html",
       "titel": "fenster E-MAIL",
-      "ab_zeile": 3283,
+      "ab_zeile": 3288,
       "zeilen": 14
     },
     {
       "datei": "html/0930-fenster-bild-gross.html",
       "art": "html",
       "titel": "fenster BILD GROSS",
-      "ab_zeile": 3297,
+      "ab_zeile": 3302,
       "zeilen": 13
     },
     {
       "datei": "html/0940-fenster-zuordnen.html",
       "art": "html",
       "titel": "fenster ZUORDNEN",
-      "ab_zeile": 3310,
+      "ab_zeile": 3315,
       "zeilen": 10
     },
     {
       "datei": "js/0950-app-grundlagen-und-navigation.js",
       "art": "js",
       "titel": "app-grundlagen-und-navigation",
-      "ab_zeile": 3320,
+      "ab_zeile": 3325,
       "zeilen": 239
     },
     {
       "datei": "js/0960-hinweise-an-patienten.js",
       "art": "js",
       "titel": "Hinweise an Patienten",
-      "ab_zeile": 3559,
+      "ab_zeile": 3564,
       "zeilen": 358
     },
     {
       "datei": "js/0970-globale-suche-im-kopfbereich.js",
       "art": "js",
       "titel": "Globale Suche im Kopfbereich",
-      "ab_zeile": 3917,
+      "ab_zeile": 3922,
       "zeilen": 167
     },
     {
       "datei": "js/0980-kalender.js",
       "art": "js",
       "titel": "Kalender",
-      "ab_zeile": 4084,
+      "ab_zeile": 4089,
       "zeilen": 301
     },
     {
       "datei": "js/0990-startseite.js",
       "art": "js",
       "titel": "Startseite",
-      "ab_zeile": 4385,
+      "ab_zeile": 4390,
       "zeilen": 282
     },
     {
       "datei": "js/1000-patienten-termine-doku.js",
       "art": "js",
       "titel": "Patienten, Termine, Doku",
-      "ab_zeile": 4667,
+      "ab_zeile": 4672,
       "zeilen": 84
     },
     {
       "datei": "js/1010-dateispeicher.js",
       "art": "js",
       "titel": "Dateispeicher ",
-      "ab_zeile": 4751,
+      "ab_zeile": 4756,
       "zeilen": 60
     },
     {
       "datei": "js/1020-rechnungen.js",
       "art": "js",
       "titel": "Rechnungen",
-      "ab_zeile": 4811,
+      "ab_zeile": 4816,
       "zeilen": 54
     },
     {
       "datei": "js/1030-leistungskategorien.js",
       "art": "js",
       "titel": "Leistungskategorien ",
-      "ab_zeile": 4865,
+      "ab_zeile": 4870,
       "zeilen": 145
     },
     {
       "datei": "js/1040-goae.js",
       "art": "js",
       "titel": "GOÄ",
-      "ab_zeile": 5010,
+      "ab_zeile": 5015,
       "zeilen": 832
     },
     {
       "datei": "js/1050-alle-tabellen.js",
       "art": "js",
       "titel": "Alle Tabellen",
-      "ab_zeile": 5842,
+      "ab_zeile": 5847,
       "zeilen": 239
     },
     {
       "datei": "js/1060-pdf-erzeugung.js",
       "art": "js",
       "titel": "PDF-Erzeugung ",
-      "ab_zeile": 6081,
+      "ab_zeile": 6086,
       "zeilen": 48
     },
     {
       "datei": "js/1070-qr-code-erzeugung.js",
       "art": "js",
       "titel": "QR-Code-Erzeugung ",
-      "ab_zeile": 6129,
+      "ab_zeile": 6134,
       "zeilen": 280
     },
     {
       "datei": "js/1080-briefumschlag-c6.js",
       "art": "js",
       "titel": "Briefumschlag C6 ",
-      "ab_zeile": 6409,
+      "ab_zeile": 6414,
       "zeilen": 544
     },
     {
       "datei": "js/1090-doppelte-akten-zusammenlegen.js",
       "art": "js",
       "titel": "Doppelte Akten zusammenlegen",
-      "ab_zeile": 6953,
+      "ab_zeile": 6958,
       "zeilen": 686
     },
     {
       "datei": "js/1100-dokumentation-eines-termins.js",
       "art": "js",
       "titel": "Dokumentation eines Termins ",
-      "ab_zeile": 7639,
+      "ab_zeile": 7644,
       "zeilen": 263
     },
     {
       "datei": "js/1110-statistik.js",
       "art": "js",
       "titel": "Statistik",
-      "ab_zeile": 7902,
+      "ab_zeile": 7907,
       "zeilen": 74
     },
     {
       "datei": "js/1120-zahlungen-und-ausgaben.js",
       "art": "js",
       "titel": "Zahlungen und Ausgaben",
-      "ab_zeile": 7976,
+      "ab_zeile": 7981,
       "zeilen": 108
     },
     {
       "datei": "js/1130-nachrichtenvorlagen-und-textbausteine.js",
       "art": "js",
       "titel": "Nachrichtenvorlagen und Textbausteine",
-      "ab_zeile": 8084,
+      "ab_zeile": 8089,
       "zeilen": 305
     },
     {
       "datei": "js/1140-kategorien-und-vorlagen.js",
       "art": "js",
       "titel": "Kategorien und Vorlagen",
-      "ab_zeile": 8389,
+      "ab_zeile": 8394,
       "zeilen": 339
     },
     {
       "datei": "js/1150-unterschrift-am-tablet-in-die-original-pdf-geste.js",
       "art": "js",
       "titel": "Unterschrift am Tablet, in die Original-PDF gestempelt",
-      "ab_zeile": 8728,
+      "ab_zeile": 8733,
       "zeilen": 240
     },
     {
       "datei": "js/1160-medien.js",
       "art": "js",
       "titel": "Medien",
-      "ab_zeile": 8968,
-      "zeilen": 466
+      "ab_zeile": 8973,
+      "zeilen": 472
     },
     {
       "datei": "js/1170-webformulare.js",
       "art": "js",
       "titel": "Webformulare",
-      "ab_zeile": 9434,
+      "ab_zeile": 9445,
       "zeilen": 278
     },
     {
       "datei": "js/1180-rechnungen-aus-pdf-importieren.js",
       "art": "js",
       "titel": "Rechnungen aus PDF importieren ",
-      "ab_zeile": 9712,
+      "ab_zeile": 9723,
       "zeilen": 198
     },
     {
       "datei": "js/1190-produktlager.js",
       "art": "js",
       "titel": "Produktlager",
-      "ab_zeile": 9910,
+      "ab_zeile": 9921,
       "zeilen": 549
     },
     {
       "datei": "js/1200-import-von-patienten-zips-aus-dem-altsystem.js",
       "art": "js",
       "titel": "Import von Patienten-ZIPs aus dem Altsystem ",
-      "ab_zeile": 10459,
+      "ab_zeile": 10470,
       "zeilen": 242
     },
     {
       "datei": "js/1210-sicherung.js",
       "art": "js",
       "titel": "Sicherung ",
-      "ab_zeile": 10701,
+      "ab_zeile": 10712,
       "zeilen": 219
     },
     {
       "datei": "js/1220-sicherung-als-zip.js",
       "art": "js",
       "titel": "Sicherung als ZIP",
-      "ab_zeile": 10920,
+      "ab_zeile": 10931,
       "zeilen": 319
     },
     {
       "datei": "js/1230-geraete-abgleich.js",
       "art": "js",
       "titel": "Geräte-Abgleich",
-      "ab_zeile": 11239,
+      "ab_zeile": 11250,
       "zeilen": 222
     },
     {
       "datei": "js/1240-eingangskorb.js",
       "art": "js",
       "titel": "Eingangskorb",
-      "ab_zeile": 11461,
+      "ab_zeile": 11472,
       "zeilen": 97
     },
     {
       "datei": "html/1250-oberflaeche-rahmen.html",
       "art": "html",
       "titel": "oberflaeche-rahmen",
-      "ab_zeile": 11558,
+      "ab_zeile": 11569,
       "zeilen": 1
     },
     {
       "datei": "js/1260-app-start.js",
       "art": "js",
       "titel": "app-start",
-      "ab_zeile": 11559,
+      "ab_zeile": 11570,
       "zeilen": 0
     },
     {
       "datei": "html/1270-oberflaeche-ks-bar.html",
       "art": "html",
       "titel": "oberflaeche-ks-bar",
-      "ab_zeile": 11559,
+      "ab_zeile": 11570,
       "zeilen": 7
     },
     {
       "datei": "js/1280-offline-speicher-mit-update-bestaetigung.js",
       "art": "js",
       "titel": "Offline-Speicher mit Update-Bestätigung",
-      "ab_zeile": 11566,
+      "ab_zeile": 11577,
       "zeilen": 12
     },
     {
       "datei": "html/1290-dokument-ende.html",
       "art": "html",
       "titel": "dokument-ende",
-      "ab_zeile": 11578,
+      "ab_zeile": 11589,
       "zeilen": 2
     }
   ]
