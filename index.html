@@ -1547,6 +1547,9 @@ body.pe-open { overflow:hidden; }
 .tl-docp { display:flex; align-items:center; gap:10px; margin-top:6px; cursor:pointer; }
 .tl-docp .md-ic { width:34px; height:44px; } .tl-docp .tl-docn { font-size:13px; font-weight:600; color:#0f172a; min-width:0; overflow-wrap:anywhere; } .tl-docp .tl-docs { font-size:11.5px; color:#64748b; }
 /* Update-Hinweis: Später-Knopf auf dunklem Grund gut lesbar */
+#bk-bar { position:fixed; left:12px; right:12px; bottom:12px; z-index:88; background:#0f172a; color:#fff; border-radius:14px; padding:10px 14px; box-shadow:0 8px 24px rgba(15,23,42,.35); align-items:center; gap:10px; font-size:14px; } #bk-bar span { flex:1; } #bk-bar.bk-warn { border-left:5px solid #f97316; } #bk-bar .btn-cancel { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.35); }
+@media (max-width:699px) and (orientation:portrait) { #bk-bar { bottom:calc(76px + env(safe-area-inset-bottom)); } }
+.bk-dot { position:relative; } .bk-dot::after { content:''; position:absolute; top:4px; right:4px; width:9px; height:9px; border-radius:50%; background:#eab308; box-shadow:0 0 0 2px #fff; } .bk-dot2::after { background:#ef4444; }
 #upd-bar .btn-cancel, #ks-bar .btn-cancel { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.6); }
 /* Zeitleiste: Mit Maus oder Stift zeigt das Überfahren die Symbole samt "…"; der Pfeil rechts würde dasselbe Menü öffnen und entfällt dort. Am reinen Touchgerät bleibt er. */
 @media (any-hover:hover) { .tl-item .tl-plus { display:none !important; } }
@@ -1616,6 +1619,12 @@ body.pe-open { overflow:hidden; }
 .md-doc { padding:6px 10px; margin-bottom:6px; gap:8px; } .md-ic.th { width:28px; height:36px; } .md-ic { width:24px; height:28px; } .md-col { gap:2px; } .md-nm { font-size:13.5px; } .md-item { margin-bottom:8px; }
 .tl-body .tl-att { margin:4px 0 2px; } .tl-docp { margin-top:4px; gap:8px; } .tl-docp .md-ic { width:26px; height:34px; } .tl-docp .tl-docp .tl-docn, .tl-docp .tl-docn { font-size:12.5px; }
 .un-row { padding:6px 10px !important; margin:0 0 6px !important; } .un-row .un-t { font-size:14px; } .un-row .un-s { font-size:11.5px; } .un-row .btn, .un-row .ak-act { min-height:32px; padding-top:4px; padding-bottom:4px; font-size:13px; }
+/* Anhänge in der Zeitleiste kompakt: eine Zeile je Datei, Stift ohne Kreis */
+.tl-body .md-doc { padding:3px 8px; margin-bottom:3px; gap:6px; border-radius:8px; } .tl-body .md-doc .md-ic.th { width:22px; height:28px; } .tl-body .md-doc .md-ic { width:20px; height:24px; }
+.tl-body .md-doc .md-col { flex-direction:row; align-items:center; gap:6px; } .tl-body .md-doc .md-nm { flex:1 1 0; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; }
+.tl-body .md-doc .md-l2 { flex:none; flex-wrap:nowrap; gap:2px; } .tl-body .md-doc .md-date { display:none; }
+.tl-body .md-doc .md-edit { width:22px; height:22px; border:0; background:none; border-radius:6px; } .tl-body .md-doc .md-edit svg { width:15px; height:15px; }
+.tl-body .md-doc .md-dots { padding:0 4px; font-size:18px; }
 .tl-day .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:3px; padding-bottom:3px; }
 /* Zeitleiste: Datum näher an der Linie und innerhalb der Trennlinien */
 .tl-day.tl-all .tl-date { padding-right:8px; }
@@ -1656,7 +1665,7 @@ body.pe-open { overflow:hidden; }
 .tl-dh-s { border-left:3px solid var(--tlc,#6abf69); margin-top:-2px; }
 .tl-dg:first-child > .tl-dh { border-top:0; } .tl-dg:first-child > .tl-dh .tl-dh-t { padding-top:10px; } .tl-dg:first-child > .tl-dh .tl-dh-s { margin-top:0; }
 /* feine Trennlinien zwischen Einträgen eines Tages (mit Abstand zum Rand, hinter dem Strich); an Terminen und Dokumentationen mit Rahmen keine Linie, dafür etwas Luft */
-.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; z-index:-1; left:6px; right:6px; top:0; height:1px; background:#d3dcee; pointer-events:none; }
+.tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku)::before { content:''; position:absolute; z-index:1; left:6px; right:6px; top:0; height:1px; background:#d3dcee; pointer-events:none; }
 .tl-day.tl-all .tl-dh + .tl-item::before, .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item::before { display:none; }
 .tl-day.tl-all .tl-item:is(.tl-termin,.tl-doku) + .tl-item:not(.tl-termin):not(.tl-doku) .tl-body { padding-top:8px; }
 .tl-day.tl-all .tl-item:not(.tl-termin):not(.tl-doku):has(+ .tl-item:is(.tl-termin,.tl-doku)) .tl-body { padding-bottom:8px; }
@@ -3324,7 +3333,7 @@ function kaStart() {
 
 <script type="text/plain" id="ka-main">
 /* Praxis-Menü: Reihenfolge, Beschriftung und Aufbau-Funktion je Seite; '-' = Trennlinie, geplant = noch nicht vorhanden */
-var KA_V = '2026-11-27-b';
+var KA_V = '2026-11-27-c';
 function kaVersion() { var m = /^(\d{4})-(\d{2})-(\d{2})-(\w+)$/.exec(KA_V); return m ? 'Version ' + m[3] + '.' + m[2] + '.' + m[1] + ' (' + m[4] + ')' : 'Version ' + KA_V; }
 var PRAXIS_NAV = [['#', 'Finanzen'], ['rechnungen', 'Rechnungen', 'renderInvoices'], ['zahlungen', 'Zahlungen', 'renderZahlungen'], ['statistik', 'Statistik', 'renderStat'],
   ['#', 'Praxis'], ['lager', 'Lager', 'renderLager'], ['leistungen', 'Leistungen', 'renderLeist'], ['settings', 'Praxisdaten', 'openSettings'],
@@ -4475,9 +4484,8 @@ function renderHome() {
     var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(p.dob || ''); if (!m || +m[1] !== now.getDate() || +m[2] !== now.getMonth() + 1) return;
     imp.appendChild(hmRow(null, 'Geburtstag: ' + dnP(p), 'wird heute ' + (now.getFullYear() - +m[3]), function () { viewAkte(p); }, null, 'next'));
   });
-  var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
-  var days = lb ? Math.round((new Date(today) - new Date(iso(new Date(lb)))) / 86400000) : null;
-  if (lb === null || days >= 2 || (days === 1 && h >= 12) || (days >= 1 && h >= 17)) imp.appendChild(hmImportantRow(lb === null ? 'Noch keine Datensicherung auf diesem Gerät' : days === 1 ? 'Heute noch nicht gesichert' : 'Letzte Datensicherung vor ' + days + ' Tagen', '', function () { exportData(); }, 'Jetzt sichern', function () { exportData(); }));
+  var bks = bkStatus(), lb = bks.lb, days = bks.days;
+  if (bks.level > 0) imp.appendChild(hmImportantRow(lb === null ? 'Noch keine Datensicherung auf diesem Gerät' : days === 1 ? 'Heute noch nicht gesichert' : 'Letzte Datensicherung vor ' + days + ' Tagen', '', function () { exportData(); }, 'Jetzt sichern', function () { exportData(); }));
   if (!imp.children.length) imp.appendChild(mk('div', 'hm-empty', 'Heute nichts Dringendes.'));
   /* Geburtstage in den nächsten 7 Tagen (ab morgen) */
   var bd = [];
@@ -11256,6 +11264,35 @@ async function kvOpen() {
   catch (e) { alert('Die Verbindungsfunktion konnte nicht geladen werden.'); return; }
   KV.openTablet();
 }
+/* Erinnerung an die Datensicherung: Stufe 0 = nichts, 1 = heute noch nicht gesichert (ab 12 Uhr), 2 = noch nie oder seit 2 Tagen nicht.
+   Orte: Startseite (Wichtig), Hinweisleiste unten (#bk-bar), Punkt am Praxis-Menü (#btn-praxis, #bnav-mehr), Sicherungs-Seite. */
+function bkStatus() {
+  var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
+  var now = new Date(), h = now.getHours();
+  var days = lb ? Math.round((new Date(iso(now)) - new Date(iso(new Date(lb)))) / 86400000) : null;
+  var level = 0;
+  if (lb === null || days >= 2) level = 2; else if (days >= 1 && h >= 12) level = 1;
+  return { lb: lb, days: days, level: level, h: h };
+}
+function bkText(st) { return st.lb === null ? 'Noch keine Datensicherung auf diesem Gerät.' : st.days === 1 ? 'Heute noch nicht gesichert.' : 'Letzte Datensicherung vor ' + st.days + ' Tagen.'; }
+function bkNudge(force) {
+  try {
+    var st = bkStatus(), bar = document.getElementById('bk-bar');
+    [].forEach.call(document.querySelectorAll('#btn-praxis, #bnav-mehr'), function (b) { b.classList.toggle('bk-dot', st.level > 0); b.classList.toggle('bk-dot2', st.level > 1); });
+    if (!bar) return;
+    if (st.level === 0 || document.hidden || document.documentElement.classList.contains('locked')) { if (st.level === 0) bar.style.display = 'none'; return; }
+    /* Zeitpunkte: Stufe 2 bei jedem Öffnen, danach höchstens alle 3 Stunden; Stufe 1 einmal ab 12 Uhr und einmal ab 17 Uhr */
+    var slot = st.level > 1 ? 'x' + Math.floor(Date.now() / 10800000) : iso(new Date()) + (st.h >= 17 ? 'b' : 'a');
+    var seen = null; try { seen = kaGet('ka_bknudge'); } catch (x) {}
+    if (!force && seen === slot) return;
+    document.getElementById('bk-bar-t').textContent = bkText(st);
+    bar.className = st.level > 1 ? 'bk-warn' : '';
+    bar.style.display = 'flex'; bar.dataset.slot = slot;
+  } catch (x) {}
+}
+function bkLater() { var bar = document.getElementById('bk-bar'); if (bar) { bar.style.display = 'none'; try { kaSet('ka_bknudge', bar.dataset.slot || ''); } catch (x) {} } }
+function bkNow() { bkLater(); exportData(); }
+setTimeout(bkNudge, 2500); setInterval(bkNudge, 600000); document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(bkNudge, 400); });
 function renderSicherung() {
   vbkState();
   var lb = null; try { lb = kaGet('ka_lastbackup'); } catch (x) {}
@@ -11568,6 +11605,7 @@ try { KS.init(); } catch (x) {}
 
 </script>
 <script>kaStart();</script>
+<div id="bk-bar" style="display:none"><span id="bk-bar-t"></span><button type="button" class="btn btn-cancel" onclick="bkLater()">Später</button><button type="button" class="btn btn-save" onclick="bkNow()">Jetzt sichern</button></div>
 <div id="ks-bar" style="display:none; position:fixed; left:12px; right:12px; bottom:12px; z-index:89; background:#0f172a; color:#fff; border-radius:14px; padding:12px 14px; box-shadow:0 8px 24px rgba(15,23,42,.35); align-items:center; gap:10px; justify-content:space-between"><span id="ks-bar-t" style="font-size:14px"></span><button type="button" class="btn btn-save btn-sm" onclick="KS.abrufen()">Abrufen</button></div>
 <div id="upd-bar" style="display:none; position:fixed; left:12px; right:12px; bottom:12px; z-index:90; background:#0f172a; color:#fff; border-radius:14px; padding:12px 14px; box-shadow:0 8px 24px rgba(15,23,42,.35);">
   <div style="font-weight:700; margin-bottom:2px;">Neue Version verfügbar</div>
