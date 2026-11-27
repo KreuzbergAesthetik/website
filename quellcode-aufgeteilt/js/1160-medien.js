@@ -60,7 +60,13 @@ function attachBlock(p, key) {
   var imgs = (p.bilder || []).filter(function (x) { return x.zu === key && !x.hiddenFromView; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
   var docs = (p.dokumente || []).filter(function (x) { return x.zu === key && !x.hiddenFromView; }).sort(function (a, b) { return tsOf(a) - tsOf(b); });
   var box = mk('div'); box.style.marginTop = '8px';
-  if (imgs.length || docs.length) { var at = mk('div', 'tl-att'); at.innerHTML = tvSvg('clip') + (imgs.length + docs.length) + (imgs.length + docs.length === 1 ? ' Anhang' : ' Anhänge'); box.appendChild(at); }
+  if (imgs.length || docs.length) {
+    var at = mk('div', 'tl-att'), alle = imgs.concat(docs), tx = mk('span'); tx.innerHTML = tvSvg('clip') + alle.length + (alle.length === 1 ? ' Anhang' : ' Anhänge'); at.appendChild(tx);
+    /* Bearbeiten-Knopf für alle Anhänge dieses Eintrags */
+    var ab = mk('button', 'md-edit'); ab.type = 'button'; ab.title = 'Anhänge bearbeiten'; ab.setAttribute('aria-label', ab.title); ab.innerHTML = tvSvg('pen');
+    ab.onclick = function (ev) { tlMenu(ev, attItems(key).concat([['Alle einem anderen Eintrag zuordnen …', function () { openZu(p, alle); }], ['Datum aller Anhänge ändern', function () { editGroupDate(alle); }]])); };
+    at.appendChild(ab); box.appendChild(at);
+  }
   if (imgs.length) box.appendChild(mediaGrid(p, imgs));
   if (docs.length) box.appendChild(docList(p, docs));
   return box;
