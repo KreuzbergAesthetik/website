@@ -40,6 +40,7 @@ try {
     await pdfEdit(p, d); await wait(800);
     const E = pdfEditState(), ov = E.pages[0].ov, r0 = ov.getBoundingClientRect();
     out.platzhalter = E.free.length === 1;
+    const ovs = [...document.querySelectorAll('.pe-ov')], hand = ovs[ovs.length - 1].querySelector('.pe-tools [data-tool="hand"]'); out.startetMitBlaettern = !!hand && hand.classList.contains('on') && getComputedStyle(ov).touchAction.indexOf('pan') >= 0;
     const zug = (pts) => { ov.dispatchEvent(new PointerEvent('pointerdown', { clientX: r0.left + r0.width * pts[0][0], clientY: r0.top + r0.height * pts[0][1], pointerId: 2, bubbles: true, pointerType: 'pen' })); pts.slice(1).forEach(q => ov.dispatchEvent(new PointerEvent('pointermove', { clientX: r0.left + r0.width * q[0], clientY: r0.top + r0.height * q[1], pointerId: 2, bubbles: true, pointerType: 'pen' }))); ov.dispatchEvent(new PointerEvent('pointerup', { pointerId: 2, bubbles: true })); };
     zug([[0.5, 0.5], [0.6, 0.55], [0.7, 0.5]]);
     out.strich = E.items.length === 1 && E.items[0].t === 'ink' && E.items[0].pts.length === 3;
@@ -71,7 +72,7 @@ try {
   });
   for (const k of Object.keys(r)) assert.equal(r[k], true, 'PDF bearbeiten: ' + k + ' ' + JSON.stringify(r));
   assert.deepEqual(pageErrors, [], 'JavaScript-Fehler im Browser');
-  console.log('PDF bearbeiten OK (Vorlagenfelder, Stift, freies Feld, Rückgängig, Speichern, vorige Fassung, Protokoll, Wiederöffnen)');
+  console.log('PDF bearbeiten OK (Start im Blättern-Modus, Vorlagenfelder, Stift, freies Feld, Rückgängig, Speichern, vorige Fassung, Protokoll, Wiederöffnen)');
 } finally {
   await browser.close();
 }
